@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1200" viewBox="0 0 1600 1200">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#071A2B"/>
+      <stop offset="0.55" stop-color="#0B2634"/>
+      <stop offset="1" stop-color="#14382F"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#F3C969"/>
+      <stop offset="1" stop-color="#E59F45"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="15" flood-color="#000" flood-opacity="0.28"/>
+    </filter>
+    <style>
+      .title{font-family:'DejaVu Sans',sans-serif;font-size:58px;font-weight:800;fill:#F8F5EA;letter-spacing:-1px}
+      .sub{font-family:'DejaVu Sans',sans-serif;font-size:23px;fill:#B8CBD0}
+      .cardTitle{font-family:'DejaVu Sans',sans-serif;font-size:27px;font-weight:800;fill:#F8F5EA}
+      .label{font-family:'DejaVu Sans',sans-serif;font-size:17px;font-weight:700;fill:#79D3B0;letter-spacing:1.4px}
+      .body{font-family:'DejaVu Sans',sans-serif;font-size:21px;fill:#DFE9E8}
+      .small{font-family:'DejaVu Sans',sans-serif;font-size:17px;fill:#A9BEC1}
+      .chip{font-family:'DejaVu Sans',sans-serif;font-size:15px;font-weight:700}
+      .num{font-family:'DejaVu Sans',sans-serif;font-size:28px;font-weight:900;fill:#09202A}
+    </style>
+  </defs>
+
+  <rect width="1600" height="1200" fill="url(#bg)"/>
+  <circle cx="1470" cy="-30" r="290" fill="#1A725A" opacity="0.18"/>
+  <circle cx="80" cy="1120" r="260" fill="#D9A441" opacity="0.10"/>
+  <path d="M0 175 C350 120 590 230 920 165 S1320 105 1600 180" fill="none" stroke="#FFFFFF" stroke-opacity="0.055" stroke-width="2"/>
+
+  <rect x="70" y="58" width="145" height="45" rx="22" fill="url(#gold)"/>
+  <text x="142" y="88" text-anchor="middle" class="chip" fill="#15252A">S3 · G2</text>
+  <text x="70" y="154" class="title">Suivi des modules</text>
+  <text x="70" y="197" class="sub">Fin wselto — résumé du chat jusqu'au 26 octobre 2026</text>
+  <text x="1530" y="86" text-anchor="end" class="small">SCIENCES DE GESTION</text>
+
+  <!-- Card 1 -->
+  <g filter="url(#shadow)">
+    <rect x="70" y="250" width="710" height="190" rx="28" fill="#102E39" stroke="#2A5660"/>
+    <rect x="70" y="250" width="9" height="190" rx="5" fill="#EAB85E"/>
+  </g>
+  <circle cx="128" cy="305" r="28" fill="#EAB85E"/><text x="128" y="315" text-anchor="middle" class="num">1</text>
+  <text x="176" y="313" class="cardTitle">Management des organisations</text>
+  <text x="108" y="358" class="label">AKHER TA9ADDOM</text>
+  <text x="108" y="391" class="body">Chapitre 2 — bdawh, ma-kemlouhch</text>
+  <text x="108" y="422" class="small">Mentionné le 20/10 · support 46 pages</text>
+  <rect x="634" y="382" width="112" height="32" rx="16" fill="#173F35"/><text x="690" y="404" text-anchor="middle" class="chip" fill="#7DE0B8">MOT2AKED</text>
+
+  <!-- Card 2 -->
+  <g filter="url(#shadow)">
+    <rect x="820" y="250" width="710" height="190" rx="28" fill="#102E39" stroke="#2A5660"/>
+    <rect x="820" y="250" width="9" height="190" rx="5" fill="#78CDB0"/>
+  </g>
+  <circle cx="878" cy="305" r="28" fill="#78CDB0"/><text x="878" y="315" text-anchor="middle" class="num">2</text>
+  <text x="926" y="313" class="cardTitle">Sociologie des organisations</text>
+  <text x="858" y="358" class="label">AKHER TA9ADDOM</text>
+  <text x="858" y="391" class="body">Chapitre 2 — bdawh f hissa dyal 4h</text>
+  <text x="858" y="422" class="small">Mentionné le 21/10 · séance confirmée</text>
+  <rect x="1384" y="382" width="112" height="32" rx="16" fill="#173F35"/><text x="1440" y="404" text-anchor="middle" class="chip" fill="#7DE0B8">MOT2AKED</text>
+
+  <!-- Card 3 -->
+  <g filter="url(#shadow)">
+    <rect x="70" y="470" width="710" height="190" rx="28" fill="#102E39" stroke="#2A5660"/>
+    <rect x="70" y="470" width="9" height="190" rx="5" fill="#E36E62"/>
+  </g>
+  <circle cx="128" cy="525" r="28" fill="#E36E62"/><text x="128" y="535" text-anchor="middle" class="num">3</text>
+  <text x="176" y="533" class="cardTitle">Comptabilité analytique</text>
+  <text x="108" y="578" class="label">AKHER TA9ADDOM</text>
+  <text x="108" y="611" class="body">Chapitre 1 salawh · Chapitre 2 khedmouh</text>
+  <text x="108" y="642" class="small">Dernière mention claire: 24/10 · Amphi 11</text>
+  <rect x="634" y="602" width="112" height="32" rx="16" fill="#173F35"/><text x="690" y="624" text-anchor="middle" class="chip" fill="#7DE0B8">MOT2AKED</text>
+
+  <!-- Card 4 -->
+  <g filter="url(#shadow)">
+    <rect x="820" y="470" width="710" height="190" rx="28" fill="#102E39" stroke="#2A5660"/>
+    <rect x="820" y="470" width="9" height="190" rx="5" fill="#86A8E7"/>
+  </g>
+  <circle cx="878" cy="525" r="28" fill="#86A8E7"/><text x="878" y="535" text-anchor="middle" class="num">4</text>
+  <text x="926" y="533" class="cardTitle">Probabilités</text>
+  <text x="858" y="578" class="label">AKHER TA9ADDOM</text>
+  <text x="858" y="611" class="body">Calcul de probabilité · 7da page 22</text>
+  <text x="858" y="642" class="small">Niveau rapporté par un étudiant le 23/10</text>
+  <rect x="1364" y="602" width="132" height="32" rx="16" fill="#4A3E1F"/><text x="1430" y="624" text-anchor="middle" class="chip" fill="#F3CD72">MORAJJAH</text>
+
+  <!-- Card 5 -->
+  <g filter="url(#shadow)">
+    <rect x="70" y="690" width="710" height="190" rx="28" fill="#102E39" stroke="#2A5660"/>
+    <rect x="70" y="690" width="9" height="190" rx="5" fill="#C58AE8"/>
+  </g>
+  <circle cx="128" cy="745" r="28" fill="#C58AE8"/><text x="128" y="755" text-anchor="middle" class="num">5</text>
+  <text x="176" y="753" class="cardTitle">Français / Langues étrangères</text>
+  <text x="108" y="798" class="label">MAWDOU3 LI TDKER</text>
+  <text x="108" y="831" class="body">Philosophie en français · Voltaire</text>
+  <text x="108" y="862" class="small">Mentionné le 21/10 · support 69 slides</text>
+  <rect x="634" y="822" width="112" height="32" rx="16" fill="#173F35"/><text x="690" y="844" text-anchor="middle" class="chip" fill="#7DE0B8">MOT2AKED</text>
+
+  <!-- Card 6 -->
+  <g filter="url(#shadow)">
+    <rect x="820" y="690" width="710" height="190" rx="28" fill="#102E39" stroke="#2A5660"/>
+    <rect x="820" y="690" width="9" height="190" rx="5" fill="#58B8D6"/>
+  </g>
+  <circle cx="878" cy="745" r="28" fill="#58B8D6"/><text x="878" y="755" text-anchor="middle" class="num">6</text>
+  <text x="926" y="753" class="cardTitle">Économie du Maroc</text>
+  <text x="858" y="798" class="label">AKHER MA3LOMA</text>
+  <text x="858" y="831" class="body">Ta9addom da9i9 ma-wade7ch</text>
+  <text x="858" y="862" class="small">Support séances 1–4 partagé le 22/10 (39 p.)</text>
+  <rect x="1352" y="822" width="144" height="32" rx="16" fill="#4B2928"/><text x="1424" y="844" text-anchor="middle" class="chip" fill="#F2A7A0">MA-MOT2AKEDCH</text>
+
+  <!-- Card 7 -->
+  <g filter="url(#shadow)">
+    <rect x="70" y="910" width="710" height="165" rx="28" fill="#102E39" stroke="#2A5660"/>
+    <rect x="70" y="910" width="9" height="165" rx="5" fill="#E79A58"/>
+  </g>
+  <circle cx="128" cy="965" r="28" fill="#E79A58"/><text x="128" y="975" text-anchor="middle" class="num">7</text>
+  <text x="176" y="973" class="cardTitle">Droit des entreprises</text>
+  <text x="108" y="1018" class="body">L7isas dazou · fin wsel dars ma-tqelch</text>
+  <text x="108" y="1049" class="small">Aucune progression fiable dans le chat</text>
+
+  <!-- Card 8 -->
+  <g filter="url(#shadow)">
+    <rect x="820" y="910" width="710" height="165" rx="28" fill="#102E39" stroke="#2A5660"/>
+    <rect x="820" y="910" width="9" height="165" rx="5" fill="#9AAAB0"/>
+  </g>
+  <circle cx="878" cy="965" r="28" fill="#9AAAB0"/><text x="878" y="975" text-anchor="middle" class="num">8</text>
+  <text x="926" y="973" class="cardTitle">Méthodologie</text>
+  <text x="858" y="1018" class="body">Ghir talab dyal PDF · ta9addom majhoul</text>
+  <text x="858" y="1049" class="small">Aucun support confirmé dans l'export</text>
+
+  <line x1="70" y1="1117" x2="1530" y2="1117" stroke="#FFFFFF" stroke-opacity="0.12"/>
+  <text x="70" y="1157" class="small">Source: WhatsApp export · “mot2aked” = présence/progression clairement rapportée</text>
+  <text x="1530" y="1157" text-anchor="end" class="small">Dernière donnée disponible: 26/10/2026</text>
+</svg>

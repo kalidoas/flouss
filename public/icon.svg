@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981" />
+      <stop offset="60%" stop-color="#059669" />
+      <stop offset="100%" stop-color="#047857" />
+    </linearGradient>
+    <linearGradient id="coinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a" />
+      <stop offset="50%" stop-color="#fbbf24" />
+      <stop offset="100%" stop-color="#d97706" />
+    </linearGradient>
+    <filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#064e3b" flood-opacity="0.3" />
+    </filter>
+  </defs>
+
+  <!-- Rounded Squircle Background -->
+  <rect x="24" y="24" width="464" height="464" rx="128" fill="url(#bgGrad)" />
+
+  <!-- Subtle Inner Border Highlight -->
+  <rect x="28" y="28" width="456" height="456" rx="124" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="4" />
+
+  <!-- Coin Peeking Out Behind Wallet -->
+  <g filter="url(#softShadow)">
+    <circle cx="330" cy="180" r="70" fill="url(#coinGrad)" stroke="#ffffff" stroke-width="6" />
+    <circle cx="330" cy="180" r="50" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="3" stroke-dasharray="6 4" />
+    <!-- Subtle star in center of coin -->
+    <path d="M 330,158 L 336,172 L 350,174 L 339,183 L 342,197 L 330,190 L 318,197 L 321,183 L 310,174 L 324,172 Z" fill="#ffffff" opacity="0.9" />
+  </g>
+
+  <!-- Clean Modern Minimalist Wallet -->
+  <g filter="url(#softShadow)">
+    <!-- Wallet Back Flap -->
+    <path d="M 120,200 L 370,200 Q 392,200 392,222 L 392,340 Q 392,362 370,362 L 142,362 Q 120,362 120,340 Z" fill="#047857" opacity="0.4" />
+
+    <!-- Wallet Main Body -->
+    <rect x="110" y="210" width="280" height="160" rx="36" fill="#ffffff" />
+
+    <!-- Wallet Horizontal Divider Accent -->
+    <path d="M 110,240 Q 250,255 390,240" fill="none" stroke="#ecfdf5" stroke-width="5" />
+
+    <!-- Wallet Clasp Flap -->
+    <path d="M 310,260 L 374,260 Q 396,260 396,282 L 396,298 Q 396,320 374,320 L 310,320 Q 296,320 296,306 L 296,274 Q 296,260 310,260 Z" fill="#059669" />
+
+    <!-- Clasp Button -->
+    <circle cx="360" cy="290" r="12" fill="url(#coinGrad)" stroke="#ffffff" stroke-width="3" />
+  </g>
+</svg>
