@@ -287,10 +287,13 @@ export const TasksPage: React.FC = () => {
       });
     } else {
       addTask({
+        id: 'task_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
         title: taskTitle.trim(),
         category: taskCategory,
         frequency: taskFrequency,
         notes: taskNotes.trim() || undefined,
+        completedDates: [],
+        createdAt: new Date().toISOString(),
       });
     }
     setIsModalOpen(false);

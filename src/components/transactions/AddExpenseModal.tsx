@@ -97,12 +97,14 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
     const isoDate = toIsoDateTime(date, time);
 
     addTransaction({
+      id: 'tx_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
       type: 'expense',
       amount: numericAmount,
       categoryId,
       subCategoryId: subCategoryId || undefined,
       date: isoDate,
       note: note.trim() || undefined,
+      createdAt: new Date().toISOString(),
     });
 
     setAmountStr('');

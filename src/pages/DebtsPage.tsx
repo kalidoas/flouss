@@ -129,13 +129,17 @@ export const DebtsPage: React.FC = () => {
         notes: debtNotes.trim() || undefined,
       });
     } else {
+      const finalPaid = Math.min(total, Math.max(0, paid));
       addDebt({
+        id: 'debt_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
         personName: debtPerson.trim(),
         type: debtType,
         totalAmount: total,
-        paidAmount: Math.min(total, Math.max(0, paid)),
+        paidAmount: finalPaid,
         dueDate: debtDueDate || undefined,
         notes: debtNotes.trim() || undefined,
+        isSettled: finalPaid >= total,
+        createdAt: new Date().toISOString(),
       });
     }
 

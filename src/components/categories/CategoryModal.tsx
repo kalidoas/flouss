@@ -139,10 +139,13 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
       });
     } else {
       addCategory({
+        id: 'cat_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
         name: name.trim(),
         icon,
         color,
         isGoal,
+        isArchived: false,
+        createdAt: new Date().toISOString(),
         subcategories,
         subCategoryId: isGoal ? selectedSubCategoryId : null,
         targetAmount: isGoal ? targetAmount : null,

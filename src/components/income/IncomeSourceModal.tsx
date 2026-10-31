@@ -33,9 +33,12 @@ export const IncomeSourceModal: React.FC<IncomeSourceModalProps> = ({
     }
 
     addIncomeSource({
+      id: 'src_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
       name: name.trim(),
       icon,
       color,
+      isDefault: false,
+      createdAt: new Date().toISOString(),
     });
 
     setName('');

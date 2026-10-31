@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import { translations } from '../../i18n/translations';
 import { formatMAD } from '../../utils/formatters';
@@ -6,7 +6,6 @@ import { Button } from '../common/Button';
 import { Modal } from '../common/Modal';
 import { Logo } from '../common/Logo';
 import {
-  Mail,
   Lock,
   ShieldCheck,
   CheckCircle2,
@@ -14,90 +13,33 @@ import {
   ArrowLeft,
   KeyRound,
   Coins,
-  Sparkles,
   AlertTriangle,
-  RotateCcw,
+  Sparkles,
 } from 'lucide-react';
 
-type OnboardingStep = 'email' | 'verify' | 'pin' | 'balance';
+type OnboardingStep = 'pin' | 'balance';
 
 export const OnboardingModal: React.FC = () => {
-  const { isOnboarded, lockInitialBalance, language, accounts, activeAccountId } = useAppStore();
+  const { isOnboarded, lockInitialBalance, language, firebaseUser } = useAppStore();
   const t = translations[language].onboarding;
-  const tCommon = translations[language].common;
   const isAr = language === 'ar';
 
-  const activeAccount = accounts.find((a) => a.id === activeAccountId);
+  const [step, setStep] = useState<OnboardingStep>('pin');
 
-  const [step, setStep] = useState<OnboardingStep>('email');
-
-  // Step 1: Email & Name
-  const [email, setEmail] = useState('');
-  const [accountName, setAccountName] = useState('Khalid');
-
-  // Step 2: Verification Code
-  const [generatedCode, setGeneratedCode] = useState('749201');
-  const [enteredCode, setEnteredCode] = useState('');
-  const [resendTimer, setResendTimer] = useState(30);
-
-  // Step 3: PIN (4 digits)
+  // Step 1: Security PIN (4 digits - optional)
   const [pin, setPin] = useState('');
   const [pinConfirm, setPinConfirm] = useState('');
   const [pinStep, setPinStep] = useState<'create' | 'confirm'>('create');
 
-  // Step 4: Starting Balance
+  // Step 2: Starting Balance
   const [balanceVal, setBalanceVal] = useState<string>('');
   const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false);
-
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
-
-  useEffect(() => {
-    let interval: ReturnType<typeof setInterval>;
-    if (step === 'verify' && resendTimer > 0) {
-      interval = setInterval(() => {
-        setResendTimer((prev) => prev - 1);
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [step, resendTimer]);
 
   if (isOnboarded) return null;
 
-  // --- Step 1 Submit (Email -> Send Code) ---
-  const handleEmailSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.trim() || !email.includes('@')) {
-      setError(
-        isAr
-          ? 'يرجى إدخال بريد إلكتروني صحيح'
-          : 'Veuillez renseigner une adresse email valide'
-      );
-      return;
-    }
-    setError('');
-    // Generate 6-digit code
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    setGeneratedCode(code);
-    setResendTimer(30);
-    setStep('verify');
-  };
-
-  // --- Step 2 Submit (Verify Code) ---
-  const handleVerifySubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (enteredCode.trim() !== generatedCode) {
-      setError(
-        isAr
-          ? 'الرمز غير صحيح، يرجى إعادة المحاولة'
-          : 'Le code de vérification est incorrect'
-      );
-      return;
-    }
-    setError('');
-    setStep('pin');
-  };
-
-  // --- Step 3 Handle PIN Pad Input ---
+  // --- Step 1: Handle PIN Pad Input ---
   const handlePinDigit = (digit: string) => {
     setError('');
     if (pinStep === 'create') {
@@ -139,8 +81,36 @@ export const OnboardingModal: React.FC = () => {
     }
   };
 
-  // --- Step 4 Submit (Balance) ---
+  const handleSkipPin = () => {
+    setPin('');
+    setPinConfirm('');
+    setStep('balance');
+  };
+
+  // --- Step 2: Submit Starting Balance ---
   const numericAmount = parseFloat(balanceVal.replace(/\s/g, '').replace(',', '.')) || 0;
+
+  const executeLockBalance = async () => {
+    setIsSubmitting(true);
+    setError('');
+    try {
+      await lockInitialBalance(numericAmount, {
+        email: firebaseUser?.email || '',
+        pinCode: pin.length === 4 ? pin : undefined,
+        accountName: firebaseUser?.displayName || 'Principal',
+      });
+      setShowConfirmModal(false);
+    } catch (err: any) {
+      setError(
+        err?.message ||
+          (isAr
+            ? 'حدث خطأ أثناء حفظ الرصيد، يرجى المحاولة مجدداً'
+            : 'Erreur lors de l’enregistrement du solde')
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const handleBalanceSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -152,204 +122,52 @@ export const OnboardingModal: React.FC = () => {
       );
       return;
     }
-    setError('');
-    setShowConfirmModal(true);
-  };
-
-  const handleFinalConfirm = () => {
-    lockInitialBalance(numericAmount, {
-      email: email.trim(),
-      pinCode: pin,
-      accountName: accountName.trim() || 'Principal',
-    });
-    setShowConfirmModal(false);
+    executeLockBalance();
   };
 
   const quickPills = [2000, 5000, 10000, 20000, 35000];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
-      <div className="w-full max-w-md bg-white dark:bg-[#202020] rounded-lg p-5 sm:p-7 shadow-xl border border-[#e3e2de] dark:border-[#2f2f2f] text-center relative overflow-hidden animate-in zoom-in-95 duration-200">
-        {/* Brand Logo & Step Indicator */}
-        <div className="flex items-center justify-between mb-4 pb-3 border-b border-[#e3e2de] dark:border-[#2f2f2f]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="w-full max-w-md bg-white dark:bg-[#202020] rounded-2xl p-6 sm:p-7 shadow-2xl border border-[#e3e2de] dark:border-[#2f2f2f] text-center relative overflow-hidden animate-in zoom-in-95 duration-200">
+
+        {/* Header & Step Tracker */}
+        <div className="flex items-center justify-between mb-5 pb-3 border-b border-[#e3e2de] dark:border-[#2f2f2f]">
           <Logo size="md" showWordmark={true} />
           <div className="flex items-center gap-1.5 text-xs text-[#787774] dark:text-[#9b9a97]">
-            <span className="font-medium text-[#37352f] dark:text-[#ecebed]">
-              {step === 'email' ? '1' : step === 'verify' ? '2' : step === 'pin' ? '3' : '4'}
+            <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+              {step === 'pin' ? '1' : '2'}
             </span>
             <span>/</span>
-            <span>4</span>
+            <span>2</span>
           </div>
         </div>
 
-        {/* ================= STEP 1: Email & Name ================= */}
-        {step === 'email' && (
-          <div className="space-y-4 text-left">
-            <div>
-              <h2 className="text-lg font-semibold text-[#37352f] dark:text-[#ecebed]">
-                {isAr ? 'إنشاء حسابك وتأمينه' : 'Créer votre compte'}
-              </h2>
-              <p className="text-xs text-[#787774] dark:text-[#9b9a97] mt-0.5">
-                {isAr
-                  ? 'أدخل بريدك الإلكتروني لربط حسابك وتأمين بياناتك'
-                  : 'Renseignez votre email pour sécuriser vos données et séparer vos comptes.'}
-              </p>
-            </div>
-
-            <form onSubmit={handleEmailSubmit} className="space-y-3 pt-1">
-              <div>
-                <label className="block text-xs font-medium text-[#37352f] dark:text-[#ecebed] mb-1">
-                  {isAr ? 'اسم الحساب / الملف الشخصي' : 'Nom du profil'}
-                </label>
-                <input
-                  type="text"
-                  value={accountName}
-                  onChange={(e) => setAccountName(e.target.value)}
-                  placeholder="Ex: Khalid ou Personnel"
-                  className="w-full text-xs py-2 px-3 rounded-md border border-[#e3e2de] dark:border-[#2f2f2f] bg-[#fbfbfa] dark:bg-[#1a1a1a] text-[#37352f] dark:text-[#ecebed] focus:outline-none focus:border-[#2383e2]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-[#37352f] dark:text-[#ecebed] mb-1">
-                  {isAr ? 'البريد الإلكتروني' : 'Adresse Email'}
-                </label>
-                <div className="relative">
-                  <Mail className="w-3.5 h-3.5 text-[#787774] absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="email"
-                    autoFocus
-                    required
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      setError('');
-                    }}
-                    placeholder="votre-email@gmail.com"
-                    className="w-full text-xs pl-8 pr-3 py-2 rounded-md border border-[#e3e2de] dark:border-[#2f2f2f] bg-[#fbfbfa] dark:bg-[#1a1a1a] text-[#37352f] dark:text-[#ecebed] focus:outline-none focus:border-[#2383e2]"
-                  />
-                </div>
-              </div>
-
-              {error && <p className="text-xs text-rose-500 font-medium">{error}</p>}
-
-              <div className="pt-2">
-                <Button type="submit" variant="primary" fullWidth icon={<ArrowRight className="w-3.5 h-3.5" />}>
-                  {isAr ? 'إرسال رمز التأكيد' : 'Continuer et recevoir le code'}
-                </Button>
-              </div>
-            </form>
-          </div>
-        )}
-
-        {/* ================= STEP 2: Email Verification Code ================= */}
-        {step === 'verify' && (
-          <div className="space-y-4 text-left">
-            <div>
-              <h2 className="text-lg font-semibold text-[#37352f] dark:text-[#ecebed]">
-                {isAr ? 'تأكيد البريد الإلكتروني' : 'Vérification du code'}
-              </h2>
-              <p className="text-xs text-[#787774] dark:text-[#9b9a97] mt-0.5">
-                {isAr
-                  ? `أرسلنا رمز تحقق مكون من 6 أرقام إلى ${email}`
-                  : `Nous avons envoyé un code de vérification à 6 chiffres à ${email}.`}
-              </p>
-            </div>
-
-            {/* Simulated verification helper pill */}
-            <div className="p-2.5 rounded-md bg-[#f1f0ee] dark:bg-[#282828] border border-[#e3e2de] dark:border-[#2f2f2f] text-xs flex items-center justify-between">
-              <div>
-                <span className="text-[11px] text-[#787774] dark:text-[#9b9a97] block">
-                  {isAr ? 'رمز التحقق التجريبي :' : 'Code de test (cliquez pour remplir) :'}
-                </span>
-                <span className="font-mono font-bold text-sm text-[#2383e2]">{generatedCode}</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setEnteredCode(generatedCode)}
-                className="px-2 py-1 rounded bg-white dark:bg-[#202020] border border-[#e3e2de] dark:border-[#2f2f2f] text-[11px] font-medium text-[#37352f] dark:text-[#ecebed] hover:bg-[#e6e5e2]"
-              >
-                {isAr ? 'ملء تلقائي' : 'Remplir'}
-              </button>
-            </div>
-
-            <form onSubmit={handleVerifySubmit} className="space-y-3">
-              <div>
-                <label className="block text-xs font-medium text-[#37352f] dark:text-[#ecebed] mb-1">
-                  {isAr ? 'أدخل رمز التحقق' : 'Entrez le code à 6 chiffres'}
-                </label>
-                <input
-                  type="text"
-                  maxLength={6}
-                  autoFocus
-                  value={enteredCode}
-                  onChange={(e) => {
-                    setEnteredCode(e.target.value.replace(/\D/g, ''));
-                    setError('');
-                  }}
-                  placeholder="______"
-                  className="w-full text-center tracking-[0.4em] font-mono text-xl py-2 px-3 rounded-md border border-[#e3e2de] dark:border-[#2f2f2f] bg-[#fbfbfa] dark:bg-[#1a1a1a] text-[#37352f] dark:text-[#ecebed] focus:outline-none focus:border-[#2383e2]"
-                />
-              </div>
-
-              {error && <p className="text-xs text-rose-500 font-medium">{error}</p>}
-
-              <div className="flex items-center justify-between text-xs text-[#787774] pt-1">
-                <button
-                  type="button"
-                  onClick={() => setStep('email')}
-                  className="hover:text-[#37352f] dark:hover:text-[#ecebed]"
-                >
-                  ← {isAr ? 'تعديل الإيميل' : 'Modifier email'}
-                </button>
-                <button
-                  type="button"
-                  disabled={resendTimer > 0}
-                  onClick={() => {
-                    const code = Math.floor(100000 + Math.random() * 900000).toString();
-                    setGeneratedCode(code);
-                    setResendTimer(30);
-                  }}
-                  className={`hover:underline ${resendTimer > 0 ? 'opacity-50 cursor-not-allowed' : 'text-[#2383e2]'}`}
-                >
-                  {resendTimer > 0 ? `${isAr ? 'إعادة الإرسال بعد' : 'Renvoyer dans'} ${resendTimer}s` : (isAr ? 'إعادة الإرسال' : 'Renvoyer code')}
-                </button>
-              </div>
-
-              <div className="pt-2">
-                <Button type="submit" variant="primary" fullWidth icon={<ShieldCheck className="w-3.5 h-3.5" />}>
-                  {isAr ? 'تأكيد والمتابعة' : 'Valider et continuer'}
-                </Button>
-              </div>
-            </form>
-          </div>
-        )}
-
-        {/* ================= STEP 3: Security PIN Setup ================= */}
+        {/* ================= STEP 1: Security PIN Setup ================= */}
         {step === 'pin' && (
           <div className="space-y-4">
             <div>
-              <div className="w-9 h-9 mx-auto rounded-md bg-[#f1f0ee] dark:bg-[#282828] text-[#2383e2] flex items-center justify-center mb-2">
-                <KeyRound className="w-4 h-4" />
+              <div className="w-11 h-11 mx-auto rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/40 flex items-center justify-center mb-2.5">
+                <KeyRound className="w-5 h-5" />
               </div>
-              <h2 className="text-lg font-semibold text-[#37352f] dark:text-[#ecebed]">
+              <h2 className="text-base font-bold text-[#37352f] dark:text-[#ecebed]">
                 {pinStep === 'create'
                   ? isAr
-                    ? 'حدد رمز PIN السري (4 أرقام)'
-                    : 'Définissez votre code PIN (4 chiffres)'
+                    ? 'حدد رمز PIN السري لحماية حسابك (4 أرقام)'
+                    : 'Définissez votre code PIN secret (4 chiffres)'
                   : isAr
-                  ? 'أكد رمز PIN'
+                  ? 'أكد رمز PIN السري'
                   : 'Confirmez votre code PIN'}
               </h2>
-              <p className="text-xs text-[#787774] dark:text-[#9b9a97] mt-0.5">
+              <p className="text-xs text-[#787774] dark:text-[#9b9a97] mt-1 leading-relaxed">
                 {isAr
-                  ? 'هذا الرمز سيحمي تطبيقك ويفصل بين حساباتك'
-                  : 'Ce code protégera votre interface lors du changement de profil.'}
+                  ? 'سيُطلب هذا الرمز عند تسجيل الدخول لحماية خصوصية بياناتك المالية.'
+                  : 'Ce code protège l’accès à vos finances après la connexion.'}
               </p>
             </div>
 
             {/* 4 Dots indicator */}
-            <div className="flex justify-center gap-3 py-2">
+            <div className="flex justify-center gap-3.5 py-3">
               {[0, 1, 2, 3].map((idx) => {
                 const isFilled = pinStep === 'create' ? idx < pin.length : idx < pinConfirm.length;
                 return (
@@ -357,7 +175,7 @@ export const OnboardingModal: React.FC = () => {
                     key={idx}
                     className={`w-3.5 h-3.5 rounded-full border transition-all duration-150 ${
                       isFilled
-                        ? 'bg-[#2383e2] border-[#2383e2] scale-110'
+                        ? 'bg-emerald-600 border-emerald-600 scale-110 shadow-xs'
                         : 'border-[#e3e2de] dark:border-[#3f3f3f] bg-transparent'
                     }`}
                   />
@@ -367,14 +185,14 @@ export const OnboardingModal: React.FC = () => {
 
             {error && <p className="text-xs text-rose-500 font-medium">{error}</p>}
 
-            {/* Notion Numpad */}
-            <div className="grid grid-cols-3 gap-2 max-w-[220px] mx-auto pt-1">
+            {/* Numeric Keypad */}
+            <div className="grid grid-cols-3 gap-2 max-w-[230px] mx-auto pt-1">
               {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((digit) => (
                 <button
                   key={digit}
                   type="button"
                   onClick={() => handlePinDigit(digit)}
-                  className="h-10 rounded-md bg-[#fbfbfa] dark:bg-[#1a1a1a] hover:bg-[#f1f0ee] dark:hover:bg-[#282828] border border-[#e3e2de] dark:border-[#2f2f2f] text-sm font-semibold text-[#37352f] dark:text-[#ecebed] transition-colors"
+                  className="h-11 rounded-xl bg-[#fbfbfa] dark:bg-[#1a1a1a] hover:bg-[#f1f0ee] dark:hover:bg-[#282828] border border-[#e3e2de] dark:border-[#2f2f2f] text-sm font-semibold text-[#37352f] dark:text-[#ecebed] transition-all cursor-pointer active:scale-95"
                 >
                   {digit}
                 </button>
@@ -385,48 +203,57 @@ export const OnboardingModal: React.FC = () => {
                   if (pinStep === 'confirm') {
                     setPinStep('create');
                     setPinConfirm('');
-                  } else {
-                    setStep('verify');
                   }
                 }}
-                className="h-10 rounded-md text-xs text-[#787774] hover:bg-[#f1f0ee] dark:hover:bg-[#282828] flex items-center justify-center transition-colors"
+                className="h-11 rounded-xl text-xs text-[#787774] hover:bg-[#f1f0ee] dark:hover:bg-[#282828] flex items-center justify-center transition-colors cursor-pointer"
               >
-                <ArrowLeft className="w-3.5 h-3.5" />
+                {pinStep === 'confirm' ? <ArrowLeft className="w-4 h-4 rtl:rotate-180" /> : null}
               </button>
               <button
                 type="button"
                 onClick={() => handlePinDigit('0')}
-                className="h-10 rounded-md bg-[#fbfbfa] dark:bg-[#1a1a1a] hover:bg-[#f1f0ee] dark:hover:bg-[#282828] border border-[#e3e2de] dark:border-[#2f2f2f] text-sm font-semibold text-[#37352f] dark:text-[#ecebed] transition-colors"
+                className="h-11 rounded-xl bg-[#fbfbfa] dark:bg-[#1a1a1a] hover:bg-[#f1f0ee] dark:hover:bg-[#282828] border border-[#e3e2de] dark:border-[#2f2f2f] text-sm font-semibold text-[#37352f] dark:text-[#ecebed] transition-all cursor-pointer active:scale-95"
               >
                 0
               </button>
               <button
                 type="button"
                 onClick={handlePinDelete}
-                className="h-10 rounded-md text-xs text-[#787774] hover:bg-[#f1f0ee] dark:hover:bg-[#282828] flex items-center justify-center transition-colors"
+                className="h-11 rounded-xl text-xs text-[#787774] hover:bg-[#f1f0ee] dark:hover:bg-[#282828] flex items-center justify-center transition-colors cursor-pointer"
               >
                 ⌫
+              </button>
+            </div>
+
+            {/* Skip option */}
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={handleSkipPin}
+                className="text-xs text-[#787774] hover:text-[#37352f] dark:hover:text-[#ecebed] underline transition-colors cursor-pointer"
+              >
+                {isAr ? 'تخطي إعداد PIN في الوقت الحالي' : 'Passer cette étape (configurer plus tard)'}
               </button>
             </div>
           </div>
         )}
 
-        {/* ================= STEP 4: Initial Balance Setup ================= */}
+        {/* ================= STEP 2: Initial Balance Setup ================= */}
         {step === 'balance' && (
           <div className="space-y-4 text-left">
             <div>
-              <div className="w-9 h-9 mx-auto rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center mb-2">
-                <Coins className="w-4 h-4" />
+              <div className="w-11 h-11 mx-auto rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/40 flex items-center justify-center mb-2.5">
+                <Coins className="w-5 h-5" />
               </div>
-              <h2 className="text-lg font-semibold text-[#37352f] dark:text-[#ecebed] text-center">
+              <h2 className="text-base font-bold text-[#37352f] dark:text-[#ecebed] text-center">
                 {t.question}
               </h2>
-              <p className="text-xs text-[#787774] dark:text-[#9b9a97] mt-0.5 text-center">
+              <p className="text-xs text-[#787774] dark:text-[#9b9a97] mt-1 text-center leading-relaxed">
                 {t.hint}
               </p>
             </div>
 
-            <form onSubmit={handleBalanceSubmit} className="space-y-3">
+            <form onSubmit={handleBalanceSubmit} className="space-y-3.5">
               <div className="relative flex items-center">
                 <input
                   type="text"
@@ -438,9 +265,9 @@ export const OnboardingModal: React.FC = () => {
                     setBalanceVal(e.target.value);
                     setError('');
                   }}
-                  className="w-full text-2xl font-semibold py-2.5 px-3 rounded-md border border-[#e3e2de] dark:border-[#2f2f2f] bg-[#fbfbfa] dark:bg-[#1a1a1a] text-[#37352f] dark:text-[#ecebed] focus:border-[#2383e2] outline-none transition-all pr-16 tabular-nums"
+                  className="w-full text-2xl font-bold py-3 px-3.5 rounded-xl border border-[#e3e2de] dark:border-[#2f2f2f] bg-[#fbfbfa] dark:bg-[#1a1a1a] text-[#37352f] dark:text-[#ecebed] focus:border-emerald-600 outline-none transition-all pr-16 tabular-nums shadow-xs"
                 />
-                <span className="absolute right-2.5 text-[11px] font-medium text-[#787774] bg-[#f1f0ee] dark:bg-[#282828] px-2 py-1 rounded">
+                <span className="absolute right-3 text-xs font-bold text-[#787774] bg-[#f1f0ee] dark:bg-[#282828] px-2.5 py-1 rounded-lg">
                   {translations[language].currency}
                 </span>
               </div>
@@ -454,17 +281,17 @@ export const OnboardingModal: React.FC = () => {
                     key={pill}
                     type="button"
                     onClick={() => setBalanceVal(pill.toString())}
-                    className="text-[11px] px-2 py-0.5 rounded bg-white dark:bg-[#202020] border border-[#e3e2de] dark:border-[#2f2f2f] hover:border-[#2383e2] text-[#5f5e5b] dark:text-[#9b9a97] transition-colors tabular-nums"
+                    className="text-xs px-2.5 py-1 rounded-lg bg-white dark:bg-[#1c1c1c] border border-[#e3e2de] dark:border-[#2f2f2f] hover:border-emerald-600 hover:text-emerald-600 text-[#5f5e5b] dark:text-[#9b9a97] transition-all tabular-nums cursor-pointer"
                   >
                     +{pill.toLocaleString('fr-FR')} {translations[language].currency}
                   </button>
                 ))}
               </div>
 
-              {/* Warning Box */}
-              <div className="mt-3 p-2.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-800/40 rounded-md flex items-start gap-2 text-left">
-                <Lock className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
-                <p className="text-[11px] text-amber-900 dark:text-amber-200 leading-normal">
+              {/* Security Lock Note */}
+              <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-800/40 rounded-xl flex items-start gap-2 text-right">
+                <Lock className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                <p className="text-[11px] text-amber-900 dark:text-amber-200 leading-relaxed">
                   {t.warning}
                 </p>
               </div>
@@ -474,9 +301,12 @@ export const OnboardingModal: React.FC = () => {
                   type="submit"
                   variant="primary"
                   fullWidth
-                  icon={<CheckCircle2 className="w-3.5 h-3.5" />}
+                  disabled={isSubmitting}
+                  icon={<CheckCircle2 className="w-4 h-4" />}
                 >
-                  {isAr ? 'تأكيد وبدء الجولة التوضيحية' : 'Confirmer et découvrir l’application'}
+                  {isSubmitting
+                    ? (isAr ? 'جاري حفظ البيانات...' : 'Enregistrement...')
+                    : (isAr ? 'تأكيد وبدء استخدام فلوس' : 'Confirmer et ouvrir Flouss')}
                 </Button>
               </div>
             </form>
@@ -484,15 +314,15 @@ export const OnboardingModal: React.FC = () => {
         )}
       </div>
 
-      {/* Final Lock Confirmation Modal */}
+      {/* Confirmation Modal */}
       <Modal
         isOpen={showConfirmModal}
         onClose={() => setShowConfirmModal(false)}
         title={t.confirmModalTitle}
         maxWidth="sm"
       >
-        <div className="text-center space-y-3.5">
-          <div className="w-10 h-10 mx-auto rounded-md bg-amber-50 dark:bg-amber-950/40 text-amber-600 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-11 h-11 mx-auto rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 flex items-center justify-center">
             <AlertTriangle className="w-5 h-5" />
           </div>
 
@@ -500,12 +330,12 @@ export const OnboardingModal: React.FC = () => {
             <p className="text-xs text-[#787774] dark:text-[#9b9a97]">
               {t.confirmModalDesc}
             </p>
-            <div className="text-2xl font-semibold text-[#37352f] dark:text-[#ecebed] mt-1 tabular-nums">
+            <div className="text-2xl font-bold text-[#37352f] dark:text-[#ecebed] mt-1 tabular-nums">
               {formatMAD(numericAmount, false, language)}
             </div>
           </div>
 
-          <p className="text-xs text-[#5f5e5b] dark:text-[#9b9a97] bg-[#fbfbfa] dark:bg-[#1a1a1a] p-2.5 rounded-md border border-[#e3e2de] dark:border-[#2f2f2f] leading-normal">
+          <p className="text-xs text-[#5f5e5b] dark:text-[#9b9a97] bg-[#fbfbfa] dark:bg-[#1a1a1a] p-3 rounded-xl border border-[#e3e2de] dark:border-[#2f2f2f] leading-relaxed">
             {t.confirmWarning}
           </p>
 
@@ -520,10 +350,13 @@ export const OnboardingModal: React.FC = () => {
             <Button
               variant="primary"
               fullWidth
-              onClick={handleFinalConfirm}
-              icon={<Lock className="w-3.5 h-3.5" />}
+              disabled={isSubmitting}
+              onClick={executeLockBalance}
+              icon={<Lock className="w-4 h-4" />}
             >
-              {t.confirmButton}
+              {isSubmitting
+                ? (isAr ? 'جاري التأكيد...' : 'Enregistrement...')
+                : t.confirmButton}
             </Button>
           </div>
         </div>
@@ -531,3 +364,5 @@ export const OnboardingModal: React.FC = () => {
     </div>
   );
 };
+
+export default OnboardingModal;

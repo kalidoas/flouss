@@ -46,7 +46,7 @@ export const CategoryDetailModal: React.FC<CategoryDetailModalProps> = ({
   const {
     categories,
     transactions,
-    archiveCategory,
+    updateCategory,
     deleteCategory,
     hideBalance,
     language,
@@ -84,18 +84,13 @@ export const CategoryDetailModal: React.FC<CategoryDetailModalProps> = ({
   const subcategories = category.subcategories || [];
 
   const handleDeleteConfirm = () => {
-    deleteCategory(
-      category.id,
-      deleteRefundChoice,
-      categoryTransactions.length > 0 ? txActionChoice : undefined,
-      txActionChoice === 'reassign' ? reassignTargetId || otherCategories[0]?.id : undefined
-    );
+    deleteCategory(category.id);
     setShowDeletePrompt(false);
     onClose();
   };
 
   const handleToggleArchive = () => {
-    archiveCategory(category.id, !category.isArchived);
+    updateCategory(category.id, { isArchived: !category.isArchived });
     onClose();
   };
 

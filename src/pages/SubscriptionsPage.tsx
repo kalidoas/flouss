@@ -95,11 +95,14 @@ export const SubscriptionsPage: React.FC = () => {
       });
     } else {
       addSubscription({
+        id: 'sub_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
         name: subName.trim(),
         amount,
         billingDay: isNaN(day) ? 1 : Math.min(31, Math.max(1, day)),
         category: subCategory.trim(),
         notes: subNotes.trim() || undefined,
+        paidMonths: [],
+        createdAt: new Date().toISOString(),
       });
     }
 

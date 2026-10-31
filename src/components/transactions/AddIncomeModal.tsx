@@ -72,19 +72,18 @@ export const AddIncomeModal: React.FC<AddIncomeModalProps> = ({
 
     const isoDate = toIsoDateTime(date, time);
 
-    addTransaction(
-      {
-        type: 'income',
-        amount: numericAmount,
-        sourceId,
-        incomeSubSourceId: subSourceId || undefined,
-        date: isoDate,
-        note: note.trim() || undefined,
-        isRecurring,
-        recurringDay: isRecurring ? recurringDay : undefined,
-      },
-      { recurringDay }
-    );
+    addTransaction({
+      id: 'tx_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+      type: 'income',
+      amount: numericAmount,
+      sourceId,
+      incomeSubSourceId: subSourceId || undefined,
+      date: isoDate,
+      note: note.trim() || undefined,
+      isRecurring,
+      recurringDay: isRecurring ? recurringDay : undefined,
+      createdAt: new Date().toISOString(),
+    });
 
     setAmountStr('');
     setNote('');

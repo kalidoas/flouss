@@ -98,12 +98,14 @@ export const AddContributionModal: React.FC<AddContributionModalProps> = ({
     const catName = getCategoryName(selectedCategory, language);
 
     addTransaction({
+      id: 'tx_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
       type: 'contribution',
       amount: numericAmount,
       categoryId,
       subCategoryId: selectedCategory?.subCategoryId || undefined,
       date: isoDate,
       note: note.trim() || `${t.savingFor} ${catName}`,
+      createdAt: new Date().toISOString(),
     });
 
     // If this contribution completes the goal, fire celebration!

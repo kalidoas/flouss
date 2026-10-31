@@ -83,12 +83,16 @@ export const NotesPage: React.FC = () => {
         category: noteCategory.trim() || undefined,
       });
     } else {
+      const now = new Date().toISOString();
       addNoteItem({
+        id: 'note_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
         title: noteTitle.trim() || (isAr ? 'بدون عنوان' : 'Sans titre'),
         content: noteContent.trim(),
         color: noteColor,
         category: noteCategory.trim() || undefined,
         isPinned: false,
+        createdAt: now,
+        updatedAt: now,
       });
     }
 

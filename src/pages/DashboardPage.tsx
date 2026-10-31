@@ -116,7 +116,9 @@ export const DashboardPage: React.FC = () => {
   const dueRecurringRule = recurringRules.find((rule: RecurringIncomeRule) => {
     const isDue = currentDayOfMonth >= rule.dayOfMonth;
     const notConfirmedThisMonth = rule.lastConfirmedMonth !== currentMonth;
-    const notDismissedThisMonth = dismissedRecurringForMonth[rule.id] !== currentMonth;
+    const notDismissedThisMonth =
+      !(dismissedRecurringForMonth ?? []).includes(rule.id + '_' + currentMonth) &&
+      !(dismissedRecurringForMonth ?? []).includes(currentMonth);
     return isDue && notConfirmedThisMonth && notDismissedThisMonth;
   });
 
@@ -160,13 +162,25 @@ export const DashboardPage: React.FC = () => {
 
           <div className="flex items-center gap-2 self-end sm:self-center">
             <button
-              onClick={() => dismissRecurringPrompt(dueRecurringRule.id)}
+              onClick={() => dismissRecurringPrompt(currentMonth)}
               className="px-2.5 py-1 text-xs text-[#787774] hover:text-[#37352f] transition-colors"
             >
               {tDash.dismiss}
             </button>
             <button
-              onClick={() => confirmRecurringIncome(dueRecurringRule)}
+              onClick={() => {
+                const tx: Transaction = {
+                  id: 'tx_' + Date.now(),
+                  type: 'income',
+                  amount: dueRecurringRule.amount,
+                  sourceId: dueRecurringRule.sourceId,
+                  date: new Date().toISOString(),
+                  note: 'Revenu récurrent confirmé',
+                  isRecurring: true,
+                  createdAt: new Date().toISOString(),
+                };
+                confirmRecurringIncome(dueRecurringRule.id, currentMonth, tx);
+              }}
               className="px-3 py-1 text-xs font-medium rounded bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1.5 transition-colors"
             >
               <CheckCircle2 className="w-3.5 h-3.5" />
