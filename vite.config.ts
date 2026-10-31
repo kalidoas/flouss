@@ -41,6 +41,7 @@ function injectServiceWorkerAssets() {
 }
 
 export default defineConfig({
+  base: './',
   plugins: [react(), injectServiceWorkerAssets()],
   resolve: {
     dedupe: ['react', 'react-dom'],
