@@ -20,8 +20,9 @@ const cleanEnv = (val?: string) => {
 
 const sanitizeApiKey = (val?: string): string => {
   const clean = cleanEnv(val);
-  // An authentic Firebase Web API Key must start with 'AIza' and have no colons or placeholders
-  if (clean.startsWith('AIza') && !clean.includes(':') && clean.length >= 35 && !clean.toLowerCase().includes('placeholder')) {
+  // Guarantee the verified active key for project floss-6799f is always used,
+  // preventing accidental Netlify dashboard typos (like '7' instead of 'z')
+  if (clean === DEFAULT_CONFIG.apiKey) {
     return clean;
   }
   return DEFAULT_CONFIG.apiKey;
