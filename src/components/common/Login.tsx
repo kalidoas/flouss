@@ -24,12 +24,12 @@ const ERROR_MESSAGES: Record<string, { ar: string; fr: string }> = {
     fr: 'Ce domaine n’est pas autorisé dans Firebase. Ajoutez votre domaine Netlify dans Firebase Console (Authentication > Settings > Authorized domains).',
   },
   'auth/invalid-api-key': {
-    ar: 'مفتاح Firebase API لم يتم تحميله أثناء بناء الموقع. تأكد من حفظ متغيرات البيئة في Netlify ثم اضغط Trigger deploy > Clear cache and deploy site.',
-    fr: 'Clé API Firebase non injectée lors du build. Vérifiez vos variables d’environnement sur Netlify puis faites "Clear cache and deploy site".',
+    ar: 'مفتاح Firebase API غير صالح أو غير مرتبط بالمشروع بشكل سليم.',
+    fr: 'Clé API Firebase non valide pour ce projet.',
   },
   'auth/api-key-not-valid': {
-    ar: 'مفتاح Firebase API لم يتم تحميله أثناء بناء الموقع. تأكد من حفظ متغيرات البيئة في Netlify ثم اضغط Trigger deploy > Clear cache and deploy site.',
-    fr: 'Clé API Firebase non injectée lors du build. Vérifiez vos variables d’environnement sur Netlify puis faites "Clear cache and deploy site".',
+    ar: 'مفتاح Firebase API غير صالح أو غير مرتبط بالمشروع بشكل سليم.',
+    fr: 'Clé API Firebase non valide pour ce projet.',
   },
   'auth/operation-not-allowed': {
     ar: 'طريقة تسجيل الدخول هذه غير مفعّلة في Firebase Console (Authentication > Sign-in method).',
@@ -55,6 +55,44 @@ const ERROR_MESSAGES: Record<string, { ar: string; fr: string }> = {
     ar: 'رابط تسجيل الدخول غير صالح أو تم استخدامه مسبقاً.',
     fr: 'Lien de connexion invalide ou déjà utilisé.',
   },
+};
+
+const getFriendlyAuthError = (err: any, isAr: boolean) => {
+  const code = (err?.code || '').toLowerCase();
+  const rawMsg = err?.message || '';
+
+  if (code.includes('unauthorized-domain') || rawMsg.toLowerCase().includes('unauthorized domain')) {
+    const domain = typeof window !== 'undefined' ? window.location.hostname : 'Netlify';
+    return isAr
+      ? `النطاق الحالي (${domain}) غير مضاف في قائمة النطاقات المسموح بها في Firebase. انتقل إلى Firebase Console > Authentication > Settings > Authorized domains وأضف ${domain}.`
+      : `Le domaine (${domain}) n’est pas autorisé dans Firebase. Allez sur Firebase Console > Authentication > Settings > Authorized domains et ajoutez ${domain}.`;
+  }
+
+  if (code.includes('api-key') || rawMsg.toLowerCase().includes('api key')) {
+    return isAr
+      ? 'مفتاح Firebase API غير صالح أو غير مرتبط بالمشروع بشكل سليم.'
+      : 'Clé API Firebase non valide ou mal configurée pour ce projet.';
+  }
+
+  if (code.includes('operation-not-allowed') || rawMsg.toLowerCase().includes('operation not allowed')) {
+    return isAr
+      ? 'طريقة تسجيل الدخول هذه غير مفعّلة في Firebase Console (Authentication > Sign-in method).'
+      : 'Cette méthode de connexion n’est pas activée dans Firebase Console (Authentication > Sign-in method).';
+  }
+
+  if (code.includes('popup-closed') || rawMsg.toLowerCase().includes('closed by user')) {
+    return isAr
+      ? 'تم إغلاق نافذة تسجيل الدخول قبل إتمام العملية. حاول مجدداً.'
+      : 'La fenêtre de connexion a été fermée avant la fin. Veuillez réessayer.';
+  }
+
+  for (const [key, val] of Object.entries(ERROR_MESSAGES)) {
+    if (code === key || code.startsWith(key)) {
+      return isAr ? val.ar : val.fr;
+    }
+  }
+
+  return rawMsg || (isAr ? 'حدث خطأ في المصادقة' : 'Erreur d’authentification');
 };
 
 export const Login: React.FC = () => {
@@ -90,10 +128,8 @@ export const Login: React.FC = () => {
             window.history.replaceState({}, document.title, window.location.pathname);
           })
           .catch((err: any) => {
-            const msg = ERROR_MESSAGES[err.code]
-              ? (isAr ? ERROR_MESSAGES[err.code].ar : ERROR_MESSAGES[err.code].fr)
-              : (err.message || 'Error completing email link sign in');
-            setError({ code: err.code || 'auth/magic-link-error', message: msg });
+            const msg = getFriendlyAuthError(err, isAr);
+            setError({ code: err?.code || 'auth/magic-link-error', message: msg });
           })
           .finally(() => {
             setVerifyingMagicLink(false);
@@ -116,10 +152,8 @@ export const Login: React.FC = () => {
       })
       .catch((err: any) => {
         if (!isMounted) return;
-        const msg = ERROR_MESSAGES[err.code]
-          ? (isAr ? ERROR_MESSAGES[err.code].ar : ERROR_MESSAGES[err.code].fr)
-          : (err.message || 'Authentication error');
-        setError({ code: err.code ?? 'auth/error', message: msg });
+        const msg = getFriendlyAuthError(err, isAr);
+        setError({ code: err?.code ?? 'auth/error', message: msg });
       });
 
     return () => {
@@ -142,16 +176,6 @@ export const Login: React.FC = () => {
   const handleGoogleAuth = async () => {
     setError(null);
 
-    if (!isFirebaseConfigured) {
-      setError({
-        code: 'auth/api-key-not-valid',
-        message: isAr
-          ? 'مفتاح Firebase لم يتم تحميله في هذا البناء على Netlify. يرجى الذهاب إلى لوحة Netlify > Deploys > ثم الضغط على Trigger deploy > Clear cache and deploy site.'
-          : 'La configuration Firebase n’a pas été injectée lors du build Netlify. Veuillez aller sur Netlify > Deploys > Trigger deploy > Clear cache and deploy site.',
-      });
-      return;
-    }
-
     setLoadingGoogle(true);
 
     try {
@@ -162,16 +186,12 @@ export const Login: React.FC = () => {
           await signInWithRedirect(auth, googleProvider);
           return;
         } catch (redirectErr: any) {
-          const msg = ERROR_MESSAGES[redirectErr.code]
-            ? (isAr ? ERROR_MESSAGES[redirectErr.code].ar : ERROR_MESSAGES[redirectErr.code].fr)
-            : (redirectErr.message || 'Authentication error');
-          setError({ code: redirectErr.code ?? 'auth/redirect-error', message: msg });
+          const msg = getFriendlyAuthError(redirectErr, isAr);
+          setError({ code: redirectErr?.code ?? 'auth/redirect-error', message: msg });
         }
       } else {
-        const msg = ERROR_MESSAGES[err.code]
-          ? (isAr ? ERROR_MESSAGES[err.code].ar : ERROR_MESSAGES[err.code].fr)
-          : (err.message || 'Authentication error');
-        setError({ code: err.code ?? 'auth/error', message: msg });
+        const msg = getFriendlyAuthError(err, isAr);
+        setError({ code: err?.code ?? 'auth/error', message: msg });
       }
     } finally {
       setLoadingGoogle(false);
@@ -181,16 +201,6 @@ export const Login: React.FC = () => {
   // Handle sending secure Email Link (Magic Link)
   const handleSendEmailLink = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!isFirebaseConfigured) {
-      setError({
-        code: 'auth/api-key-not-valid',
-        message: isAr
-          ? 'مفتاح Firebase لم يتم تحميله في هذا البناء على Netlify. يرجى الذهاب إلى لوحة Netlify > Deploys > ثم الضغط على Trigger deploy > Clear cache and deploy site.'
-          : 'La configuration Firebase n’a pas été injectée lors du build Netlify. Veuillez aller sur Netlify > Deploys > Trigger deploy > Clear cache and deploy site.',
-      });
-      return;
-    }
 
     const cleanEmail = email.trim();
     if (!cleanEmail || !cleanEmail.includes('@')) {
@@ -222,10 +232,8 @@ export const Login: React.FC = () => {
       setEmailSent(true);
       setResendCooldown(60);
     } catch (err: any) {
-      const msg = ERROR_MESSAGES[err.code]
-        ? (isAr ? ERROR_MESSAGES[err.code].ar : ERROR_MESSAGES[err.code].fr)
-        : (err.message || 'Error sending email link');
-      setError({ code: err.code || 'auth/email-link-failed', message: msg });
+      const msg = getFriendlyAuthError(err, isAr);
+      setError({ code: err?.code || 'auth/email-link-failed', message: msg });
     } finally {
       setLoadingEmail(false);
     }
