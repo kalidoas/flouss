@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { auth, googleProvider } from '../../lib/firebase';
+import { auth, googleProvider, isFirebaseConfigured } from '../../lib/firebase';
 import {
   signInWithPopup,
   signInWithRedirect,
@@ -20,12 +20,16 @@ const POPUP_BLOCKED_CODES = new Set([
 
 const ERROR_MESSAGES: Record<string, { ar: string; fr: string }> = {
   'auth/unauthorized-domain': {
-    ar: 'هذا النطاق غير مرخّص في Firebase. أضف النطاق إلى Authorized domains في Firebase Console.',
-    fr: 'Ce domaine n’est pas autorisé dans Firebase. Ajoutez localhost aux domaines autorisés.',
+    ar: 'هذا النطاق غير مرخّص في Firebase. أضف نطاق Netlify الخاص بك إلى Authorized domains في Firebase Console (Authentication > Settings > Authorized domains).',
+    fr: 'Ce domaine n’est pas autorisé dans Firebase. Ajoutez votre domaine Netlify dans Firebase Console (Authentication > Settings > Authorized domains).',
   },
   'auth/invalid-api-key': {
-    ar: 'مفتاح Firebase API غير صالح. تحقق من إعدادات المشروع.',
-    fr: 'Clé API Firebase non valide. Vérifiez la configuration du projet.',
+    ar: 'مفتاح Firebase API لم يتم تحميله أثناء بناء الموقع. تأكد من حفظ متغيرات البيئة في Netlify ثم اضغط Trigger deploy > Clear cache and deploy site.',
+    fr: 'Clé API Firebase non injectée lors du build. Vérifiez vos variables d’environnement sur Netlify puis faites "Clear cache and deploy site".',
+  },
+  'auth/api-key-not-valid': {
+    ar: 'مفتاح Firebase API لم يتم تحميله أثناء بناء الموقع. تأكد من حفظ متغيرات البيئة في Netlify ثم اضغط Trigger deploy > Clear cache and deploy site.',
+    fr: 'Clé API Firebase non injectée lors du build. Vérifiez vos variables d’environnement sur Netlify puis faites "Clear cache and deploy site".',
   },
   'auth/operation-not-allowed': {
     ar: 'طريقة تسجيل الدخول هذه غير مفعّلة في Firebase Console (Authentication > Sign-in method).',
@@ -137,6 +141,17 @@ export const Login: React.FC = () => {
   // Handle Google 1-click Sign In / Sign Up
   const handleGoogleAuth = async () => {
     setError(null);
+
+    if (!isFirebaseConfigured) {
+      setError({
+        code: 'auth/api-key-not-valid',
+        message: isAr
+          ? 'مفتاح Firebase لم يتم تحميله في هذا البناء على Netlify. يرجى الذهاب إلى لوحة Netlify > Deploys > ثم الضغط على Trigger deploy > Clear cache and deploy site.'
+          : 'La configuration Firebase n’a pas été injectée lors du build Netlify. Veuillez aller sur Netlify > Deploys > Trigger deploy > Clear cache and deploy site.',
+      });
+      return;
+    }
+
     setLoadingGoogle(true);
 
     try {
@@ -166,6 +181,17 @@ export const Login: React.FC = () => {
   // Handle sending secure Email Link (Magic Link)
   const handleSendEmailLink = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!isFirebaseConfigured) {
+      setError({
+        code: 'auth/api-key-not-valid',
+        message: isAr
+          ? 'مفتاح Firebase لم يتم تحميله في هذا البناء على Netlify. يرجى الذهاب إلى لوحة Netlify > Deploys > ثم الضغط على Trigger deploy > Clear cache and deploy site.'
+          : 'La configuration Firebase n’a pas été injectée lors du build Netlify. Veuillez aller sur Netlify > Deploys > Trigger deploy > Clear cache and deploy site.',
+      });
+      return;
+    }
+
     const cleanEmail = email.trim();
     if (!cleanEmail || !cleanEmail.includes('@')) {
       setError({
