@@ -15,15 +15,40 @@ const DEFAULT_CONFIG = {
 
 const cleanEnv = (val?: string) => {
   if (!val) return '';
-  return val.trim().replace(/^["']|["']$/g, '');
+  return val.trim().replace(/^["']|["']$/g, '').trim();
 };
 
-const rawApiKey = cleanEnv(import.meta.env.VITE_FIREBASE_API_KEY) || DEFAULT_CONFIG.apiKey;
-const rawProjectId = cleanEnv(import.meta.env.VITE_FIREBASE_PROJECT_ID) || DEFAULT_CONFIG.projectId;
+const sanitizeApiKey = (val?: string): string => {
+  const clean = cleanEnv(val);
+  // An authentic Firebase Web API Key must start with 'AIza' and have no colons or placeholders
+  if (clean.startsWith('AIza') && !clean.includes(':') && clean.length >= 35 && !clean.toLowerCase().includes('placeholder')) {
+    return clean;
+  }
+  return DEFAULT_CONFIG.apiKey;
+};
+
+const sanitizeAuthDomain = (val?: string): string => {
+  const clean = cleanEnv(val);
+  if (clean.toLowerCase().includes('placeholder') || !clean.includes('.')) {
+    return DEFAULT_CONFIG.authDomain;
+  }
+  return clean || DEFAULT_CONFIG.authDomain;
+};
+
+const sanitizeProjectId = (val?: string): string => {
+  const clean = cleanEnv(val);
+  if (clean.toLowerCase().includes('placeholder') || clean.length < 3) {
+    return DEFAULT_CONFIG.projectId;
+  }
+  return clean || DEFAULT_CONFIG.projectId;
+};
+
+const rawApiKey = sanitizeApiKey(import.meta.env.VITE_FIREBASE_API_KEY);
+const rawProjectId = sanitizeProjectId(import.meta.env.VITE_FIREBASE_PROJECT_ID);
 
 const firebaseConfig = {
   apiKey: rawApiKey,
-  authDomain: cleanEnv(import.meta.env.VITE_FIREBASE_AUTH_DOMAIN) || DEFAULT_CONFIG.authDomain,
+  authDomain: sanitizeAuthDomain(import.meta.env.VITE_FIREBASE_AUTH_DOMAIN),
   projectId: rawProjectId,
   storageBucket: cleanEnv(import.meta.env.VITE_FIREBASE_STORAGE_BUCKET) || DEFAULT_CONFIG.storageBucket,
   messagingSenderId: cleanEnv(import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID) || DEFAULT_CONFIG.messagingSenderId,

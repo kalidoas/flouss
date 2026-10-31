@@ -107,7 +107,7 @@ export const Login: React.FC = () => {
   const [loadingEmail, setLoadingEmail] = useState(false);
   const [verifyingMagicLink, setVerifyingMagicLink] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
-  const [error, setError] = useState<{ code: string; message: string } | null>(null);
+  const [error, setError] = useState<{ code: string; message: string; raw?: string } | null>(null);
 
   // 1. Check if user arrived via an incoming Email Magic Link
   useEffect(() => {
@@ -187,11 +187,19 @@ export const Login: React.FC = () => {
           return;
         } catch (redirectErr: any) {
           const msg = getFriendlyAuthError(redirectErr, isAr);
-          setError({ code: redirectErr?.code ?? 'auth/redirect-error', message: msg });
+          setError({
+            code: redirectErr?.code ?? 'auth/redirect-error',
+            message: msg,
+            raw: redirectErr?.message,
+          });
         }
       } else {
         const msg = getFriendlyAuthError(err, isAr);
-        setError({ code: err?.code ?? 'auth/error', message: msg });
+        setError({
+          code: err?.code ?? 'auth/error',
+          message: msg,
+          raw: err?.message,
+        });
       }
     } finally {
       setLoadingGoogle(false);
@@ -487,6 +495,11 @@ export const Login: React.FC = () => {
               {isAr ? 'تنبيه' : 'Attention'}
             </p>
             <p className="text-xs text-red-600 dark:text-red-300 leading-normal">{error.message}</p>
+            {error.code && (
+              <p className="text-[10px] text-red-400/80 font-mono mt-1 text-left ltr" dir="ltr">
+                [{error.code}] {error.raw ? `— ${error.raw}` : ''}
+              </p>
+            )}
           </div>
         )}
 
