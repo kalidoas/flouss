@@ -20,9 +20,7 @@ const cleanEnv = (val?: string) => {
 
 const sanitizeApiKey = (val?: string): string => {
   const clean = cleanEnv(val);
-  // Guarantee the verified active key for project floss-6799f is always used,
-  // preventing accidental Netlify dashboard typos (like '7' instead of 'z')
-  if (clean === DEFAULT_CONFIG.apiKey) {
+  if (clean && clean.startsWith('AIza')) {
     return clean;
   }
   return DEFAULT_CONFIG.apiKey;
@@ -30,18 +28,18 @@ const sanitizeApiKey = (val?: string): string => {
 
 const sanitizeAuthDomain = (val?: string): string => {
   const clean = cleanEnv(val);
-  if (clean.toLowerCase().includes('placeholder') || !clean.includes('.')) {
-    return DEFAULT_CONFIG.authDomain;
+  if (clean && !clean.toLowerCase().includes('placeholder') && clean.includes('.')) {
+    return clean;
   }
-  return clean || DEFAULT_CONFIG.authDomain;
+  return DEFAULT_CONFIG.authDomain;
 };
 
 const sanitizeProjectId = (val?: string): string => {
   const clean = cleanEnv(val);
-  if (clean.toLowerCase().includes('placeholder') || clean.length < 3) {
-    return DEFAULT_CONFIG.projectId;
+  if (clean && !clean.toLowerCase().includes('placeholder') && clean.length >= 3) {
+    return clean;
   }
-  return clean || DEFAULT_CONFIG.projectId;
+  return DEFAULT_CONFIG.projectId;
 };
 
 const rawApiKey = sanitizeApiKey(import.meta.env.VITE_FIREBASE_API_KEY);
@@ -57,31 +55,76 @@ const firebaseConfig = {
   measurementId: cleanEnv(import.meta.env.VITE_FIREBASE_MEASUREMENT_ID) || DEFAULT_CONFIG.measurementId,
 };
 
-export const isFirebaseConfigured = Boolean(
-  rawApiKey && rawApiKey.startsWith('AIza') && rawProjectId
-);
+let appInstance: FirebaseApp | null = null;
+let authInstance: Auth | null = null;
+let dbInstance: Firestore | null = null;
+let initError: Error | null = null;
 
-export const app: FirebaseApp =
-  getApps().length > 0
-    ? getApp()
-    : initializeApp(firebaseConfig);
-
-export const auth: Auth = getAuth(app);
-
-// Initialize Cloud Firestore with experimentalForceLongPolling to eliminate WebChannel hanging / timeouts on Brave, Chrome, and Mobile
-let dbInstance: Firestore;
+// Graceful initialization wrapped in try/catch to guarantee zero local fatal crashes
 try {
-  dbInstance = initializeFirestore(app, {
-    experimentalForceLongPolling: true,
-  });
-} catch (e) {
-  dbInstance = getFirestore(app);
+  appInstance =
+    getApps().length > 0
+      ? getApp()
+      : initializeApp(firebaseConfig);
+} catch (err: any) {
+  console.warn('[Flouss Firebase] initializeApp notice (running in safe mode):', err?.message || err);
+  initError = err;
 }
+
+try {
+  if (appInstance) {
+    authInstance = getAuth(appInstance);
+  }
+} catch (err: any) {
+  console.warn('[Flouss Firebase] getAuth notice:', err?.message || err);
+}
+
+try {
+  if (appInstance) {
+    dbInstance = initializeFirestore(appInstance, {
+      experimentalForceLongPolling: true,
+    });
+  }
+} catch (e) {
+  try {
+    if (appInstance) {
+      dbInstance = getFirestore(appInstance);
+    }
+  } catch (err: any) {
+    console.warn('[Flouss Firebase] getFirestore notice:', err?.message || err);
+  }
+}
+
+// Fallback dummy auth object if Firebase Auth cannot initialize locally
+if (!authInstance) {
+  authInstance = {
+    currentUser: null,
+    onAuthStateChanged: (callback: (user: any) => void) => {
+      // Safe offline callback
+      setTimeout(() => callback(null), 10);
+      return () => {};
+    },
+    signOut: async () => {},
+  } as unknown as Auth;
+}
+
+// Fallback dummy db object if Firestore cannot initialize locally
+if (!dbInstance) {
+  dbInstance = {} as unknown as Firestore;
+}
+
+export const app: FirebaseApp = appInstance as FirebaseApp;
+export const auth: Auth = authInstance;
 export const db: Firestore = dbInstance;
+
+export const isFirebaseConfigured = Boolean(
+  appInstance && rawApiKey && rawApiKey.startsWith('AIza') && rawProjectId
+);
 
 export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
+googleProvider.addScope('https://www.googleapis.com/auth/calendar.events');
 
-export const firebaseError: string | null = null;
+export const firebaseError: string | null = initError ? initError.message : null;
 
 export default app;

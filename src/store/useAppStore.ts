@@ -17,6 +17,11 @@ import {
   NoteItem,
   FocusTask,
   FocusListMenu,
+  StudyModuleItem,
+  GymWorkoutLog,
+  PrayerKey,
+  ProgramTrack,
+  ProgramSubTask,
 } from '../types';
 import {
   DEFAULT_CATEGORIES,
@@ -27,6 +32,9 @@ import {
   DEFAULT_NOTES,
   DEFAULT_FOCUS_LISTS,
   DEFAULT_FOCUS_TASKS,
+  DEFAULT_STUDY_MODULES,
+  DEFAULT_GYM_LOGS,
+  DEFAULT_PROGRAM_TRACKS,
 } from './defaultData';
 
 export interface AppState {
@@ -55,6 +63,10 @@ export interface AppState {
   debts: DebtItem[];
   subscriptions: SubscriptionItem[];
   notes: NoteItem[];
+  salatLogs: Record<string, PrayerKey[]>;
+  studyModules: StudyModuleItem[];
+  gymLogs: GymWorkoutLog[];
+  programTracks: ProgramTrack[];
   focusTasks: FocusTask[];
   focusLists: FocusListMenu[];
   activeFocusListId: string;
@@ -115,6 +127,19 @@ export interface AppState {
   deleteTask: (id: string) => void;
   toggleTaskDone: (id: string, date: string) => void;
   toggleTaskCompletion: (id: string, date: string) => void;
+
+  toggleSalatPrayer: (date: string, prayer: PrayerKey) => void;
+  addStudyModule: (title: string, subject?: string, notes?: string) => void;
+  toggleStudyModule: (id: string) => void;
+  deleteStudyModule: (id: string) => void;
+  addGymLog: (log: Omit<GymWorkoutLog, 'id' | 'createdAt'>) => void;
+  deleteGymLog: (id: string) => void;
+
+  addProgramTrack: (title: string, icon?: string, color?: string) => void;
+  deleteProgramTrack: (trackId: string) => void;
+  addProgramSubTask: (trackId: string, title: string, points?: number) => void;
+  toggleProgramSubTask: (trackId: string, subTaskId: string, dateStr: string) => void;
+  deleteProgramSubTask: (trackId: string, subTaskId: string) => void;
 
   setActiveFocusListId: (id: string) => void;
   addFocusList: (name: string, color?: string) => void;
@@ -188,6 +213,11 @@ export function makeInitialAccount(uid: string, name: string, email?: string): U
     debts: DEFAULT_DEBTS,
     subscriptions: DEFAULT_SUBSCRIPTIONS,
     notes: DEFAULT_NOTES,
+    deletedCategoryIds: [],
+    salatLogs: {},
+    studyModules: DEFAULT_STUDY_MODULES,
+    gymLogs: DEFAULT_GYM_LOGS,
+    programTracks: DEFAULT_PROGRAM_TRACKS,
     createdAt: new Date().toISOString(),
   };
 }
@@ -238,24 +268,28 @@ export function extractAccountState(account: UserAccount | null) {
       debts: DEFAULT_DEBTS,
       subscriptions: DEFAULT_SUBSCRIPTIONS,
       notes: DEFAULT_NOTES,
+      salatLogs: {},
+      studyModules: DEFAULT_STUDY_MODULES,
+      gymLogs: DEFAULT_GYM_LOGS,
+      programTracks: DEFAULT_PROGRAM_TRACKS,
       pinEnabled: false,
       pinCode: null,
       recentNotes: [],
     };
   }
 
-  // Ensure all comprehensive categories ("ga3 categorie") are available to existing accounts
-  const accountCategories = account.categories ?? DEFAULT_CATEGORIES;
-  const existingCatIds = new Set(accountCategories.map((c: Category) => c.id));
-  const missingCats = DEFAULT_CATEGORIES.filter((c: Category) => !existingCatIds.has(c.id));
-  const mergedCategories = missingCats.length > 0 ? [...accountCategories, ...missingCats] : accountCategories;
+  // Safe category hydration that respects deleted categories (Fixes Ghost Deletion Bug)
+  const deletedIds = new Set(account.deletedCategoryIds || []);
+  const accountCategories = (account.categories ?? DEFAULT_CATEGORIES).filter(
+    (c: Category) => !deletedIds.has(c.id)
+  );
 
   return {
     currentAccount: account,
     isOnboarded: Boolean(account.isOnboarded),
     initialBalance: account.initialBalance ?? null,
     initialBalanceLockedAt: account.initialBalanceLockedAt ?? null,
-    categories: mergedCategories,
+    categories: accountCategories,
     incomeSources: account.incomeSources ?? DEFAULT_INCOME_SOURCES,
     transactions: account.transactions ?? [],
     recurringRules: account.recurringRules ?? [],
@@ -265,6 +299,10 @@ export function extractAccountState(account: UserAccount | null) {
     debts: account.debts ?? DEFAULT_DEBTS,
     subscriptions: account.subscriptions ?? DEFAULT_SUBSCRIPTIONS,
     notes: account.notes ?? DEFAULT_NOTES,
+    salatLogs: account.salatLogs ?? {},
+    studyModules: account.studyModules ?? DEFAULT_STUDY_MODULES,
+    gymLogs: account.gymLogs ?? DEFAULT_GYM_LOGS,
+    programTracks: account.programTracks ?? DEFAULT_PROGRAM_TRACKS,
     pinEnabled: Boolean(account.pinEnabled),
     pinCode: account.pinCode ?? null,
     recentNotes: account.recentNotes ?? [],
@@ -866,6 +904,7 @@ export const useAppStore = create<AppState>()(
           updateActive((a) => ({
             ...a,
             categories: a.categories.filter((c: Category) => c.id !== id),
+            deletedCategoryIds: Array.from(new Set([...(a.deletedCategoryIds || []), id])),
           }));
         },
 
@@ -949,6 +988,179 @@ export const useAppStore = create<AppState>()(
         },
         toggleTaskCompletion: (id: string, date: string) => {
           get().toggleTaskDone(id, date);
+        },
+
+        // ── Salat Tracking ───────────────────────────────────────────
+        toggleSalatPrayer: (date: string, prayer: PrayerKey) => {
+          updateActive((a) => {
+            const currentSalat = a.salatLogs ?? {};
+            const dayPrayers = currentSalat[date] ?? [];
+            const isCompleted = dayPrayers.includes(prayer);
+            const updatedPrayers = isCompleted
+              ? dayPrayers.filter((p) => p !== prayer)
+              : [...dayPrayers, prayer];
+            return {
+              ...a,
+              salatLogs: {
+                ...currentSalat,
+                [date]: updatedPrayers,
+              },
+            };
+          });
+        },
+
+        // ── Study Modules ───────────────────────────────────────────
+        addStudyModule: (title: string, subject?: string, notes?: string) => {
+          const trimmed = title.trim();
+          if (!trimmed) return;
+          const newModule: StudyModuleItem = {
+            id: 'mod_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+            title: trimmed,
+            subject: subject?.trim() || undefined,
+            notes: notes?.trim() || undefined,
+            completed: false,
+            createdAt: new Date().toISOString(),
+          };
+          updateActive((a) => ({
+            ...a,
+            studyModules: [newModule, ...(a.studyModules ?? [])],
+          }));
+        },
+        toggleStudyModule: (id: string) => {
+          updateActive((a) => ({
+            ...a,
+            studyModules: (a.studyModules ?? []).map((m: StudyModuleItem) => {
+              if (m.id !== id) return m;
+              const nextCompleted = !m.completed;
+              return {
+                ...m,
+                completed: nextCompleted,
+                completedAt: nextCompleted ? new Date().toISOString() : undefined,
+              };
+            }),
+          }));
+        },
+        deleteStudyModule: (id: string) => {
+          updateActive((a) => ({
+            ...a,
+            studyModules: (a.studyModules ?? []).filter((m: StudyModuleItem) => m.id !== id),
+          }));
+        },
+
+        // ── Gym & Workout Logs ──────────────────────────────────────
+        addGymLog: (log: Omit<GymWorkoutLog, 'id' | 'createdAt'>) => {
+          const newLog: GymWorkoutLog = {
+            ...log,
+            id: 'gym_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+            createdAt: new Date().toISOString(),
+          };
+          updateActive((a) => ({
+            ...a,
+            gymLogs: [newLog, ...(a.gymLogs ?? [])],
+          }));
+        },
+        deleteGymLog: (id: string) => {
+          updateActive((a) => ({
+            ...a,
+            gymLogs: (a.gymLogs ?? []).filter((g: GymWorkoutLog) => g.id !== id),
+          }));
+        },
+
+        // ── Program Tracks & Dynamic Sub-Tasks ──────────────────────
+        addProgramTrack: (title: string, icon = '🎯', color = '#3b82f6') => {
+          updateActive((a) => {
+            const newTrack: ProgramTrack = {
+              id: 'prog_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+              title: title.trim(),
+              icon,
+              color,
+              type: 'custom',
+              subtasks: [],
+              createdAt: new Date().toISOString(),
+            };
+            return {
+              ...a,
+              programTracks: [...(a.programTracks ?? DEFAULT_PROGRAM_TRACKS), newTrack],
+            };
+          });
+        },
+
+        deleteProgramTrack: (trackId: string) => {
+          updateActive((a) => ({
+            ...a,
+            programTracks: (a.programTracks ?? DEFAULT_PROGRAM_TRACKS).filter((t) => t.id !== trackId),
+          }));
+        },
+
+        addProgramSubTask: (trackId: string, title: string, points = 10) => {
+          updateActive((a) => {
+            const currentTracks = a.programTracks ?? DEFAULT_PROGRAM_TRACKS;
+            const newSub: ProgramSubTask = {
+              id: 'sub_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+              title: title.trim(),
+              points,
+              completedDates: [],
+              createdAt: new Date().toISOString(),
+            };
+            return {
+              ...a,
+              programTracks: currentTracks.map((t) => {
+                if (t.id === trackId) {
+                  return {
+                    ...t,
+                    subtasks: [...(t.subtasks ?? []), newSub],
+                  };
+                }
+                return t;
+              }),
+            };
+          });
+        },
+
+        toggleProgramSubTask: (trackId: string, subTaskId: string, dateStr: string) => {
+          updateActive((a) => {
+            const currentTracks = a.programTracks ?? DEFAULT_PROGRAM_TRACKS;
+            return {
+              ...a,
+              programTracks: currentTracks.map((t) => {
+                if (t.id === trackId) {
+                  return {
+                    ...t,
+                    subtasks: (t.subtasks ?? []).map((sub) => {
+                      if (sub.id === subTaskId) {
+                        const dates = sub.completedDates ?? [];
+                        const isCompleted = dates.includes(dateStr);
+                        const updatedDates = isCompleted
+                          ? dates.filter((d) => d !== dateStr)
+                          : [...dates, dateStr];
+                        return { ...sub, completedDates: updatedDates };
+                      }
+                      return sub;
+                    }),
+                  };
+                }
+                return t;
+              }),
+            };
+          });
+        },
+
+        deleteProgramSubTask: (trackId: string, subTaskId: string) => {
+          updateActive((a) => {
+            const currentTracks = a.programTracks ?? DEFAULT_PROGRAM_TRACKS;
+            return {
+              ...a,
+              programTracks: currentTracks.map((t) => {
+                if (t.id === trackId) {
+                  return {
+                    ...t,
+                    subtasks: (t.subtasks ?? []).filter((sub) => sub.id !== subTaskId),
+                  };
+                }
+                return t;
+              }),
+            };
+          });
         },
 
         // ── Focus Tasks & Custom Menus ("قائمتي") ───────────────────

@@ -52,9 +52,22 @@ export const SettingsPage: React.FC = () => {
     resetAllData,
     accounts,
     activeAccountId,
+    firebaseUser,
     hideBalance,
     startTour,
   } = useAppStore();
+
+  const activeAccount =
+    (accounts || []).find((a) => a.id === activeAccountId) ||
+    (accounts || [])[0] ||
+    (firebaseUser
+      ? {
+          id: firebaseUser.uid,
+          name: firebaseUser.displayName || 'Utilisateur',
+          email: firebaseUser.email || '',
+          avatarColor: '#10b981',
+        }
+      : null);
 
   const t = translations[language].settings;
   const tCommon = translations[language].common;
@@ -576,10 +589,10 @@ export const SettingsPage: React.FC = () => {
               </div>
               <div className="min-w-0">
                 <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white block truncate">
-                  {activeAccount?.name}
+                  {activeAccount?.name || firebaseUser?.displayName || 'Flouss Account'}
                 </span>
                 <span className="text-[11px] text-slate-400 block truncate">
-                  {activeAccount?.email || translations[language].userProfileModal.authenticatedUser}
+                  {activeAccount?.email || firebaseUser?.email || translations[language].userProfileModal.authenticatedUser}
                 </span>
               </div>
             </div>

@@ -35,7 +35,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
   const t = translations[language].nav;
   const isAr = language === 'ar';
 
-  const activeAccount = accounts.find((a) => a.id === activeAccountId) || accounts[0];
+  const activeAccount =
+    (accounts || []).find((a) => a.id === activeAccountId) ||
+    (accounts || [])[0] ||
+    (firebaseUser
+      ? {
+          id: firebaseUser.uid,
+          name: firebaseUser.displayName || 'Utilisateur',
+          email: firebaseUser.email || '',
+          avatarColor: '#37352f',
+        }
+      : null);
 
   const financialItems: { id: ScreenId; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
     { id: 'dashboard', label: t.dashboard, icon: LayoutDashboard },

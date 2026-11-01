@@ -1,4 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
 interface ModalProps {
@@ -18,6 +20,13 @@ export const Modal: React.FC<ModalProps> = ({
   children,
   maxWidth = 'md',
 }) => {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Lock body scroll and handle Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
@@ -28,15 +37,23 @@ export const Modal: React.FC<ModalProps> = ({
     if (isOpen) {
       document.body.style.overflow = 'hidden';
       window.addEventListener('keydown', handleKeyDown);
+    } else {
+      const remainingOpen = document.querySelectorAll('[data-flouss-modal="open"]');
+      if (remainingOpen.length <= 1) {
+        document.body.style.overflow = '';
+      }
     }
 
     return () => {
-      document.body.style.overflow = 'unset';
+      const remainingOpen = document.querySelectorAll('[data-flouss-modal="open"]');
+      if (remainingOpen.length <= 1) {
+        document.body.style.overflow = '';
+      }
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!mounted) return null;
 
   const maxWidthStyles = {
     sm: 'max-w-sm',
@@ -45,47 +62,66 @@ export const Modal: React.FC<ModalProps> = ({
     xl: 'max-w-2xl',
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-150">
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-black/40 backdrop-blur-[2px] transition-opacity"
-        onClick={onClose}
-      />
+  return createPortal(
+    <AnimatePresence>
+      {isOpen && (
+        <div
+          data-flouss-modal="open"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 overflow-hidden"
+        >
+          {/* Backdrop with black/60 and backdrop-blur-md */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-md"
+            onClick={onClose}
+          />
 
-      {/* Content Dialog */}
-      <div
-        className={`relative w-full ${maxWidthStyles[maxWidth]} bg-white dark:bg-[#202020] rounded-t-xl sm:rounded-lg shadow-xl border border-[#e3e2de] dark:border-[#2f2f2f] overflow-hidden z-10 max-h-[92vh] flex flex-col transform transition-all duration-150`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        {(title || subtitle) && (
-          <div className="px-5 py-4 flex items-start justify-between border-b border-[#e3e2de] dark:border-[#2f2f2f]">
-            <div>
-              {title && (
-                <h3 className="text-base font-semibold text-[#37352f] dark:text-[#ecebed]">
-                  {title}
-                </h3>
-              )}
-              {subtitle && (
-                <p className="text-xs text-[#787774] dark:text-[#9b9a97] mt-0.5">
-                  {subtitle}
-                </p>
-              )}
+          {/* Modal Panel with Apple Spring Physics */}
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+            className={`relative w-full ${maxWidthStyles[maxWidth]} bg-white/95 dark:bg-zinc-900/95 backdrop-blur-3xl rounded-3xl shadow-[0_24px_70px_rgba(0,0,0,0.35)] border border-black/[0.08] dark:border-white/[0.12] overflow-hidden z-10 max-h-[85vh] sm:max-h-[88vh] flex flex-col`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            {(title || subtitle) && (
+              <div className="px-6 py-4.5 flex items-start justify-between border-b border-black/[0.06] dark:border-white/[0.08] shrink-0">
+                <div>
+                  {title && (
+                    <h3 className="text-base font-bold text-zinc-900 dark:text-white tracking-tight">
+                      {title}
+                    </h3>
+                  )}
+                  {subtitle && (
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                      {subtitle}
+                    </p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="p-1.5 rounded-xl text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                  aria-label="Fermer"
+                >
+                  <X className="w-4 h-4 stroke-[2.2]" />
+                </button>
+              </div>
+            )}
+
+            {/* Body */}
+            <div className="p-5 sm:p-6 overflow-y-auto flex-1 overscroll-contain">
+              {children}
             </div>
-            <button
-              onClick={onClose}
-              className="p-1 rounded text-[#787774] hover:text-[#37352f] dark:text-[#9b9a97] dark:hover:text-[#ecebed] hover:bg-[#f1f0ee] dark:hover:bg-[#2e2e2e] transition-colors"
-              aria-label="Fermer"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        )}
-
-        {/* Body */}
-        <div className="p-5 overflow-y-auto flex-1">{children}</div>
-      </div>
-    </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>,
+    document.body
   );
 };

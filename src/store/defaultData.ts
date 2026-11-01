@@ -1,4 +1,18 @@
-import { Category, IncomeSource, TaskItem, DebtItem, SubscriptionItem, NoteItem, FocusTask, FocusListMenu } from '../types';
+import {
+  Category,
+  IncomeSource,
+  TaskItem,
+  DebtItem,
+  SubscriptionItem,
+  NoteItem,
+  FocusTask,
+  FocusListMenu,
+  StudyModuleItem,
+  GymWorkoutLog,
+  PrayerKey,
+  ProgramTrack,
+  ProgramSubTask,
+} from '../types';
 
 export const DEFAULT_CATEGORIES: Category[] = [
   {
@@ -637,3 +651,88 @@ export const DEFAULT_FOCUS_TASKS: FocusTask[] = [
     createdAt: new Date().toISOString(),
   },
 ];
+
+export const DEFAULT_STUDY_MODULES: StudyModuleItem[] = [
+  {
+    id: 'mod_1',
+    title: 'Architecture logicielle & Design Patterns',
+    subject: 'Informatique',
+    completed: true,
+    notes: 'Révision des patterns Creational et Structural',
+    createdAt: new Date().toISOString(),
+    completedAt: new Date().toISOString(),
+  },
+  {
+    id: 'mod_2',
+    title: 'Bases de données & Cloud Firestore',
+    subject: 'Cloud & Data',
+    completed: false,
+    notes: 'Optimisation des index et queries temps réel',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'mod_3',
+    title: 'Gestion financière & Investissement',
+    subject: 'Finance',
+    completed: false,
+    notes: 'Règles budgétaires 50/30/20 et constitution du patrimoine',
+    createdAt: new Date().toISOString(),
+  },
+];
+
+export const DEFAULT_GYM_LOGS: GymWorkoutLog[] = [];
+
+export const DEFAULT_PROGRAM_TRACKS: ProgramTrack[] = [
+  {
+    id: 'prog_salat',
+    title: 'الصلاة (Salat)',
+    icon: '🕌',
+    color: '#10b981',
+    type: 'salat',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'prog_coding',
+    title: 'Coding (البرمجة)',
+    icon: '💻',
+    color: '#3b82f6',
+    type: 'coding',
+    createdAt: new Date().toISOString(),
+    subtasks: [
+      { id: 'sub_php', title: 'PHP & Backend', points: 10, createdAt: new Date().toISOString(), completedDates: [] },
+      { id: 'sub_html', title: 'HTML & CSS', points: 10, createdAt: new Date().toISOString(), completedDates: [] },
+      { id: 'sub_react', title: 'React & TypeScript', points: 10, createdAt: new Date().toISOString(), completedDates: [] },
+    ],
+  },
+  {
+    id: 'prog_english',
+    title: 'English (الإنجليزية)',
+    icon: '🗣️',
+    color: '#8b5cf6',
+    type: 'english',
+    createdAt: new Date().toISOString(),
+    subtasks: [
+      { id: 'sub_listening', title: 'Listening (Podcast)', points: 10, createdAt: new Date().toISOString(), completedDates: [] },
+      { id: 'sub_reading', title: 'Reading (Articles)', points: 10, createdAt: new Date().toISOString(), completedDates: [] },
+      { id: 'sub_speaking', title: 'Speaking Practice', points: 10, createdAt: new Date().toISOString(), completedDates: [] },
+    ],
+  },
+  {
+    id: 'prog_gym',
+    title: 'الرياضة والجيم (Gym)',
+    icon: '🏋️',
+    color: '#f43f5e',
+    type: 'gym',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'prog_study',
+    title: 'المراجعة والدراسة (Study)',
+    icon: '📚',
+    color: '#6366f1',
+    type: 'study',
+    createdAt: new Date().toISOString(),
+  },
+];
+
+

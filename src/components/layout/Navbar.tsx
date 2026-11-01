@@ -35,6 +35,7 @@ export const Navbar: React.FC = () => {
     logout,
     accounts,
     activeAccountId,
+    firebaseUser,
     addNoteItem,
   } = useAppStore();
 
@@ -42,7 +43,17 @@ export const Navbar: React.FC = () => {
   const tHub = translations[language].priorityHub;
   const isAr = language === 'ar';
 
-  const activeAccount = accounts.find((a) => a.id === activeAccountId) || accounts[0];
+  const activeAccount =
+    (accounts || []).find((a) => a.id === activeAccountId) ||
+    (accounts || [])[0] ||
+    (firebaseUser
+      ? {
+          id: firebaseUser.uid,
+          name: firebaseUser.displayName || 'Utilisateur',
+          email: firebaseUser.email || '',
+          avatarColor: '#2383e2',
+        }
+      : null);
 
   // Mobile drawer and modal states
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);

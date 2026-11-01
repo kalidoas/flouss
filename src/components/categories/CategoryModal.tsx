@@ -201,7 +201,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
         {/* Color Picker */}
         <div>
           <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-            Couleur
+            {tCat.colorLabel || 'Couleur'}
           </label>
           <ColorPicker selectedColor={color} onSelect={setColor} />
         </div>
@@ -209,7 +209,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
         {/* Icon Picker */}
         <div>
           <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-            Icône
+            {tCat.iconLabel || 'Icône'}
           </label>
           <IconPicker selectedIcon={icon} onSelect={setIcon} />
         </div>
@@ -217,7 +217,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
         {/* Sub-categories management */}
         <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800 space-y-2.5">
           <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
-            Sous-catégories
+            {tCat.subcategoriesLabel || 'Sous-catégories'}
           </label>
 
           <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto">
@@ -238,7 +238,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
             ))}
             {subcategories.length === 0 && (
               <span className="text-xs text-slate-400 italic">
-                Aucune sous-catégorie définie
+                {tCat.noSubcategoriesDefined || 'Aucune sous-catégorie définie'}
               </span>
             )}
           </div>
@@ -246,7 +246,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
           <div className="flex gap-2 pt-1">
             <input
               type="text"
-              placeholder="Ajouter une sous-catégorie..."
+              placeholder={tCat.newSubcatPlaceholder || 'Ajouter une sous-catégorie...'}
               value={newSubcatName}
               onChange={(e) => setNewSubcatName(e.target.value)}
               onKeyDown={(e) => {
@@ -264,7 +264,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
               onClick={handleAddSubcat}
               icon={<Plus className="w-3.5 h-3.5" />}
             >
-              Ajouter
+              {tCat.addSubcategory || 'Ajouter'}
             </Button>
           </div>
         </div>
@@ -272,16 +272,16 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
         {/* Optional Monthly Budget */}
         <div>
           <Input
-            label="Plafond de budget mensuel (optionnel)"
+            label={tCat.monthlyBudgetCap || 'Plafond de budget mensuel (optionnel)'}
             type="text"
             inputMode="decimal"
-            placeholder="ex: 2 500 (laisser vide si illimité)"
+            placeholder={tCat.monthlyBudgetPlaceholder || 'ex: 2 500 (laisser vide si illimité)'}
             suffix="MAD / mois"
             value={monthlyBudgetStr}
             onChange={(e) => setMonthlyBudgetStr(e.target.value)}
           />
           <p className="text-[11px] text-slate-400 mt-1">
-            Une alerte s’affichera à 80% et 100% de ce montant dépensé dans le mois.
+            {tCat.monthlyBudgetHint || 'Une alerte s’affichera à 80% et 100% de ce montant dépensé dans le mois.'}
           </p>
         </div>
 
@@ -294,10 +294,10 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
               </div>
               <div>
                 <p className="text-xs font-bold text-slate-900 dark:text-white">
-                  Définir un objectif d’épargne ?
+                  {tCat.setGoalPrompt || 'Définir un objectif d’épargne ?'}
                 </p>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Calcul automatique de la mensualité requise
+                  {tCat.setGoalPromptHint || 'Calcul automatique de la mensualité requise'}
                 </p>
               </div>
             </div>
@@ -321,14 +321,16 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
             {subcategories.length > 0 && (
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                  Associer l’objectif à une sous-catégorie
+                  {tCat.attachToSubcat || 'Associer l’objectif à une sous-catégorie'}
                 </label>
                 <select
                   value={selectedSubCategoryId || ''}
                   onChange={(e) => setSelectedSubCategoryId(e.target.value || null)}
                   className="w-full py-2 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-800 dark:text-slate-200"
                 >
-                  <option value="">Catégorie globale ({name || 'Sans nom'})</option>
+                  <option value="">
+                    {(tCat.globalCategoryOption || 'Catégorie globale ({name})').replace('{name}', name || '...')}
+                  </option>
                   {subcategories.map((sub) => (
                     <option key={sub.id} value={sub.id}>
                       {getSubCategoryName(sub, language)}
@@ -340,7 +342,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
 
             {/* Target Amount */}
             <Input
-              label="Montant cible (MAD)"
+              label={tCat.targetAmountLabel || 'Montant cible (MAD)'}
               type="text"
               inputMode="decimal"
               placeholder="ex: 8000"
@@ -352,7 +354,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
             {/* Target Duration Mode Selector */}
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
-                Échéance de l’objectif
+                {tCat.targetDeadlineLabel || 'Échéance de l’objectif'}
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <button
@@ -364,7 +366,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
                       : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'
                   }`}
                 >
-                  Durée en mois
+                  {tCat.durationMonths || 'Durée en mois'}
                 </button>
                 <button
                   type="button"
@@ -375,14 +377,14 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
                       : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'
                   }`}
                 >
-                  Date cible exacte
+                  {tCat.targetDateExact || 'Date cible exacte'}
                 </button>
               </div>
             </div>
 
             {durationMode === 'months' ? (
               <Input
-                label="Nombre de mois pour atteindre la cible"
+                label={tCat.monthsNumberLabel || 'Nombre de mois pour atteindre la cible'}
                 type="number"
                 min="1"
                 max="120"
@@ -392,7 +394,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
               />
             ) : (
               <Input
-                label="Date cible"
+                label={tCat.targetDateLabel || 'Date cible'}
                 type="date"
                 value={targetDate}
                 onChange={(e) => setTargetDate(e.target.value)}
@@ -404,15 +406,11 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
               <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-emerald-300 dark:border-emerald-800/60 flex items-start gap-3">
                 <Calculator className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
                 <div className="text-xs">
-                  <span className="text-slate-500 dark:text-slate-400 block font-medium">
-                    Calcul automatique :
-                  </span>
                   <span className="font-bold text-slate-800 dark:text-slate-100">
-                    Pour atteindre cet objectif, vous devez mettre de côté{' '}
-                    <strong className="text-emerald-600 dark:text-emerald-400 tabular-nums text-sm">
-                      {formatMAD(previewMonthly, false, language)}
-                    </strong>{' '}
-                    par mois.
+                    {(tCat.autoCalcAdvice || 'Pour atteindre cet objectif, vous devez mettre de côté {amount} par mois.').replace(
+                      '{amount}',
+                      formatMAD(previewMonthly, false, language)
+                    )}
                   </span>
                 </div>
               </div>

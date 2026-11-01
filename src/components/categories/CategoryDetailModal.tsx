@@ -48,6 +48,9 @@ export const CategoryDetailModal: React.FC<CategoryDetailModalProps> = ({
     transactions,
     updateCategory,
     deleteCategory,
+    updateTransaction,
+    deleteTransaction,
+    addTransaction,
     hideBalance,
     language,
   } = useAppStore();
@@ -84,6 +87,34 @@ export const CategoryDetailModal: React.FC<CategoryDetailModalProps> = ({
   const subcategories = category.subcategories || [];
 
   const handleDeleteConfirm = () => {
+    // 1. Handle transactions
+    if (categoryTransactions.length > 0) {
+      if (txActionChoice === 'reassign' && reassignTargetId) {
+        categoryTransactions.forEach((tx) => {
+          updateTransaction(tx.id, { categoryId: reassignTargetId });
+        });
+      } else if (txActionChoice === 'cascade_delete') {
+        categoryTransactions.forEach((tx) => {
+          deleteTransaction(tx.id);
+        });
+      }
+    }
+
+    // 2. Handle saved money refund if chosen
+    if (savedAmount > 0 && deleteRefundChoice === 'refund_to_balance') {
+      addTransaction({
+        id: 'tx_refund_' + Date.now(),
+        type: 'income',
+        amount: savedAmount,
+        categoryId: otherCategories[0]?.id || 'cat_autre',
+        date: new Date().toISOString().split('T')[0],
+        time: new Date().toTimeString().slice(0, 5),
+        note: language === 'ar' ? `استرداد مدخرات فئة: ${categoryName}` : `Remboursement épargne : ${categoryName}`,
+        createdAt: new Date().toISOString(),
+      });
+    }
+
+    // 3. Delete category from store (permanently tombstoned in deletedCategoryIds)
     deleteCategory(category.id);
     setShowDeletePrompt(false);
     onClose();
@@ -121,7 +152,7 @@ export const CategoryDetailModal: React.FC<CategoryDetailModalProps> = ({
                   </span>
                   {category.isArchived && (
                     <span className="text-[10px] bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold px-2 py-0.5 rounded-full">
-                      Archivée
+                      {tCat.archivedBadge || 'Archivée'}
                     </span>
                   )}
                 </div>
@@ -167,7 +198,7 @@ export const CategoryDetailModal: React.FC<CategoryDetailModalProps> = ({
             <div className="p-4 rounded-3xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-800 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                  Progression de l’objectif
+                  {tCat.goalProgress || 'Progression de l’objectif'}
                 </span>
                 <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 tabular-nums">
                   {goalCalc.progressPercent}%
@@ -185,7 +216,7 @@ export const CategoryDetailModal: React.FC<CategoryDetailModalProps> = ({
           {subcategories.length > 0 && (
             <div className="p-4 rounded-3xl bg-slate-50/70 dark:bg-slate-800/30 border border-slate-100 dark:border-slate-800 space-y-2.5">
               <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
-                {language === 'ar' ? `الأقسام الفرعية (${subcategories.length})` : `Sous-catégories (${subcategories.length})`}
+                {(tCat.subcategoriesTitle || 'Sous-catégories ({count})').replace('{count}', String(subcategories.length))}
               </span>
               <div className="flex flex-wrap gap-2">
                 {subcategories.map((sub) => {
@@ -234,7 +265,7 @@ export const CategoryDetailModal: React.FC<CategoryDetailModalProps> = ({
 
             <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
               <span className="text-[11px] text-slate-400 block font-medium">
-                Dépensé au total
+                {tCat.totalSpent || 'Dépensé au total'}
               </span>
               <span className="text-base font-bold text-slate-900 dark:text-white tabular-nums mt-0.5 block">
                 {formatMAD(spentAllTime, hideBalance, language)}
@@ -279,7 +310,7 @@ export const CategoryDetailModal: React.FC<CategoryDetailModalProps> = ({
 
             {categoryTransactions.length === 0 ? (
               <div className="p-8 text-center text-xs text-slate-400 bg-slate-50 dark:bg-slate-800/40 rounded-2xl">
-                Aucune transaction enregistrée dans cette catégorie.
+                {tCat.noTransactions || 'Aucune transaction enregistrée dans cette catégorie.'}
               </div>
             ) : (
               <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
@@ -300,7 +331,7 @@ export const CategoryDetailModal: React.FC<CategoryDetailModalProps> = ({
       <Modal
         isOpen={showDeletePrompt}
         onClose={() => setShowDeletePrompt(false)}
-        title="Supprimer la catégorie"
+        title={tCat.deleteCategoryTitle || 'Supprimer la catégorie'}
         maxWidth="md"
       >
         <div className="space-y-4">
@@ -309,18 +340,14 @@ export const CategoryDetailModal: React.FC<CategoryDetailModalProps> = ({
           </div>
 
           <p className="text-xs text-slate-600 dark:text-slate-300 text-center leading-relaxed">
-            Êtes-vous sûr de vouloir supprimer définitivement la catégorie{' '}
-            <strong className="text-slate-900 dark:text-white font-bold">
-              {categoryName}
-            </strong>{' '}
-            ?
+            {(tCat.deleteConfirmQuestion || 'Êtes-vous sûr de vouloir supprimer définitivement la catégorie {name} ?').replace('{name}', categoryName)}
           </p>
 
           {/* Option for existing transactions: reassign vs cascade delete */}
           {categoryTransactions.length > 0 && (
             <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl space-y-3">
               <p className="text-xs font-bold text-slate-900 dark:text-white">
-                Cette catégorie contient {categoryTransactions.length} transaction(s). Que souhaitez-vous faire ?
+                {(tCat.txNotice || 'Cette catégorie contient {count} transaction(s). Que souhaitez-vous faire ?').replace('{count}', String(categoryTransactions.length))}
               </p>
 
               <div className="space-y-2 text-xs">
@@ -336,7 +363,7 @@ export const CategoryDetailModal: React.FC<CategoryDetailModalProps> = ({
                     />
                     <div className="flex-1 space-y-2">
                       <span className="font-bold text-slate-800 dark:text-slate-200">
-                        Réassigner à une autre catégorie
+                        {tCat.txReassign || 'Réassigner à une autre catégorie'}
                       </span>
                       {txActionChoice === 'reassign' && (
                         <select
@@ -366,10 +393,10 @@ export const CategoryDetailModal: React.FC<CategoryDetailModalProps> = ({
                   />
                   <div>
                     <span className="font-bold text-rose-700 dark:text-rose-400">
-                      Supprimer avec ses transactions
+                      {tCat.txCascadeDelete || 'Supprimer avec ses transactions'}
                     </span>
                     <span className="block text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                      Les {categoryTransactions.length} transactions seront définitivement supprimées et le solde recalculé.
+                      {(tCat.txCascadeDeleteDesc || 'Les {count} transactions seront définitivement supprimées et le solde recalculé.').replace('{count}', String(categoryTransactions.length))}
                     </span>
                   </div>
                 </label>
@@ -381,7 +408,7 @@ export const CategoryDetailModal: React.FC<CategoryDetailModalProps> = ({
           {savedAmount > 0 && (
             <div className="p-4 bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800 rounded-2xl space-y-3">
               <p className="text-xs font-bold text-amber-900 dark:text-amber-200">
-                Cette catégorie contient {formatMAD(savedAmount, false, language)} épargnés. Que faire de cet argent ?
+                {(tCat.savedPrompt || 'Cette catégorie contient {amount} épargnés. Que faire de cet argent ?').replace('{amount}', formatMAD(savedAmount, false, language))}
               </p>
 
               <div className="space-y-2 text-xs">
@@ -396,10 +423,10 @@ export const CategoryDetailModal: React.FC<CategoryDetailModalProps> = ({
                   />
                   <div>
                     <span className="font-bold text-slate-800 dark:text-slate-200">
-                      Remettre dans le solde disponible
+                      {tCat.refundToBalance || 'Remettre dans le solde disponible'}
                     </span>
                     <span className="block text-[11px] text-slate-500 dark:text-slate-400">
-                      Le montant sera réinjecté dans votre solde principal.
+                      {tCat.refundToBalanceDesc || 'Le montant sera réinjecté dans votre solde principal.'}
                     </span>
                   </div>
                 </label>
@@ -415,10 +442,10 @@ export const CategoryDetailModal: React.FC<CategoryDetailModalProps> = ({
                   />
                   <div>
                     <span className="font-bold text-slate-800 dark:text-slate-200">
-                      Considérer comme déjà dépensé
+                      {tCat.keepAsSpent || 'Considérer comme déjà dépensé'}
                     </span>
                     <span className="block text-[11px] text-slate-500 dark:text-slate-400">
-                      L’argent reste comptabilisé comme sortie.
+                      {tCat.keepAsSpentDesc || 'L’argent reste comptabilisé comme sortie.'}
                     </span>
                   </div>
                 </label>

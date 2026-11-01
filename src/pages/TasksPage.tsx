@@ -1,12 +1,13 @@
 import React, { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '../store/useAppStore';
-import { TaskItem, TaskCategory, TaskFrequency } from '../types';
+import { TaskItem, TaskCategory, TaskFrequency, PrayerKey, StudyModuleItem, GymWorkoutLog, ProgramTrack } from '../types';
 import { Modal } from '../components/common/Modal';
 import { Button } from '../components/common/Button';
 import { EmptyState } from '../components/common/EmptyState';
 import { translations } from '../i18n/translations';
 import confetti from 'canvas-confetti';
+import { createGoogleCalendarEvent } from '../services/googleCalendar';
 import {
   CheckCircle2,
   Circle,
@@ -23,6 +24,21 @@ import {
   TrendingUp,
   Award,
   Zap,
+  Moon,
+  Sunrise,
+  Sun,
+  Sunset,
+  MoonStar,
+  BookOpen,
+  Dumbbell,
+  Trophy,
+  Check,
+  X,
+  LayoutGrid,
+  Target,
+  Clock,
+  Bell,
+  Loader2,
 } from 'lucide-react';
 
 const CATEGORY_CONFIG: Record<
@@ -136,21 +152,66 @@ function formatISODate(date: Date): string {
 }
 
 export const TasksPage: React.FC = () => {
-  const { tasks, addTask, updateTask, deleteTask, toggleTaskCompletion, language } = useAppStore();
+  const {
+    tasks,
+    addTask,
+    updateTask,
+    deleteTask,
+    toggleTaskCompletion,
+    language,
+    salatLogs,
+    toggleSalatPrayer,
+    studyModules,
+    addStudyModule,
+    toggleStudyModule,
+    deleteStudyModule,
+    gymLogs,
+    addGymLog,
+    deleteGymLog,
+    programTracks,
+    addProgramTrack,
+    deleteProgramTrack,
+    addProgramSubTask,
+    toggleProgramSubTask,
+    deleteProgramSubTask,
+    showToast,
+  } = useAppStore();
   const tTask = translations[language].tasks;
+  const tCommon = translations[language].common;
 
   const todayStr = useMemo(() => formatISODate(new Date()), []);
   const [selectedDate, setSelectedDate] = useState<string>(todayStr);
   const [activeTab, setActiveTab] = useState<'daily' | 'month' | 'stats'>('daily');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
-  // Modal State
+  // Drill-down Modal State for Program Tracks
+  const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
+  const [isAddTrackModalOpen, setIsAddTrackModalOpen] = useState(false);
+  const [newTrackTitle, setNewTrackTitle] = useState('');
+  const [newTrackIcon, setNewTrackIcon] = useState('🎯');
+  const [newTrackColor, setNewTrackColor] = useState('#3b82f6');
+  const [newSubTaskInput, setNewSubTaskInput] = useState('');
+
+  // Routine Task Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<TaskItem | null>(null);
   const [taskTitle, setTaskTitle] = useState('');
   const [taskCategory, setTaskCategory] = useState<TaskCategory>('routine');
   const [taskFrequency, setTaskFrequency] = useState<TaskFrequency>('daily');
   const [taskNotes, setTaskNotes] = useState('');
+  const [taskScheduledDate, setTaskScheduledDate] = useState<string>(todayStr);
+  const [taskScheduledTime, setTaskScheduledTime] = useState<string>('10:00');
+  const [syncToCalendar, setSyncToCalendar] = useState<boolean>(false);
+  const [isCalendarSaving, setIsCalendarSaving] = useState<boolean>(false);
+
+  // ── Study Module Input State ──
+  const [moduleTitle, setModuleTitle] = useState('');
+  const [moduleSubject, setModuleSubject] = useState('');
+
+  // ── Gym Workout Input State ──
+  const [gymMuscles, setGymMuscles] = useState('');
+  const [gymExercises, setGymExercises] = useState('');
+  const [gymTomorrowPlan, setGymTomorrowPlan] = useState('');
 
   // Generate 7 days around selected date for quick navigation strip
   const dateStrip = useMemo(() => {
@@ -257,6 +318,108 @@ export const TasksPage: React.FC = () => {
     return { totalCompleted, totalPossible, rate };
   }, [tasks, currentMonthStr, monthDaysCount]);
 
+  // ── Salat Prayers for Selected Date ──
+  const selectedDatePrayers = useMemo(() => {
+    return (salatLogs ?? {})[selectedDate] ?? [];
+  }, [salatLogs, selectedDate]);
+
+  const allPrayersCompletedToday = selectedDatePrayers.length === 5;
+
+  // ── Gamification / Level System Calculation ──
+  // Salat prayer = 50 XP (highest points)
+  // Subtasks (Coding, English, Custom) = 10 XP dynamic points
+  // Gym workout = 40 XP
+  // Study module = 30 XP
+  // Routine task completion = 15 XP
+  const gamificationStats = useMemo(() => {
+    let totalSalatCount = 0;
+    Object.values(salatLogs ?? {}).forEach((prayers) => {
+      totalSalatCount += (prayers || []).length;
+    });
+
+    let totalSubTasksXP = 0;
+    (programTracks ?? []).forEach((track) => {
+      (track.subtasks ?? []).forEach((sub) => {
+        const count = (sub.completedDates ?? []).length;
+        totalSubTasksXP += count * (sub.points || 10);
+      });
+    });
+
+    const totalGymCount = (gymLogs ?? []).length;
+    const totalStudyCount = (studyModules ?? []).filter((m) => m.completed).length;
+
+    let totalTasksCount = 0;
+    (tasks ?? []).forEach((t) => {
+      totalTasksCount += (t.completedDates || []).length;
+    });
+
+    const totalXP =
+      totalSalatCount * 50 +
+      totalSubTasksXP +
+      totalGymCount * 40 +
+      totalStudyCount * 30 +
+      totalTasksCount * 15;
+
+    const level = Math.floor(totalXP / 200) + 1;
+    const xpInLevel = totalXP % 200;
+    const progressPercent = Math.min(100, Math.round((xpInLevel / 200) * 100));
+
+    return {
+      totalXP,
+      level,
+      xpInLevel,
+      xpToNextLevel: 200 - xpInLevel,
+      progressPercent,
+      totalSalatCount,
+      totalSubTasksXP,
+      totalGymCount,
+      totalStudyCount,
+    };
+  }, [salatLogs, programTracks, gymLogs, studyModules, tasks]);
+
+  const activeTrack = useMemo(() => {
+    return (programTracks || []).find((t) => t.id === selectedTrackId) || null;
+  }, [programTracks, selectedTrackId]);
+
+  const handleToggleSalat = (prayer: PrayerKey) => {
+    toggleSalatPrayer(selectedDate, prayer);
+    const wasCompleted = selectedDatePrayers.includes(prayer);
+    if (!wasCompleted && selectedDatePrayers.length === 4) {
+      confetti({
+        particleCount: 80,
+        spread: 70,
+        origin: { y: 0.6 },
+      });
+    }
+  };
+
+  const handleAddModule = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!moduleTitle.trim()) return;
+    addStudyModule(moduleTitle.trim(), moduleSubject.trim() || undefined);
+    setModuleTitle('');
+    setModuleSubject('');
+  };
+
+  const handleAddGym = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!gymMuscles.trim()) return;
+    addGymLog({
+      date: selectedDate,
+      muscleGroups: gymMuscles.trim(),
+      exercises: gymExercises.trim() || undefined,
+      tomorrowPlan: gymTomorrowPlan.trim() || undefined,
+    });
+    setGymMuscles('');
+    setGymExercises('');
+    setGymTomorrowPlan('');
+    confetti({
+      particleCount: 50,
+      spread: 60,
+      origin: { y: 0.7 },
+    });
+  };
+
   const handleToggle = (taskId: string) => {
     toggleTaskCompletion(taskId, selectedDate);
     const task = tasks.find((t) => t.id === taskId);
@@ -278,6 +441,10 @@ export const TasksPage: React.FC = () => {
     setTaskCategory('routine');
     setTaskFrequency('daily');
     setTaskNotes('');
+    setTaskScheduledDate(selectedDate || todayStr);
+    setTaskScheduledTime('10:00');
+    setSyncToCalendar(false);
+    setIsCalendarSaving(false);
     setIsModalOpen(true);
   };
 
@@ -287,12 +454,81 @@ export const TasksPage: React.FC = () => {
     setTaskCategory(task.category);
     setTaskFrequency(task.frequency);
     setTaskNotes(task.notes || '');
+    setTaskScheduledDate(task.scheduledDate || selectedDate || todayStr);
+    setTaskScheduledTime(task.scheduledTime || '10:00');
+    setSyncToCalendar(Boolean(task.addToGoogleCalendar || task.googleCalendarEventId));
+    setIsCalendarSaving(false);
     setIsModalOpen(true);
   };
 
-  const handleSaveTask = (e: React.FormEvent) => {
+  const handleAddSubTask = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newSubTaskInput.trim() || !selectedTrackId) return;
+    addProgramSubTask(selectedTrackId, newSubTaskInput.trim(), 10);
+    setNewSubTaskInput('');
+  };
+
+  const handleCreateProgramTrack = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTrackTitle.trim()) return;
+    addProgramTrack(newTrackTitle.trim(), newTrackIcon, newTrackColor);
+    setNewTrackTitle('');
+    setIsAddTrackModalOpen(false);
+  };
+
+  const handleToggleSubTask = (trackId: string, subId: string) => {
+    toggleProgramSubTask(trackId, subId, selectedDate);
+    const track = (programTracks || []).find((t) => t.id === trackId);
+    const sub = (track?.subtasks || []).find((s) => s.id === subId);
+    const wasCompleted = (sub?.completedDates || []).includes(selectedDate);
+    if (!wasCompleted) {
+      confetti({
+        particleCount: 40,
+        spread: 50,
+        origin: { y: 0.7 },
+      });
+    }
+  };
+
+  const handleSaveTask = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!taskTitle.trim()) return;
+
+    let calendarEventId: string | undefined = editingTask?.googleCalendarEventId;
+
+    if (syncToCalendar) {
+      setIsCalendarSaving(true);
+      try {
+        const calRes = await createGoogleCalendarEvent({
+          title: taskTitle.trim(),
+          description: taskNotes.trim() || undefined,
+          scheduledDate: taskScheduledDate || selectedDate || todayStr,
+          scheduledTime: taskScheduledTime || '10:00',
+          durationMinutes: 30,
+        });
+
+        if (calRes.success && calRes.eventId) {
+          calendarEventId = calRes.eventId;
+          showToast({
+            message: tTask.googleCalendarSynced,
+          });
+        } else if (calRes.error) {
+          showToast({
+            message: `${tTask.googleCalendarFailed}: ${calRes.error}`,
+          });
+        }
+      } catch (err: any) {
+        showToast({
+          message: `${tTask.googleCalendarFailed}: ${err?.message || ''}`,
+        });
+      } finally {
+        setIsCalendarSaving(false);
+      }
+    }
+
+    const scheduledDateTime = taskScheduledDate && taskScheduledTime
+      ? `${taskScheduledDate}T${taskScheduledTime}`
+      : undefined;
 
     if (editingTask) {
       updateTask(editingTask.id, {
@@ -300,6 +536,11 @@ export const TasksPage: React.FC = () => {
         category: taskCategory,
         frequency: taskFrequency,
         notes: taskNotes.trim() || undefined,
+        scheduledDate: taskScheduledDate,
+        scheduledTime: taskScheduledTime,
+        scheduledDateTime,
+        addToGoogleCalendar: syncToCalendar,
+        googleCalendarEventId: calendarEventId,
       });
     } else {
       addTask({
@@ -308,6 +549,11 @@ export const TasksPage: React.FC = () => {
         category: taskCategory,
         frequency: taskFrequency,
         notes: taskNotes.trim() || undefined,
+        scheduledDate: taskScheduledDate,
+        scheduledTime: taskScheduledTime,
+        scheduledDateTime,
+        addToGoogleCalendar: syncToCalendar,
+        googleCalendarEventId: calendarEventId,
         completedDates: [],
         createdAt: new Date().toISOString(),
       });
@@ -333,13 +579,23 @@ export const TasksPage: React.FC = () => {
           </p>
         </div>
 
-        <Button
-          onClick={handleOpenAdd}
-          variant="primary"
-          icon={<Plus className="w-4 h-4 stroke-[2.5]" />}
-        >
-          <span>{tTask.newTask}</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={() => setIsAddTrackModalOpen(true)}
+            variant="primary"
+            icon={<Plus className="w-4 h-4 stroke-[2.5]" />}
+          >
+            <span>{tTask.addProgram || 'Nouveau programme'}</span>
+          </Button>
+
+          <Button
+            onClick={handleOpenAdd}
+            variant="secondary"
+            icon={<ListTodo className="w-4 h-4 stroke-[2]" />}
+          >
+            <span>{tTask.newTask}</span>
+          </Button>
+        </div>
       </div>
 
       {/* Hero Progress Card: Apple HIG Surface */}
@@ -378,30 +634,55 @@ export const TasksPage: React.FC = () => {
           </div>
 
           {/* Quick Stats Badges */}
-          <div className="flex items-center gap-3">
-            <div className="bg-zinc-50 dark:bg-zinc-800/50 border border-black/[0.04] dark:border-white/[0.06] rounded-2xl px-4 py-3 flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center justify-center font-bold">
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Gamification Level Badge */}
+            <div className="bg-gradient-to-r from-amber-500/15 via-indigo-500/10 to-emerald-500/15 border border-amber-500/25 rounded-2xl px-3.5 py-2.5 flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center font-black shadow-xs shrink-0">
+                <Trophy className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block font-bold">
+                    {tTask.levelTitle || 'Niveau & Points XP'}
+                  </span>
+                  <span className="text-[10px] font-black px-1.5 py-0.2 rounded-md bg-amber-500/20 text-amber-700 dark:text-amber-300">
+                    Lvl {gamificationStats.level}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className="text-xs font-black text-zinc-900 dark:text-white tabular-nums">
+                    {gamificationStats.totalXP} {tTask.xpPoints}
+                  </span>
+                  <span className="text-[10px] text-zinc-400 tabular-nums">
+                    ({gamificationStats.progressPercent}% {tTask.xpNextLevel})
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-zinc-50 dark:bg-zinc-800/50 border border-black/[0.04] dark:border-white/[0.06] rounded-2xl px-3.5 py-2.5 flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center justify-center font-bold shrink-0">
                 <Flame className="w-4 h-4 fill-amber-500 text-amber-500" />
               </div>
               <div>
                 <span className="text-[10px] text-zinc-400 uppercase tracking-wider block font-medium">
                   {tTask.streak}
                 </span>
-                <span className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-white tabular-nums">
-                  {overallStreak} j 🔥
+                <span className="text-xs font-bold text-zinc-900 dark:text-white tabular-nums">
+                  {overallStreak} {tTask.streakDays || 'j 🔥'}
                 </span>
               </div>
             </div>
 
-            <div className="bg-zinc-50 dark:bg-zinc-800/50 border border-black/[0.04] dark:border-white/[0.06] rounded-2xl px-4 py-3 flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center justify-center font-bold">
+            <div className="bg-zinc-50 dark:bg-zinc-800/50 border border-black/[0.04] dark:border-white/[0.06] rounded-2xl px-3.5 py-2.5 flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center justify-center font-bold shrink-0">
                 <TrendingUp className="w-4 h-4" />
               </div>
               <div>
                 <span className="text-[10px] text-zinc-400 uppercase tracking-wider block font-medium">
                   {tTask.monthAverage}
                 </span>
-                <span className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-white tabular-nums">
+                <span className="text-xs font-bold text-zinc-900 dark:text-white tabular-nums">
                   {monthStats.rate}%
                 </span>
               </div>
@@ -419,7 +700,7 @@ export const TasksPage: React.FC = () => {
             setSelectedDate(formatISODate(d));
           }}
           className="p-2 rounded-xl text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-          title="Previous day"
+          title={language === 'ar' ? 'اليوم السابق' : language === 'en' ? 'Previous day' : 'Jour précédent'}
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
@@ -460,7 +741,7 @@ export const TasksPage: React.FC = () => {
             setSelectedDate(formatISODate(d));
           }}
           className="p-2 rounded-xl text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-          title="Next day"
+          title={language === 'ar' ? 'اليوم التالي' : language === 'en' ? 'Next day' : 'Jour suivant'}
         >
           <ChevronRight className="w-5 h-5" />
         </button>
@@ -544,109 +825,299 @@ export const TasksPage: React.FC = () => {
 
       {/* VIEW 1: DAILY TASKS (CHECK OFF VIEW) */}
       {activeTab === 'daily' && (
-        <div className="space-y-3">
-          {filteredTasks.length === 0 ? (
-            <EmptyState
-              icon={<ListTodo className="w-5 h-5" />}
-              title={tTask.noTasksToday}
-              description={tTask.subtitle}
-              action={
-                <Button onClick={handleOpenAdd} variant="primary" size="sm">
-                  <Plus className="w-4 h-4 mr-1.5" />
-                  <span>{tTask.addTask}</span>
-                </Button>
-              }
-            />
-          ) : (
-            filteredTasks.map((task) => {
-              const isCompleted = (task.completedDates || []).includes(selectedDate);
-              const streak = calculateStreak(task);
-              const conf = CATEGORY_CONFIG[task.category] || CATEGORY_CONFIG.other;
+        <div className="space-y-8">
+          {/* 1. BENTO GRID OF PROGRAM TRACKS */}
+          <div className="space-y-3.5">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
+                  <LayoutGrid className="w-5 h-5 text-blue-600" />
+                  <span>{tTask.title}</span>
+                </h2>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  {language === 'ar'
+                    ? 'اضغط على أي بطاقة لفتح التفاصيل وإضافة المهام الفرعية مباشرة'
+                    : language === 'en'
+                    ? 'Click any card to open detail view & add sub-tasks inline'
+                    : 'Cliquez sur une carte pour ouvrir le suivi détaillé et ajouter des sous-tâches'}
+                </p>
+              </div>
 
-              return (
-                <motion.div
-                  key={task.id}
-                  whileHover={{ y: -1 }}
-                  className={`group flex items-center justify-between p-4 rounded-2xl border transition-all duration-200 ${
-                    isCompleted
-                      ? 'bg-emerald-500/10 dark:bg-emerald-950/20 border-emerald-500/20 shadow-xs'
-                      : 'bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl border-black/[0.06] dark:border-white/[0.08] shadow-xs hover:border-black/[0.12] dark:hover:border-white/[0.14]'
-                  }`}
-                >
-                  <div className="flex items-center gap-3.5 min-w-0">
-                    {/* The Check Button */}
-                    <button
-                      onClick={() => handleToggle(task.id)}
-                      className={`w-9 h-9 rounded-xl flex items-center justify-center transition-transform active:scale-90 shrink-0 ${
-                        isCompleted
-                          ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
-                          : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 hover:text-zinc-600 hover:bg-zinc-200 dark:hover:bg-zinc-700'
-                      }`}
-                      aria-label="Toggle task"
-                    >
-                      {isCompleted ? (
-                        <CheckCircle2 className="w-6 h-6 stroke-[2.5]" />
-                      ) : (
-                        <Circle className="w-6 h-6 stroke-[1.8]" />
-                      )}
-                    </button>
+              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                {(programTracks ?? []).length} {language === 'ar' ? 'برامج' : 'programmes'}
+              </span>
+            </div>
 
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`font-semibold text-sm tracking-tight truncate ${
-                            isCompleted
-                              ? 'line-through text-zinc-400 dark:text-zinc-500'
-                              : 'text-zinc-900 dark:text-white'
-                          }`}
-                        >
-                          {task.title}
-                        </span>
+            {/* Apple Bento Grid Container */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {(programTracks ?? []).map((track) => {
+                const isSalat = track.type === 'salat';
+                const isGym = track.type === 'gym';
+                const isStudy = track.type === 'study';
+
+                // Salat calculation
+                const salatDone = selectedDatePrayers.length;
+                const salatPercent = Math.round((salatDone / 5) * 100);
+
+                // Subtasks calculation
+                const subtasks = track.subtasks ?? [];
+                const subtasksDone = subtasks.filter((s) => (s.completedDates ?? []).includes(selectedDate)).length;
+                const subtasksPercent = subtasks.length > 0 ? Math.round((subtasksDone / subtasks.length) * 100) : 0;
+
+                // Gym calculation
+                const gymToday = (gymLogs ?? []).find((g) => g.date === selectedDate);
+
+                // Study calculation
+                const studyDone = (studyModules ?? []).filter((m) => m.completed).length;
+                const studyTotal = (studyModules ?? []).length;
+                const studyPercent = studyTotal > 0 ? Math.round((studyDone / studyTotal) * 100) : 0;
+
+                return (
+                  <motion.div
+                    key={track.id}
+                    onClick={() => setSelectedTrackId(track.id)}
+                    whileHover={{ y: -3, transition: { type: 'spring', stiffness: 350, damping: 25 } }}
+                    whileTap={{ scale: 0.98 }}
+                    className="group relative cursor-pointer rounded-3xl p-5 bg-white/80 dark:bg-zinc-900/65 backdrop-blur-2xl border border-black/[0.06] dark:border-white/[0.08] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:shadow-[0_8px_30px_0_rgba(0,0,0,0.3)] hover:border-black/[0.14] dark:hover:border-white/[0.18] transition-all flex flex-col justify-between min-h-[175px]"
+                  >
+                    {/* Top Row: Prominent Frosted Icon & XP Badge */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div
+                        className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-xs transition-transform group-hover:scale-105 shrink-0"
+                        style={{
+                          backgroundColor: `${track.color || '#3b82f6'}18`,
+                          border: `1px solid ${track.color || '#3b82f6'}30`,
+                        }}
+                      >
+                        {track.icon || '🎯'}
                       </div>
 
-                      <div className="flex items-center gap-2 mt-1">
-                        <span
-                          className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${conf.bg} ${conf.color} ${conf.border}`}
-                        >
-                          <span>{conf.icon}</span>
-                          <span>{conf[language] || conf.fr}</span>
-                        </span>
-
-                        <span className="text-[11px] text-zinc-400">
-                          {FREQUENCY_LABELS[task.frequency]?.[language] ||
-                            FREQUENCY_LABELS[task.frequency]?.fr}
-                        </span>
-
-                        {streak > 0 && (
-                          <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded-full tabular-nums">
-                            🔥 {streak} j
+                      <div className="flex items-center gap-1.5">
+                        {isSalat ? (
+                          <span className="text-[11px] font-black px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25">
+                            +50 XP (Max)
+                          </span>
+                        ) : isGym ? (
+                          <span className="text-[11px] font-black px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/25">
+                            +40 XP
+                          </span>
+                        ) : isStudy ? (
+                          <span className="text-[11px] font-black px-2.5 py-0.5 rounded-full bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/25">
+                            +30 XP
+                          </span>
+                        ) : (
+                          <span className="text-[11px] font-black px-2.5 py-0.5 rounded-full bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/25">
+                            +10 XP
                           </span>
                         )}
                       </div>
                     </div>
-                  </div>
 
-                  {/* Actions */}
-                  <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
-                    <button
-                      onClick={() => handleOpenEdit(task)}
-                      className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-                      title={tTask.editTask}
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => deleteTask(task.id)}
-                      className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
-                      title="Supprimer"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </motion.div>
-              );
-            })
-          )}
+                    {/* Middle: Title & Quick Preview */}
+                    <div className="my-3">
+                      <h3 className="font-bold text-base sm:text-lg text-zinc-900 dark:text-white tracking-tight truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                        {track.title}
+                      </h3>
+
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-1">
+                        {isSalat
+                          ? (language === 'ar' ? '5 صلوات يومية (الحد الأقصى للنقاط)' : '5 prières quotidiennes (Score max)')
+                          : isGym
+                          ? (gymToday ? `✓ ${gymToday.muscleGroups}` : (tTask.gymSubtitle || 'Journal des séances'))
+                          : isStudy
+                          ? (`${studyDone} / ${studyTotal} ${tTask.completedModules || 'modules'}`)
+                          : subtasks.length > 0
+                          ? subtasks.map((s) => s.title).join(' • ')
+                          : (tTask.noSubtasks || 'Cliquez pour ajouter des sous-tâches')}
+                      </p>
+                    </div>
+
+                    {/* Bottom: Fluid Progress Bar & Open Trigger */}
+                    <div className="space-y-2 pt-2 border-t border-black/[0.04] dark:border-white/[0.05]">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-semibold text-zinc-600 dark:text-zinc-400 tabular-nums">
+                          {isSalat ? (
+                            `${salatDone} / 5`
+                          ) : isGym ? (
+                            gymToday ? (language === 'ar' ? 'تمت الحصة اليوم' : 'Séance validée') : (language === 'ar' ? 'لم تسجل بعد' : 'En attente')
+                          ) : isStudy ? (
+                            `${studyDone} / ${studyTotal}`
+                          ) : (
+                            `${subtasksDone} / ${subtasks.length}`
+                          )}
+                        </span>
+
+                        <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 flex items-center gap-0.5 opacity-90 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all">
+                          <span>{tTask.openProgram || 'Ouvrir'}</span>
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        </span>
+                      </div>
+
+                      <div className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-full h-1.5 overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-500 ease-out"
+                          style={{
+                            width: `${
+                              isSalat
+                                ? salatPercent
+                                : isGym
+                                ? gymToday ? 100 : 0
+                                : isStudy
+                                ? studyPercent
+                                : subtasksPercent
+                            }%`,
+                            backgroundColor: track.color || '#3b82f6',
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+
+              {/* Add New Program Track Card */}
+              <motion.div
+                onClick={() => setIsAddTrackModalOpen(true)}
+                whileHover={{ y: -3, transition: { type: 'spring', stiffness: 350, damping: 25 } }}
+                whileTap={{ scale: 0.98 }}
+                className="cursor-pointer rounded-3xl p-5 border-2 border-dashed border-zinc-200 dark:border-zinc-800 hover:border-blue-500/50 dark:hover:border-blue-500/50 transition-all flex flex-col items-center justify-center text-center min-h-[175px] group bg-zinc-50/50 dark:bg-zinc-900/30"
+              >
+                <div className="w-12 h-12 rounded-2xl bg-zinc-100 dark:bg-zinc-800 text-zinc-400 group-hover:text-blue-600 group-hover:bg-blue-50 dark:group-hover:bg-blue-950/40 flex items-center justify-center mb-3 transition-colors">
+                  <Plus className="w-6 h-6 stroke-[2.2]" />
+                </div>
+                <span className="font-bold text-sm text-zinc-700 dark:text-zinc-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                  {tTask.addProgram || 'Nouveau programme'}
+                </span>
+                <span className="text-[11px] text-zinc-400 mt-0.5">
+                  {language === 'ar' ? 'إضافة مسار أو مهارة جديدة' : 'Créer une compétence ou habitude'}
+                </span>
+              </motion.div>
+            </div>
+          </div>
+
+          {/* 4. DAILY ROUTINES / CUSTOM TASKS LIST */}
+          <div className="space-y-3 pt-2">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500">
+                {tTask.todayList} ({filteredTasks.length})
+              </h3>
+            </div>
+
+            {filteredTasks.length === 0 ? (
+              <EmptyState
+                icon={<ListTodo className="w-5 h-5" />}
+                title={tTask.noTasksToday}
+                description={tTask.subtitle}
+                action={
+                  <Button onClick={handleOpenAdd} variant="primary" size="sm">
+                    <Plus className="w-4 h-4 mr-1.5" />
+                    <span>{tTask.addTask}</span>
+                  </Button>
+                }
+              />
+            ) : (
+              filteredTasks.map((task) => {
+                const isCompleted = (task.completedDates || []).includes(selectedDate);
+                const streak = calculateStreak(task);
+                const conf = CATEGORY_CONFIG[task.category] || CATEGORY_CONFIG.other;
+
+                return (
+                  <motion.div
+                    key={task.id}
+                    whileHover={{ y: -1 }}
+                    className={`group flex items-center justify-between p-4 rounded-2xl border transition-all duration-200 ${
+                      isCompleted
+                        ? 'bg-emerald-500/10 dark:bg-emerald-950/20 border-emerald-500/20 shadow-xs'
+                        : 'bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl border-black/[0.06] dark:border-white/[0.08] shadow-xs hover:border-black/[0.12] dark:hover:border-white/[0.14]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3.5 min-w-0">
+                      {/* The Check Button */}
+                      <button
+                        onClick={() => handleToggle(task.id)}
+                        className={`w-9 h-9 rounded-xl flex items-center justify-center transition-transform active:scale-90 shrink-0 ${
+                          isCompleted
+                            ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
+                            : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 hover:text-zinc-600 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                        }`}
+                        aria-label="Toggle task"
+                      >
+                        {isCompleted ? (
+                          <CheckCircle2 className="w-6 h-6 stroke-[2.5]" />
+                        ) : (
+                          <Circle className="w-6 h-6 stroke-[1.8]" />
+                        )}
+                      </button>
+
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`font-semibold text-sm tracking-tight truncate ${
+                              isCompleted
+                                ? 'line-through text-zinc-400 dark:text-zinc-500'
+                                : 'text-zinc-900 dark:text-white'
+                            }`}
+                          >
+                            {task.title}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2 mt-1">
+                          <span
+                            className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${conf.bg} ${conf.color} ${conf.border}`}
+                          >
+                            <span>{conf.icon}</span>
+                            <span>{conf[language] || conf.fr}</span>
+                          </span>
+
+                          <span className="text-[11px] text-zinc-400">
+                            {FREQUENCY_LABELS[task.frequency]?.[language] ||
+                              FREQUENCY_LABELS[task.frequency]?.fr}
+                          </span>
+
+                          {streak > 0 && (
+                            <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded-full tabular-nums">
+                              🔥 {streak} j
+                            </span>
+                          )}
+
+                          {task.scheduledTime && (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded-full tabular-nums">
+                              <Clock className="w-2.5 h-2.5" />
+                              <span>{task.scheduledTime}</span>
+                              {task.addToGoogleCalendar && <Bell className="w-2.5 h-2.5 text-blue-500 animate-pulse" />}
+                            </span>
+                          )}
+
+                          <span className="text-[10px] font-bold text-zinc-400 tabular-nums">
+                            +15 XP
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => handleOpenEdit(task)}
+                        className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                        title={tTask.editTask}
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => deleteTask(task.id)}
+                        className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
+                        title={tCommon.delete}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </motion.div>
+                );
+              })
+            )}
+          </div>
         </div>
       )}
 
@@ -779,12 +1250,12 @@ export const TasksPage: React.FC = () => {
             </h3>
             <div className="space-y-3 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
               <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-200">
-                <span className="font-bold block mb-1">🔥 21 Days Habit Rule:</span>
-                Consistency creates automaticity. Sticking to a routine for 21 days solidifies it into effortless second nature.
+                <span className="font-bold block mb-1">🔥 {tTask.consistencyTips}</span>
+                {tTask.rule21Days}
               </div>
               <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-900 dark:text-emerald-200">
-                <span className="font-bold block mb-1">⚡ Never Break The Chain:</span>
-                Even on tough or busy days, complete 5 minutes of your routine to protect your momentum streak!
+                <span className="font-bold block mb-1">⚡ {tTask.streak}</span>
+                {tTask.ruleNeverBreak}
               </div>
             </div>
           </div>
@@ -862,12 +1333,591 @@ export const TasksPage: React.FC = () => {
             />
           </div>
 
+          {/* Date & Time Picker */}
+          <div className="p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200/70 dark:border-zinc-700/60 space-y-3">
+            <div className="flex items-center gap-2 text-xs font-bold text-zinc-900 dark:text-white">
+              <Clock className="w-4 h-4 text-blue-500" />
+              <span>{tTask.dateTimeLabel}</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div>
+                <label className="block text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 mb-1">
+                  {tTask.datePickerLabel}
+                </label>
+                <input
+                  type="date"
+                  value={taskScheduledDate}
+                  onChange={(e) => setTaskScheduledDate(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 mb-1">
+                  {tTask.timePickerLabel}
+                </label>
+                <input
+                  type="time"
+                  value={taskScheduledTime}
+                  onChange={(e) => setTaskScheduledTime(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+
+            {/* Google Calendar Native Phone Alarm Toggle */}
+            <div className="pt-2 border-t border-zinc-200/50 dark:border-zinc-700/50 flex items-start justify-between gap-3">
+              <div className="flex items-start gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 mt-0.5">
+                  <Bell className="w-3.5 h-3.5" />
+                </div>
+                <div>
+                  <label htmlFor="calendar-alarm-toggle" className="text-xs font-bold text-zinc-900 dark:text-white cursor-pointer select-none">
+                    {tTask.googleCalendarToggle}
+                  </label>
+                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5 leading-relaxed">
+                    {tTask.googleCalendarDesc}
+                  </p>
+                </div>
+              </div>
+
+              <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
+                <input
+                  id="calendar-alarm-toggle"
+                  type="checkbox"
+                  checked={syncToCalendar}
+                  onChange={(e) => setSyncToCalendar(e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-10 h-6 bg-zinc-200 peer-focus:outline-none rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-zinc-600 peer-checked:bg-blue-600 shadow-xs"></div>
+              </label>
+            </div>
+          </div>
+
           <div className="flex items-center justify-end gap-2 pt-3 border-t border-zinc-100 dark:border-zinc-800">
             <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>
               {tTask.cancel}
             </Button>
+            <Button type="submit" variant="primary" disabled={isCalendarSaving}>
+              {isCalendarSaving ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Google Calendar...</span>
+                </span>
+              ) : editingTask ? (
+                tTask.save
+              ) : (
+                tTask.create
+              )}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* ── PROGRAM TRACK DETAIL DRILL-DOWN MODAL (APPLE FLOATING MODAL) ── */}
+      <Modal
+        isOpen={Boolean(selectedTrackId && activeTrack)}
+        onClose={() => setSelectedTrackId(null)}
+        title={activeTrack?.title}
+        subtitle={
+          selectedDate === todayStr
+            ? (language === 'ar' ? 'اليوم' : language === 'en' ? 'Today' : "Aujourd'hui")
+            : selectedDate
+        }
+        maxWidth="lg"
+      >
+        {activeTrack && (
+          <div className="space-y-4 pt-1">
+            {/* 1. SALAT TRACK DETAIL */}
+            {activeTrack.type === 'salat' && (
+              <div className="space-y-4">
+                <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-bold text-lg shadow-xs">
+                      🕌
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-sm text-zinc-900 dark:text-white">
+                        {tTask.salatSection || 'Prières (Salat)'}
+                      </h4>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                        {tTask.salatMaxReward || 'Score maximal : +50 XP / prière'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 block tabular-nums">
+                      {selectedDatePrayers.length} / 5
+                    </span>
+                    <span className="text-[10px] font-bold text-zinc-400">
+                      +{selectedDatePrayers.length * 50} XP
+                    </span>
+                  </div>
+                </div>
+
+                {/* 5 Daily Prayers Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-5 gap-2.5">
+                  {[
+                    { key: 'fajr' as PrayerKey, icon: Sunrise, label: tTask.fajr },
+                    { key: 'dhuhr' as PrayerKey, icon: Sun, label: tTask.dhuhr },
+                    { key: 'asr' as PrayerKey, icon: Sun, label: tTask.asr },
+                    { key: 'maghrib' as PrayerKey, icon: Sunset, label: tTask.maghrib },
+                    { key: 'isha' as PrayerKey, icon: MoonStar, label: tTask.isha },
+                  ].map((prayer) => {
+                    const isCompleted = selectedDatePrayers.includes(prayer.key);
+                    const Icon = prayer.icon;
+
+                    return (
+                      <button
+                        key={prayer.key}
+                        type="button"
+                        onClick={() => handleToggleSalat(prayer.key)}
+                        className={`flex flex-col items-center justify-center p-3.5 rounded-2xl border transition-all duration-200 active:scale-95 ${
+                          isCompleted
+                            ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 shadow-xs'
+                            : 'bg-zinc-50 dark:bg-zinc-800/60 text-zinc-600 dark:text-zinc-400 border-zinc-200/60 dark:border-zinc-700/60 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                        }`}
+                      >
+                        <div
+                          className={`w-9 h-9 rounded-xl flex items-center justify-center mb-1.5 transition-colors ${
+                            isCompleted
+                              ? 'bg-emerald-600 text-white shadow-xs'
+                              : 'bg-zinc-200/80 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400'
+                          }`}
+                        >
+                          {isCompleted ? <Check className="w-4 h-4 stroke-[2.5]" /> : <Icon className="w-4 h-4" />}
+                        </div>
+                        <span className="text-xs font-bold tracking-tight">{prayer.label}</span>
+                        <span
+                          className={`text-[10px] mt-0.5 font-bold tabular-nums ${
+                            isCompleted ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-400'
+                          }`}
+                        >
+                          +50 XP
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Celebratory Banner if 5/5 Completed */}
+                {allPrayersCompletedToday && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-500/20 via-teal-500/15 to-emerald-500/20 border border-emerald-500/30 flex items-center justify-between gap-3 text-xs"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">✨</span>
+                      <span className="font-bold text-emerald-800 dark:text-emerald-200">
+                        {tTask.salatCompletedAll}
+                      </span>
+                    </div>
+                    <span className="font-black text-emerald-600 dark:text-emerald-400 bg-white dark:bg-zinc-900 px-2 py-0.5 rounded-lg shadow-2xs">
+                      +250 XP
+                    </span>
+                  </motion.div>
+                )}
+              </div>
+            )}
+
+            {/* 2. SUBTASKS TRACKS DETAIL (CODING, ENGLISH, CUSTOM) */}
+            {(activeTrack.type === 'coding' || activeTrack.type === 'english' || activeTrack.type === 'custom') && (
+              <div className="space-y-4">
+                <div className="p-3.5 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300 font-semibold">
+                    <Sparkles className="w-4 h-4 text-blue-500 shrink-0" />
+                    <span>{tTask.dynamicPointsNotice?.replace('{points}', '10') || '+10 XP par tâche réalisée'}</span>
+                  </div>
+                  <span className="font-bold text-zinc-600 dark:text-zinc-300 tabular-nums">
+                    {(activeTrack.subtasks || []).filter((s) => (s.completedDates || []).includes(selectedDate)).length} / {(activeTrack.subtasks || []).length}
+                  </span>
+                </div>
+
+                {/* Inline Add Subtask Input Form */}
+                <form onSubmit={handleAddSubTask} className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newSubTaskInput}
+                    onChange={(e) => setNewSubTaskInput(e.target.value)}
+                    placeholder={
+                      activeTrack.type === 'coding'
+                        ? (language === 'ar' ? 'مثال: Vue.js, Node.js, Python...' : 'ex : Vue.js, Node.js, Docker...')
+                        : activeTrack.type === 'english'
+                        ? (language === 'ar' ? 'مثال: Listening, Grammar, Vocabulary...' : 'ex : Listening, Grammar, Speaking...')
+                        : (tTask.subTaskPlaceholder || 'ex : Nouvelle sous-tâche...')
+                    }
+                    className="flex-1 px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <Button type="submit" variant="primary" size="sm" icon={<Plus className="w-3.5 h-3.5" />}>
+                    <span>{tTask.addSubTask || 'Ajouter'}</span>
+                  </Button>
+                </form>
+
+                {/* Subtasks List */}
+                <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                  {(activeTrack.subtasks || []).length === 0 ? (
+                    <p className="text-xs text-zinc-400 italic py-4 text-center">
+                      {tTask.noSubtasks || 'Aucune sous-tâche. Ajoutez-en une ci-dessus !'}
+                    </p>
+                  ) : (
+                    (activeTrack.subtasks || []).map((sub) => {
+                      const isDone = (sub.completedDates || []).includes(selectedDate);
+                      return (
+                        <div
+                          key={sub.id}
+                          className={`flex items-center justify-between p-3 rounded-2xl border transition-all ${
+                            isDone
+                              ? 'bg-blue-500/10 border-blue-500/25 text-zinc-400 dark:text-zinc-500'
+                              : 'bg-zinc-50 dark:bg-zinc-800/60 border-zinc-200/60 dark:border-zinc-700/60 text-zinc-800 dark:text-zinc-200'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <button
+                              type="button"
+                              onClick={() => handleToggleSubTask(activeTrack.id, sub.id)}
+                              className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all ${
+                                isDone
+                                  ? 'bg-blue-600 text-white shadow-xs'
+                                  : 'bg-zinc-200 dark:bg-zinc-700 text-transparent hover:text-zinc-400'
+                              }`}
+                            >
+                              <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                            </button>
+                            <span className={`text-xs font-bold truncate ${isDone ? 'line-through text-zinc-400' : ''}`}>
+                              {sub.title}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 tabular-nums">
+                              +{sub.points || 10} XP
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => deleteProgramSubTask(activeTrack.id, sub.id)}
+                              className="p-1 rounded-lg text-zinc-400 hover:text-rose-500 transition-colors"
+                              title={tCommon.delete}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+
+                {activeTrack.type === 'custom' && (
+                  <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        deleteProgramTrack(activeTrack.id);
+                        setSelectedTrackId(null);
+                      }}
+                      className="text-xs text-rose-500 hover:text-rose-600 font-semibold flex items-center gap-1.5 p-1 rounded-lg hover:bg-rose-500/10 transition-colors"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>{language === 'ar' ? 'حذف هذا البرنامج' : 'Supprimer ce programme'}</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 3. GYM TRACK DETAIL */}
+            {activeTrack.type === 'gym' && (
+              <div className="space-y-4">
+                <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-2 text-rose-700 dark:text-rose-300 font-semibold">
+                    <Dumbbell className="w-4 h-4 text-rose-500 shrink-0" />
+                    <span>+40 XP / {language === 'ar' ? 'حصة تدريبية' : 'séance validée'}</span>
+                  </div>
+                  <span className="font-bold text-zinc-500 tabular-nums">
+                    {(gymLogs ?? []).length} {tTask.workoutHistory || 'séances'}
+                  </span>
+                </div>
+
+                {/* Form */}
+                <form onSubmit={handleAddGym} className="p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-700/60 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div>
+                      <label className="block text-[11px] font-bold text-zinc-600 dark:text-zinc-300 mb-1">
+                        {tTask.muscleGroups} *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={gymMuscles}
+                        onChange={(e) => setGymMuscles(e.target.value)}
+                        placeholder={tTask.musclePlaceholder}
+                        className="w-full px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-rose-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-zinc-600 dark:text-zinc-300 mb-1">
+                        {tTask.tomorrowPlan}
+                      </label>
+                      <input
+                        type="text"
+                        value={gymTomorrowPlan}
+                        onChange={(e) => setGymTomorrowPlan(e.target.value)}
+                        placeholder={tTask.tomorrowPlaceholder}
+                        className="w-full px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-rose-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-zinc-600 dark:text-zinc-300 mb-1">
+                      {tTask.exercisesLabel}
+                    </label>
+                    <input
+                      type="text"
+                      value={gymExercises}
+                      onChange={(e) => setGymExercises(e.target.value)}
+                      placeholder={tTask.exercisesPlaceholder}
+                      className="w-full px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-rose-500"
+                    />
+                  </div>
+
+                  <div className="flex justify-end pt-1">
+                    <Button type="submit" variant="primary" size="sm" icon={<Dumbbell className="w-3.5 h-3.5" />}>
+                      <span>{tTask.addWorkoutBtn || 'Enregistrer la séance'}</span>
+                    </Button>
+                  </div>
+                </form>
+
+                {/* Workout History */}
+                <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                  {(gymLogs ?? []).length === 0 ? (
+                    <p className="text-xs text-zinc-400 italic py-2 text-center">
+                      {tTask.noWorkoutsYet}
+                    </p>
+                  ) : (
+                    (gymLogs ?? []).map((log) => (
+                      <div
+                        key={log.id}
+                        className="p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200/60 dark:border-zinc-700/60 text-xs flex items-center justify-between gap-3"
+                      >
+                        <div className="space-y-0.5 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-zinc-900 dark:text-white truncate">
+                              {log.muscleGroups}
+                            </span>
+                            <span className="text-[10px] text-zinc-400 font-mono shrink-0">
+                              {log.date}
+                            </span>
+                          </div>
+                          {log.exercises && (
+                            <p className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate">
+                              {log.exercises}
+                            </p>
+                          )}
+                          {log.tomorrowPlan && (
+                            <p className="text-[10px] text-rose-600 dark:text-rose-400 font-medium">
+                              ➜ {log.tomorrowPlan}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400">
+                            +40 XP
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => deleteGymLog(log.id)}
+                            className="p-1 rounded-lg text-zinc-400 hover:text-rose-500 transition-colors"
+                            title={tCommon.delete}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* 4. STUDY TRACK DETAIL */}
+            {activeTrack.type === 'study' && (
+              <div className="space-y-4">
+                <div className="p-3.5 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300 font-semibold">
+                    <BookOpen className="w-4 h-4 text-indigo-500 shrink-0" />
+                    <span>+30 XP / {language === 'ar' ? 'وحدة دراسية' : 'module complété'}</span>
+                  </div>
+                  <span className="font-bold text-zinc-500 tabular-nums">
+                    {(studyModules ?? []).filter((m) => m.completed).length} / {(studyModules ?? []).length}
+                  </span>
+                </div>
+
+                {/* Quick Add Module Form */}
+                <form onSubmit={handleAddModule} className="flex flex-col sm:flex-row gap-2">
+                  <input
+                    type="text"
+                    value={moduleTitle}
+                    onChange={(e) => setModuleTitle(e.target.value)}
+                    placeholder={tTask.modulePlaceholder || 'Nom du module ou matière...'}
+                    className="flex-1 px-3.5 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                  <input
+                    type="text"
+                    value={moduleSubject}
+                    onChange={(e) => setModuleSubject(e.target.value)}
+                    placeholder={tTask.subjectPlaceholder || 'Discipline (optionnel)...'}
+                    className="sm:w-44 px-3.5 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                  <Button type="submit" variant="primary" size="sm" icon={<Plus className="w-3.5 h-3.5" />}>
+                    <span>{tCommon.confirm}</span>
+                  </Button>
+                </form>
+
+                {/* Modules List */}
+                <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                  {(studyModules ?? []).length === 0 ? (
+                    <p className="text-xs text-zinc-400 italic py-2 text-center">
+                      {language === 'ar' ? 'لا توجد وحدات دراسية مسجلة حالياً.' : 'Aucun module pour le moment.'}
+                    </p>
+                  ) : (
+                    (studyModules ?? []).map((mod) => (
+                      <div
+                        key={mod.id}
+                        className={`flex items-center justify-between p-3 rounded-2xl border transition-all ${
+                          mod.completed
+                            ? 'bg-indigo-500/10 border-indigo-500/20 text-zinc-400 dark:text-zinc-500'
+                            : 'bg-zinc-50 dark:bg-zinc-800/60 border-zinc-200/60 dark:border-zinc-700/60 text-zinc-800 dark:text-zinc-200'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <button
+                            type="button"
+                            onClick={() => toggleStudyModule(mod.id)}
+                            className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all ${
+                              mod.completed
+                                ? 'bg-indigo-600 text-white'
+                                : 'bg-zinc-200 dark:bg-zinc-700 text-transparent hover:text-zinc-400'
+                            }`}
+                          >
+                            <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                          </button>
+                          <div className="truncate">
+                            <span className={`text-xs font-bold block ${mod.completed ? 'line-through text-zinc-400' : ''}`}>
+                              {mod.title}
+                            </span>
+                            {mod.subject && (
+                              <span className="text-[10px] text-zinc-400 font-medium">
+                                {mod.subject}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400">
+                            +30 XP
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => deleteStudyModule(mod.id)}
+                            className="p-1 rounded-lg text-zinc-400 hover:text-rose-500 transition-colors"
+                            title={tCommon.delete}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
+
+      {/* ── CREATE NEW PROGRAM TRACK MODAL ── */}
+      <Modal
+        isOpen={isAddTrackModalOpen}
+        onClose={() => setIsAddTrackModalOpen(false)}
+        title={tTask.addProgram || 'Nouveau programme'}
+        subtitle={
+          language === 'ar'
+            ? 'إنشاء مسار جديد وتتبع مهاراتك اليومية'
+            : 'Créez un nouveau track de compétences ou habitudes'
+        }
+      >
+        <form onSubmit={handleCreateProgramTrack} className="space-y-4 pt-2">
+          <div>
+            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+              {tTask.programName || 'Nom du programme'} *
+            </label>
+            <input
+              type="text"
+              required
+              value={newTrackTitle}
+              onChange={(e) => setNewTrackTitle(e.target.value)}
+              placeholder="ex : Deutsch (Allemand), Marketing, UI/UX..."
+              className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+                {language === 'ar' ? 'أيقونة' : 'Icône / Emoji'}
+              </label>
+              <div className="flex gap-2 flex-wrap">
+                {['🎯', '🚀', '🧠', '💼', '🎨', '📖'].map((emoji) => (
+                  <button
+                    key={emoji}
+                    type="button"
+                    onClick={() => setNewTrackIcon(emoji)}
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg border transition-all ${
+                      newTrackIcon === emoji
+                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/60 scale-105'
+                        : 'border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                    }`}
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+                {language === 'ar' ? 'لون' : 'Couleur'}
+              </label>
+              <div className="flex gap-2 flex-wrap items-center pt-1">
+                {['#3b82f6', '#10b981', '#8b5cf6', '#f43f5e', '#f59e0b', '#06b6d4'].map((color) => (
+                  <button
+                    key={color}
+                    type="button"
+                    onClick={() => setNewTrackColor(color)}
+                    className={`w-7 h-7 rounded-full transition-transform ${
+                      newTrackColor === color
+                        ? 'scale-125 ring-2 ring-offset-2 ring-blue-500'
+                        : 'hover:scale-110'
+                    }`}
+                    style={{ backgroundColor: color }}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+            <Button type="button" variant="ghost" onClick={() => setIsAddTrackModalOpen(false)}>
+              {tTask.cancel}
+            </Button>
             <Button type="submit" variant="primary">
-              {editingTask ? tTask.save : tTask.create}
+              {tCommon.confirm}
             </Button>
           </div>
         </form>

@@ -7,7 +7,9 @@ import {
   sendSignInLinkToEmail,
   isSignInWithEmailLink,
   signInWithEmailLink,
+  GoogleAuthProvider,
 } from 'firebase/auth';
+import { setStoredGoogleAccessToken } from '../../services/googleCalendar';
 import { useAppStore } from '../../store/useAppStore';
 import { Logo } from './Logo';
 import { Mail, ArrowRight, ShieldCheck, CheckCircle2, RotateCcw, Lock, Smartphone, User } from 'lucide-react';
@@ -147,7 +149,12 @@ export const Login: React.FC = () => {
       .then((result) => {
         if (!isMounted) return;
         if (result?.user) {
-          // Handled by onAuthStateChanged in App.tsx
+          try {
+            const credential = GoogleAuthProvider.credentialFromResult(result);
+            if (credential?.accessToken) {
+              setStoredGoogleAccessToken(credential.accessToken);
+            }
+          } catch (e) {}
         }
       })
       .catch((err: any) => {
@@ -179,7 +186,13 @@ export const Login: React.FC = () => {
     setLoadingGoogle(true);
 
     try {
-      await signInWithPopup(auth, googleProvider);
+      const res = await signInWithPopup(auth, googleProvider);
+      try {
+        const credential = GoogleAuthProvider.credentialFromResult(res);
+        if (credential?.accessToken) {
+          setStoredGoogleAccessToken(credential.accessToken);
+        }
+      } catch (e) {}
     } catch (err: any) {
       if (POPUP_BLOCKED_CODES.has(err.code)) {
         try {

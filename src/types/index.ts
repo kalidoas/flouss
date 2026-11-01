@@ -139,6 +139,51 @@ export interface UserAccount {
   debts?: DebtItem[];
   subscriptions?: SubscriptionItem[];
   notes?: NoteItem[];
+  deletedCategoryIds?: string[];
+  salatLogs?: Record<string, PrayerKey[]>; // dateStr -> array of completed prayer keys
+  studyModules?: StudyModuleItem[];
+  gymLogs?: GymWorkoutLog[];
+  programTracks?: ProgramTrack[];
+  createdAt: string;
+}
+
+export interface ProgramSubTask {
+  id: string;
+  title: string;
+  completedDates?: string[]; // array of YYYY-MM-DD
+  points?: number; // default: 10 XP
+  createdAt: string;
+}
+
+export interface ProgramTrack {
+  id: string;
+  title: string;
+  icon: string;
+  color?: string;
+  type: 'salat' | 'coding' | 'english' | 'gym' | 'study' | 'custom';
+  subtasks?: ProgramSubTask[];
+  createdAt: string;
+}
+
+export type PrayerKey = 'fajr' | 'dhuhr' | 'asr' | 'maghrib' | 'isha';
+
+export interface StudyModuleItem {
+  id: string;
+  title: string;
+  subject?: string;
+  completed: boolean;
+  notes?: string;
+  createdAt: string;
+  completedAt?: string;
+}
+
+export interface GymWorkoutLog {
+  id: string;
+  date: string; // YYYY-MM-DD
+  muscleGroups: string;
+  exercises?: string;
+  notes?: string;
+  tomorrowPlan?: string;
   createdAt: string;
 }
 
@@ -174,6 +219,11 @@ export interface TaskItem {
   timeOfDay?: string; // "morning" | "afternoon" | "evening" | "anytime"
   linkedAmount?: number; // optional MAD amount
   notes?: string;
+  scheduledDate?: string; // YYYY-MM-DD
+  scheduledTime?: string; // HH:mm
+  scheduledDateTime?: string; // ISO string or YYYY-MM-DDTHH:mm
+  addToGoogleCalendar?: boolean;
+  googleCalendarEventId?: string;
   createdAt: string;
   isArchived?: boolean;
   completedDates: string[]; // List of YYYY-MM-DD
