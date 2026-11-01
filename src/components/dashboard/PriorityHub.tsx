@@ -4,6 +4,7 @@ import { useAppStore } from '../../store/useAppStore';
 import { AppleGlassCard } from '../common/AppleGlassCard';
 import { translations } from '../../i18n/translations';
 import { formatMAD, getCurrentMonthStr } from '../../utils/formatters';
+import { getNoteItemDisplay } from '../../utils/i18nHelpers';
 import { islandManager } from '../../utils/islandManager';
 import confetti from 'canvas-confetti';
 import {
@@ -185,7 +186,7 @@ export const PriorityHub: React.FC = () => {
                 onClick={() => setIsQuickNoteOpen(false)}
                 className="text-xs text-amber-700 dark:text-amber-400 hover:underline"
               >
-                Annuler
+                {tHub.cancel}
               </button>
             </div>
 
@@ -194,7 +195,7 @@ export const PriorityHub: React.FC = () => {
               autoFocus
               value={quickNoteTitle}
               onChange={(e) => setQuickNoteTitle(e.target.value)}
-              placeholder="Titre du rappel..."
+              placeholder={tHub.noteTitlePlaceholder}
               className="w-full text-xs font-semibold px-3 py-2 rounded-xl bg-white/90 dark:bg-zinc-900/90 border border-amber-500/30 text-zinc-900 dark:text-white placeholder:text-zinc-400 outline-none"
             />
 
@@ -233,7 +234,7 @@ export const PriorityHub: React.FC = () => {
               onClick={() => setActiveScreen('notes')}
               className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-0.5"
             >
-              <span>Voir tout</span>
+              <span>{tHub.seeAll}</span>
               <ChevronRight className="w-3 h-3" />
             </button>
           </div>
@@ -253,32 +254,35 @@ export const PriorityHub: React.FC = () => {
             </div>
           ) : (
             <div className="space-y-2.5">
-              {pinnedNotes.map((note: NoteItem) => (
-                <motion.div
-                  key={note.id}
-                  layoutId={`card-${note.id}`}
-                  whileHover={{ y: -2 }}
-                  className="group relative p-3.5 rounded-2xl bg-amber-500/10 dark:bg-amber-950/20 border border-amber-500/20 hover:border-amber-500/35 transition-all shadow-xs flex flex-col justify-between"
-                >
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="font-bold text-xs text-amber-950 dark:text-amber-200 tracking-tight truncate">
-                        {note.title}
-                      </span>
-                      <button
-                        onClick={() => togglePinNote(note.id)}
-                        className="p-1 rounded-md text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-colors"
-                        title={tHub.unpinAction}
-                      >
-                        <Pin className="w-3 h-3 fill-current" />
-                      </button>
+              {pinnedNotes.map((note: NoteItem) => {
+                const noteDisplay = getNoteItemDisplay(note, language);
+                return (
+                  <motion.div
+                    key={note.id}
+                    layoutId={`card-${note.id}`}
+                    whileHover={{ y: -2 }}
+                    className="group relative p-3.5 rounded-2xl bg-amber-500/10 dark:bg-amber-950/20 border border-amber-500/20 hover:border-amber-500/35 transition-all shadow-xs flex flex-col justify-between"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-bold text-xs text-amber-950 dark:text-amber-200 tracking-tight truncate">
+                          {noteDisplay.title}
+                        </span>
+                        <button
+                          onClick={() => togglePinNote(note.id)}
+                          className="p-1 rounded-md text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-colors"
+                          title={tHub.unpinAction}
+                        >
+                          <Pin className="w-3 h-3 fill-current" />
+                        </button>
+                      </div>
+                      <p className="text-xs text-amber-900/80 dark:text-amber-200/70 line-clamp-3 leading-relaxed">
+                        {noteDisplay.content}
+                      </p>
                     </div>
-                    <p className="text-xs text-amber-900/80 dark:text-amber-200/70 line-clamp-3 leading-relaxed">
-                      {note.content}
-                    </p>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                );
+              })}
             </div>
           )}
         </div>
@@ -296,7 +300,7 @@ export const PriorityHub: React.FC = () => {
               onClick={() => setActiveScreen('subscriptions')}
               className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-0.5"
             >
-              <span>Gérer</span>
+              <span>{tHub.manage}</span>
               <ChevronRight className="w-3 h-3" />
             </button>
           </div>
@@ -385,7 +389,7 @@ export const PriorityHub: React.FC = () => {
               onClick={() => setActiveScreen('tasks')}
               className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-0.5"
             >
-              <span>Programme</span>
+              <span>{tHub.program}</span>
               <ChevronRight className="w-3 h-3" />
             </button>
           </div>

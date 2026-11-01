@@ -532,7 +532,7 @@ export const DEFAULT_NOTES: NoteItem[] = [
   {
     id: 'note_welcome',
     title: 'Bienvenue dans votre Espace Personnel 🌟',
-    content: 'Cet espace est 100% hors-ligne et confidentiel sur votre téléphone. Vous pouvez y noter vos idées, plans ou pense-bêtes.',
+    content: 'Votre espace est sécurisé et synchronisé dans le cloud avec Firebase. Vous pouvez y noter vos priorités, plans ou pense-bêtes.',
     color: '#10b981',
     isPinned: true,
     category: 'Personnel',

@@ -15,7 +15,7 @@ export const QuickAddButton: React.FC = () => {
 
   return (
     <>
-      <div className="fixed bottom-20 md:bottom-5 right-4 z-40">
+      <div className="hidden md:block fixed bottom-5 right-4 z-40">
         {/* Floating Actions Menu */}
         {isOpen && (
           <div className="mb-2 space-y-1.5 bg-white dark:bg-[#202020] border border-[#e3e2de] dark:border-[#2f2f2f] rounded-lg shadow-lg p-1.5 min-w-[160px] animate-in fade-in slide-in-from-bottom-2 duration-150">

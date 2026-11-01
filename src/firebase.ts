@@ -1,6 +1,6 @@
 import { initializeApp, FirebaseApp, getApps, getApp } from 'firebase/app';
 import { getAuth, Auth, GoogleAuthProvider } from 'firebase/auth';
-import { getFirestore, Firestore } from 'firebase/firestore';
+import { initializeFirestore, getFirestore, Firestore } from 'firebase/firestore';
 
 // Default project credentials guarantee production builds always connect to the verified Firebase project
 const DEFAULT_CONFIG = {
@@ -67,7 +67,17 @@ export const app: FirebaseApp =
     : initializeApp(firebaseConfig);
 
 export const auth: Auth = getAuth(app);
-export const db: Firestore = getFirestore(app);
+
+// Initialize Cloud Firestore with experimentalForceLongPolling to eliminate WebChannel hanging / timeouts on Brave, Chrome, and Mobile
+let dbInstance: Firestore;
+try {
+  dbInstance = initializeFirestore(app, {
+    experimentalForceLongPolling: true,
+  });
+} catch (e) {
+  dbInstance = getFirestore(app);
+}
+export const db: Firestore = dbInstance;
 
 export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });

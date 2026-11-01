@@ -73,6 +73,7 @@ export interface AppState {
   setPinVerified: (verified: boolean) => void;
   logout: () => Promise<void>;
   syncToFirestore: () => Promise<void>;
+  forceSyncToCloud: () => Promise<{ success: boolean; message: string }>;
 
   setActiveScreen: (screen: ScreenId) => void;
   setTheme: (theme: ThemeMode) => void;
@@ -212,45 +213,30 @@ export function extractAccountState(account: UserAccount | null) {
 }
 
 let syncTimer: any = null;
-let isFirestoreApiDisabled = false;
 let activeSnapshotUnsubscribe: Unsubscribe | null = null;
 
 const debouncedFirestoreSync = (uid: string, account: UserAccount) => {
   if (syncTimer) clearTimeout(syncTimer);
   syncTimer = setTimeout(async () => {
-    if (isFirestoreApiDisabled) return;
     try {
       const userRef = doc(db, 'users', uid);
-      await Promise.race([
-        setDoc(
-          userRef,
-          {
-            uid,
-            email: account.email || null,
-            displayName: account.name || null,
-            pinCode: account.pinCode ?? null,
-            pinEnabled: !!account.pinCode,
-            account,
-            updatedAt: new Date().toISOString(),
-          },
-          { merge: true }
-        ),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Firestore write timeout')), 3500)),
-      ]);
+      const payload = {
+        uid,
+        email: account.email || null,
+        displayName: account.name || null,
+        pinCode: account.pinCode ?? null,
+        pinEnabled: !!account.pinCode,
+        initialBalance: account.initialBalance ?? null,
+        isOnboarded: Boolean(account.isOnboarded),
+        account,
+        updatedAt: new Date().toISOString(),
+      };
+      await setDoc(userRef, payload, { merge: true });
+      console.log(`✅ [Flouss Cloud] Successfully synced mutation to Firestore users/${uid}`);
     } catch (err: any) {
-      const msg = err?.message || String(err);
-      if (
-        msg.includes('PERMISSION_DENIED') ||
-        msg.includes('has not been used in project') ||
-        msg.includes('disabled')
-      ) {
-        isFirestoreApiDisabled = true;
-        console.warn('[Flouss] Cloud Firestore API is not enabled in Firebase Console. Continuing in safe offline-first mode.');
-      } else {
-        console.warn('[Flouss] Firestore sync warning:', msg);
-      }
+      console.error(`❌ [Flouss Cloud] Error syncing to Firestore users/${uid}:`, err);
     }
-  }, 400);
+  }, 150);
 };
 
 export const useAppStore = create<AppState>()(
@@ -340,81 +326,118 @@ export const useAppStore = create<AppState>()(
           let firestorePin: string | null = null;
           let resolvedAccount: UserAccount | null = null;
 
-          if (!isFirestoreApiDisabled) {
+          // 1. Gather any existing local data on this client device (e.g. from PC session)
+          let localAccount: UserAccount | null = null;
+          try {
+            const raw = localStorage.getItem(`flouss_user_${uid}`);
+            if (raw) localAccount = JSON.parse(raw);
+          } catch (e) {}
+
+          if (!localAccount) {
             try {
-              const snap = (await Promise.race([
-                getDoc(userDocRef),
-                new Promise<null>((_, reject) =>
-                  setTimeout(() => reject(new Error('Firestore read timeout')), 10000)
-                ),
-              ])) as any;
-
-              if (snap && snap.exists()) {
-                const data = snap.data();
-                firestorePin = data.pinCode ?? data.account?.pinCode ?? null;
-                const incomingAccount = data.account || data;
-
-                const hasExistingData =
-                  Boolean(data.account?.isOnboarded) ||
-                  Boolean(data.isOnboarded) ||
-                  data.account?.initialBalance !== undefined ||
-                  data.initialBalance !== undefined ||
-                  (Array.isArray(data.account?.transactions) && data.account.transactions.length > 0) ||
-                  (Array.isArray(data.transactions) && data.transactions.length > 0) ||
-                  (Array.isArray(data.account?.categories) && data.account.categories.length > 0);
-
-                resolvedAccount = {
-                  ...makeInitialAccount(uid, user.displayName || 'Utilisateur', user.email || ''),
-                  ...incomingAccount,
-                  id: uid,
-                  isOnboarded: hasExistingData ? true : Boolean(incomingAccount?.isOnboarded),
-                  pinCode: firestorePin,
-                  pinEnabled: !!firestorePin,
-                };
-              }
-            } catch (err: any) {
-              const msg = err?.message || String(err);
-              if (
-                msg.includes('PERMISSION_DENIED') ||
-                msg.includes('has not been used in project') ||
-                msg.includes('disabled')
-              ) {
-                isFirestoreApiDisabled = true;
-                set({ firestoreDisabled: true });
-                console.warn('[Flouss] Cloud Firestore API disabled or uninitialized. Using local storage.');
-              } else {
-                console.warn('[Flouss] Firestore check notice:', msg);
-              }
-            }
-          }
-
-          // Fallback to local storage if Firestore had no document or timed out
-          if (!resolvedAccount) {
-            try {
-              const raw = localStorage.getItem(`flouss_user_${uid}`);
-              if (raw) {
-                const local = JSON.parse(raw);
-                firestorePin = local?.pinCode ?? null;
-                resolvedAccount = {
-                  ...makeInitialAccount(uid, user.displayName || 'Utilisateur', user.email || ''),
-                  ...local,
-                  id: uid,
-                };
-              }
+              const rawDefault = localStorage.getItem('flouss_user_default');
+              if (rawDefault) localAccount = JSON.parse(rawDefault);
             } catch (e) {}
           }
 
-          // If still no account (truly new user registration)
-          if (!resolvedAccount) {
-            const freshAccount = makeInitialAccount(
-              uid,
-              user.displayName || 'Utilisateur',
-              user.email || ''
+          if (!localAccount) {
+            const memAcc = get().accounts.find(
+              (a: UserAccount) =>
+                a.initialBalance !== null ||
+                (a.transactions && a.transactions.length > 0) ||
+                (a.notes && a.notes.length > 0) ||
+                (a.subscriptions && a.subscriptions.length > 0)
             );
-            resolvedAccount = freshAccount;
+            if (memAcc) localAccount = memAcc;
+          }
 
-            if (!isFirestoreApiDisabled) {
-              setDoc(
+          const hasLocalData = Boolean(
+            localAccount &&
+              (localAccount.initialBalance !== null ||
+                (Array.isArray(localAccount.transactions) && localAccount.transactions.length > 0) ||
+                (Array.isArray(localAccount.notes) && localAccount.notes.length > 0) ||
+                (Array.isArray(localAccount.subscriptions) && localAccount.subscriptions.length > 0) ||
+                Boolean(localAccount.isOnboarded))
+          );
+
+          // 2. Query Firestore document users/{uid} directly (No artificial timeouts!)
+          let snap: any = null;
+          try {
+            snap = await getDoc(userDocRef);
+          } catch (err: any) {
+            console.warn('[Flouss Cloud] Initial getDoc notice:', err?.message || err);
+          }
+
+          const cloudDocExists = Boolean(snap && snap.exists());
+          const cloudData = cloudDocExists ? snap.data() : null;
+          const cloudAccount = cloudData?.account || cloudData;
+
+          const hasCloudData = Boolean(
+            cloudDocExists &&
+              (cloudData.initialBalance !== undefined ||
+                cloudData.account?.initialBalance !== undefined ||
+                (Array.isArray(cloudData.account?.transactions) && cloudData.account.transactions.length > 0) ||
+                (Array.isArray(cloudData.transactions) && cloudData.transactions.length > 0) ||
+                Boolean(cloudData.account?.isOnboarded) ||
+                Boolean(cloudData.isOnboarded))
+          );
+
+          if (!hasCloudData && hasLocalData && localAccount) {
+            // Case A: Cloud Firestore is empty, but this device has local data -> AUTO-MIGRATE IMMEDIATELY!
+            console.log(`🚀 [Flouss Cloud] Empty Firestore detected with existing local data. Auto-migrating to users/${uid}...`);
+            const migratedAccount: UserAccount = {
+              ...makeInitialAccount(uid, user.displayName || 'Utilisateur', user.email || ''),
+              ...localAccount,
+              id: uid,
+              isOnboarded: true,
+            };
+            firestorePin = migratedAccount.pinCode ?? null;
+            resolvedAccount = migratedAccount;
+
+            const migrationPayload = {
+              uid,
+              email: user.email || null,
+              displayName: user.displayName || null,
+              pinCode: firestorePin,
+              pinEnabled: !!firestorePin,
+              initialBalance: migratedAccount.initialBalance ?? null,
+              isOnboarded: true,
+              account: migratedAccount,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            };
+
+            try {
+              await setDoc(userDocRef, migrationPayload, { merge: true });
+              console.log(`✅ [Flouss Cloud] Auto-migration successfully written to Firestore users/${uid}`);
+            } catch (err) {
+              console.error(`❌ [Flouss Cloud] Auto-migration write error:`, err);
+            }
+          } else if (hasCloudData) {
+            // Case B: Cloud Firestore has existing user document -> HYDRATE LOCAL STORE
+            console.log(`☁️ [Flouss Cloud] Hydrating store from existing Firestore document users/${uid}...`);
+            firestorePin = cloudData.pinCode ?? cloudAccount?.pinCode ?? null;
+            resolvedAccount = {
+              ...makeInitialAccount(uid, user.displayName || 'Utilisateur', user.email || ''),
+              ...cloudAccount,
+              id: uid,
+              isOnboarded: true,
+              pinCode: firestorePin,
+              pinEnabled: !!firestorePin,
+            };
+          } else if (localAccount) {
+            // Case C: Fallback to localAccount
+            resolvedAccount = {
+              ...makeInitialAccount(uid, user.displayName || 'Utilisateur', user.email || ''),
+              ...localAccount,
+              id: uid,
+            };
+          } else {
+            // Case D: Completely new user registration
+            const freshAccount = makeInitialAccount(uid, user.displayName || 'Utilisateur', user.email || '');
+            resolvedAccount = freshAccount;
+            try {
+              await setDoc(
                 userDocRef,
                 {
                   uid,
@@ -428,9 +451,11 @@ export const useAppStore = create<AppState>()(
                   updatedAt: new Date().toISOString(),
                 },
                 { merge: true }
-              ).catch(() => {});
-            }
+              );
+              console.log(`🆕 [Flouss Cloud] Created initial document for users/${uid}`);
+            } catch (err) {}
           }
+
           resolvedAccount.id = uid;
 
           // Save hydrated account to local cache for fast offline access
@@ -454,57 +479,48 @@ export const useAppStore = create<AppState>()(
           });
 
           // 3. Attach Real-Time Cross-Device Synchronization (onSnapshot)
-          if (!isFirestoreApiDisabled) {
-            try {
-              activeSnapshotUnsubscribe = onSnapshot(
-                userDocRef,
-                (snap) => {
-                  // Ignore local write echoes to avoid re-triggering loops
-                  if (snap.metadata.hasPendingWrites) return;
-                  if (!snap.exists()) return;
+          try {
+            activeSnapshotUnsubscribe = onSnapshot(
+              userDocRef,
+              (snap) => {
+                if (snap.metadata.hasPendingWrites) return;
+                if (!snap.exists()) return;
 
-                  const data = snap.data();
-                  if (data?.account) {
-                    const currentLocal = get().currentAccount;
-                    const incomingStr = JSON.stringify(data.account);
-                    const currentStr = JSON.stringify(currentLocal);
+                const data = snap.data();
+                const incomingAccount = data?.account || data;
+                if (incomingAccount) {
+                  const currentLocal = get().currentAccount;
+                  const incomingStr = JSON.stringify(incomingAccount);
+                  const currentStr = JSON.stringify(currentLocal);
 
-                    // Only update if remote state from other device has differences
-                    if (incomingStr !== currentStr) {
-                      const remotePin = data.pinCode ?? data.account?.pinCode ?? null;
-                      const syncedAccount: UserAccount = {
-                        ...data.account,
-                        id: uid,
-                        pinCode: remotePin,
-                        pinEnabled: !!remotePin,
-                      };
+                  if (incomingStr !== currentStr) {
+                    const remotePin = data.pinCode ?? incomingAccount?.pinCode ?? null;
+                    const syncedAccount: UserAccount = {
+                      ...incomingAccount,
+                      id: uid,
+                      pinCode: remotePin,
+                      pinEnabled: !!remotePin,
+                    };
 
-                      try {
-                        localStorage.setItem(`flouss_user_${uid}`, incomingStr);
-                      } catch (e) {}
+                    try {
+                      localStorage.setItem(`flouss_user_${uid}`, incomingStr);
+                    } catch (e) {}
 
-                      set((state: any) => ({
-                        accounts: state.accounts.map((a: any) => (a.id === uid ? syncedAccount : a)),
-                        userPinCode: remotePin,
-                        ...extractAccountState(syncedAccount),
-                      }));
-                    }
-                  }
-                },
-                (err) => {
-                  const msg = err?.message || String(err);
-                  if (
-                    msg.includes('PERMISSION_DENIED') ||
-                    msg.includes('has not been used in project') ||
-                    msg.includes('disabled')
-                  ) {
-                    isFirestoreApiDisabled = true;
+                    set((state: any) => ({
+                      accounts: state.accounts.map((a: any) => (a.id === uid ? syncedAccount : a)),
+                      userPinCode: remotePin,
+                      ...extractAccountState(syncedAccount),
+                    }));
+                    console.log(`🔄 [Flouss Cloud] Real-time sync update received from Firestore users/${uid}`);
                   }
                 }
-              );
-            } catch (err) {
-              console.warn('[Flouss] Unable to bind onSnapshot listener:', err);
-            }
+              },
+              (err) => {
+                console.warn('[Flouss Cloud] onSnapshot listener warning:', err?.message || err);
+              }
+            );
+          } catch (err) {
+            console.warn('[Flouss Cloud] Unable to bind onSnapshot listener:', err);
           }
         },
 
@@ -560,6 +576,38 @@ export const useAppStore = create<AppState>()(
           } catch (e) {}
 
           debouncedFirestoreSync(uid, acc);
+        },
+
+        forceSyncToCloud: async () => {
+          const s = get();
+          const uid = s.firebaseUser?.uid || auth.currentUser?.uid;
+          if (!uid) {
+            return { success: false, message: 'Non connecté à un compte Firebase' };
+          }
+          const acc = s.currentAccount || s.accounts.find((a) => a.id === uid) || s.accounts[0];
+          if (!acc) {
+            return { success: false, message: 'Aucun compte actif trouvé' };
+          }
+          try {
+            const userRef = doc(db, 'users', uid);
+            const payload = {
+              uid,
+              email: acc.email || s.firebaseUser?.email || null,
+              displayName: acc.name || s.firebaseUser?.displayName || null,
+              pinCode: acc.pinCode ?? null,
+              pinEnabled: !!acc.pinCode,
+              initialBalance: acc.initialBalance ?? null,
+              isOnboarded: Boolean(acc.isOnboarded),
+              account: acc,
+              updatedAt: new Date().toISOString(),
+            };
+            await setDoc(userRef, payload, { merge: true });
+            console.log(`✅ [Flouss Cloud] Manual force cloud sync succeeded for users/${uid}`);
+            return { success: true, message: 'Cloud Synced with Firestore ✓' };
+          } catch (err: any) {
+            console.error(`❌ [Flouss Cloud] Manual force cloud sync failed for users/${uid}:`, err);
+            return { success: false, message: err?.message || 'Firestore write error' };
+          }
         },
 
         // ── UI Setters ──────────────────────────────────────────────
@@ -631,42 +679,27 @@ export const useAppStore = create<AppState>()(
             ...extractAccountState(updatedAccount),
           });
 
-          // 3. Sync to Firestore in background without blocking
-          if (!isFirestoreApiDisabled) {
-            try {
-              const userRef = doc(db, 'users', uid);
-              await Promise.race([
-                setDoc(
-                  userRef,
-                  {
-                    uid,
-                    email: updatedAccount.email || null,
-                    displayName: updatedAccount.name || null,
-                    pinCode: updatedAccount.pinCode ?? null,
-                    pinEnabled: !!updatedAccount.pinCode,
-                    account: updatedAccount,
-                    updatedAt: new Date().toISOString(),
-                  },
-                  { merge: true }
-                ),
-                new Promise((_, reject) =>
-                  setTimeout(() => reject(new Error('Firestore lockInitialBalance timeout')), 3000)
-                ),
-              ]);
-            } catch (err: any) {
-              const msg = err?.message || String(err);
-              if (
-                msg.includes('PERMISSION_DENIED') ||
-                msg.includes('has not been used in project') ||
-                msg.includes('disabled')
-              ) {
-                isFirestoreApiDisabled = true;
-                set({ firestoreDisabled: true });
-                console.warn('[Flouss] Cloud Firestore API is not enabled in Firebase Console. Saved locally.');
-              } else {
-                console.warn('[Flouss] Firestore initial balance sync warning:', msg);
-              }
-            }
+          // 3. Sync to Firestore directly (No artificial timeout!)
+          try {
+            const userRef = doc(db, 'users', uid);
+            await setDoc(
+              userRef,
+              {
+                uid,
+                email: updatedAccount.email || null,
+                displayName: updatedAccount.name || null,
+                pinCode: updatedAccount.pinCode ?? null,
+                pinEnabled: !!updatedAccount.pinCode,
+                initialBalance: amount,
+                isOnboarded: true,
+                account: updatedAccount,
+                updatedAt: new Date().toISOString(),
+              },
+              { merge: true }
+            );
+            console.log(`✅ [Flouss Cloud] lockInitialBalance saved to Firestore users/${uid}`);
+          } catch (err: any) {
+            console.error('❌ [Flouss Cloud] Error in lockInitialBalance Firestore write:', err);
           }
         },
 

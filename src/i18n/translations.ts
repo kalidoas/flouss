@@ -609,6 +609,13 @@ export const translations = {
       notePlaceholder: 'Écrivez votre rappel urgent...',
       pinNoteAction: 'Épingler',
       unpinAction: 'Détacher',
+      seeAll: 'Voir tout >',
+      manage: 'Gérer >',
+      program: 'Programme >',
+      cancel: 'Annuler',
+      noteTitlePlaceholder: 'Titre du rappel...',
+      cloudSyncPillSuccess: 'Cloud synchronisé avec Firestore ✓',
+      cloudSyncPillError: 'Erreur de synchronisation Firestore',
     },
 
     walletCard: {
@@ -1246,6 +1253,13 @@ export const translations = {
       notePlaceholder: 'اكتب تذكيرك المهم هنا...',
       pinNoteAction: 'تثبيت',
       unpinAction: 'إلغاء التثبيت',
+      seeAll: 'عرض الكل >',
+      manage: 'إدارة >',
+      program: 'البرنامج >',
+      cancel: 'إلغاء',
+      noteTitlePlaceholder: 'عنوان التذكير...',
+      cloudSyncPillSuccess: 'تمت المزامنة السحابية مع فايربيس بنجاح ✓',
+      cloudSyncPillError: 'خطأ في مزامنة فايربيس',
     },
 
     walletCard: {
@@ -1884,6 +1898,13 @@ export const translations = {
       notePlaceholder: 'Write your urgent reminder...',
       pinNoteAction: 'Pin',
       unpinAction: 'Unpin',
+      seeAll: 'See all >',
+      manage: 'Manage >',
+      program: 'Program >',
+      cancel: 'Cancel',
+      noteTitlePlaceholder: 'Reminder title...',
+      cloudSyncPillSuccess: 'Cloud Synced with Firestore ✓',
+      cloudSyncPillError: 'Firestore sync error',
     },
 
     walletCard: {

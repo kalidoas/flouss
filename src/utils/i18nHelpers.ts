@@ -1,4 +1,4 @@
-import { Category, CategoryGroupId, IncomeSource, Language, SubCategory } from '../types';
+import { Category, CategoryGroupId, IncomeSource, Language, SubCategory, NoteItem } from '../types';
 import { translations } from '../i18n/translations';
 
 /**
@@ -82,4 +82,37 @@ export function getIncomeSubSourceName(
     }
   }
   return subSource.name;
+}
+
+/**
+ * Returns dynamically translated title & content for default seeded notes (e.g. note_welcome)
+ */
+export function getNoteItemDisplay(
+  note: NoteItem,
+  language: Language = 'fr'
+): { title: string; content: string } {
+  if (
+    note.id === 'note_welcome' ||
+    note.title.includes('Espace Personnel') ||
+    note.title.includes('المساحة الشخصية') ||
+    note.title.includes('Personal Workspace')
+  ) {
+    if (language === 'ar') {
+      return {
+        title: 'مرحباً بك في مساحتك الشخصية 🌟',
+        content: 'مساحتك آمنة ومزامنة سحابياً مع فايربيس. يمكنك تدوين أولوياتك وخططك وتذكيراتك هنا.',
+      };
+    }
+    if (language === 'en') {
+      return {
+        title: 'Welcome to your Personal Workspace 🌟',
+        content: 'Your space is secure and cloud-synced with Firebase. You can jot down your priorities, plans, or reminders here.',
+      };
+    }
+    return {
+      title: 'Bienvenue dans votre Espace Personnel 🌟',
+      content: 'Votre espace est sécurisé et synchronisé dans le cloud avec Firebase. Vous pouvez y noter vos priorités, plans ou pense-bêtes.',
+    };
+  }
+  return { title: note.title, content: note.content };
 }

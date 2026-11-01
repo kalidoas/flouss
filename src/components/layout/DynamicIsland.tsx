@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { islandManager, IslandNotification } from '../../utils/islandManager';
 import { useAppStore } from '../../store/useAppStore';
+import { translations } from '../../i18n/translations';
 import {
   CheckCircle2,
   Cloud,
@@ -10,18 +11,63 @@ import {
   Globe,
   Wallet,
   Sparkles,
+  RefreshCw,
 } from 'lucide-react';
 
 export const DynamicIsland: React.FC = () => {
   const [notification, setNotification] = useState<IslandNotification | null>(null);
   const [isHovered, setIsHovered] = useState(false);
-  const { language, firebaseUser, firestoreDisabled } = useAppStore();
+  const [isSyncing, setIsSyncing] = useState(false);
+  const { language, firebaseUser, firestoreDisabled, forceSyncToCloud, showToast } = useAppStore();
+  const tHub = translations[language].priorityHub;
 
   useEffect(() => {
     return islandManager.subscribe((notif) => {
       setNotification(notif);
     });
   }, []);
+
+  const handleForceSync = async () => {
+    if (isSyncing) return;
+    setIsSyncing(true);
+    islandManager.notify({
+      type: 'sync',
+      title:
+        language === 'ar'
+          ? 'جارٍ المزامنة السحابية...'
+          : language === 'en'
+          ? 'Syncing to Cloud...'
+          : 'Synchronisation Cloud...',
+      subtitle: firebaseUser?.email || 'Cloud Firestore',
+    });
+
+    try {
+      const res = await forceSyncToCloud();
+      if (res.success) {
+        islandManager.notify({
+          type: 'cloud',
+          title: tHub.cloudSyncPillSuccess,
+          subtitle: firebaseUser?.email || 'Firestore users/' + (firebaseUser?.uid || ''),
+        });
+        showToast({ message: tHub.cloudSyncPillSuccess });
+      } else {
+        islandManager.notify({
+          type: 'cloud',
+          title: tHub.cloudSyncPillError,
+          subtitle: res.message,
+        });
+        showToast({ message: `${tHub.cloudSyncPillError}: ${res.message}` });
+      }
+    } catch (e: any) {
+      islandManager.notify({
+        type: 'cloud',
+        title: tHub.cloudSyncPillError,
+        subtitle: e?.message || 'Error',
+      });
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   const getIcon = (type: IslandNotification['type']) => {
     switch (type) {
@@ -62,8 +108,11 @@ export const DynamicIsland: React.FC = () => {
     <div className="fixed top-2.5 left-1/2 -translate-x-1/2 z-50 pointer-events-none select-none">
       <motion.div
         layout
+        onClick={handleForceSync}
+        whileTap={{ scale: 0.96 }}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
+        title={language === 'ar' ? 'انقر لفرض المزامنة السحابية' : language === 'en' ? 'Click to force Cloud Sync' : 'Cliquer pour forcer la synchronisation Cloud'}
         transition={{
           type: 'spring',
           stiffness: 420,
