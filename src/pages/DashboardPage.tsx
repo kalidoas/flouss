@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { useAppStore } from '../store/useAppStore';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
@@ -54,7 +55,7 @@ export const DashboardPage: React.FC = () => {
   } = useAppStore();
 
   const tDash = translations[language].dashboard;
-  const isAr = language === 'ar';
+  const tCommon = translations[language].common;
 
   const [isExpenseOpen, setIsExpenseOpen] = useState(false);
   const [isIncomeOpen, setIsIncomeOpen] = useState(false);
@@ -140,19 +141,23 @@ export const DashboardPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-5 animate-page select-text">
+    <div className="max-w-4xl mx-auto space-y-6 animate-page select-text">
       {/* Recurring Income Due Banner */}
       {dueRecurringRule && dueSource && (
-        <div className="rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/60 p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-2xl bg-emerald-500/10 dark:bg-emerald-950/40 border border-emerald-500/20 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs backdrop-blur-xl shadow-xs"
+        >
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded bg-emerald-600 text-white flex items-center justify-center shrink-0">
-              <BellRing className="w-4 h-4" />
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center justify-center shrink-0">
+              <BellRing className="w-4 h-4 stroke-[2.2]" />
             </div>
             <div>
-              <h4 className="font-semibold text-[#37352f] dark:text-[#ecebed]">
+              <h4 className="font-semibold text-zinc-900 dark:text-white tracking-tight">
                 {tDash.recurringBannerTitle}
               </h4>
-              <p className="text-[#787774] dark:text-[#9b9a97] mt-0.5">
+              <p className="text-zinc-500 dark:text-zinc-400 mt-0.5">
                 {tDash.recurringBannerDesc
                   .replace('{source}', getIncomeSourceName(dueSource, language))
                   .replace('{amount}', formatMAD(dueRecurringRule.amount, false, language))}
@@ -163,7 +168,7 @@ export const DashboardPage: React.FC = () => {
           <div className="flex items-center gap-2 self-end sm:self-center">
             <button
               onClick={() => dismissRecurringPrompt(currentMonth)}
-              className="px-2.5 py-1 text-xs text-[#787774] hover:text-[#37352f] transition-colors"
+              className="px-3 py-1.5 text-xs text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
             >
               {tDash.dismiss}
             </button>
@@ -181,129 +186,156 @@ export const DashboardPage: React.FC = () => {
                 };
                 confirmRecurringIncome(dueRecurringRule.id, currentMonth, tx);
               }}
-              className="px-3 py-1 text-xs font-medium rounded bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1.5 transition-colors"
+              className="px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1.5 transition-colors shadow-xs"
             >
               <CheckCircle2 className="w-3.5 h-3.5" />
               <span>{tDash.confirmRecurring}</span>
             </button>
           </div>
-        </div>
+        </motion.div>
       )}
 
-      {/* Notion-style Clean Financial Overview Card */}
-      <div className="bg-white dark:bg-[#202020] border border-[#e3e2de] dark:border-[#2f2f2f] rounded-lg p-5 sm:p-6 shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-2 mb-1 text-xs text-[#787774] dark:text-[#9b9a97]">
-          <span className="flex items-center gap-1.5 font-medium text-[#37352f] dark:text-[#ecebed]">
-            <Wallet className="w-4 h-4 text-[#787774]" />
-            <span>{tDash.totalBalance}</span>
-          </span>
-          <span className="bg-[#f1f0ee] dark:bg-[#282828] text-[#787774] dark:text-[#9b9a97] px-2 py-0.5 rounded text-[11px] font-mono">
-            {formatMonthYear(currentMonth, language)}
-          </span>
-        </div>
+      {/* Apple-Grade Hero Card: iOS 18 / macOS Sequoia Translucent Glass Surface */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: 'spring', stiffness: 380, damping: 28 }}
+        className="relative overflow-hidden rounded-3xl p-6 sm:p-8 bg-white/80 dark:bg-zinc-900/65 backdrop-blur-2xl border border-black/[0.06] dark:border-white/[0.08] shadow-[0_8px_32px_0_rgba(0,0,0,0.06),inset_0_1px_0_0_rgba(255,255,255,0.8)] dark:shadow-[0_12px_40px_0_rgba(0,0,0,0.45),inset_0_1px_0_0_rgba(255,255,255,0.08)]"
+      >
+        {/* Ambient Radial Glow Gradients */}
+        <div className="absolute -top-24 -right-24 w-80 h-80 bg-gradient-to-br from-blue-500/15 via-indigo-500/10 to-transparent rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-gradient-to-tr from-emerald-500/10 via-teal-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
 
-        {/* Big Balance Number with Count-Up Animation & Tabular Nums */}
-        <div className="text-3xl sm:text-4xl font-semibold tracking-tight text-[#37352f] dark:text-[#ecebed] mb-4">
-          <CountUpNumber
-            value={balance}
-            hide={hideBalance}
-            language={language}
-            duration={600}
-          />
-        </div>
-
-        {/* Clean Sub Stats Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4 border-t border-[#e3e2de] dark:border-[#2f2f2f] text-xs">
-          <div>
-            <span className="text-[#787774] dark:text-[#9b9a97] block text-[11px]">
-              {tDash.netWorth}
+        <div className="relative z-10">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-2 text-xs">
+            <span className="flex items-center gap-2 font-medium text-zinc-600 dark:text-zinc-300">
+              <span className="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 flex items-center justify-center">
+                <Wallet className="w-4 h-4 stroke-[2.2]" />
+              </span>
+              <span className="text-sm font-semibold text-zinc-900 dark:text-white tracking-tight">
+                {tDash.totalBalance}
+              </span>
             </span>
-            <span
-              className={`font-semibold text-sm tabular-nums text-[#37352f] dark:text-[#ecebed] transition-[filter] duration-200 ${
-                hideBalance ? 'privacy-blur' : ''
-              }`}
-            >
-              {formatMAD(netWorth, false, language)}
+            <span className="bg-zinc-100/80 dark:bg-zinc-800/80 border border-black/[0.04] dark:border-white/[0.06] text-zinc-600 dark:text-zinc-300 px-2.5 py-1 rounded-full text-xs font-mono tabular-nums">
+              {formatMonthYear(currentMonth, language)}
             </span>
           </div>
 
-          <div>
-            <span className="text-[#787774] dark:text-[#9b9a97] block text-[11px]">
-              {tDash.inSavings}
-            </span>
-            <span
-              className={`font-semibold text-sm tabular-nums text-[#37352f] dark:text-[#ecebed] transition-[filter] duration-200 ${
-                hideBalance ? 'privacy-blur' : ''
-              }`}
-            >
-              {formatMAD(totalInGoals, false, language)}
-            </span>
+          {/* Big Balance Number with Count-Up Animation & Tabular Nums */}
+          <div className="text-3xl sm:text-5xl font-bold tracking-tight text-zinc-900 dark:text-white my-3 tabular-nums">
+            <CountUpNumber
+              value={balance}
+              hide={hideBalance}
+              language={language}
+              duration={600}
+            />
           </div>
 
-          <div className="col-span-2 sm:col-span-1">
-            <span className="text-[#787774] dark:text-[#9b9a97] block text-[11px]">
-              {tDash.savedThisMonth}
-            </span>
-            <span
-              className={`font-semibold text-sm tabular-nums text-emerald-600 dark:text-emerald-400 transition-[filter] duration-200 ${
-                hideBalance ? 'privacy-blur' : ''
-              }`}
-            >
-              +{formatMAD(savedThisMonth, false, language)}
-            </span>
+          {/* Apple Sub Stats Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-5 border-t border-black/[0.05] dark:border-white/[0.06]">
+            <div>
+              <span className="text-zinc-500 dark:text-zinc-400 block text-xs font-medium mb-0.5">
+                {tDash.netWorth}
+              </span>
+              <span
+                className={`font-bold text-base sm:text-lg tabular-nums tracking-tight text-zinc-900 dark:text-white transition-[filter] duration-200 ${
+                  hideBalance ? 'privacy-blur' : ''
+                }`}
+              >
+                {formatMAD(netWorth, false, language)}
+              </span>
+            </div>
+
+            <div>
+              <span className="text-zinc-500 dark:text-zinc-400 block text-xs font-medium mb-0.5">
+                {tDash.inSavings}
+              </span>
+              <span
+                className={`font-bold text-base sm:text-lg tabular-nums tracking-tight text-zinc-900 dark:text-white transition-[filter] duration-200 ${
+                  hideBalance ? 'privacy-blur' : ''
+                }`}
+              >
+                {formatMAD(totalInGoals, false, language)}
+              </span>
+            </div>
+
+            <div className="col-span-2 sm:col-span-1">
+              <span className="text-zinc-500 dark:text-zinc-400 block text-xs font-medium mb-0.5">
+                {tDash.savedThisMonth}
+              </span>
+              <span
+                className={`font-bold text-base sm:text-lg tabular-nums tracking-tight text-emerald-600 dark:text-emerald-400 transition-[filter] duration-200 ${
+                  hideBalance ? 'privacy-blur' : ''
+                }`}
+              >
+                +{formatMAD(savedThisMonth, false, language)}
+              </span>
+            </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Notion Focus View: "Ma liste" Section */}
       <FocusTaskList />
 
-      {/* Quick Action Buttons (Notion style) */}
-      <div className="grid grid-cols-3 gap-2.5">
-        <button
+      {/* Quick Action Buttons: Apple tactile glassmorphic interactions */}
+      <div className="grid grid-cols-3 gap-3">
+        <motion.button
+          whileHover={{ y: -2, scale: 1.015 }}
+          whileTap={{ scale: 0.98 }}
           onClick={() => setIsIncomeOpen(true)}
-          className="flex items-center justify-center gap-2 p-2.5 rounded-lg bg-white dark:bg-[#202020] border border-[#e3e2de] dark:border-[#2f2f2f] hover:bg-[#fbfbfa] dark:hover:bg-[#252525] transition-colors"
+          className="flex items-center justify-center gap-2 p-3 rounded-2xl bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs hover:border-emerald-500/30 transition-all"
         >
-          <ArrowUpRight className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-          <span className="text-xs font-medium text-[#37352f] dark:text-[#ecebed]">
+          <div className="w-7 h-7 rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+            <ArrowUpRight className="w-4 h-4 stroke-[2.2]" />
+          </div>
+          <span className="text-xs sm:text-sm font-semibold text-zinc-900 dark:text-white tracking-tight">
             + {tDash.addIncome}
           </span>
-        </button>
+        </motion.button>
 
-        <button
+        <motion.button
+          whileHover={{ y: -2, scale: 1.015 }}
+          whileTap={{ scale: 0.98 }}
           onClick={() => setIsExpenseOpen(true)}
-          className="flex items-center justify-center gap-2 p-2.5 rounded-lg bg-white dark:bg-[#202020] border border-[#e3e2de] dark:border-[#2f2f2f] hover:bg-[#fbfbfa] dark:hover:bg-[#252525] transition-colors"
+          className="flex items-center justify-center gap-2 p-3 rounded-2xl bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs hover:border-rose-500/30 transition-all"
         >
-          <ArrowDownRight className="w-4 h-4 text-rose-600 dark:text-rose-400" />
-          <span className="text-xs font-medium text-[#37352f] dark:text-[#ecebed]">
+          <div className="w-7 h-7 rounded-lg bg-rose-500/15 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+            <ArrowDownRight className="w-4 h-4 stroke-[2.2]" />
+          </div>
+          <span className="text-xs sm:text-sm font-semibold text-zinc-900 dark:text-white tracking-tight">
             + {tDash.addExpense}
           </span>
-        </button>
+        </motion.button>
 
-        <button
+        <motion.button
+          whileHover={{ y: -2, scale: 1.015 }}
+          whileTap={{ scale: 0.98 }}
           onClick={() => handleOpenGoalContribution()}
-          className="flex items-center justify-center gap-2 p-2.5 rounded-lg bg-white dark:bg-[#202020] border border-[#e3e2de] dark:border-[#2f2f2f] hover:bg-[#fbfbfa] dark:hover:bg-[#252525] transition-colors"
+          className="flex items-center justify-center gap-2 p-3 rounded-2xl bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs hover:border-blue-500/30 transition-all"
         >
-          <Target className="w-4 h-4 text-[#2383e2]" />
-          <span className="text-xs font-medium text-[#37352f] dark:text-[#ecebed]">
+          <div className="w-7 h-7 rounded-lg bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+            <Target className="w-4 h-4 stroke-[2.2]" />
+          </div>
+          <span className="text-xs sm:text-sm font-semibold text-zinc-900 dark:text-white tracking-tight">
             {tDash.addContribution}
           </span>
-        </button>
+        </motion.button>
       </div>
 
       {/* Monthly Savings Reminder Card */}
       {totalMonthlyGoalTarget > 0 && (
-        <div className="p-4 rounded-lg bg-white dark:bg-[#202020] border border-[#e3e2de] dark:border-[#2f2f2f] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+        <div className="p-4 sm:p-5 rounded-2xl bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">
           <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded bg-[#f1f0ee] dark:bg-[#282828] text-[#37352f] dark:text-[#ecebed] flex items-center justify-center shrink-0">
-              <PiggyBank className="w-4 h-4" />
+            <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 flex items-center justify-center shrink-0">
+              <PiggyBank className="w-4 h-4 stroke-[2.2]" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h4 className="font-semibold text-[#37352f] dark:text-[#ecebed]">
+                <h4 className="font-semibold text-zinc-900 dark:text-white text-sm tracking-tight">
                   {tDash.savingsReminderTitle} :{' '}
                   <span
-                    className={`font-semibold tabular-nums text-emerald-600 dark:text-emerald-400 transition-[filter] duration-200 ${
+                    className={`font-bold tabular-nums text-emerald-600 dark:text-emerald-400 transition-[filter] duration-200 ${
                       hideBalance ? 'privacy-blur' : ''
                     }`}
                   >
@@ -311,7 +343,7 @@ export const DashboardPage: React.FC = () => {
                   </span>
                 </h4>
               </div>
-              <p className="text-[#787774] dark:text-[#9b9a97] mt-0.5">
+              <p className="text-zinc-500 dark:text-zinc-400 mt-0.5">
                 <span className={hideBalance ? 'privacy-blur' : ''}>
                   {formatMAD(savedThisMonthToGoals, false, language)}
                 </span>{' '}
@@ -332,8 +364,8 @@ export const DashboardPage: React.FC = () => {
                 <span>{tDash.saveAllButton}</span>
               </Button>
             ) : (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-xs font-medium">
-                <CheckCircle2 className="w-3.5 h-3.5" /> Objectif mensuel complété !
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-semibold">
+                <CheckCircle2 className="w-3.5 h-3.5" /> {tDash.monthlyTargetCompleted}
               </span>
             )}
           </div>
@@ -342,52 +374,60 @@ export const DashboardPage: React.FC = () => {
 
       {/* Month Flow Overview: Income vs Expense Cards */}
       <div className="grid grid-cols-2 gap-3 sm:gap-4">
-        <Card padding="md">
-          <div className="flex items-center justify-between text-xs text-[#787774] dark:text-[#9b9a97] mb-1">
-            <span>{tDash.incomeThisMonth}</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+        <div className="rounded-2xl p-4 sm:p-5 bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs">
+          <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 mb-1">
+            <span className="font-medium">{tDash.incomeThisMonth}</span>
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
           </div>
           <div
-            className={`text-lg sm:text-xl font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums transition-[filter] duration-200 ${
+            className={`text-xl sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400 tabular-nums tracking-tight transition-[filter] duration-200 ${
               hideBalance ? 'privacy-blur' : ''
             }`}
           >
             +{formatMAD(incomeThisMonth, false, language)}
           </div>
-          <span className="text-[11px] text-[#9b9a97] mt-0.5 block">
-            {currentMonthTx.filter((t: Transaction) => t.type === 'income').length} versement(s)
+          <span className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-1 block tabular-nums">
+            {tDash.incomeCount.replace(
+              '{count}',
+              String(currentMonthTx.filter((t: Transaction) => t.type === 'income').length)
+            )}
           </span>
-        </Card>
+        </div>
 
-        <Card padding="md">
-          <div className="flex items-center justify-between text-xs text-[#787774] dark:text-[#9b9a97] mb-1">
-            <span>{tDash.expensesThisMonth}</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+        <div className="rounded-2xl p-4 sm:p-5 bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs">
+          <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 mb-1">
+            <span className="font-medium">{tDash.expensesThisMonth}</span>
+            <span className="w-2 h-2 rounded-full bg-rose-500" />
           </div>
           <div
-            className={`text-lg sm:text-xl font-semibold text-rose-600 dark:text-rose-400 tabular-nums transition-[filter] duration-200 ${
+            className={`text-xl sm:text-2xl font-bold text-rose-600 dark:text-rose-400 tabular-nums tracking-tight transition-[filter] duration-200 ${
               hideBalance ? 'privacy-blur' : ''
             }`}
           >
             -{formatMAD(expenseThisMonth, false, language)}
           </div>
-          <span className="text-[11px] text-[#9b9a97] mt-0.5 block">
-            {currentMonthTx.filter((t: Transaction) => t.type === 'expense').length} dépense(s)
+          <span className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-1 block tabular-nums">
+            {tDash.expenseCount.replace(
+              '{count}',
+              String(currentMonthTx.filter((t: Transaction) => t.type === 'expense').length)
+            )}
           </span>
-        </Card>
+        </div>
       </div>
 
       {/* Two Column Grid: Spending Donut + Top Goals */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* Spending Breakdown Donut (5 cols) */}
         <div className="lg:col-span-5">
-          <Card padding="md" className="h-full flex flex-col justify-between">
+          <div className="rounded-2xl p-5 bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs h-full flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-xs sm:text-sm text-[#37352f] dark:text-[#ecebed]">
+                <h3 className="font-semibold text-xs sm:text-sm text-zinc-900 dark:text-white tracking-tight">
                   {tDash.spendingBreakdown}
                 </h3>
-                <span className="text-[11px] text-[#787774] dark:text-[#9b9a97]">Ce mois-ci</span>
+                <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
+                  {tDash.thisMonth}
+                </span>
               </div>
 
               {spendingBreakdown.length === 0 ? (
@@ -425,23 +465,26 @@ export const DashboardPage: React.FC = () => {
                           ))}
                         </Pie>
                         <Tooltip
-                          formatter={(value: number) => [formatMAD(value, false, language), 'Dépense']}
+                          formatter={(value: number) => [
+                            formatMAD(value, false, language),
+                            tDash.expenseCategory,
+                          ]}
                           contentStyle={{
-                            borderRadius: '6px',
-                            backgroundColor: '#202020',
-                            border: '1px solid #2f2f2f',
-                            color: '#ecebed',
+                            borderRadius: '12px',
+                            backgroundColor: '#18181b',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            color: '#ffffff',
                             fontSize: '11px',
                           }}
                         />
                       </PieChart>
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                      <span className="text-[10px] text-[#787774] dark:text-[#9b9a97] uppercase">
+                      <span className="text-[10px] text-zinc-400 uppercase tracking-wider">
                         Total
                       </span>
                       <span
-                        className={`text-xs font-semibold text-[#37352f] dark:text-[#ecebed] tabular-nums transition-[filter] duration-200 ${
+                        className={`text-xs font-bold text-zinc-900 dark:text-white tabular-nums tracking-tight transition-[filter] duration-200 ${
                           hideBalance ? 'privacy-blur' : ''
                         }`}
                       >
@@ -451,27 +494,27 @@ export const DashboardPage: React.FC = () => {
                   </div>
 
                   {/* Top Spending Items list */}
-                  <div className="space-y-1 mt-2">
+                  <div className="space-y-1.5 mt-2">
                     {spendingBreakdown.slice(0, 4).map((item) => (
                       <div
                         key={item.id}
                         className="flex items-center justify-between text-xs py-1"
                       >
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
                           <span
-                            className="w-2 h-2 rounded-full shrink-0"
+                            className="w-2.5 h-2.5 rounded-full shrink-0"
                             style={{ backgroundColor: item.color }}
                           />
-                          <span className="text-[#37352f] dark:text-[#ecebed] truncate max-w-[140px]">
+                          <span className="text-zinc-700 dark:text-zinc-300 truncate max-w-[140px]">
                             {item.name}
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-[#787774] text-[11px] tabular-nums">
+                          <span className="text-zinc-400 text-[11px] tabular-nums">
                             {item.percentage}%
                           </span>
                           <span
-                            className={`font-medium text-[#37352f] dark:text-[#ecebed] tabular-nums transition-[filter] duration-200 ${
+                            className={`font-semibold text-zinc-900 dark:text-white tabular-nums tracking-tight transition-[filter] duration-200 ${
                               hideBalance ? 'privacy-blur' : ''
                             }`}
                           >
@@ -484,30 +527,30 @@ export const DashboardPage: React.FC = () => {
                 </>
               )}
             </div>
-          </Card>
+          </div>
         </div>
 
         {/* Top Goals (7 cols) */}
         <div className="lg:col-span-7">
-          <Card padding="md" className="h-full flex flex-col justify-between">
+          <div className="rounded-2xl p-5 bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs h-full flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-xs sm:text-sm text-[#37352f] dark:text-[#ecebed]">
+                  <h3 className="font-semibold text-xs sm:text-sm text-zinc-900 dark:text-white tracking-tight">
                     {tDash.topGoals}
                   </h3>
                   {top3Goals.length > 0 && (
-                    <span className="text-[11px] bg-[#f1f0ee] dark:bg-[#282828] text-[#787774] dark:text-[#9b9a97] px-1.5 py-0.2 rounded font-mono">
+                    <span className="text-[11px] bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 px-2 py-0.5 rounded-full font-mono tabular-nums">
                       {top3Goals.length}
                     </span>
                   )}
                 </div>
                 <button
                   onClick={() => setActiveScreen('categories')}
-                  className="text-xs text-[#2383e2] hover:underline flex items-center gap-0.5"
+                  className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-0.5 font-medium"
                 >
                   <span>{tDash.seeAllGoals}</span>
-                  <ChevronRight className="w-3 h-3" />
+                  <ChevronRight className="w-3.5 h-3.5" />
                 </button>
               </div>
 
@@ -532,14 +575,14 @@ export const DashboardPage: React.FC = () => {
                     return (
                       <div
                         key={goalCat.id}
-                        className="p-3 rounded-md bg-[#fbfbfa] dark:bg-[#1a1a1a] border border-[#e3e2de] dark:border-[#2f2f2f]"
+                        className="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-black/[0.04] dark:border-white/[0.05]"
                       >
                         <div className="flex items-center justify-between mb-1.5">
-                          <h4 className="font-medium text-xs text-[#37352f] dark:text-[#ecebed]">
+                          <h4 className="font-semibold text-xs text-zinc-900 dark:text-white">
                             {getCategoryName(goalCat, language)}
                           </h4>
                           <span
-                            className={`text-[11px] text-[#787774] dark:text-[#9b9a97] tabular-nums transition-[filter] duration-200 ${
+                            className={`text-[11px] text-zinc-500 dark:text-zinc-400 tabular-nums transition-[filter] duration-200 ${
                               hideBalance ? 'privacy-blur' : ''
                             }`}
                           >
@@ -560,22 +603,22 @@ export const DashboardPage: React.FC = () => {
                 </div>
               )}
             </div>
-          </Card>
+          </div>
         </div>
       </div>
 
       {/* Recent Transactions Section */}
-      <div className="space-y-2">
+      <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-xs sm:text-sm text-[#37352f] dark:text-[#ecebed]">
+          <h3 className="font-semibold text-xs sm:text-sm text-zinc-900 dark:text-white tracking-tight">
             {tDash.recentTransactions}
           </h3>
           <button
             onClick={() => setActiveScreen('history')}
-            className="text-xs text-[#2383e2] hover:underline flex items-center gap-0.5"
+            className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-0.5 font-medium"
           >
             <span>{tDash.seeAllTransactions}</span>
-            <ChevronRight className="w-3 h-3" />
+            <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
 
@@ -583,10 +626,10 @@ export const DashboardPage: React.FC = () => {
           <EmptyState
             icon={<Receipt className="w-5 h-5" />}
             title={tDash.noTransactions}
-            description="Toutes vos entrées et sorties d'argent apparaîtront ici."
+            description={tDash.allTransactionsDescription}
           />
         ) : (
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             {recentTransactions.map((tx: Transaction) => (
               <TransactionItem
                 key={tx.id}
@@ -603,28 +646,30 @@ export const DashboardPage: React.FC = () => {
         isOpen={isSaveAllModalOpen}
         onClose={() => setIsSaveAllModalOpen(false)}
         title={tDash.saveAllConfirmTitle}
-        subtitle="Alimenter tous vos objectifs d'épargne en une seule fois"
+        subtitle={tDash.saveAllModalSubtitle}
         maxWidth="sm"
       >
         <div className="space-y-4 text-xs">
-          <p className="text-[#5f5e5b] dark:text-[#9b9a97] leading-relaxed">
+          <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed">
             {tDash.saveAllConfirmDesc.replace(
               '{amount}',
               formatMAD(remainingToSaveThisMonth, false, language)
             )}
           </p>
 
-          <div className="p-3 rounded-md bg-[#fbfbfa] dark:bg-[#1a1a1a] border border-[#e3e2de] dark:border-[#2f2f2f] space-y-1.5">
-            <span className="text-[10px] font-semibold text-[#787774] uppercase tracking-wider block">
-              Répartition prévue ce mois :
+          <div className="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-black/[0.04] dark:border-white/[0.05] space-y-1.5">
+            <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider block">
+              {tDash.plannedDistribution}
             </span>
             {activeGoalCategories.map((g) => {
               const calc = calculateGoalProgress(g, transactions);
               if (calc.status === 'completed' || calc.monthlyNeeded <= 0) return null;
               return (
                 <div key={g.id} className="flex justify-between py-0.5">
-                  <span className="text-[#37352f] dark:text-[#ecebed]">{getCategoryName(g, language)}</span>
-                  <span className="font-medium text-emerald-600 dark:text-emerald-400 tabular-nums">
+                  <span className="text-zinc-800 dark:text-zinc-200">
+                    {getCategoryName(g, language)}
+                  </span>
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">
                     +{formatMAD(calc.monthlyNeeded, false, language)}
                   </span>
                 </div>
@@ -638,7 +683,7 @@ export const DashboardPage: React.FC = () => {
               fullWidth
               onClick={() => setIsSaveAllModalOpen(false)}
             >
-              Annuler
+              {tCommon.cancel}
             </Button>
             <Button
               variant="primary"
@@ -646,7 +691,7 @@ export const DashboardPage: React.FC = () => {
               onClick={handleExecuteSaveAll}
               icon={<Sparkles className="w-3.5 h-3.5" />}
             >
-              Confirmer tout épargner
+              {tDash.saveAllButton}
             </Button>
           </div>
         </div>

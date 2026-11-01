@@ -43,10 +43,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
   ];
 
   const personalItems: { id: ScreenId; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-    { id: 'tasks', label: isAr ? 'البرنامج والمتابعة' : 'Programme & Tâches', icon: CheckSquare },
-    { id: 'debts', label: isAr ? 'السلف والكريدي' : 'Dettes & Prêts', icon: HandCoins },
-    { id: 'subscriptions', label: isAr ? 'فواتير واشتراكات' : 'Charges Fixes', icon: CreditCard },
-    { id: 'notes', label: isAr ? 'ملاحظات وأفكار' : 'Notes & Idées', icon: FileText },
+    { id: 'tasks', label: t.tasks, icon: CheckSquare },
+    { id: 'debts', label: t.debts, icon: HandCoins },
+    { id: 'subscriptions', label: t.subscriptions, icon: CreditCard },
+    { id: 'notes', label: t.notes, icon: FileText },
   ];
 
   return (
@@ -88,7 +88,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
           <div>
             {!collapsed && (
               <span className="px-2 text-[10px] font-semibold uppercase tracking-wider text-[#9b9a97] dark:text-[#787774] block mb-1">
-                {isAr ? 'المالية والميزانية' : 'Finances & Budget'}
+                {t.financesSection}
               </span>
             )}
             <div className="space-y-0.5">
@@ -124,7 +124,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
           <div>
             {!collapsed && (
               <span className="px-2 text-[10px] font-semibold uppercase tracking-wider text-[#9b9a97] dark:text-[#787774] block mb-1">
-                {isAr ? 'الإدارة الشخصية' : 'Vie Personnelle'}
+                {t.personalSection}
               </span>
             )}
             <div className="space-y-0.5">
@@ -212,7 +212,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
             {!collapsed && (
               <button
                 onClick={() => logout()}
-                title={isAr ? 'تسجيل الخروج' : 'Déconnexion'}
+                title={isAr ? 'تسجيل الخروج' : language === 'en' ? 'Log out' : 'Déconnexion'}
                 className="p-1.5 rounded-md text-[#787774] hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors shrink-0"
               >
                 <LogOut className="w-3.5 h-3.5" />

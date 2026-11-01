@@ -4,6 +4,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
   {
     id: 'cat_nourriture',
     key: 'food',
+    group: 'food_dining',
     name: 'Nourriture & Courses',
     icon: 'Utensils',
     color: '#10b981', // pastel emerald
@@ -24,6 +25,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
   {
     id: 'cat_cafe',
     key: 'cafe',
+    group: 'food_dining',
     name: 'Café & Sorties',
     icon: 'Coffee',
     color: '#f59e0b', // pastel amber
@@ -44,6 +46,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
   {
     id: 'cat_transport',
     key: 'transport',
+    group: 'transport_mobility',
     name: 'Transport & Déplacements',
     icon: 'Car',
     color: '#06b6d4', // cyan
@@ -64,6 +67,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
   {
     id: 'cat_vetements',
     key: 'clothing',
+    group: 'lifestyle_entertainment',
     name: 'Vêtements & Mode',
     icon: 'Shirt',
     color: '#ec4899', // pink
@@ -86,6 +90,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
   {
     id: 'cat_pc',
     key: 'electronics',
+    group: 'lifestyle_entertainment',
     name: 'Électronique & Tech',
     icon: 'Laptop',
     color: '#8b5cf6', // purple
@@ -107,6 +112,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
   {
     id: 'cat_ecole',
     key: 'education',
+    group: 'essentials_housing',
     name: 'Éducation & Formation',
     icon: 'GraduationCap',
     color: '#3b82f6', // blue
@@ -128,6 +134,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
   {
     id: 'cat_sante',
     key: 'health',
+    group: 'essentials_housing',
     name: 'Santé & Hygiène',
     icon: 'Heart',
     color: '#f43f5e', // rose
@@ -148,6 +155,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
   {
     id: 'cat_sport',
     key: 'sport',
+    group: 'lifestyle_entertainment',
     name: 'Sport & Bien-être',
     icon: 'Dumbbell',
     color: '#f97316', // orange
@@ -167,6 +175,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
   {
     id: 'cat_maison',
     key: 'home',
+    group: 'essentials_housing',
     name: 'Logement & Maison',
     icon: 'Home',
     color: '#14b8a6', // teal
@@ -188,6 +197,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
   {
     id: 'cat_telecom',
     key: 'phone',
+    group: 'subscriptions_utilities',
     name: 'Télécom & Abonnements',
     icon: 'Smartphone',
     color: '#6366f1', // indigo
@@ -208,6 +218,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
   {
     id: 'cat_shopping',
     key: 'shopping',
+    group: 'lifestyle_entertainment',
     name: 'Shopping & Achats',
     icon: 'ShoppingBag',
     color: '#a855f7', // purple
@@ -227,6 +238,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
   {
     id: 'cat_famille',
     key: 'family',
+    group: 'lifestyle_entertainment',
     name: 'Famille & Proches',
     icon: 'Baby',
     color: '#d97706', // warm amber
@@ -246,6 +258,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
   {
     id: 'cat_sadaqa',
     key: 'charity',
+    group: 'income_investments',
     name: 'Sadaqa & Charité',
     icon: 'HeartHandshake',
     color: '#059669', // emerald dark
@@ -265,6 +278,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
   {
     id: 'cat_investissement',
     key: 'investment',
+    group: 'income_investments',
     name: 'Investissement & Avenir',
     icon: 'TrendingUp',
     color: '#10b981', // emerald
@@ -283,8 +297,26 @@ export const DEFAULT_CATEGORIES: Category[] = [
     ],
   },
   {
+    id: 'cat_epargne_secu',
+    key: 'emergencyFund',
+    group: 'savings',
+    name: 'Fonds d’urgence',
+    icon: 'PiggyBank',
+    color: '#3b82f6', // blue
+    isGoal: true,
+    targetAmount: 10000,
+    targetMonths: 6,
+    monthlyBudget: null,
+    isArchived: false,
+    createdAt: new Date().toISOString(),
+    subcategories: [
+      { id: 'sub_emergency', key: 'emergencyFund', name: 'Sécurité financière', icon: 'PiggyBank' },
+    ],
+  },
+  {
     id: 'cat_autre',
     key: 'other',
+    group: 'essentials_housing',
     name: 'Autres dépenses',
     icon: 'Coins',
     color: '#64748b', // slate

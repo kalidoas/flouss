@@ -1,9 +1,11 @@
 import React, { useState, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { useAppStore } from '../store/useAppStore';
 import { TaskItem, TaskCategory, TaskFrequency } from '../types';
 import { Modal } from '../components/common/Modal';
 import { Button } from '../components/common/Button';
 import { EmptyState } from '../components/common/EmptyState';
+import { translations } from '../i18n/translations';
 import confetti from 'canvas-confetti';
 import {
   CheckCircle2,
@@ -25,95 +27,105 @@ import {
 
 const CATEGORY_CONFIG: Record<
   TaskCategory,
-  { label: string; labelAr: string; icon: string; color: string; bg: string; border: string }
+  { fr: string; ar: string; en: string; icon: string; color: string; bg: string; border: string }
 > = {
   routine: {
-    label: 'Routine',
-    labelAr: 'روتين',
+    fr: 'Routine',
+    ar: 'روتين',
+    en: 'Routine',
     icon: '⚡',
     color: 'text-amber-600 dark:text-amber-400',
-    bg: 'bg-amber-50 dark:bg-amber-950/40',
-    border: 'border-amber-200 dark:border-amber-800/50',
+    bg: 'bg-amber-500/10',
+    border: 'border-amber-500/20',
   },
   deen: {
-    label: 'Deen & Spiritualité',
-    labelAr: 'دين وصلاة',
+    fr: 'Deen & Spiritualité',
+    ar: 'دين وصلاة',
+    en: 'Faith & Prayer',
     icon: '🕌',
     color: 'text-emerald-600 dark:text-emerald-400',
-    bg: 'bg-emerald-50 dark:bg-emerald-950/40',
-    border: 'border-emerald-200 dark:border-emerald-800/50',
+    bg: 'bg-emerald-500/10',
+    border: 'border-emerald-500/20',
   },
   sport: {
-    label: 'Sport & Santé',
-    labelAr: 'رياضة وصحة',
+    fr: 'Sport & Santé',
+    ar: 'رياضة وصحة',
+    en: 'Sport & Fitness',
     icon: '🏋️',
     color: 'text-rose-600 dark:text-rose-400',
-    bg: 'bg-rose-50 dark:bg-rose-950/40',
-    border: 'border-rose-200 dark:border-rose-800/50',
+    bg: 'bg-rose-500/10',
+    border: 'border-rose-500/20',
   },
   work: {
-    label: 'Travail & Études',
-    labelAr: 'عمل ودراسة',
+    fr: 'Travail & Études',
+    ar: 'عمل ودراسة',
+    en: 'Work & Career',
     icon: '💻',
     color: 'text-blue-600 dark:text-blue-400',
-    bg: 'bg-blue-50 dark:bg-blue-950/40',
-    border: 'border-blue-200 dark:border-blue-800/50',
+    bg: 'bg-blue-500/10',
+    border: 'border-blue-500/20',
   },
   study: {
-    label: 'Apprentissage',
-    labelAr: 'تعلّم',
+    fr: 'Apprentissage',
+    ar: 'تعلّم',
+    en: 'Learning & Reading',
     icon: '📚',
     color: 'text-indigo-600 dark:text-indigo-400',
-    bg: 'bg-indigo-50 dark:bg-indigo-950/40',
-    border: 'border-indigo-200 dark:border-indigo-800/50',
+    bg: 'bg-indigo-500/10',
+    border: 'border-indigo-500/20',
   },
   finance: {
-    label: 'Finances',
-    labelAr: 'مالية',
+    fr: 'Finances',
+    ar: 'مالية',
+    en: 'Personal Finance',
     icon: '💰',
     color: 'text-teal-600 dark:text-teal-400',
-    bg: 'bg-teal-50 dark:bg-teal-950/40',
-    border: 'border-teal-200 dark:border-teal-800/50',
+    bg: 'bg-teal-500/10',
+    border: 'border-teal-500/20',
   },
   health: {
-    label: 'Bien-être & Eau',
-    labelAr: 'صحة وماء',
+    fr: 'Bien-être & Eau',
+    ar: 'صحة وماء',
+    en: 'Health & Hydration',
     icon: '💧',
     color: 'text-cyan-600 dark:text-cyan-400',
-    bg: 'bg-cyan-50 dark:bg-cyan-950/40',
-    border: 'border-cyan-200 dark:border-cyan-800/50',
+    bg: 'bg-cyan-500/10',
+    border: 'border-cyan-500/20',
   },
   discipline: {
-    label: 'Discipline & Sobriété',
-    labelAr: 'انضباط ووعي',
+    fr: 'Discipline & Sobriété',
+    ar: 'انضباط ووعي',
+    en: 'Focus & Discipline',
     icon: '🛡️',
     color: 'text-purple-600 dark:text-purple-400',
-    bg: 'bg-purple-50 dark:bg-purple-950/40',
-    border: 'border-purple-200 dark:border-purple-800/50',
+    bg: 'bg-purple-500/10',
+    border: 'border-purple-500/20',
   },
   running: {
-    label: 'Course / Jri',
-    labelAr: 'جري',
+    fr: 'Course / Jri',
+    ar: 'جري',
+    en: 'Running',
     icon: '🏃',
     color: 'text-orange-600 dark:text-orange-400',
-    bg: 'bg-orange-50 dark:bg-orange-950/40',
-    border: 'border-orange-200 dark:border-orange-800/50',
+    bg: 'bg-orange-500/10',
+    border: 'border-orange-500/20',
   },
   other: {
-    label: 'Autre',
-    labelAr: 'أخرى',
+    fr: 'Autre',
+    ar: 'أخرى',
+    en: 'Other',
     icon: '📌',
-    color: 'text-slate-600 dark:text-slate-400',
-    bg: 'bg-slate-50 dark:bg-slate-900',
-    border: 'border-slate-200 dark:border-slate-800',
+    color: 'text-zinc-600 dark:text-zinc-400',
+    bg: 'bg-zinc-500/10',
+    border: 'border-zinc-500/20',
   },
 };
 
-const FREQUENCY_LABELS: Record<TaskFrequency, { fr: string; ar: string }> = {
-  daily: { fr: 'Tous les jours', ar: 'يومياً' },
-  weekdays: { fr: 'Jours ouvrés (Lun-Ven)', ar: 'أيام العمل (إثنين-جمعة)' },
-  weekends: { fr: 'Week-end (Sam-Dim)', ar: 'نهاية الأسبوع' },
-  custom_days: { fr: 'Jours choisis', ar: 'أيام محددة' },
+const FREQUENCY_LABELS: Record<TaskFrequency, { fr: string; ar: string; en: string }> = {
+  daily: { fr: 'Tous les jours', ar: 'يومياً', en: 'Every day' },
+  weekdays: { fr: 'Jours ouvrés (Lun-Ven)', ar: 'أيام العمل (إثنين-جمعة)', en: 'Weekdays (Mon-Fri)' },
+  weekends: { fr: 'Week-end (Sam-Dim)', ar: 'نهاية الأسبوع', en: 'Weekends (Sat-Sun)' },
+  custom_days: { fr: 'Jours choisis', ar: 'أيام محددة', en: 'Selected days' },
 };
 
 function formatISODate(date: Date): string {
@@ -125,7 +137,7 @@ function formatISODate(date: Date): string {
 
 export const TasksPage: React.FC = () => {
   const { tasks, addTask, updateTask, deleteTask, toggleTaskCompletion, language } = useAppStore();
-  const isAr = language === 'ar';
+  const tTask = translations[language].tasks;
 
   const todayStr = useMemo(() => formatISODate(new Date()), []);
   const [selectedDate, setSelectedDate] = useState<string>(todayStr);
@@ -144,11 +156,12 @@ export const TasksPage: React.FC = () => {
   const dateStrip = useMemo(() => {
     const curr = new Date(selectedDate);
     const days: { dateStr: string; dayName: string; dayNum: number; isToday: boolean }[] = [];
+    const locale = language === 'ar' ? 'ar-MA' : language === 'en' ? 'en-US' : 'fr-FR';
     for (let i = -3; i <= 3; i++) {
       const d = new Date(curr);
       d.setDate(curr.getDate() + i);
       const str = formatISODate(d);
-      const dayName = d.toLocaleDateString(isAr ? 'ar-MA' : 'fr-FR', { weekday: 'short' });
+      const dayName = d.toLocaleDateString(locale, { weekday: 'short' });
       days.push({
         dateStr: str,
         dayName,
@@ -157,7 +170,7 @@ export const TasksPage: React.FC = () => {
       });
     }
     return days;
-  }, [selectedDate, todayStr, isAr]);
+  }, [selectedDate, todayStr, language]);
 
   // Tasks applicable for selected day
   const filteredTasks = useMemo(() => {
@@ -180,7 +193,9 @@ export const TasksPage: React.FC = () => {
   // Daily statistics for selected day
   const dailyStats = useMemo(() => {
     const total = filteredTasks.length;
-    const completed = filteredTasks.filter((t) => (t.completedDates || []).includes(selectedDate)).length;
+    const completed = filteredTasks.filter((t) =>
+      (t.completedDates || []).includes(selectedDate)
+    ).length;
     const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
     return { total, completed, percentage };
   }, [filteredTasks, selectedDate]);
@@ -191,7 +206,6 @@ export const TasksPage: React.FC = () => {
     let streak = 0;
     const checkDate = new Date();
 
-    // If today is completed, start from today, else start from yesterday
     const todayISO = formatISODate(checkDate);
     if (!completedSet.has(todayISO)) {
       checkDate.setDate(checkDate.getDate() - 1);
@@ -232,7 +246,9 @@ export const TasksPage: React.FC = () => {
 
     (tasks || []).forEach((task) => {
       if (task.isArchived) return;
-      const completedInMonth = (task.completedDates || []).filter((d) => d.startsWith(currentMonthStr)).length;
+      const completedInMonth = (task.completedDates || []).filter((d) =>
+        d.startsWith(currentMonthStr)
+      ).length;
       totalCompleted += completedInMonth;
       totalPossible += monthDaysCount;
     });
@@ -300,59 +316,62 @@ export const TasksPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 pb-20">
+    <div className="max-w-[1200px] mx-auto space-y-6 animate-page pb-20 select-text">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-black text-slate-900 dark:text-white">
-              {isAr ? 'البرنامج والمتابعة اليومية' : 'Programme & Suivi Mensuel'}
+            <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-white tracking-tight">
+              {tTask.title}
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
-              {isAr ? 'تتبع يومي' : '100% Hors-ligne'}
+            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+              {tTask.badge}
             </span>
           </div>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            {isAr
-              ? 'كوشي على مهامك وعاداتك اليومية وتابع إحصائيات التزامك طيلة الشهر'
-              : 'Cochez vos routines et suivez vos progrès jour par jour avec statistiques.'}
+          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+            {tTask.subtitle}
           </p>
         </div>
 
         <Button
           onClick={handleOpenAdd}
           variant="primary"
-          className="flex items-center gap-2 shadow-lg shadow-emerald-600/20"
+          icon={<Plus className="w-4 h-4 stroke-[2.5]" />}
         >
-          <Plus className="w-4 h-4 stroke-[2.5]" />
-          <span>{isAr ? 'إضافة مهمة / عادة' : 'Nouvelle Tâche'}</span>
+          <span>{tTask.newTask}</span>
         </Button>
       </div>
 
-      {/* Hero Progress Card */}
-      <div className="rounded-lg bg-white dark:bg-[#202020] border border-[#e3e2de] dark:border-[#2f2f2f] p-5 shadow-sm space-y-4">
+      {/* Hero Progress Card: Apple HIG Surface */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="rounded-3xl p-6 sm:p-7 bg-white/80 dark:bg-zinc-900/65 backdrop-blur-2xl border border-black/[0.06] dark:border-white/[0.08] shadow-[0_8px_32px_0_rgba(0,0,0,0.06),inset_0_1px_0_0_rgba(255,255,255,0.8)] dark:shadow-[0_12px_40px_0_rgba(0,0,0,0.45),inset_0_1px_0_0_rgba(255,255,255,0.08)] space-y-5"
+      >
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2 text-[#787774] dark:text-[#9b9a97] text-xs font-medium">
-              <Sparkles className="w-3.5 h-3.5 text-[#2383e2]" />
-              <span>{isAr ? 'تقدم اليوم' : 'Progression du Jour'}</span>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400 text-xs font-medium">
+              <Sparkles className="w-3.5 h-3.5 text-blue-500" />
+              <span>{tTask.todayProgress}</span>
               <span>•</span>
-              <span>{selectedDate === todayStr ? (isAr ? 'اليوم' : "Aujourd'hui") : selectedDate}</span>
+              <span className="font-mono tabular-nums">
+                {selectedDate === todayStr ? (language === 'ar' ? 'اليوم' : language === 'en' ? 'Today' : "Aujourd'hui") : selectedDate}
+              </span>
             </div>
 
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl sm:text-4xl font-semibold text-[#37352f] dark:text-[#ecebed] tracking-tight tabular-nums">
+              <span className="text-3xl sm:text-5xl font-bold tracking-tight text-zinc-900 dark:text-white tabular-nums">
                 {dailyStats.percentage}%
               </span>
-              <span className="text-xs text-[#787774] dark:text-[#9b9a97]">
-                ({dailyStats.completed} / {dailyStats.total} {isAr ? 'مكتملة' : 'complétées'})
+              <span className="text-xs text-zinc-500 dark:text-zinc-400 tabular-nums">
+                ({dailyStats.completed} / {dailyStats.total} {tTask.completedDays})
               </span>
             </div>
 
             {/* Progress bar */}
-            <div className="w-full sm:w-80 h-1.5 bg-[#f1f0ee] dark:bg-[#282828] rounded-full overflow-hidden">
+            <div className="w-full sm:w-80 h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden p-0.5">
               <div
-                className="h-full bg-[#2383e2] rounded-full transition-all duration-300"
+                className="h-full bg-blue-600 rounded-full transition-all duration-500 ease-out shadow-xs"
                 style={{ width: `${dailyStats.percentage}%` }}
               />
             </div>
@@ -360,39 +379,47 @@ export const TasksPage: React.FC = () => {
 
           {/* Quick Stats Badges */}
           <div className="flex items-center gap-3">
-            <div className="bg-[#fbfbfa] dark:bg-[#1a1a1a] border border-[#e3e2de] dark:border-[#2f2f2f] rounded-md px-3 py-2 flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-600 flex items-center justify-center font-bold">
+            <div className="bg-zinc-50 dark:bg-zinc-800/50 border border-black/[0.04] dark:border-white/[0.06] rounded-2xl px-4 py-3 flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center justify-center font-bold">
                 <Flame className="w-4 h-4 fill-amber-500 text-amber-500" />
               </div>
               <div>
-                <span className="text-[10px] text-[#787774] block">{isAr ? 'أطول سلسلة' : 'Série en cours'}</span>
-                <span className="text-xs font-semibold text-[#37352f] dark:text-[#ecebed]">{overallStreak} {isAr ? 'يوم' : 'jours'} 🔥</span>
+                <span className="text-[10px] text-zinc-400 uppercase tracking-wider block font-medium">
+                  {tTask.streak}
+                </span>
+                <span className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-white tabular-nums">
+                  {overallStreak} j 🔥
+                </span>
               </div>
             </div>
 
-            <div className="bg-[#fbfbfa] dark:bg-[#1a1a1a] border border-[#e3e2de] dark:border-[#2f2f2f] rounded-md px-3 py-2 flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center font-bold">
+            <div className="bg-zinc-50 dark:bg-zinc-800/50 border border-black/[0.04] dark:border-white/[0.06] rounded-2xl px-4 py-3 flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center justify-center font-bold">
                 <TrendingUp className="w-4 h-4" />
               </div>
               <div>
-                <span className="text-[10px] text-[#787774] block">{isAr ? 'نسبة الشهر' : 'Moyenne du mois'}</span>
-                <span className="text-xs font-semibold text-[#37352f] dark:text-[#ecebed]">{monthStats.rate}%</span>
+                <span className="text-[10px] text-zinc-400 uppercase tracking-wider block font-medium">
+                  {tTask.monthAverage}
+                </span>
+                <span className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-white tabular-nums">
+                  {monthStats.rate}%
+                </span>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      {/* Date Strip Navigator */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl p-3 border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center justify-between gap-2 overflow-x-auto">
+      {/* Date Strip Navigator: Apple Segmented Pill Container */}
+      <div className="bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl rounded-2xl p-2.5 sm:p-3 border border-black/[0.06] dark:border-white/[0.08] shadow-xs flex items-center justify-between gap-2 overflow-x-auto">
         <button
           onClick={() => {
             const d = new Date(selectedDate);
             d.setDate(d.getDate() - 1);
             setSelectedDate(formatISODate(d));
           }}
-          className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-          title="Jour précédent"
+          className="p-2 rounded-xl text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+          title="Previous day"
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
@@ -404,20 +431,20 @@ export const TasksPage: React.FC = () => {
               <button
                 key={item.dateStr}
                 onClick={() => setSelectedDate(item.dateStr)}
-                className={`flex flex-col items-center justify-center min-w-[52px] py-2 px-2 rounded-2xl transition-all ${
+                className={`flex flex-col items-center justify-center min-w-[54px] py-2 px-2.5 rounded-2xl transition-all ${
                   isSelected
-                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30 font-bold scale-105'
-                    : 'bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                    ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30 font-bold scale-105'
+                    : 'bg-zinc-50 dark:bg-zinc-800/60 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
                 }`}
               >
                 <span className="text-[10px] uppercase font-semibold tracking-wider opacity-80">
                   {item.dayName}
                 </span>
-                <span className="text-base font-black mt-0.5">{item.dayNum}</span>
+                <span className="text-base font-bold mt-0.5 tabular-nums">{item.dayNum}</span>
                 {item.isToday && (
                   <span
                     className={`w-1.5 h-1.5 rounded-full mt-1 ${
-                      isSelected ? 'bg-amber-300' : 'bg-emerald-500'
+                      isSelected ? 'bg-amber-300' : 'bg-blue-500'
                     }`}
                   />
                 )}
@@ -432,8 +459,8 @@ export const TasksPage: React.FC = () => {
             d.setDate(d.getDate() + 1);
             setSelectedDate(formatISODate(d));
           }}
-          className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-          title="Jour suivant"
+          className="p-2 rounded-xl text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+          title="Next day"
         >
           <ChevronRight className="w-5 h-5" />
         </button>
@@ -441,49 +468,49 @@ export const TasksPage: React.FC = () => {
         {selectedDate !== todayStr && (
           <button
             onClick={() => setSelectedDate(todayStr)}
-            className="text-xs font-bold text-emerald-600 dark:text-emerald-400 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 transition-colors shrink-0"
+            className="text-xs font-semibold text-blue-600 dark:text-blue-400 px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 transition-colors shrink-0"
           >
-            {isAr ? 'اليوم' : "Aujourd'hui"}
+            {language === 'ar' ? 'اليوم' : language === 'en' ? 'Today' : "Aujourd'hui"}
           </button>
         )}
       </div>
 
       {/* Navigation Sub-Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">
+      <div className="flex items-center gap-2 border-b border-black/[0.04] dark:border-white/[0.05] pb-2">
         <button
           onClick={() => setActiveTab('daily')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
             activeTab === 'daily'
-              ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-sm'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+              ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs'
+              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
           }`}
         >
           <ListTodo className="w-4 h-4" />
-          <span>{isAr ? 'قائمة اليوم' : 'Tâches du jour'}</span>
+          <span>{tTask.todayList}</span>
         </button>
 
         <button
           onClick={() => setActiveTab('month')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
             activeTab === 'month'
-              ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-sm'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+              ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs'
+              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
           }`}
         >
           <Calendar className="w-4 h-4" />
-          <span>{isAr ? 'برنامج الشهر كامل' : 'Matrice Mensuelle'}</span>
+          <span>{tTask.monthlyMatrix}</span>
         </button>
 
         <button
           onClick={() => setActiveTab('stats')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
             activeTab === 'stats'
-              ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-sm'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+              ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs'
+              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
           }`}
         >
           <BarChart2 className="w-4 h-4" />
-          <span>{isAr ? 'إحصائيات الإنجاز' : 'Statistiques'}</span>
+          <span>{tTask.statsTab}</span>
         </button>
       </div>
 
@@ -491,26 +518,26 @@ export const TasksPage: React.FC = () => {
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
         <button
           onClick={() => setSelectedCategory('all')}
-          className={`px-3 py-1.5 rounded-full text-xs font-bold transition-colors shrink-0 ${
+          className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors shrink-0 ${
             selectedCategory === 'all'
-              ? 'bg-emerald-600 text-white'
-              : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
+              ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900'
+              : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200'
           }`}
         >
-          {isAr ? 'الكل' : 'Tous'} ({tasks.length})
+          {tTask.all} (<span className="tabular-nums">{tasks.length}</span>)
         </button>
         {Object.entries(CATEGORY_CONFIG).map(([catKey, conf]) => (
           <button
             key={catKey}
             onClick={() => setSelectedCategory(catKey)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-colors shrink-0 ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors shrink-0 ${
               selectedCategory === catKey
-                ? 'bg-emerald-600 text-white'
-                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
+                ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900'
+                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200'
             }`}
           >
             <span>{conf.icon}</span>
-            <span>{isAr ? conf.labelAr : conf.label}</span>
+            <span>{conf[language] || conf.fr}</span>
           </button>
         ))}
       </div>
@@ -519,25 +546,17 @@ export const TasksPage: React.FC = () => {
       {activeTab === 'daily' && (
         <div className="space-y-3">
           {filteredTasks.length === 0 ? (
-            <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 space-y-4">
-              <div className="w-16 h-16 rounded-2xl bg-emerald-50 dark:bg-emerald-950 text-emerald-600 flex items-center justify-center mx-auto text-2xl">
-                ✨
-              </div>
-              <div>
-                <h3 className="font-extrabold text-base text-slate-900 dark:text-white">
-                  {isAr ? 'لا توجد مهام محددة لهذا اليوم' : 'Aucune tâche pour ce jour'}
-                </h3>
-                <p className="text-xs text-slate-500 mt-1">
-                  {isAr
-                    ? 'أضف مهامك وعاداتك اليومية لتبدأ في تتبعها بكل سهولة'
-                    : 'Créez votre première routine ou tâche pour lancer votre streak.'}
-                </p>
-              </div>
-              <Button onClick={handleOpenAdd} variant="primary" size="sm">
-                <Plus className="w-4 h-4 mr-1.5" />
-                <span>{isAr ? 'إضافة مهمة' : 'Ajouter une tâche'}</span>
-              </Button>
-            </div>
+            <EmptyState
+              icon={<ListTodo className="w-5 h-5" />}
+              title={tTask.noTasksToday}
+              description={tTask.subtitle}
+              action={
+                <Button onClick={handleOpenAdd} variant="primary" size="sm">
+                  <Plus className="w-4 h-4 mr-1.5" />
+                  <span>{tTask.addTask}</span>
+                </Button>
+              }
+            />
           ) : (
             filteredTasks.map((task) => {
               const isCompleted = (task.completedDates || []).includes(selectedDate);
@@ -545,12 +564,13 @@ export const TasksPage: React.FC = () => {
               const conf = CATEGORY_CONFIG[task.category] || CATEGORY_CONFIG.other;
 
               return (
-                <div
+                <motion.div
                   key={task.id}
+                  whileHover={{ y: -1 }}
                   className={`group flex items-center justify-between p-4 rounded-2xl border transition-all duration-200 ${
                     isCompleted
-                      ? 'bg-emerald-50/60 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/60 shadow-sm'
-                      : 'bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 shadow-sm'
+                      ? 'bg-emerald-500/10 dark:bg-emerald-950/20 border-emerald-500/20 shadow-xs'
+                      : 'bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl border-black/[0.06] dark:border-white/[0.08] shadow-xs hover:border-black/[0.12] dark:hover:border-white/[0.14]'
                   }`}
                 >
                   <div className="flex items-center gap-3.5 min-w-0">
@@ -560,9 +580,9 @@ export const TasksPage: React.FC = () => {
                       className={`w-9 h-9 rounded-xl flex items-center justify-center transition-transform active:scale-90 shrink-0 ${
                         isCompleted
                           ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700'
+                          : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 hover:text-zinc-600 hover:bg-zinc-200 dark:hover:bg-zinc-700'
                       }`}
-                      aria-label="Cocher tâche"
+                      aria-label="Toggle task"
                     >
                       {isCompleted ? (
                         <CheckCircle2 className="w-6 h-6 stroke-[2.5]" />
@@ -574,10 +594,10 @@ export const TasksPage: React.FC = () => {
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <span
-                          className={`font-bold text-sm tracking-tight truncate ${
+                          className={`font-semibold text-sm tracking-tight truncate ${
                             isCompleted
-                              ? 'line-through text-slate-400 dark:text-slate-500'
-                              : 'text-slate-900 dark:text-white'
+                              ? 'line-through text-zinc-400 dark:text-zinc-500'
+                              : 'text-zinc-900 dark:text-white'
                           }`}
                         >
                           {task.title}
@@ -586,21 +606,20 @@ export const TasksPage: React.FC = () => {
 
                       <div className="flex items-center gap-2 mt-1">
                         <span
-                          className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md border ${conf.bg} ${conf.color} ${conf.border}`}
+                          className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${conf.bg} ${conf.color} ${conf.border}`}
                         >
                           <span>{conf.icon}</span>
-                          <span>{isAr ? conf.labelAr : conf.label}</span>
+                          <span>{conf[language] || conf.fr}</span>
                         </span>
 
-                        <span className="text-[11px] text-slate-400">
-                          {isAr
-                            ? FREQUENCY_LABELS[task.frequency]?.ar
-                            : FREQUENCY_LABELS[task.frequency]?.fr}
+                        <span className="text-[11px] text-zinc-400">
+                          {FREQUENCY_LABELS[task.frequency]?.[language] ||
+                            FREQUENCY_LABELS[task.frequency]?.fr}
                         </span>
 
                         {streak > 0 && (
-                          <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-1.5 py-0.5 rounded">
-                            🔥 {streak} {isAr ? 'يوم' : 'j'}
+                          <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded-full tabular-nums">
+                            🔥 {streak} j
                           </span>
                         )}
                       </div>
@@ -611,20 +630,20 @@ export const TasksPage: React.FC = () => {
                   <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={() => handleOpenEdit(task)}
-                      className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                      title="Modifier"
+                      className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                      title={tTask.editTask}
                     >
                       <Edit2 className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => deleteTask(task.id)}
-                      className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                      className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
                       title="Supprimer"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
-                </div>
+                </motion.div>
               );
             })
           )}
@@ -633,48 +652,53 @@ export const TasksPage: React.FC = () => {
 
       {/* VIEW 2: MONTHLY MATRIX / PROGRAM (TRACK ENTIRE MONTH) */}
       {activeTab === 'month' && (
-        <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-5">
+        <div className="bg-white/80 dark:bg-zinc-900/65 backdrop-blur-2xl rounded-3xl p-5 border border-black/[0.06] dark:border-white/[0.08] shadow-xs space-y-5">
           <div className="flex items-center justify-between">
-            <h3 className="font-extrabold text-base text-slate-900 dark:text-white flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-emerald-600" />
-              <span>{isAr ? 'مصفوفة إنجاز الشهر' : 'Matrice de Suivi du Mois'}</span>
-              <span className="text-xs font-medium text-slate-400">({currentMonthStr})</span>
+            <h3 className="font-bold text-base text-zinc-900 dark:text-white flex items-center gap-2 tracking-tight">
+              <Calendar className="w-5 h-5 text-blue-600" />
+              <span>{tTask.matrixTitle}</span>
+              <span className="text-xs font-medium text-zinc-400">({currentMonthStr})</span>
             </h3>
-            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-1 rounded-lg">
-              {monthDaysCount} {isAr ? 'يوم في الشهر' : 'jours'}
+            <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-full tabular-nums">
+              {monthDaysCount} {tTask.daysInMonth}
             </span>
           </div>
 
           <div className="overflow-x-auto pb-2">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-slate-100 dark:border-slate-800 text-slate-400 font-semibold">
-                  <th className="py-2.5 px-3 min-w-[140px]">{isAr ? 'المهمة' : 'Tâche / Routine'}</th>
+                <tr className="border-b border-black/[0.05] dark:border-white/[0.06] text-zinc-400 font-semibold">
+                  <th className="py-2.5 px-3 min-w-[140px]">{tTask.taskRoutine}</th>
                   {Array.from({ length: monthDaysCount }, (_, i) => i + 1).map((day) => {
                     const dayStr = `${currentMonthStr}-${String(day).padStart(2, '0')}`;
                     const isToday = dayStr === todayStr;
                     return (
                       <th
                         key={day}
-                        className={`text-center py-2 px-1 min-w-[28px] ${
-                          isToday ? 'text-emerald-600 font-extrabold bg-emerald-50 dark:bg-emerald-950/40 rounded-t' : ''
+                        className={`text-center py-2 px-1 min-w-[28px] tabular-nums ${
+                          isToday
+                            ? 'text-blue-600 font-bold bg-blue-500/10 rounded-t'
+                            : ''
                         }`}
                       >
                         {day}
                       </th>
                     );
                   })}
-                  <th className="py-2 px-3 text-right">{isAr ? 'المجموع' : 'Score'}</th>
+                  <th className="py-2 px-3 text-right">{tTask.score}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+              <tbody className="divide-y divide-black/[0.04] dark:divide-white/[0.04]">
                 {tasks.map((task) => {
                   const completedSet = new Set(task.completedDates || []);
                   let taskCountInMonth = 0;
 
                   return (
-                    <tr key={task.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
-                      <td className="py-3 px-3 font-bold text-slate-800 dark:text-slate-200 truncate max-w-[150px]">
+                    <tr
+                      key={task.id}
+                      className="hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors"
+                    >
+                      <td className="py-3 px-3 font-semibold text-zinc-800 dark:text-zinc-200 truncate max-w-[150px]">
                         {task.title}
                       </td>
 
@@ -689,8 +713,8 @@ export const TasksPage: React.FC = () => {
                               onClick={() => toggleTaskCompletion(task.id, dayStr)}
                               className={`w-5 h-5 rounded-md mx-auto flex items-center justify-center transition-all ${
                                 isDone
-                                  ? 'bg-emerald-600 text-white font-bold text-[10px]'
-                                  : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-transparent'
+                                  ? 'bg-blue-600 text-white font-bold text-[10px]'
+                                  : 'bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 text-transparent'
                               }`}
                               title={`${task.title} - ${dayStr}`}
                             >
@@ -700,7 +724,7 @@ export const TasksPage: React.FC = () => {
                         );
                       })}
 
-                      <td className="py-3 px-3 text-right font-black text-emerald-600 dark:text-emerald-400">
+                      <td className="py-3 px-3 text-right font-bold text-blue-600 dark:text-blue-400 tabular-nums">
                         {taskCountInMonth}/{monthDaysCount}
                       </td>
                     </tr>
@@ -715,10 +739,10 @@ export const TasksPage: React.FC = () => {
       {/* VIEW 3: STATS & EVALUATIONS */}
       {activeTab === 'stats' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
-            <h3 className="font-extrabold text-base text-slate-900 dark:text-white flex items-center gap-2">
+          <div className="bg-white/80 dark:bg-zinc-900/65 backdrop-blur-2xl rounded-3xl p-5 border border-black/[0.06] dark:border-white/[0.08] shadow-xs space-y-4">
+            <h3 className="font-bold text-base text-zinc-900 dark:text-white flex items-center gap-2 tracking-tight">
               <Award className="w-5 h-5 text-amber-500" />
-              <span>{isAr ? 'أعلى العادات التزاماً' : 'Taux de Réussite par Routine'}</span>
+              <span>{tTask.monthAverage}</span>
             </h3>
 
             <div className="space-y-3">
@@ -730,13 +754,13 @@ export const TasksPage: React.FC = () => {
 
                 return (
                   <div key={task.id} className="space-y-1.5">
-                    <div className="flex items-center justify-between text-xs font-bold">
-                      <span className="text-slate-700 dark:text-slate-300">{task.title}</span>
-                      <span className="text-emerald-600 dark:text-emerald-400">
+                    <div className="flex items-center justify-between text-xs font-semibold">
+                      <span className="text-zinc-700 dark:text-zinc-300">{task.title}</span>
+                      <span className="text-emerald-600 dark:text-emerald-400 tabular-nums">
                         {completedInMonth} / {monthDaysCount} j ({percentage}%)
                       </span>
                     </div>
-                    <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                    <div className="w-full h-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
                       <div
                         className="h-full bg-emerald-500 rounded-full transition-all duration-300"
                         style={{ width: `${percentage}%` }}
@@ -748,19 +772,19 @@ export const TasksPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
-            <h3 className="font-extrabold text-base text-slate-900 dark:text-white flex items-center gap-2">
-              <Zap className="w-5 h-5 text-emerald-500" />
-              <span>{isAr ? 'نصائح للاستمرارية' : 'Conseils & Motivation'}</span>
+          <div className="bg-white/80 dark:bg-zinc-900/65 backdrop-blur-2xl rounded-3xl p-5 border border-black/[0.06] dark:border-white/[0.08] shadow-xs space-y-4">
+            <h3 className="font-bold text-base text-zinc-900 dark:text-white flex items-center gap-2 tracking-tight">
+              <Zap className="w-5 h-5 text-amber-500" />
+              <span>{tTask.consistencyTips}</span>
             </h3>
-            <div className="space-y-3 text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-              <div className="p-3.5 rounded-2xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/70 dark:border-amber-900/40 text-amber-900 dark:text-amber-200">
-                <span className="font-bold block mb-1">🔥 قاعدة الـ 21 يوماً :</span>
-                أي عادة كتلتزم بها لـ 21 يوم متتالية كتولي جزء تلقائي من روتينك اليومي بلا ما تعيا!
+            <div className="space-y-3 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+              <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-200">
+                <span className="font-bold block mb-1">🔥 21 Days Habit Rule:</span>
+                Consistency creates automaticity. Sticking to a routine for 21 days solidifies it into effortless second nature.
               </div>
-              <div className="p-3.5 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/70 dark:border-emerald-900/40 text-emerald-900 dark:text-emerald-200">
-                <span className="font-bold block mb-1">⚡ لا تقطع السلسلة (Never Break The Chain) :</span>
-                حتى يلا كان نهارك عامر، دير ولو 5 دقائق فـ العادة باش السلسلة ديالك تبقى شاعلة.
+              <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-900 dark:text-emerald-200">
+                <span className="font-bold block mb-1">⚡ Never Break The Chain:</span>
+                Even on tough or busy days, complete 5 minutes of your routine to protect your momentum streak!
               </div>
             </div>
           </div>
@@ -771,66 +795,54 @@ export const TasksPage: React.FC = () => {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={
-          editingTask
-            ? isAr
-              ? 'تعديل المهمة / العادة'
-              : 'Modifier la tâche'
-            : isAr
-            ? 'إضافة مهمة أو عادة جديدة'
-            : 'Nouvelle tâche ou routine'
-        }
-        subtitle={
-          isAr
-            ? 'حدد عنوان المهمة ونوعها ومعدل تكرارها'
-            : 'Planifiez vos routines quotidiennes ou hebdomadaires.'
-        }
+        title={editingTask ? tTask.editTask : tTask.newTask}
+        subtitle={tTask.subtitle}
       >
         <form onSubmit={handleSaveTask} className="space-y-4 pt-2">
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-              {isAr ? 'عنوان المهمة / العادة' : 'Titre de la tâche'} *
+            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+              {tTask.taskTitleLabel} *
             </label>
             <input
               type="text"
               required
               value={taskTitle}
               onChange={(e) => setTaskTitle(e.target.value)}
-              placeholder={isAr ? 'مثال: قراءة 20 دقيقة، صلاة، رياضة...' : 'Ex: Salat à l’heure, Gym, Lecture...'}
-              className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
+              placeholder={tTask.taskTitlePlaceholder}
+              className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                {isAr ? 'الفئة' : 'Catégorie'}
+              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+                {tTask.categoryLabel}
               </label>
               <select
                 value={taskCategory}
                 onChange={(e) => setTaskCategory(e.target.value as TaskCategory)}
-                className="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-3 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
               >
                 {Object.entries(CATEGORY_CONFIG).map(([k, c]) => (
                   <option key={k} value={k}>
-                    {c.icon} {isAr ? c.labelAr : c.label}
+                    {c.icon} {c[language] || c.fr}
                   </option>
                 ))}
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                {isAr ? 'التكرار' : 'Fréquence'}
+              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+                {tTask.frequencyLabel}
               </label>
               <select
                 value={taskFrequency}
                 onChange={(e) => setTaskFrequency(e.target.value as TaskFrequency)}
-                className="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-3 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
               >
                 {Object.entries(FREQUENCY_LABELS).map(([k, v]) => (
                   <option key={k} value={k}>
-                    {isAr ? v.ar : v.fr}
+                    {v[language] || v.fr}
                   </option>
                 ))}
               </select>
@@ -838,24 +850,24 @@ export const TasksPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-              {isAr ? 'ملاحظات وتفاصيل (اختياري)' : 'Notes ou objectif (facultatif)'}
+            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+              {tTask.notesLabel}
             </label>
             <textarea
               rows={2}
               value={taskNotes}
               onChange={(e) => setTaskNotes(e.target.value)}
-              placeholder={isAr ? 'أي تفاصيل إضافية...' : 'Détails, consignes ou motivation...'}
-              className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              placeholder={tTask.notesPlaceholder}
+              className="w-full px-3.5 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-zinc-100 dark:border-zinc-800">
             <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>
-              {isAr ? 'إلغاء' : 'Annuler'}
+              {tTask.cancel}
             </Button>
             <Button type="submit" variant="primary">
-              {editingTask ? (isAr ? 'حفظ التعديلات' : 'Enregistrer') : (isAr ? 'إضافة المهمة' : 'Créer la tâche')}
+              {editingTask ? tTask.save : tTask.create}
             </Button>
           </div>
         </form>

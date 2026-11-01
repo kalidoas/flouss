@@ -36,9 +36,9 @@ export const Navbar: React.FC = () => {
     icon: React.ComponentType<{ className?: string }>;
   }[] = [
     { id: 'dashboard', label: t.dashboard, icon: LayoutDashboard },
-    { id: 'tasks', label: isAr ? 'البرنامج' : 'Tâches', icon: CheckSquare },
-    { id: 'debts', label: isAr ? 'الكريدي' : 'Dettes', icon: HandCoins },
-    { id: 'more', label: isAr ? 'المزيد' : 'Menu', icon: Menu },
+    { id: 'tasks', label: t.tasks, icon: CheckSquare },
+    { id: 'debts', label: t.debts, icon: HandCoins },
+    { id: 'more', label: t.more, icon: Menu },
   ];
 
   const moreScreens: { id: ScreenId; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
@@ -46,8 +46,8 @@ export const Navbar: React.FC = () => {
     { id: 'income', label: t.income, icon: ArrowDownLeft },
     { id: 'history', label: t.history, icon: History },
     { id: 'stats', label: t.stats, icon: BarChart3 },
-    { id: 'subscriptions', label: isAr ? 'فواتير واشتراكات' : 'Charges Fixes', icon: CreditCard },
-    { id: 'notes', label: isAr ? 'ملاحظات' : 'Notes', icon: FileText },
+    { id: 'subscriptions', label: t.subscriptions, icon: CreditCard },
+    { id: 'notes', label: t.notes, icon: FileText },
     { id: 'settings', label: t.settings, icon: Settings },
   ];
 
@@ -97,7 +97,7 @@ export const Navbar: React.FC = () => {
 
             <div className="flex items-center justify-between pb-2 border-b border-[#e3e2de] dark:border-[#2f2f2f]">
               <h3 className="font-semibold text-sm text-[#37352f] dark:text-[#ecebed]">
-                {isAr ? 'الصفحات والأقسام' : 'Toutes les rubriques'}
+                {t.morePages}
               </h3>
               <button
                 onClick={() => setIsMoreMenuOpen(false)}
@@ -147,7 +147,7 @@ export const Navbar: React.FC = () => {
                   >
                     {activeAccount?.name?.charAt(0).toUpperCase() || 'U'}
                   </div>
-                  <span>{isAr ? 'تبديل الحساب' : 'Changer d’utilisateur'}</span>
+                  <span>{isAr ? 'تبديل الحساب' : language === 'en' ? 'Switch profile' : 'Changer d’utilisateur'}</span>
                 </div>
                 <Users className="w-4 h-4 text-[#787774]" />
               </button>
@@ -160,7 +160,7 @@ export const Navbar: React.FC = () => {
                 className="w-full flex items-center justify-center gap-2 p-2.5 rounded-lg border border-rose-200/70 dark:border-rose-900/40 bg-rose-50/60 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 text-xs font-semibold hover:bg-rose-100/80 transition-colors"
               >
                 <LogOut className="w-4 h-4" />
-                <span>{isAr ? 'تسجيل الخروج (قفل الجلسة)' : 'Se déconnecter (Verrouiller)'}</span>
+                <span>{isAr ? 'تسجيل الخروج (قفل الجلسة)' : language === 'en' ? 'Sign out' : 'Se déconnecter (Verrouiller)'}</span>
               </button>
             </div>
           </div>

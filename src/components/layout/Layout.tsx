@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
 import { Navbar } from './Navbar';
-import { BalanceWidget } from './BalanceWidget';
 import { QuickAddButton } from './QuickAddButton';
 import { useAppStore } from '../../store/useAppStore';
 
@@ -66,9 +65,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         <main className="flex-1 overflow-y-auto pb-24 md:pb-8 px-4 sm:px-8 py-6 max-w-5xl w-full mx-auto">
           {children}
         </main>
-
-        {/* Flouss Floating Balance Widget (bottom-left) */}
-        <BalanceWidget />
 
         {/* Quick Add Floating Button (bottom-right) */}
         <QuickAddButton />

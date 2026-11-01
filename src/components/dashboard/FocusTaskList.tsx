@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAppStore } from '../../store/useAppStore';
+import { translations } from '../../i18n/translations';
 import { Plus, Trash2, Pin, Calendar, AlertCircle, Check, Edit2, X } from 'lucide-react';
 
 export interface FocusTask {
@@ -16,7 +17,7 @@ const STORAGE_KEY = 'flouss_focus_tasks_v1';
 
 export const FocusTaskList: React.FC = () => {
   const { language } = useAppStore();
-  const isAr = language === 'ar';
+  const tFocus = translations[language].focusList;
 
   const [tasks, setTasks] = useState<FocusTask[]>(() => {
     try {
@@ -31,7 +32,12 @@ export const FocusTaskList: React.FC = () => {
     return [
       {
         id: 't_1',
-        text: isAr ? 'دفع فاتورة الويفي والماء قبل 10 في الشهر' : 'Régler la facture wifi & électricité avant le 10',
+        text:
+          language === 'ar'
+            ? 'دفع فاتورة الويفي والماء قبل 10 في الشهر'
+            : language === 'en'
+            ? 'Pay wifi and water utility before the 10th'
+            : 'Régler la facture wifi & électricité avant le 10',
         completed: false,
         isPinned: true,
         priority: 'urgent',
@@ -40,7 +46,12 @@ export const FocusTaskList: React.FC = () => {
       },
       {
         id: 't_2',
-        text: isAr ? 'تحويل 1 000 درهم لحساب صندوق الطوارئ' : 'Virer 1 000 MAD au fonds d’urgence',
+        text:
+          language === 'ar'
+            ? 'تحويل 1 000 درهم لحساب صندوق الطوارئ'
+            : language === 'en'
+            ? 'Transfer 1,000 MAD to emergency fund'
+            : 'Virer 1 000 MAD au fonds d’urgence',
         completed: false,
         isPinned: true,
         priority: 'normal',
@@ -48,7 +59,12 @@ export const FocusTaskList: React.FC = () => {
       },
       {
         id: 't_3',
-        text: isAr ? 'مراجعة مصاريف الأسبوع الماضي' : 'Passer en revue les dépenses de la semaine',
+        text:
+          language === 'ar'
+            ? 'مراجعة مصاريف الأسبوع الماضي'
+            : language === 'en'
+            ? 'Review last week expenses'
+            : 'Passer en revue les dépenses de la semaine',
         completed: true,
         isPinned: false,
         priority: 'normal',
@@ -62,7 +78,7 @@ export const FocusTaskList: React.FC = () => {
   const [newDueDate, setNewDueDate] = useState('');
   const [isAdding, setIsAdding] = useState(false);
 
-  // Edit inline modal / state
+  // Edit inline state
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState('');
   const [editPriority, setEditPriority] = useState<'urgent' | 'normal'>('normal');
@@ -153,38 +169,41 @@ export const FocusTaskList: React.FC = () => {
   const completedCount = tasks.filter((t) => t.completed).length;
 
   return (
-    <div className="bg-white dark:bg-[#202020] border border-[#e3e2de] dark:border-[#2f2f2f] rounded-lg p-4 sm:p-5 shadow-sm space-y-3">
-      {/* Notion Task List Header */}
-      <div className="flex items-center justify-between border-b border-[#e3e2de] dark:border-[#2f2f2f] pb-2.5">
+    <div className="bg-white/80 dark:bg-zinc-900/65 backdrop-blur-2xl border border-black/[0.06] dark:border-white/[0.08] shadow-[0_4px_24px_-1px_rgba(0,0,0,0.05),inset_0_1px_0_0_rgba(255,255,255,0.7)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.36),inset_0_1px_0_0_rgba(255,255,255,0.08)] rounded-2xl p-4 sm:p-5 space-y-3">
+      {/* Task List Header */}
+      <div className="flex items-center justify-between border-b border-black/[0.04] dark:border-white/[0.05] pb-3">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-[#37352f] dark:text-[#ecebed]">
-            {isAr ? 'قائمتي' : 'Ma liste'}
+          <span className="text-sm font-semibold text-zinc-900 dark:text-white tracking-tight">
+            {tFocus.title}
           </span>
-          <span className="text-[11px] text-[#787774] dark:text-[#9b9a97] tabular-nums">
+          <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-full tabular-nums">
             {completedCount}/{tasks.length}
           </span>
         </div>
 
         <button
           onClick={() => setIsAdding(!isAdding)}
-          className="flex items-center gap-1 text-xs text-[#787774] hover:text-[#37352f] dark:text-[#9b9a97] dark:hover:text-[#ecebed] px-2 py-1 rounded hover:bg-[#f1f0ee] dark:hover:bg-[#282828] transition-colors"
+          className="flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white px-2.5 py-1 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors"
         >
           {isAdding ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
-          <span>{isAdding ? (isAr ? 'إلغاء' : 'Annuler') : (isAr ? 'مهمة جديدة' : 'Ajouter')}</span>
+          <span>{isAdding ? tFocus.cancel : tFocus.add}</span>
         </button>
       </div>
 
       {/* Add Task Form inline */}
       {isAdding && (
-        <form onSubmit={handleAddTask} className="p-3 bg-[#fbfbfa] dark:bg-[#1a1a1a] rounded-md border border-[#e3e2de] dark:border-[#2f2f2f] space-y-2.5 animate-in fade-in duration-100">
+        <form
+          onSubmit={handleAddTask}
+          className="p-3 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl border border-black/[0.04] dark:border-white/[0.06] space-y-2.5 animate-in fade-in duration-150"
+        >
           <input
             type="text"
             required
             autoFocus
             value={newTaskText}
             onChange={(e) => setNewTaskText(e.target.value)}
-            placeholder={isAr ? 'اكتب مهمتك المالية أو اليومية...' : 'Nouvelle tâche (ex: payer loyer, vérifier virement)...'}
-            className="w-full text-xs px-2.5 py-1.5 rounded border border-[#e3e2de] dark:border-[#2f2f2f] bg-white dark:bg-[#202020] text-[#37352f] dark:text-[#ecebed] outline-none focus:border-[#2383e2]"
+            placeholder={tFocus.placeholder}
+            className="w-full text-xs px-3 py-2 rounded-xl border border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white placeholder:text-zinc-400 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
           />
 
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
@@ -193,10 +212,10 @@ export const FocusTaskList: React.FC = () => {
               <select
                 value={newPriority}
                 onChange={(e) => setNewPriority(e.target.value as 'urgent' | 'normal')}
-                className="text-xs px-2 py-1 rounded border border-[#e3e2de] dark:border-[#2f2f2f] bg-white dark:bg-[#202020] text-[#37352f] dark:text-[#ecebed] outline-none"
+                className="text-xs px-2.5 py-1.5 rounded-xl border border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white outline-none"
               >
-                <option value="normal">{isAr ? 'أولوية عادية' : 'Normal'}</option>
-                <option value="urgent">{isAr ? 'عاجل جداً' : 'Urgent'}</option>
+                <option value="normal">{tFocus.normalPriority}</option>
+                <option value="urgent">{tFocus.urgentPriority}</option>
               </select>
 
               {/* Due Date */}
@@ -204,15 +223,15 @@ export const FocusTaskList: React.FC = () => {
                 type="date"
                 value={newDueDate}
                 onChange={(e) => setNewDueDate(e.target.value)}
-                className="text-xs px-2 py-1 rounded border border-[#e3e2de] dark:border-[#2f2f2f] bg-white dark:bg-[#202020] text-[#37352f] dark:text-[#ecebed] outline-none"
+                className="text-xs px-2.5 py-1.5 rounded-xl border border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white outline-none"
               />
             </div>
 
             <button
               type="submit"
-              className="px-3 py-1 rounded bg-[#2383e2] hover:bg-[#1a73cb] text-white font-medium text-xs shadow-sm transition-colors"
+              className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-xs transition-colors"
             >
-              {isAr ? 'حفظ المهمة' : 'Enregistrer'}
+              {tFocus.save}
             </button>
           </div>
         </form>
@@ -220,14 +239,17 @@ export const FocusTaskList: React.FC = () => {
 
       {/* Inline Editing Form */}
       {editingId && (
-        <form onSubmit={handleSaveEdit} className="p-3 bg-[#fbfbfa] dark:bg-[#1a1a1a] rounded-md border border-[#2383e2] space-y-2.5">
+        <form
+          onSubmit={handleSaveEdit}
+          className="p-3 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl border border-blue-500/30 space-y-2.5"
+        >
           <input
             type="text"
             required
             autoFocus
             value={editText}
             onChange={(e) => setEditText(e.target.value)}
-            className="w-full text-xs px-2.5 py-1.5 rounded border border-[#e3e2de] dark:border-[#2f2f2f] bg-white dark:bg-[#202020] text-[#37352f] dark:text-[#ecebed] outline-none"
+            className="w-full text-xs px-3 py-2 rounded-xl border border-blue-500/30 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500/20"
           />
 
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
@@ -235,17 +257,17 @@ export const FocusTaskList: React.FC = () => {
               <select
                 value={editPriority}
                 onChange={(e) => setEditPriority(e.target.value as 'urgent' | 'normal')}
-                className="text-xs px-2 py-1 rounded border border-[#e3e2de] dark:border-[#2f2f2f] bg-white dark:bg-[#202020] text-[#37352f] dark:text-[#ecebed] outline-none"
+                className="text-xs px-2.5 py-1.5 rounded-xl border border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white outline-none"
               >
-                <option value="normal">{isAr ? 'أولوية عادية' : 'Normal'}</option>
-                <option value="urgent">{isAr ? 'عاجل' : 'Urgent'}</option>
+                <option value="normal">{tFocus.normalPriority}</option>
+                <option value="urgent">{tFocus.urgentPriority}</option>
               </select>
 
               <input
                 type="date"
                 value={editDueDate}
                 onChange={(e) => setEditDueDate(e.target.value)}
-                className="text-xs px-2 py-1 rounded border border-[#e3e2de] dark:border-[#2f2f2f] bg-white dark:bg-[#202020] text-[#37352f] dark:text-[#ecebed] outline-none"
+                className="text-xs px-2.5 py-1.5 rounded-xl border border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white outline-none"
               />
             </div>
 
@@ -253,15 +275,15 @@ export const FocusTaskList: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setEditingId(null)}
-                className="px-2.5 py-1 rounded text-xs text-[#787774] hover:bg-[#f1f0ee] transition-colors"
+                className="px-3 py-1.5 rounded-xl text-xs text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
               >
-                {isAr ? 'إلغاء' : 'Annuler'}
+                {tFocus.cancel}
               </button>
               <button
                 type="submit"
-                className="px-3 py-1 rounded bg-[#2383e2] text-white font-medium text-xs shadow-sm transition-colors"
+                className="px-3.5 py-1.5 rounded-xl bg-blue-600 text-white font-semibold text-xs shadow-xs transition-colors"
               >
-                {isAr ? 'تحديث' : 'Mettre à jour'}
+                {tFocus.update}
               </button>
             </div>
           </div>
@@ -270,27 +292,27 @@ export const FocusTaskList: React.FC = () => {
 
       {/* Tasks List Items */}
       {sortedTasks.length === 0 ? (
-        <div className="py-6 text-center text-xs text-[#787774] dark:text-[#9b9a97]">
-          {isAr ? 'قائمتك فارغة، أضف أول مهمة' : 'Aucune tâche dans votre liste.'}
+        <div className="py-6 text-center text-xs text-zinc-400 dark:text-zinc-500">
+          {tFocus.empty}
         </div>
       ) : (
-        <div className="divide-y divide-[#f1f0ee] dark:divide-[#282828]">
+        <div className="divide-y divide-black/[0.04] dark:divide-white/[0.04]">
           {sortedTasks.map((task) => (
             <div
               key={task.id}
-              className="group py-2 flex items-start justify-between gap-3 hover:bg-[#fbfbfa] dark:hover:bg-[#252525] px-1.5 rounded transition-colors"
+              className="group py-2.5 flex items-start justify-between gap-3 hover:bg-zinc-50/70 dark:hover:bg-zinc-800/40 px-2 rounded-xl transition-colors"
             >
               {/* Checkbox + Title */}
               <div className="flex items-start gap-2.5 min-w-0 flex-1">
                 <button
                   type="button"
                   onClick={() => handleToggleTask(task.id)}
-                  className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
+                  className={`mt-0.5 w-4 h-4 rounded-md border flex items-center justify-center shrink-0 transition-colors ${
                     task.completed
-                      ? 'bg-[#2383e2] border-[#2383e2] text-white'
-                      : 'border-[#d3d1cb] dark:border-[#3f3f3f] bg-white dark:bg-[#202020] hover:border-[#787774]'
+                      ? 'bg-blue-600 border-blue-600 text-white'
+                      : 'border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:border-zinc-400'
                   }`}
-                  aria-label={task.completed ? 'Marquer comme non fait' : 'Marquer comme fait'}
+                  aria-label={task.completed ? 'Completed' : 'Mark complete'}
                 >
                   {task.completed && <Check className="w-3 h-3 stroke-[3]" />}
                 </button>
@@ -300,8 +322,8 @@ export const FocusTaskList: React.FC = () => {
                     onClick={() => handleToggleTask(task.id)}
                     className={`cursor-pointer block text-xs leading-normal select-none ${
                       task.completed
-                        ? 'text-[#9b9a97] dark:text-[#787774] line-through'
-                        : 'text-[#37352f] dark:text-[#ecebed]'
+                        ? 'text-zinc-400 dark:text-zinc-500 line-through'
+                        : 'text-zinc-800 dark:text-zinc-200 font-medium'
                     }`}
                   >
                     {task.text}
@@ -310,14 +332,14 @@ export const FocusTaskList: React.FC = () => {
                   {/* Badges: Due Date & Urgent */}
                   <div className="flex flex-wrap items-center gap-1.5 text-[10px]">
                     {task.priority === 'urgent' && (
-                      <span className="inline-flex items-center gap-0.5 text-rose-600 dark:text-rose-400 font-medium">
+                      <span className="inline-flex items-center gap-0.5 text-rose-600 dark:text-rose-400 font-semibold bg-rose-500/10 px-1.5 py-0.5 rounded-md">
                         <AlertCircle className="w-3 h-3" />
-                        <span>{isAr ? 'عاجل' : 'Urgent'}</span>
+                        <span>{tFocus.urgentBadge}</span>
                       </span>
                     )}
 
                     {task.dueDate && (
-                      <span className="inline-flex items-center gap-1 text-[#787774] dark:text-[#9b9a97]">
+                      <span className="inline-flex items-center gap-1 text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded-md tabular-nums">
                         <Calendar className="w-3 h-3" />
                         <span>{task.dueDate}</span>
                       </span>
@@ -327,14 +349,13 @@ export const FocusTaskList: React.FC = () => {
               </div>
 
               {/* Action Buttons: Pin, Edit, Delete */}
-              <div className="opacity-0 group-hover:opacity-100 flex items-center gap-0.5 shrink-0 transition-opacity">
+              <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 shrink-0 transition-opacity">
                 <button
                   onClick={() => handleTogglePin(task.id)}
-                  title={task.isPinned ? 'Détacher' : 'Épingler en haut'}
-                  className={`p-1 rounded hover:bg-[#f1f0ee] dark:hover:bg-[#2e2e2e] ${
+                  className={`p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors ${
                     task.isPinned
-                      ? 'text-[#2383e2]'
-                      : 'text-[#787774] hover:text-[#37352f] dark:text-[#9b9a97]'
+                      ? 'text-blue-600 dark:text-blue-400'
+                      : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'
                   }`}
                 >
                   <Pin className={`w-3.5 h-3.5 ${task.isPinned ? 'fill-current' : ''}`} />
@@ -342,16 +363,14 @@ export const FocusTaskList: React.FC = () => {
 
                 <button
                   onClick={() => handleStartEdit(task)}
-                  title="Modifier"
-                  className="p-1 rounded text-[#787774] hover:text-[#37352f] dark:text-[#9b9a97] hover:bg-[#f1f0ee] dark:hover:bg-[#2e2e2e]"
+                  className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                 >
                   <Edit2 className="w-3.5 h-3.5" />
                 </button>
 
                 <button
                   onClick={() => handleDeleteTask(task.id)}
-                  title="Supprimer"
-                  className="p-1 rounded text-[#787774] hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                  className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>

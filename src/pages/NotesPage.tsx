@@ -1,9 +1,11 @@
 import React, { useState, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { useAppStore } from '../store/useAppStore';
 import { NoteItem } from '../types';
 import { Modal } from '../components/common/Modal';
 import { Button } from '../components/common/Button';
 import { EmptyState } from '../components/common/EmptyState';
+import { translations } from '../i18n/translations';
 import {
   FileText,
   Plus,
@@ -12,7 +14,6 @@ import {
   Edit2,
   Search,
   Lock,
-  Sparkles,
 } from 'lucide-react';
 
 const NOTE_COLORS = [
@@ -28,7 +29,7 @@ const NOTE_COLORS = [
 export const NotesPage: React.FC = () => {
   const { notes, addNoteItem, updateNoteItem, deleteNoteItem, togglePinNote, language } =
     useAppStore();
-  const isAr = language === 'ar';
+  const tNote = translations[language].notes;
 
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -77,7 +78,7 @@ export const NotesPage: React.FC = () => {
 
     if (editingNote) {
       updateNoteItem(editingNote.id, {
-        title: noteTitle.trim() || 'Sans titre',
+        title: noteTitle.trim() || tNote.untitled,
         content: noteContent.trim(),
         color: noteColor,
         category: noteCategory.trim() || undefined,
@@ -86,7 +87,7 @@ export const NotesPage: React.FC = () => {
       const now = new Date().toISOString();
       addNoteItem({
         id: 'note_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
-        title: noteTitle.trim() || (isAr ? 'بدون عنوان' : 'Sans titre'),
+        title: noteTitle.trim() || tNote.untitled,
         content: noteContent.trim(),
         color: noteColor,
         category: noteCategory.trim() || undefined,
@@ -100,45 +101,42 @@ export const NotesPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 pb-20">
+    <div className="max-w-[1200px] mx-auto space-y-6 animate-page pb-20 select-text">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-black text-slate-900 dark:text-white">
-              {isAr ? 'ملاحظات وأفكار شخصية' : 'Notes & Idées'}
+            <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-white tracking-tight">
+              {tNote.title}
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300 border border-teal-300 dark:border-teal-800 flex items-center gap-1">
+            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-teal-500/15 text-teal-600 dark:text-teal-400 border border-teal-500/20 flex items-center gap-1">
               <Lock className="w-3 h-3" />
-              <span>{isAr ? 'سرية في هاتفك' : 'Privé'}</span>
+              <span>{tNote.subtitle}</span>
             </span>
           </div>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            {isAr
-              ? 'مساحة حرة لتدوين أفكارك، مخططاتك، وكوداتك محفوظة محلياً بنسبة 100%'
-              : 'Espace de prise de notes rapide, confidentiel et sauvegardé sur votre appareil.'}
+          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+            {tNote.badge}
           </p>
         </div>
 
         <Button
           onClick={handleOpenAdd}
           variant="primary"
-          className="flex items-center gap-2 shadow-lg shadow-emerald-600/20"
+          icon={<Plus className="w-4 h-4 stroke-[2.5]" />}
         >
-          <Plus className="w-4 h-4 stroke-[2.5]" />
-          <span>{isAr ? 'تدوين ملاحظة' : 'Nouvelle Note'}</span>
+          <span>{tNote.newNote}</span>
         </Button>
       </div>
 
-      {/* Search Input */}
+      {/* Localized Glass Search Input */}
       <div className="relative">
-        <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#787774]" />
+        <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder={isAr ? 'بحث في الملاحظات...' : 'Rechercher une note ou mot-clé...'}
-          className="w-full pl-8 pr-3 py-1.5 rounded-md bg-white dark:bg-[#202020] border border-[#e3e2de] dark:border-[#2f2f2f] text-xs text-[#37352f] dark:text-[#ecebed] focus:outline-none focus:border-[#2383e2] shadow-sm"
+          placeholder={tNote.searchPlaceholder}
+          className="w-full pl-8 pr-3.5 py-2 rounded-xl bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] text-xs text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-xs"
         />
       </div>
 
@@ -146,15 +144,16 @@ export const NotesPage: React.FC = () => {
       {filteredNotes.length === 0 ? (
         <EmptyState
           icon={<FileText className="w-5 h-5" />}
-          title={isAr ? 'لا توجد أي ملاحظة بعد' : 'Aucune note enregistrée'}
-          description={
-            isAr
-              ? 'استغل هذه المساحة لكتابة أهدافك، أفكار مشاريعك أو ملخصاتك'
-              : 'Notez vos idées, réflexions ou objectifs personnels.'
-          }
+          title={tNote.emptyTitle}
+          description={tNote.subtitle}
           action={
-            <Button onClick={handleOpenAdd} variant="primary" size="sm" icon={<Plus className="w-3.5 h-3.5" />}>
-              <span>{isAr ? 'إنشاء أول ملاحظة' : 'Créer une note'}</span>
+            <Button
+              onClick={handleOpenAdd}
+              variant="primary"
+              size="sm"
+              icon={<Plus className="w-3.5 h-3.5" />}
+            >
+              <span>{tNote.createFirst}</span>
             </Button>
           }
         />
@@ -163,11 +162,11 @@ export const NotesPage: React.FC = () => {
           {/* Pinned Section */}
           {pinnedNotes.length > 0 && (
             <div className="space-y-3">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-amber-600 dark:text-amber-400">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400">
                 <Pin className="w-3.5 h-3.5 fill-amber-500" />
-                <span>{isAr ? 'الملاحظات المثبتة' : 'Notes Épinglées'}</span>
+                <span>{tNote.pinned}</span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {pinnedNotes.map((note) => (
                   <NoteCard
                     key={note.id}
@@ -175,7 +174,7 @@ export const NotesPage: React.FC = () => {
                     onEdit={() => handleOpenEdit(note)}
                     onDelete={() => deleteNoteItem(note.id)}
                     onTogglePin={() => togglePinNote(note.id)}
-                    isAr={isAr}
+                    generalLabel={tNote.general}
                   />
                 ))}
               </div>
@@ -186,11 +185,11 @@ export const NotesPage: React.FC = () => {
           {otherNotes.length > 0 && (
             <div className="space-y-3">
               {pinnedNotes.length > 0 && (
-                <div className="text-xs font-bold text-slate-400">
-                  {isAr ? 'باقي الملاحظات' : 'Autres notes'}
+                <div className="text-xs font-semibold text-zinc-400">
+                  {tNote.otherNotes}
                 </div>
               )}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {otherNotes.map((note) => (
                   <NoteCard
                     key={note.id}
@@ -198,7 +197,7 @@ export const NotesPage: React.FC = () => {
                     onEdit={() => handleOpenEdit(note)}
                     onDelete={() => deleteNoteItem(note.id)}
                     onTogglePin={() => togglePinNote(note.id)}
-                    isAr={isAr}
+                    generalLabel={tNote.general}
                   />
                 ))}
               </div>
@@ -211,54 +210,54 @@ export const NotesPage: React.FC = () => {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editingNote ? (isAr ? 'تعديل الملاحظة' : 'Modifier la note') : (isAr ? 'تدوين ملاحظة جديدة' : 'Nouvelle Note')}
-        subtitle={isAr ? 'احفظ أفكارك بأمان في هاتفك' : 'Note personnelle 100% hors-ligne.'}
+        title={editingNote ? tNote.editNote : tNote.newNote}
+        subtitle={tNote.subtitle}
       >
         <form onSubmit={handleSaveNote} className="space-y-4 pt-2">
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-              {isAr ? 'العنوان' : 'Titre'}
+            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+              {tNote.titleLabel}
             </label>
             <input
               type="text"
               value={noteTitle}
               onChange={(e) => setNoteTitle(e.target.value)}
-              placeholder={isAr ? 'عنوان الفكرة أو الموضوع...' : 'Titre de la note...'}
-              className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              placeholder={tNote.titlePlaceholder}
+              className="w-full px-3.5 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-              {isAr ? 'المحتوى' : 'Contenu'} *
+            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+              {tNote.contentLabel} *
             </label>
             <textarea
               rows={5}
               required
               value={noteContent}
               onChange={(e) => setNoteContent(e.target.value)}
-              placeholder={isAr ? 'اكتب ملاحظتك أو خطتك هنا...' : 'Écrivez votre pensée, check-list ou idée ici...'}
-              className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 leading-relaxed"
+              placeholder={tNote.contentPlaceholder}
+              className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 leading-relaxed"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                {isAr ? 'التصنيف' : 'Catégorie'}
+              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+                {tNote.categoryLabel}
               </label>
               <input
                 type="text"
                 value={noteCategory}
                 onChange={(e) => setNoteCategory(e.target.value)}
-                placeholder="Ex: Projet, Idée, Livres, Personnel..."
-                className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                placeholder="Ex: Projet, Livres..."
+                className="w-full px-3.5 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                {isAr ? 'لون الملاحظة' : 'Couleur d’accent'}
+              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+                {tNote.colorLabel}
               </label>
               <div className="flex items-center gap-2 pt-1">
                 {NOTE_COLORS.map((c) => (
@@ -267,7 +266,7 @@ export const NotesPage: React.FC = () => {
                     type="button"
                     onClick={() => setNoteColor(c)}
                     className={`w-6 h-6 rounded-full transition-transform ${
-                      noteColor === c ? 'scale-125 ring-2 ring-slate-900 dark:ring-white ring-offset-2' : ''
+                      noteColor === c ? 'scale-125 ring-2 ring-zinc-900 dark:ring-white ring-offset-2' : ''
                     }`}
                     style={{ backgroundColor: c }}
                   />
@@ -276,12 +275,12 @@ export const NotesPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-zinc-100 dark:border-zinc-800">
             <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>
-              {isAr ? 'إلغاء' : 'Annuler'}
+              {tNote.cancel}
             </Button>
             <Button type="submit" variant="primary">
-              {editingNote ? (isAr ? 'حفظ' : 'Enregistrer') : (isAr ? 'حفظ الملاحظة' : 'Créer la note')}
+              {tNote.save}
             </Button>
           </div>
         </form>
@@ -295,64 +294,67 @@ interface NoteCardProps {
   onEdit: () => void;
   onDelete: () => void;
   onTogglePin: () => void;
-  isAr: boolean;
+  generalLabel: string;
 }
 
-const NoteCard: React.FC<NoteCardProps> = ({ note, onEdit, onDelete, onTogglePin, isAr }) => {
+const NoteCard: React.FC<NoteCardProps> = ({ note, onEdit, onDelete, onTogglePin, generalLabel }) => {
   const accentColor = note.color || '#2383e2';
 
   return (
-    <div className="relative group bg-white dark:bg-[#202020] rounded-lg p-3.5 border border-[#e3e2de] dark:border-[#2f2f2f] hover:border-[#d3d1cb] dark:hover:border-[#3f3f3f] shadow-sm flex flex-col justify-between space-y-2.5 transition-all">
-      <div className="space-y-1.5">
+    <motion.div
+      whileHover={{ y: -2 }}
+      className="relative group bg-white/80 dark:bg-zinc-900/65 backdrop-blur-2xl rounded-2xl p-4 sm:p-5 border border-black/[0.06] dark:border-white/[0.08] shadow-[0_4px_24px_-1px_rgba(0,0,0,0.05),inset_0_1px_0_0_rgba(255,255,255,0.7)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.36),inset_0_1px_0_0_rgba(255,255,255,0.08)] flex flex-col justify-between space-y-3 transition-all"
+    >
+      <div className="space-y-2">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2">
             <div
-              className="w-2 h-2 rounded-full shrink-0"
+              className="w-2.5 h-2.5 rounded-full shrink-0 shadow-xs"
               style={{ backgroundColor: accentColor }}
             />
-            <h4 className="font-medium text-xs sm:text-sm text-[#37352f] dark:text-[#ecebed] leading-tight">
+            <h4 className="font-semibold text-sm text-zinc-900 dark:text-white leading-tight tracking-tight">
               {note.title}
             </h4>
           </div>
 
           <button
             onClick={onTogglePin}
-            className={`p-1 rounded transition-colors ${
+            className={`p-1.5 rounded-lg transition-colors ${
               note.isPinned
-                ? 'text-[#2383e2] bg-[#f1f0ee] dark:bg-[#282828]'
-                : 'text-[#9b9a97] hover:text-[#37352f]'
+                ? 'text-blue-600 bg-blue-50 dark:bg-blue-950/40'
+                : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'
             }`}
-            title={note.isPinned ? 'Détacher' : 'Épingler en haut'}
+            title={note.isPinned ? 'Détacher' : 'Épingler'}
           >
             <Pin className={`w-3.5 h-3.5 ${note.isPinned ? 'fill-current' : ''}`} />
           </button>
         </div>
 
-        <p className="text-xs text-[#5f5e5b] dark:text-[#9b9a97] whitespace-pre-wrap leading-relaxed line-clamp-6">
+        <p className="text-xs text-zinc-600 dark:text-zinc-400 whitespace-pre-wrap leading-relaxed line-clamp-6">
           {note.content}
         </p>
       </div>
 
-      <div className="pt-2 border-t border-[#e3e2de] dark:border-[#2f2f2f] flex items-center justify-between text-[10px] text-[#787774]">
-        <span>{note.category || (isAr ? 'عام' : 'Général')}</span>
+      <div className="pt-2.5 border-t border-black/[0.04] dark:border-white/[0.05] flex items-center justify-between text-[11px] text-zinc-400">
+        <span>{note.category || generalLabel}</span>
 
         <div className="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
           <button
             onClick={onEdit}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
             title="Modifier"
           >
             <Edit2 className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={onDelete}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950"
+            className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
             title="Supprimer"
           >
             <Trash2 className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };

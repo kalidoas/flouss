@@ -1,10 +1,12 @@
 import React, { useState, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { useAppStore } from '../store/useAppStore';
 import { DebtItem, DebtType } from '../types';
 import { Modal } from '../components/common/Modal';
 import { Button } from '../components/common/Button';
 import { EmptyState } from '../components/common/EmptyState';
 import { formatMAD } from '../utils/formatters';
+import { translations } from '../i18n/translations';
 import {
   HandCoins,
   ArrowUpRight,
@@ -14,15 +16,23 @@ import {
   Trash2,
   Edit2,
   Calendar,
-  AlertCircle,
   Coins,
   Check,
 } from 'lucide-react';
 
 export const DebtsPage: React.FC = () => {
-  const { debts, addDebt, updateDebt, deleteDebt, settleDebt, recordDebtPayment, hideBalance, language } =
-    useAppStore();
-  const isAr = language === 'ar';
+  const {
+    debts,
+    addDebt,
+    updateDebt,
+    deleteDebt,
+    settleDebt,
+    recordDebtPayment,
+    hideBalance,
+    language,
+  } = useAppStore();
+
+  const tDebt = translations[language].debts;
 
   const [activeTab, setActiveTab] = useState<'all' | 'lend' | 'borrow' | 'settled'>('all');
   const [search, setSearch] = useState('');
@@ -162,124 +172,147 @@ export const DebtsPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 pb-20">
+    <div className="max-w-[1200px] mx-auto space-y-6 animate-page pb-20 select-text">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-black text-slate-900 dark:text-white">
-              {isAr ? 'السلف والكريدي' : 'Dettes & Emprunts'}
+            <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-white tracking-tight">
+              {tDebt.title}
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
-              {isAr ? 'فلوسي وفلوس الناس' : 'Prêts & Dettes'}
+            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+              {tDebt.badge}
             </span>
           </div>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            {isAr
-              ? 'تتبع الأموال التي تسالها للغير، والأموال التي يدين بها الآخرون لك'
-              : 'Gérez ce que les gens vous doivent et ce que vous devez rembourser.'}
+          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+            {tDebt.subtitle}
           </p>
         </div>
 
         <Button
           onClick={handleOpenAdd}
           variant="primary"
-          className="flex items-center gap-2"
+          icon={<Plus className="w-4 h-4 stroke-[2.5]" />}
         >
-          <Plus className="w-4 h-4 stroke-[2.5]" />
-          <span>{isAr ? 'إضافة سلف / كريدي' : 'Nouveau Prêt / Dette'}</span>
+          <span>{tDebt.newDebt}</span>
         </Button>
       </div>
 
-      {/* Summary Hero Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      {/* Summary Hero Cards: Apple HIG Glass Surfaces */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         {/* On me doit */}
-        <div className="bg-white dark:bg-[#202020] rounded-lg p-3.5 border border-[#e3e2de] dark:border-[#2f2f2f] shadow-sm">
-          <div className="flex items-center justify-between text-xs font-medium text-emerald-600 dark:text-emerald-400 mb-1">
-            <span>{isAr ? 'فلوسي عند الناس (كنسالهم)' : 'On me doit (À récupérer)'}</span>
-            <div className="w-5 h-5 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center">
-              <ArrowDownLeft className="w-3.5 h-3.5" />
-            </div>
-          </div>
-          <span className={`text-xl font-semibold text-[#37352f] dark:text-[#ecebed] tabular-nums transition-[filter] duration-200 ${hideBalance ? 'privacy-blur' : ''}`}>
-            {formatMAD(summary.toCollect, false, language)}
-          </span>
-        </div>
-
-        {/* Je dois */}
-        <div className="bg-white dark:bg-[#202020] rounded-lg p-3.5 border border-[#e3e2de] dark:border-[#2f2f2f] shadow-sm">
-          <div className="flex items-center justify-between text-xs font-medium text-rose-600 dark:text-rose-400 mb-1">
-            <span>{isAr ? 'فلوس الناس عندي (كيسالوني)' : 'Je dois (À rembourser)'}</span>
-            <div className="w-5 h-5 rounded bg-rose-50 dark:bg-rose-950/40 text-rose-600 flex items-center justify-center">
-              <ArrowUpRight className="w-3.5 h-3.5" />
-            </div>
-          </div>
-          <span className={`text-xl font-semibold text-[#37352f] dark:text-[#ecebed] tabular-nums transition-[filter] duration-200 ${hideBalance ? 'privacy-blur' : ''}`}>
-            {formatMAD(summary.toPay, false, language)}
-          </span>
-        </div>
-
-        {/* Net */}
-        <div className="bg-white dark:bg-[#202020] rounded-lg p-3.5 border border-[#e3e2de] dark:border-[#2f2f2f] shadow-sm">
-          <div className="flex items-center justify-between text-xs font-medium text-[#787774] dark:text-[#9b9a97] mb-1">
-            <span>{isAr ? 'الصافي' : 'Solde Net'}</span>
-            <div className="w-5 h-5 rounded bg-[#f1f0ee] dark:bg-[#282828] text-[#787774] flex items-center justify-center">
-              <Coins className="w-3.5 h-3.5" />
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-2xl p-4 sm:p-5 bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs"
+        >
+          <div className="flex items-center justify-between text-xs font-semibold text-emerald-600 dark:text-emerald-400 mb-2">
+            <span>{tDebt.theyOweMe}</span>
+            <div className="w-6 h-6 rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center justify-center">
+              <ArrowDownLeft className="w-3.5 h-3.5 stroke-[2.2]" />
             </div>
           </div>
           <span
-            className={`text-xl font-semibold tabular-nums transition-[filter] duration-200 ${hideBalance ? 'privacy-blur' : ''} ${
-              summary.net >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+            className={`text-xl sm:text-2xl font-bold text-zinc-900 dark:text-white tabular-nums tracking-tight transition-[filter] duration-200 ${
+              hideBalance ? 'privacy-blur' : ''
+            }`}
+          >
+            {formatMAD(summary.toCollect, false, language)}
+          </span>
+        </motion.div>
+
+        {/* Je dois */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="rounded-2xl p-4 sm:p-5 bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs"
+        >
+          <div className="flex items-center justify-between text-xs font-semibold text-rose-600 dark:text-rose-400 mb-2">
+            <span>{tDebt.iOwe}</span>
+            <div className="w-6 h-6 rounded-lg bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20 flex items-center justify-center">
+              <ArrowUpRight className="w-3.5 h-3.5 stroke-[2.2]" />
+            </div>
+          </div>
+          <span
+            className={`text-xl sm:text-2xl font-bold text-zinc-900 dark:text-white tabular-nums tracking-tight transition-[filter] duration-200 ${
+              hideBalance ? 'privacy-blur' : ''
+            }`}
+          >
+            {formatMAD(summary.toPay, false, language)}
+          </span>
+        </motion.div>
+
+        {/* Net */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="rounded-2xl p-4 sm:p-5 bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs"
+        >
+          <div className="flex items-center justify-between text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-2">
+            <span>{tDebt.netBalance}</span>
+            <div className="w-6 h-6 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-500 flex items-center justify-center">
+              <Coins className="w-3.5 h-3.5 stroke-[2.2]" />
+            </div>
+          </div>
+          <span
+            className={`text-xl sm:text-2xl font-bold tabular-nums tracking-tight transition-[filter] duration-200 ${
+              hideBalance ? 'privacy-blur' : ''
+            } ${
+              summary.net >= 0
+                ? 'text-emerald-600 dark:text-emerald-400'
+                : 'text-rose-600 dark:text-rose-400'
             }`}
           >
             {summary.net > 0 ? '+' : ''}
             {formatMAD(summary.net, false, language)}
           </span>
-        </div>
+        </motion.div>
       </div>
 
       {/* Tabs & Search */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-1 p-0.5 bg-[#f1f0ee] dark:bg-[#282828] rounded-md overflow-x-auto">
+        <div className="flex items-center gap-1 p-1 bg-zinc-200/60 dark:bg-zinc-800/60 backdrop-blur-md rounded-xl border border-black/[0.04] dark:border-white/[0.06] overflow-x-auto">
           <button
             onClick={() => setActiveTab('all')}
-            className={`px-2.5 py-1 rounded text-xs transition-colors shrink-0 ${
+            className={`px-3 py-1.5 rounded-lg text-xs transition-all shrink-0 font-medium ${
               activeTab === 'all'
-                ? 'bg-white dark:bg-[#202020] text-[#37352f] dark:text-[#ecebed] font-medium shadow-xs'
-                : 'text-[#787774] dark:text-[#9b9a97]'
+                ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-xs'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
             }`}
           >
-            {isAr ? 'الكل' : 'Tous'}
+            {tDebt.all}
           </button>
           <button
             onClick={() => setActiveTab('lend')}
-            className={`px-2.5 py-1 rounded text-xs transition-colors shrink-0 ${
+            className={`px-3 py-1.5 rounded-lg text-xs transition-all shrink-0 font-medium ${
               activeTab === 'lend'
-                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 font-medium'
-                : 'text-[#787774] dark:text-[#9b9a97]'
+                ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
             }`}
           >
-            {isAr ? 'كنسالهم' : 'Ils me doivent'}
+            {tDebt.lent}
           </button>
           <button
             onClick={() => setActiveTab('borrow')}
-            className={`px-2.5 py-1 rounded text-xs transition-colors shrink-0 ${
+            className={`px-3 py-1.5 rounded-lg text-xs transition-all shrink-0 font-medium ${
               activeTab === 'borrow'
-                ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 font-medium'
-                : 'text-[#787774] dark:text-[#9b9a97]'
+                ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
             }`}
           >
-            {isAr ? 'كيسالوني' : 'Je dois'}
+            {tDebt.borrowed}
           </button>
           <button
             onClick={() => setActiveTab('settled')}
-            className={`px-2.5 py-1 rounded text-xs transition-colors shrink-0 ${
+            className={`px-3 py-1.5 rounded-lg text-xs transition-all shrink-0 font-medium ${
               activeTab === 'settled'
-                ? 'bg-white dark:bg-[#202020] text-[#37352f] dark:text-[#ecebed] font-medium shadow-xs'
-                : 'text-[#787774] dark:text-[#9b9a97]'
+                ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-xs'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
             }`}
           >
-            {isAr ? 'تم خلاصه' : 'Réglés'}
+            {tDebt.settled}
           </button>
         </div>
 
@@ -287,25 +320,26 @@ export const DebtsPage: React.FC = () => {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder={isAr ? 'بحث بالاسم أو الملاحظة...' : 'Rechercher une personne...'}
-          className="px-3 py-1.5 rounded-md bg-white dark:bg-[#202020] border border-[#e3e2de] dark:border-[#2f2f2f] text-xs text-[#37352f] dark:text-[#ecebed] focus:outline-none focus:border-[#2383e2] w-full sm:w-60"
+          placeholder={tDebt.searchPlaceholder}
+          className="px-3.5 py-2 rounded-xl bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] text-xs text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 w-full sm:w-64 transition-all"
         />
       </div>
 
       {/* Debts List */}
-      <div className="space-y-2.5">
+      <div className="space-y-3">
         {filteredDebts.length === 0 ? (
           <EmptyState
             icon={<HandCoins className="w-5 h-5" />}
-            title={isAr ? 'لا يوجد أي سلف أو دين مسجل' : 'Aucune dette enregistrée'}
-            description={
-              isAr
-                ? 'سجل سلف أو كريدي لكي لا تنسى أموالك أو التزاماتك'
-                : 'Notez vos prêts ou vos emprunts pour garder vos comptes clairs.'
-            }
+            title={tDebt.emptyTitle}
+            description={tDebt.subtitle}
             action={
-              <Button onClick={handleOpenAdd} variant="primary" size="sm" icon={<Plus className="w-3.5 h-3.5" />}>
-                <span>{isAr ? 'تسجيل سلف جديد' : 'Ajouter une dette'}</span>
+              <Button
+                onClick={handleOpenAdd}
+                variant="primary"
+                size="sm"
+                icon={<Plus className="w-3.5 h-3.5" />}
+              >
+                <span>{tDebt.addDebt}</span>
               </Button>
             }
           />
@@ -313,50 +347,52 @@ export const DebtsPage: React.FC = () => {
           filteredDebts.map((debt) => {
             const isLend = debt.type === 'lend';
             const remaining = Math.max(0, debt.totalAmount - (debt.paidAmount || 0));
-            const progress = Math.min(100, Math.round(((debt.paidAmount || 0) / debt.totalAmount) * 100));
+            const progress = Math.min(
+              100,
+              Math.round(((debt.paidAmount || 0) / debt.totalAmount) * 100)
+            );
 
             return (
-              <div
+              <motion.div
                 key={debt.id}
-                className={`p-3.5 rounded-lg border transition-all ${
+                whileHover={{ y: -2 }}
+                className={`p-4 sm:p-5 rounded-2xl border transition-all ${
                   debt.isSettled
-                    ? 'bg-[#fbfbfa] dark:bg-[#1f1f1f] border-[#e3e2de] dark:border-[#2f2f2f] opacity-75'
-                    : 'bg-white dark:bg-[#202020] border-[#e3e2de] dark:border-[#2f2f2f] shadow-sm'
+                    ? 'bg-white/50 dark:bg-zinc-900/35 border-black/[0.04] dark:border-white/[0.05] opacity-75'
+                    : 'bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl border-black/[0.06] dark:border-white/[0.08] shadow-xs'
                 }`}
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <span
-                        className={`px-1.5 py-0.2 rounded text-[10px] font-medium uppercase tracking-wider ${
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider ${
                           isLend
-                            ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
-                            : 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300'
+                            ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                            : 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20'
                         }`}
                       >
-                        {isLend ? (isAr ? 'أنا سلفت' : 'On me doit') : (isAr ? 'أنا تسلفت' : 'Je dois')}
+                        {isLend ? tDebt.lent : tDebt.borrowed}
                       </span>
-                      <h4 className="font-medium text-sm text-[#37352f] dark:text-[#ecebed]">
+                      <h4 className="font-semibold text-sm sm:text-base text-zinc-900 dark:text-white tracking-tight">
                         {debt.personName}
                       </h4>
                       {debt.isSettled && (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.2 rounded">
-                          <Check className="w-3 h-3 stroke-[3]" /> {isAr ? 'تم الخلاص' : 'Réglé'}
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/15 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+                          <Check className="w-3 h-3 stroke-[3]" /> {tDebt.settled}
                         </span>
                       )}
                     </div>
 
                     {debt.notes && (
-                      <p className="text-xs text-[#787774] dark:text-[#9b9a97]">
-                        {debt.notes}
-                      </p>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400">{debt.notes}</p>
                     )}
 
                     {debt.dueDate && (
-                      <div className="flex items-center gap-1.5 text-[11px] text-[#787774] dark:text-[#9b9a97]">
+                      <div className="flex items-center gap-1.5 text-xs text-zinc-400 dark:text-zinc-500 tabular-nums">
                         <Calendar className="w-3.5 h-3.5" />
                         <span>
-                          {isAr ? 'تاريخ الاستحقاق :' : 'Échéance :'} {debt.dueDate}
+                          {tDebt.dueDateLabel} {debt.dueDate}
                         </span>
                       </div>
                     )}
@@ -365,15 +401,15 @@ export const DebtsPage: React.FC = () => {
                   {/* Amounts */}
                   <div className="flex items-center justify-between sm:justify-end gap-4">
                     <div className="text-right">
-                      <div className="text-[10px] text-[#787774] dark:text-[#9b9a97] font-medium">
-                        {isAr ? 'المتبقي' : 'Reste à payer'}
+                      <div className="text-[10px] text-zinc-400 uppercase tracking-wider font-medium">
+                        {tDebt.remainingLabel}
                       </div>
                       <div
-                        className={`text-base font-semibold tabular-nums transition-[filter] duration-200 ${
+                        className={`text-base sm:text-lg font-bold tabular-nums tracking-tight transition-[filter] duration-200 ${
                           hideBalance ? 'privacy-blur' : ''
                         } ${
                           debt.isSettled
-                            ? 'text-[#787774] line-through'
+                            ? 'text-zinc-400 line-through'
                             : isLend
                             ? 'text-emerald-600 dark:text-emerald-400'
                             : 'text-rose-600 dark:text-rose-400'
@@ -382,8 +418,12 @@ export const DebtsPage: React.FC = () => {
                         {formatMAD(remaining, false, language)}
                       </div>
                       {debt.paidAmount > 0 && !debt.isSettled && (
-                        <div className={`text-[10px] text-[#787774] dark:text-[#9b9a97] transition-[filter] duration-200 ${hideBalance ? 'privacy-blur' : ''}`}>
-                          {formatMAD(debt.paidAmount, false, language)} {isAr ? 'تم دفعه' : 'déjà payé'}
+                        <div
+                          className={`text-[10px] text-zinc-400 tabular-nums transition-[filter] duration-200 ${
+                            hideBalance ? 'privacy-blur' : ''
+                          }`}
+                        >
+                          {formatMAD(debt.paidAmount, false, language)} {tDebt.alreadyPaid}
                         </div>
                       )}
                     </div>
@@ -392,12 +432,12 @@ export const DebtsPage: React.FC = () => {
                     <div className="flex items-center gap-1 shrink-0">
                       <button
                         onClick={() => settleDebt(debt.id)}
-                        className={`p-1.5 rounded transition-colors ${
+                        className={`p-2 rounded-xl transition-colors ${
                           debt.isSettled
-                            ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40'
-                            : 'text-[#787774] hover:text-emerald-600 hover:bg-[#f1f0ee] dark:hover:bg-[#282828]'
+                            ? 'text-emerald-600 bg-emerald-500/15 border border-emerald-500/20'
+                            : 'text-zinc-400 hover:text-emerald-600 hover:bg-emerald-500/10'
                         }`}
-                        title={debt.isSettled ? 'Marquer comme non réglé' : 'Marquer comme entièrement réglé'}
+                        title={debt.isSettled ? 'Annuler' : 'Marquer réglé'}
                       >
                         <CheckCircle2 className="w-4 h-4" />
                       </button>
@@ -405,24 +445,23 @@ export const DebtsPage: React.FC = () => {
                       {!debt.isSettled && (
                         <button
                           onClick={() => handleOpenPayment(debt.id)}
-                          className="px-2 py-1 rounded text-xs font-medium bg-[#f1f0ee] dark:bg-[#282828] text-[#37352f] dark:text-[#ecebed] hover:bg-[#e6e5e2] transition-colors"
-                          title="Ajouter un remboursement partiel"
+                          className="px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
                         >
-                          + {isAr ? 'دفعة' : 'Paiement'}
+                          + {tDebt.recordPayment}
                         </button>
                       )}
 
                       <button
                         onClick={() => handleOpenEdit(debt)}
-                        className="p-1 rounded text-[#787774] hover:text-[#37352f] hover:bg-[#f1f0ee] dark:hover:bg-[#282828] transition-colors"
-                        title="Modifier"
+                        className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                        title={tDebt.editDebt}
                       >
                         <Edit2 className="w-3.5 h-3.5" />
                       </button>
 
                       <button
                         onClick={() => deleteDebt(debt.id)}
-                        className="p-1 rounded text-[#787774] hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                        className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
                         title="Supprimer"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -433,20 +472,20 @@ export const DebtsPage: React.FC = () => {
 
                 {/* Repayment Progress bar */}
                 {debt.paidAmount > 0 && !debt.isSettled && (
-                  <div className="mt-2.5 pt-2 border-t border-[#e3e2de] dark:border-[#2f2f2f]">
-                    <div className="flex items-center justify-between text-[10px] text-[#787774] dark:text-[#9b9a97] mb-1">
-                      <span>{isAr ? 'نسبة الاسترداد' : 'Remboursement'}</span>
-                      <span className="tabular-nums">{progress}%</span>
+                  <div className="mt-3 pt-2.5 border-t border-black/[0.04] dark:border-white/[0.05]">
+                    <div className="flex items-center justify-between text-[10px] text-zinc-500 dark:text-zinc-400 mb-1">
+                      <span>{tDebt.recoveryRate}</span>
+                      <span className="tabular-nums font-semibold">{progress}%</span>
                     </div>
-                    <div className="w-full h-1 rounded-full bg-[#f1f0ee] dark:bg-[#282828] overflow-hidden">
+                    <div className="w-full h-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
                       <div
-                        className="h-full bg-emerald-500 rounded-full"
+                        className="h-full bg-emerald-500 rounded-full transition-all duration-300"
                         style={{ width: `${progress}%` }}
                       />
                     </div>
                   </div>
                 )}
-              </div>
+              </motion.div>
             );
           })
         )}
@@ -456,8 +495,8 @@ export const DebtsPage: React.FC = () => {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editingDebt ? (isAr ? 'تعديل السلف' : 'Modifier la dette') : (isAr ? 'تسجيل سلف أو كريدي' : 'Nouveau Prêt / Dette')}
-        subtitle={isAr ? 'حدد الطرف المعني والمبلغ الإجمالي' : 'Enregistrez un montant prêté ou emprunté.'}
+        title={editingDebt ? tDebt.editDebt : tDebt.newDebt}
+        subtitle={tDebt.subtitle}
       >
         <form onSubmit={handleSaveDebt} className="space-y-4 pt-2">
           {/* Debt Type Selector */}
@@ -467,12 +506,12 @@ export const DebtsPage: React.FC = () => {
               onClick={() => setDebtType('lend')}
               className={`p-3 rounded-2xl border text-center transition-all ${
                 debtType === 'lend'
-                  ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-500 text-emerald-800 dark:text-emerald-200 font-bold'
-                  : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500'
+                  ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 font-semibold'
+                  : 'bg-zinc-50 dark:bg-zinc-800/60 border-black/[0.05] dark:border-white/[0.06] text-zinc-500'
               }`}
             >
-              <ArrowDownLeft className="w-5 h-5 mx-auto mb-1 stroke-[2.5]" />
-              <span className="text-xs block font-bold">{isAr ? 'كنسالهم (سلفتهم)' : 'On me doit (Prêt)'}</span>
+              <ArrowDownLeft className="w-5 h-5 mx-auto mb-1 stroke-[2.2]" />
+              <span className="text-xs block font-semibold">{tDebt.lent}</span>
             </button>
 
             <button
@@ -480,33 +519,33 @@ export const DebtsPage: React.FC = () => {
               onClick={() => setDebtType('borrow')}
               className={`p-3 rounded-2xl border text-center transition-all ${
                 debtType === 'borrow'
-                  ? 'bg-rose-50 dark:bg-rose-950/60 border-rose-500 text-rose-800 dark:text-rose-200 font-bold'
-                  : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500'
+                  ? 'bg-rose-500/15 border-rose-500/30 text-rose-600 dark:text-rose-400 font-semibold'
+                  : 'bg-zinc-50 dark:bg-zinc-800/60 border-black/[0.05] dark:border-white/[0.06] text-zinc-500'
               }`}
             >
-              <ArrowUpRight className="w-5 h-5 mx-auto mb-1 stroke-[2.5]" />
-              <span className="text-xs block font-bold">{isAr ? 'كيسالوني (تسلفت)' : 'Je dois (Emprunt)'}</span>
+              <ArrowUpRight className="w-5 h-5 mx-auto mb-1 stroke-[2.2]" />
+              <span className="text-xs block font-semibold">{tDebt.borrowed}</span>
             </button>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-              {isAr ? 'اسم الشخص' : 'Nom de la personne'} *
+            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+              {tDebt.partyNameLabel} *
             </label>
             <input
               type="text"
               required
               value={debtPerson}
               onChange={(e) => setDebtPerson(e.target.value)}
-              placeholder={isAr ? 'مثال: يوسف، حانوت الحومة...' : 'Ex: Karim, Epicier du coin...'}
-              className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              placeholder={tDebt.partyNamePlaceholder}
+              className="w-full px-3.5 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                {isAr ? 'المبلغ الإجمالي (MAD)' : 'Montant total (MAD)'} *
+              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+                {tDebt.totalAmountLabel} *
               </label>
               <input
                 type="number"
@@ -515,13 +554,13 @@ export const DebtsPage: React.FC = () => {
                 value={debtTotal}
                 onChange={(e) => setDebtTotal(e.target.value)}
                 placeholder="0.00"
-                className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 font-bold"
+                className="w-full px-3.5 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 font-bold tabular-nums"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                {isAr ? 'المبلغ المسترد مسبقاً' : 'Déjà remboursé (MAD)'}
+              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+                {tDebt.initialPaidLabel}
               </label>
               <input
                 type="number"
@@ -529,42 +568,42 @@ export const DebtsPage: React.FC = () => {
                 value={debtPaid}
                 onChange={(e) => setDebtPaid(e.target.value)}
                 placeholder="0.00"
-                className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-3.5 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 tabular-nums"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-              {isAr ? 'تاريخ الاستحقاق (اختياري)' : 'Date limite / Échéance (facultatif)'}
+            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+              {tDebt.dueDateOptional}
             </label>
             <input
               type="date"
               value={debtDueDate}
               onChange={(e) => setDebtDueDate(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-3.5 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 tabular-nums"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-              {isAr ? 'ملاحظات' : 'Notes ou raison'}
+            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+              {tDebt.notesLabel}
             </label>
             <textarea
               rows={2}
               value={debtNotes}
               onChange={(e) => setDebtNotes(e.target.value)}
-              placeholder={isAr ? 'تفاصيل السلف...' : 'Raison du prêt ou accord...'}
-              className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              placeholder={tDebt.notesPlaceholder}
+              className="w-full px-3.5 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-zinc-100 dark:border-zinc-800">
             <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>
-              {isAr ? 'إلغاء' : 'Annuler'}
+              {tDebt.cancel}
             </Button>
             <Button type="submit" variant="primary">
-              {editingDebt ? (isAr ? 'حفظ' : 'Enregistrer') : (isAr ? 'تأكيد' : 'Valider')}
+              {editingDebt ? tDebt.save : tDebt.confirm}
             </Button>
           </div>
         </form>
@@ -574,13 +613,13 @@ export const DebtsPage: React.FC = () => {
       <Modal
         isOpen={isPaymentModalOpen}
         onClose={() => setIsPaymentModalOpen(false)}
-        title={isAr ? 'تسجيل دفعة جديدة' : 'Enregistrer un remboursement partiel'}
-        subtitle={isAr ? 'أدخل المبلغ الذي تم استرداده أو دفعه' : 'Ce montant viendra réduire le solde restant.'}
+        title={tDebt.paymentModalTitle}
+        subtitle={tDebt.paymentModalSubtitle}
       >
         <form onSubmit={handleConfirmPayment} className="space-y-4 pt-2">
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-              {isAr ? 'مبلغ الدفعة (MAD)' : 'Montant du remboursement (MAD)'} *
+            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+              {tDebt.paymentAmountLabel} *
             </label>
             <input
               type="number"
@@ -590,16 +629,16 @@ export const DebtsPage: React.FC = () => {
               value={partialAmount}
               onChange={(e) => setPartialAmount(e.target.value)}
               placeholder="0.00"
-              className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-base font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-4 py-3 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-base font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500 tabular-nums"
             />
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-zinc-100 dark:border-zinc-800">
             <Button type="button" variant="ghost" onClick={() => setIsPaymentModalOpen(false)}>
-              {isAr ? 'إلغاء' : 'Annuler'}
+              {tDebt.cancel}
             </Button>
             <Button type="submit" variant="primary">
-              {isAr ? 'تأكيد الدفعة' : 'Confirmer le paiement'}
+              {tDebt.confirmPayment}
             </Button>
           </div>
         </form>

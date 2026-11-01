@@ -1,5 +1,14 @@
 export type TransactionType = 'income' | 'expense' | 'contribution' | 'goal_withdraw';
 
+export type CategoryGroupId =
+  | 'essentials_housing'
+  | 'food_dining'
+  | 'transport_mobility'
+  | 'lifestyle_entertainment'
+  | 'subscriptions_utilities'
+  | 'income_investments'
+  | 'savings';
+
 export interface SubCategory {
   id: string;
   name: string; // fallback or custom name
@@ -11,6 +20,7 @@ export interface Category {
   id: string;
   name: string; // fallback or user-created name
   key?: string; // stable translation key e.g. "food"
+  group?: CategoryGroupId; // curated Apple HIG financial taxonomy group
   icon: string; // Lucide icon key
   color: string; // Hex color code
   isGoal: boolean;

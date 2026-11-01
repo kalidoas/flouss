@@ -1,5 +1,20 @@
-import { Category, IncomeSource, Language, SubCategory } from '../types';
+import { Category, CategoryGroupId, IncomeSource, Language, SubCategory } from '../types';
 import { translations } from '../i18n/translations';
+
+/**
+ * Returns translated category group name
+ */
+export function getCategoryGroupName(
+  groupId: CategoryGroupId | string | null | undefined,
+  language: Language = 'fr'
+): string {
+  if (!groupId) return '';
+  const groupsDict = translations[language]?.categoryGroups;
+  if (groupsDict && groupId in groupsDict) {
+    return (groupsDict as Record<string, string>)[groupId];
+  }
+  return groupId;
+}
 
 /**
  * Returns translated category name if stable `key` exists, otherwise fallback to custom user name.
