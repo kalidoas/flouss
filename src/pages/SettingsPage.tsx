@@ -8,7 +8,7 @@ import { formatMAD, formatDate } from '../utils/formatters';
 import { translations } from '../i18n/translations';
 import { Language } from '../types';
 import { exportToExcel } from '../utils/excelExport';
-import { AccountSwitcherModal } from '../components/accounts/AccountSwitcherModal';
+import { UserProfileModal } from '../components/profile/UserProfileModal';
 import {
   Lock,
   Download,
@@ -510,20 +510,20 @@ export const SettingsPage: React.FC = () => {
         </div>
       </Card>
 
-      {/* 4. Local Multi-Account Management */}
+      {/* 4. Authenticated Cloud Account & Sync */}
       <Card padding="lg">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-base font-extrabold text-slate-900 dark:text-white">
-                {tAcc.title}
+                {translations[language].userProfileModal.title}
               </h2>
               <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/60">
-                {accounts.length} {accounts.length > 1 ? tAcc.transactionsCount : 'compte'}
+                Cloud Sync
               </span>
             </div>
             <p className="text-xs text-slate-400 mt-1">
-              {tAcc.subtitle}
+              {translations[language].userProfileModal.subtitle}
             </p>
           </div>
 
@@ -533,49 +533,40 @@ export const SettingsPage: React.FC = () => {
             onClick={() => setIsAccountModalOpen(true)}
             icon={<Users className="w-4 h-4 text-emerald-600" />}
           >
-            {tAcc.switchAccount}
+            {translations[language].userProfileModal.title}
           </Button>
         </div>
 
-        {/* Account Cards list */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
-          {accounts.map((acc) => {
-            const isActive = acc.id === activeAccountId;
-            return (
+        {/* Profile Details Card */}
+        <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+          <div
+            onClick={() => setIsAccountModalOpen(true)}
+            className="p-3.5 rounded-2xl border border-slate-200/60 dark:border-slate-700/60 bg-slate-50/60 dark:bg-slate-800/30 hover:border-slate-300 transition-all cursor-pointer flex items-center justify-between"
+          >
+            <div className="flex items-center gap-3 min-w-0">
               <div
-                key={acc.id}
-                onClick={() => setIsAccountModalOpen(true)}
-                className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
-                  isActive
-                    ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-500/50'
-                    : 'bg-slate-50/60 dark:bg-slate-800/30 border-slate-200/60 dark:border-slate-700/60 hover:border-slate-300'
-                }`}
+                className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-xs"
+                style={{ backgroundColor: activeAccount?.avatarColor || '#10b981' }}
               >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div
-                    className="w-8 h-8 rounded-xl flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-xs"
-                    style={{ backgroundColor: acc.avatarColor || '#10b981' }}
-                  >
-                    {acc.name.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="min-w-0">
-                    <span className="font-bold text-xs text-slate-900 dark:text-white block truncate">
-                      {acc.name}
-                    </span>
-                    <span className="text-[10px] text-slate-400 block">
-                      {acc.transactions.length} {tAcc.transactionsCount}
-                    </span>
-                  </div>
-                </div>
-
-                {isActive && (
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-500 text-white shrink-0">
-                    {tAcc.activeAccount}
-                  </span>
-                )}
+                {activeAccount?.name?.charAt(0).toUpperCase() || 'U'}
               </div>
-            );
-          })}
+              <div className="min-w-0">
+                <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white block truncate">
+                  {activeAccount?.name}
+                </span>
+                <span className="text-[11px] text-slate-400 block truncate">
+                  {activeAccount?.email || translations[language].userProfileModal.authenticatedUser}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                {translations[language].userProfileModal.syncedRealtime}
+              </span>
+            </div>
+          </div>
         </div>
       </Card>
 
@@ -757,8 +748,8 @@ export const SettingsPage: React.FC = () => {
         </div>
       </Modal>
 
-      {/* Account Switcher Modal */}
-      <AccountSwitcherModal
+      {/* User Profile & Cloud Sync Modal */}
+      <UserProfileModal
         isOpen={isAccountModalOpen}
         onClose={() => setIsAccountModalOpen(false)}
       />

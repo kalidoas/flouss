@@ -330,103 +330,47 @@ export const useAppStore = create<AppState>()(
           const uid = user.uid;
           const userDocRef = doc(db, 'users', uid);
 
-          // 1. Read local cache
-          let localAccount: UserAccount | null = null;
-          try {
-            const raw = localStorage.getItem(`flouss_user_${uid}`);
-            if (raw) localAccount = JSON.parse(raw);
-          } catch (e) {}
+          // Requirement 3: Never check localStorage first to decide if isOnboarded is true.
+          // Keep loadingAuth true so Apple shimmer skeleton renders while fetching from Firestore.
+          set({
+            firebaseUser: user,
+            loadingAuth: true,
+          });
 
-          let firestorePin: string | null = localAccount?.pinCode ?? null;
-
-          // If local cache exists, set immediate optimistic state for instant UI display
-          if (localAccount) {
-            const hasPinInitially = Boolean(firestorePin && firestorePin.trim().length > 0);
-            const sessionVerifiedInitially =
-              sessionStorage.getItem(`flouss_2fa_${uid}`) === 'verified';
-            const isVerifiedInitially = !hasPinInitially || sessionVerifiedInitially;
-
-            set({
-              firebaseUser: user,
-              accounts: [localAccount],
-              activeAccountId: uid,
-              userPinCode: hasPinInitially ? firestorePin : null,
-              isPinVerified: isVerifiedInitially,
-              isPinUnlocked: isVerifiedInitially,
-              loadingAuth: false,
-              ...extractAccountState(localAccount),
-            });
-          } else {
-            // No local cache (e.g. new device / phone login) -> keep loadingAuth true to fetch Firestore first
-            set({
-              firebaseUser: user,
-              loadingAuth: true,
-            });
-          }
-
-          // 2. Fetch or sync with Firestore under users/{uid}
-          let resolvedAccount: UserAccount | null = localAccount;
+          let firestorePin: string | null = null;
+          let resolvedAccount: UserAccount | null = null;
 
           if (!isFirestoreApiDisabled) {
             try {
               const snap = (await Promise.race([
                 getDoc(userDocRef),
                 new Promise<null>((_, reject) =>
-                  setTimeout(() => reject(new Error('Firestore read timeout')), 3500)
+                  setTimeout(() => reject(new Error('Firestore read timeout')), 10000)
                 ),
               ])) as any;
 
               if (snap && snap.exists()) {
                 const data = snap.data();
                 firestorePin = data.pinCode ?? data.account?.pinCode ?? null;
-                if (data.account) {
-                  resolvedAccount = {
-                    ...makeInitialAccount(uid, user.displayName || 'Utilisateur', user.email || ''),
-                    ...data.account,
-                    id: uid,
-                    pinCode: firestorePin,
-                    pinEnabled: !!firestorePin,
-                  };
-                }
-              } else if (snap && !snap.exists() && !localAccount) {
-                // Completely new user account initial registration
-                const freshAccount = makeInitialAccount(
-                  uid,
-                  user.displayName || 'Utilisateur',
-                  user.email || ''
-                );
-                resolvedAccount = freshAccount;
+                const incomingAccount = data.account || data;
 
-                Promise.race([
-                  setDoc(
-                    userDocRef,
-                    {
-                      uid,
-                      email: user.email || null,
-                      displayName: user.displayName || null,
-                      photoURL: user.photoURL || null,
-                      pinCode: null,
-                      pinEnabled: false,
-                      account: freshAccount,
-                      createdAt: new Date().toISOString(),
-                      updatedAt: new Date().toISOString(),
-                    },
-                    { merge: true }
-                  ),
-                  new Promise((_, reject) =>
-                    setTimeout(() => reject(new Error('Firestore initial write timeout')), 3000)
-                  ),
-                ]).catch((err: any) => {
-                  const msg = err?.message || String(err);
-                  if (
-                    msg.includes('PERMISSION_DENIED') ||
-                    msg.includes('has not been used in project') ||
-                    msg.includes('disabled')
-                  ) {
-                    isFirestoreApiDisabled = true;
-                    set({ firestoreDisabled: true });
-                  }
-                });
+                const hasExistingData =
+                  Boolean(data.account?.isOnboarded) ||
+                  Boolean(data.isOnboarded) ||
+                  data.account?.initialBalance !== undefined ||
+                  data.initialBalance !== undefined ||
+                  (Array.isArray(data.account?.transactions) && data.account.transactions.length > 0) ||
+                  (Array.isArray(data.transactions) && data.transactions.length > 0) ||
+                  (Array.isArray(data.account?.categories) && data.account.categories.length > 0);
+
+                resolvedAccount = {
+                  ...makeInitialAccount(uid, user.displayName || 'Utilisateur', user.email || ''),
+                  ...incomingAccount,
+                  id: uid,
+                  isOnboarded: hasExistingData ? true : Boolean(incomingAccount?.isOnboarded),
+                  pinCode: firestorePin,
+                  pinEnabled: !!firestorePin,
+                };
               }
             } catch (err: any) {
               const msg = err?.message || String(err);
@@ -437,24 +381,59 @@ export const useAppStore = create<AppState>()(
               ) {
                 isFirestoreApiDisabled = true;
                 set({ firestoreDisabled: true });
-                console.warn('[Flouss] Cloud Firestore API is disabled or uninitialized. Using local-first storage.');
+                console.warn('[Flouss] Cloud Firestore API disabled or uninitialized. Using local storage.');
               } else {
                 console.warn('[Flouss] Firestore check notice:', msg);
               }
             }
           }
 
-          // Fallback if neither local nor remote had data
+          // Fallback to local storage if Firestore had no document or timed out
           if (!resolvedAccount) {
-            resolvedAccount = makeInitialAccount(
+            try {
+              const raw = localStorage.getItem(`flouss_user_${uid}`);
+              if (raw) {
+                const local = JSON.parse(raw);
+                firestorePin = local?.pinCode ?? null;
+                resolvedAccount = {
+                  ...makeInitialAccount(uid, user.displayName || 'Utilisateur', user.email || ''),
+                  ...local,
+                  id: uid,
+                };
+              }
+            } catch (e) {}
+          }
+
+          // If still no account (truly new user registration)
+          if (!resolvedAccount) {
+            const freshAccount = makeInitialAccount(
               uid,
               user.displayName || 'Utilisateur',
               user.email || ''
             );
+            resolvedAccount = freshAccount;
+
+            if (!isFirestoreApiDisabled) {
+              setDoc(
+                userDocRef,
+                {
+                  uid,
+                  email: user.email || null,
+                  displayName: user.displayName || null,
+                  photoURL: user.photoURL || null,
+                  pinCode: null,
+                  pinEnabled: false,
+                  account: freshAccount,
+                  createdAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString(),
+                },
+                { merge: true }
+              ).catch(() => {});
+            }
           }
           resolvedAccount.id = uid;
 
-          // Save hydrated account to local cache
+          // Save hydrated account to local cache for fast offline access
           try {
             localStorage.setItem(`flouss_user_${uid}`, JSON.stringify(resolvedAccount));
           } catch (e) {}

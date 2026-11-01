@@ -1,24 +1,25 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { useAppStore } from '../../store/useAppStore';
 import { ScreenId } from '../../types';
 import { translations } from '../../i18n/translations';
 import { Logo } from '../common/Logo';
-import { AccountSwitcherModal } from '../accounts/AccountSwitcherModal';
+import { UserProfileModal } from '../profile/UserProfileModal';
 import {
   LayoutDashboard,
-  Layers,
-  ArrowDownLeft,
+  Tags,
+  TrendingUp,
   History,
-  BarChart3,
+  PieChart,
   Settings,
-  ChevronDown,
   CheckSquare,
   HandCoins,
   CreditCard,
   FileText,
+  ChevronDown,
+  LogOut,
   PanelLeftClose,
   PanelLeftOpen,
-  LogOut,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -27,19 +28,21 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse }) => {
-  const { activeScreen, setActiveScreen, language, accounts, activeAccountId, logout } = useAppStore();
+  const { activeScreen, setActiveScreen, accounts, activeAccountId, language, logout, firebaseUser } =
+    useAppStore();
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+
   const t = translations[language].nav;
   const isAr = language === 'ar';
-  const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
 
   const activeAccount = accounts.find((a) => a.id === activeAccountId) || accounts[0];
 
   const financialItems: { id: ScreenId; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
     { id: 'dashboard', label: t.dashboard, icon: LayoutDashboard },
-    { id: 'categories', label: t.categories, icon: Layers },
-    { id: 'income', label: t.income, icon: ArrowDownLeft },
+    { id: 'categories', label: t.categories, icon: Tags },
+    { id: 'income', label: t.income, icon: TrendingUp },
     { id: 'history', label: t.history, icon: History },
-    { id: 'stats', label: t.stats, icon: BarChart3 },
+    { id: 'stats', label: t.stats, icon: PieChart },
   ];
 
   const personalItems: { id: ScreenId; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
@@ -100,17 +103,31 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
                     key={item.id}
                     onClick={() => setActiveScreen(item.id)}
                     title={collapsed ? item.label : undefined}
-                    className={`w-full flex items-center ${
+                    className={`relative w-full flex items-center ${
                       collapsed ? 'justify-center px-0' : 'gap-2.5 px-2.5'
-                    } py-1.5 rounded-md text-xs font-normal transition-colors duration-100 ${
+                    } py-1.5 rounded-lg text-xs transition-colors duration-150 z-10 ${
                       isActive
-                        ? 'bg-[#efeeea] dark:bg-[#282828] text-[#37352f] dark:text-[#ecebed] font-medium'
-                        : 'text-[#5f5e5b] dark:text-[#9b9a97] hover:bg-[#f1f0ee] dark:hover:bg-[#242424] hover:text-[#37352f] dark:hover:text-[#ecebed]'
+                        ? 'text-zinc-900 dark:text-white font-semibold'
+                        : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
                     }`}
                   >
+                    {isActive && (
+                      <motion.div
+                        layoutId="sidebar-active-pill"
+                        className="absolute inset-0 bg-[#efeeea] dark:bg-[#282828] rounded-lg -z-10 shadow-xs"
+                        transition={{
+                          type: 'spring',
+                          stiffness: 420,
+                          damping: 32,
+                          mass: 0.8,
+                        }}
+                      />
+                    )}
                     <Icon
                       className={`w-4 h-4 shrink-0 ${
-                        isActive ? 'text-[#37352f] dark:text-[#ecebed]' : 'text-[#787774] dark:text-[#9b9a97]'
+                        isActive
+                          ? 'text-zinc-900 dark:text-white'
+                          : 'text-[#787774] dark:text-[#9b9a97]'
                       }`}
                     />
                     {!collapsed && <span className="truncate">{item.label}</span>}
@@ -136,17 +153,31 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
                     key={item.id}
                     onClick={() => setActiveScreen(item.id)}
                     title={collapsed ? item.label : undefined}
-                    className={`w-full flex items-center ${
+                    className={`relative w-full flex items-center ${
                       collapsed ? 'justify-center px-0' : 'gap-2.5 px-2.5'
-                    } py-1.5 rounded-md text-xs font-normal transition-colors duration-100 ${
+                    } py-1.5 rounded-lg text-xs transition-colors duration-150 z-10 ${
                       isActive
-                        ? 'bg-[#efeeea] dark:bg-[#282828] text-[#37352f] dark:text-[#ecebed] font-medium'
-                        : 'text-[#5f5e5b] dark:text-[#9b9a97] hover:bg-[#f1f0ee] dark:hover:bg-[#242424] hover:text-[#37352f] dark:hover:text-[#ecebed]'
+                        ? 'text-zinc-900 dark:text-white font-semibold'
+                        : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
                     }`}
                   >
+                    {isActive && (
+                      <motion.div
+                        layoutId="sidebar-active-pill"
+                        className="absolute inset-0 bg-[#efeeea] dark:bg-[#282828] rounded-lg -z-10 shadow-xs"
+                        transition={{
+                          type: 'spring',
+                          stiffness: 420,
+                          damping: 32,
+                          mass: 0.8,
+                        }}
+                      />
+                    )}
                     <Icon
                       className={`w-4 h-4 shrink-0 ${
-                        isActive ? 'text-[#37352f] dark:text-[#ecebed]' : 'text-[#787774] dark:text-[#9b9a97]'
+                        isActive
+                          ? 'text-zinc-900 dark:text-white'
+                          : 'text-[#787774] dark:text-[#9b9a97]'
                       }`}
                     />
                     {!collapsed && <span className="truncate">{item.label}</span>}
@@ -156,23 +187,35 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
             </div>
           </div>
 
-          {/* Settings Item */}
+          {/* Settings Tab */}
           <div className="pt-2 border-t border-[#e3e2de] dark:border-[#2f2f2f]">
             <button
               onClick={() => setActiveScreen('settings')}
               title={collapsed ? t.settings : undefined}
-              className={`w-full flex items-center ${
+              className={`relative w-full flex items-center ${
                 collapsed ? 'justify-center px-0' : 'gap-2.5 px-2.5'
-              } py-1.5 rounded-md text-xs font-normal transition-colors duration-100 ${
+              } py-1.5 rounded-lg text-xs transition-colors duration-150 z-10 ${
                 activeScreen === 'settings'
-                  ? 'bg-[#efeeea] dark:bg-[#282828] text-[#37352f] dark:text-[#ecebed] font-medium'
-                  : 'text-[#5f5e5b] dark:text-[#9b9a97] hover:bg-[#f1f0ee] dark:hover:bg-[#242424] hover:text-[#37352f] dark:hover:text-[#ecebed]'
+                  ? 'text-zinc-900 dark:text-white font-semibold'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
               }`}
             >
+              {activeScreen === 'settings' && (
+                <motion.div
+                  layoutId="sidebar-active-pill"
+                  className="absolute inset-0 bg-[#efeeea] dark:bg-[#282828] rounded-lg -z-10 shadow-xs"
+                  transition={{
+                    type: 'spring',
+                    stiffness: 420,
+                    damping: 32,
+                    mass: 0.8,
+                  }}
+                />
+              )}
               <Settings
                 className={`w-4 h-4 shrink-0 ${
                   activeScreen === 'settings'
-                    ? 'text-[#37352f] dark:text-[#ecebed]'
+                    ? 'text-zinc-900 dark:text-white'
                     : 'text-[#787774] dark:text-[#9b9a97]'
                 }`}
               />
@@ -181,26 +224,26 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
           </div>
         </div>
 
-        {/* Bottom Profile / Account Switcher */}
+        {/* Bottom Profile Section (Single, authentic location for session profile) */}
         {activeAccount && (
           <div className="p-2 border-t border-[#e3e2de] dark:border-[#2f2f2f] flex items-center gap-1">
             <button
-              onClick={() => setIsAccountModalOpen(true)}
+              onClick={() => setIsProfileModalOpen(true)}
               title={collapsed ? activeAccount.name : undefined}
-              className={`flex-1 p-1.5 rounded-md hover:bg-[#f1f0ee] dark:hover:bg-[#242424] flex items-center ${
+              className={`flex-1 p-1.5 rounded-xl hover:bg-[#f1f0ee] dark:hover:bg-[#242424] flex items-center ${
                 collapsed ? 'justify-center' : 'justify-between gap-2'
               } transition-colors text-left min-w-0`}
             >
               <div className="flex items-center gap-2 min-w-0">
                 <div
-                  className="w-6 h-6 rounded flex items-center justify-center text-white font-semibold text-[10px] shrink-0"
+                  className="w-6 h-6 rounded-lg flex items-center justify-center text-white font-bold text-[10px] shrink-0 shadow-xs"
                   style={{ backgroundColor: activeAccount.avatarColor || '#37352f' }}
                 >
                   {activeAccount.name.charAt(0).toUpperCase()}
                 </div>
                 {!collapsed && (
                   <div className="min-w-0">
-                    <span className="font-medium text-xs text-[#37352f] dark:text-[#ecebed] truncate block">
+                    <span className="font-semibold text-xs text-[#37352f] dark:text-[#ecebed] truncate block">
                       {activeAccount.name}
                     </span>
                   </div>
@@ -213,7 +256,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
               <button
                 onClick={() => logout()}
                 title={isAr ? 'تسجيل الخروج' : language === 'en' ? 'Log out' : 'Déconnexion'}
-                className="p-1.5 rounded-md text-[#787774] hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors shrink-0"
+                className="p-1.5 rounded-lg text-[#787774] hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors shrink-0"
               >
                 <LogOut className="w-3.5 h-3.5" />
               </button>
@@ -222,9 +265,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
         )}
       </div>
 
-      <AccountSwitcherModal
-        isOpen={isAccountModalOpen}
-        onClose={() => setIsAccountModalOpen(false)}
+      <UserProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
       />
     </aside>
   );

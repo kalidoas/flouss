@@ -12,6 +12,8 @@ import { AddIncomeModal } from '../components/transactions/AddIncomeModal';
 import { AddContributionModal } from '../components/transactions/AddContributionModal';
 import { CountUpNumber } from '../components/common/CountUpNumber';
 import { FocusTaskList } from '../components/dashboard/FocusTaskList';
+import { PriorityHub } from '../components/dashboard/PriorityHub';
+import { WalletCard } from '../components/dashboard/WalletCard';
 import {
   calculateAvailableBalance,
   calculateNetWorth,
@@ -195,133 +197,28 @@ export const DashboardPage: React.FC = () => {
         </motion.div>
       )}
 
-      {/* Apple-Grade Hero Card: iOS 18 / macOS Sequoia Translucent Glass Surface */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ type: 'spring', stiffness: 380, damping: 28 }}
-        className="relative overflow-hidden rounded-3xl p-6 sm:p-8 bg-white/80 dark:bg-zinc-900/65 backdrop-blur-2xl border border-black/[0.06] dark:border-white/[0.08] shadow-[0_8px_32px_0_rgba(0,0,0,0.06),inset_0_1px_0_0_rgba(255,255,255,0.8)] dark:shadow-[0_12px_40px_0_rgba(0,0,0,0.45),inset_0_1px_0_0_rgba(255,255,255,0.08)]"
-      >
-        {/* Ambient Radial Glow Gradients */}
-        <div className="absolute -top-24 -right-24 w-80 h-80 bg-gradient-to-br from-blue-500/15 via-indigo-500/10 to-transparent rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-gradient-to-tr from-emerald-500/10 via-teal-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
-
-        <div className="relative z-10">
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-2 text-xs">
-            <span className="flex items-center gap-2 font-medium text-zinc-600 dark:text-zinc-300">
-              <span className="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 flex items-center justify-center">
-                <Wallet className="w-4 h-4 stroke-[2.2]" />
-              </span>
-              <span className="text-sm font-semibold text-zinc-900 dark:text-white tracking-tight">
-                {tDash.totalBalance}
-              </span>
-            </span>
-            <span className="bg-zinc-100/80 dark:bg-zinc-800/80 border border-black/[0.04] dark:border-white/[0.06] text-zinc-600 dark:text-zinc-300 px-2.5 py-1 rounded-full text-xs font-mono tabular-nums">
-              {formatMonthYear(currentMonth, language)}
-            </span>
-          </div>
-
-          {/* Big Balance Number with Count-Up Animation & Tabular Nums */}
-          <div className="text-3xl sm:text-5xl font-bold tracking-tight text-zinc-900 dark:text-white my-3 tabular-nums">
-            <CountUpNumber
-              value={balance}
-              hide={hideBalance}
-              language={language}
-              duration={600}
-            />
-          </div>
-
-          {/* Apple Sub Stats Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-5 border-t border-black/[0.05] dark:border-white/[0.06]">
-            <div>
-              <span className="text-zinc-500 dark:text-zinc-400 block text-xs font-medium mb-0.5">
-                {tDash.netWorth}
-              </span>
-              <span
-                className={`font-bold text-base sm:text-lg tabular-nums tracking-tight text-zinc-900 dark:text-white transition-[filter] duration-200 ${
-                  hideBalance ? 'privacy-blur' : ''
-                }`}
-              >
-                {formatMAD(netWorth, false, language)}
-              </span>
-            </div>
-
-            <div>
-              <span className="text-zinc-500 dark:text-zinc-400 block text-xs font-medium mb-0.5">
-                {tDash.inSavings}
-              </span>
-              <span
-                className={`font-bold text-base sm:text-lg tabular-nums tracking-tight text-zinc-900 dark:text-white transition-[filter] duration-200 ${
-                  hideBalance ? 'privacy-blur' : ''
-                }`}
-              >
-                {formatMAD(totalInGoals, false, language)}
-              </span>
-            </div>
-
-            <div className="col-span-2 sm:col-span-1">
-              <span className="text-zinc-500 dark:text-zinc-400 block text-xs font-medium mb-0.5">
-                {tDash.savedThisMonth}
-              </span>
-              <span
-                className={`font-bold text-base sm:text-lg tabular-nums tracking-tight text-emerald-600 dark:text-emerald-400 transition-[filter] duration-200 ${
-                  hideBalance ? 'privacy-blur' : ''
-                }`}
-              >
-                +{formatMAD(savedThisMonth, false, language)}
-              </span>
-            </div>
-          </div>
+      {/* Apple Bento Centerpiece: 2/3 Priority & Pinned Hub + 1/3 Compact Apple Wallet Card */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        {/* Priority & Pinned Hub Centerpiece (2/3 width) */}
+        <div className="lg:col-span-8 order-2 lg:order-1">
+          <PriorityHub />
         </div>
-      </motion.div>
+
+        {/* Compact Apple Wallet Card (1/3 width) */}
+        <div className="lg:col-span-4 order-1 lg:order-2">
+          <WalletCard
+            balance={balance}
+            incomeThisMonth={incomeThisMonth}
+            expenseThisMonth={expenseThisMonth}
+            onOpenIncome={() => setIsIncomeOpen(true)}
+            onOpenExpense={() => setIsExpenseOpen(true)}
+            onOpenGoal={() => handleOpenGoalContribution()}
+          />
+        </div>
+      </div>
 
       {/* Notion Focus View: "Ma liste" Section */}
       <FocusTaskList />
-
-      {/* Quick Action Buttons: Apple tactile glassmorphic interactions */}
-      <div className="grid grid-cols-3 gap-3">
-        <motion.button
-          whileHover={{ y: -2, scale: 1.015 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => setIsIncomeOpen(true)}
-          className="flex items-center justify-center gap-2 p-3 rounded-2xl bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs hover:border-emerald-500/30 transition-all"
-        >
-          <div className="w-7 h-7 rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-            <ArrowUpRight className="w-4 h-4 stroke-[2.2]" />
-          </div>
-          <span className="text-xs sm:text-sm font-semibold text-zinc-900 dark:text-white tracking-tight">
-            + {tDash.addIncome}
-          </span>
-        </motion.button>
-
-        <motion.button
-          whileHover={{ y: -2, scale: 1.015 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => setIsExpenseOpen(true)}
-          className="flex items-center justify-center gap-2 p-3 rounded-2xl bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs hover:border-rose-500/30 transition-all"
-        >
-          <div className="w-7 h-7 rounded-lg bg-rose-500/15 text-rose-600 dark:text-rose-400 flex items-center justify-center">
-            <ArrowDownRight className="w-4 h-4 stroke-[2.2]" />
-          </div>
-          <span className="text-xs sm:text-sm font-semibold text-zinc-900 dark:text-white tracking-tight">
-            + {tDash.addExpense}
-          </span>
-        </motion.button>
-
-        <motion.button
-          whileHover={{ y: -2, scale: 1.015 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => handleOpenGoalContribution()}
-          className="flex items-center justify-center gap-2 p-3 rounded-2xl bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs hover:border-blue-500/30 transition-all"
-        >
-          <div className="w-7 h-7 rounded-lg bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center">
-            <Target className="w-4 h-4 stroke-[2.2]" />
-          </div>
-          <span className="text-xs sm:text-sm font-semibold text-zinc-900 dark:text-white tracking-tight">
-            {tDash.addContribution}
-          </span>
-        </motion.button>
-      </div>
 
       {/* Monthly Savings Reminder Card */}
       {totalMonthlyGoalTarget > 0 && (

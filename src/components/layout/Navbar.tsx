@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { useAppStore } from '../../store/useAppStore';
 import { ScreenId } from '../../types';
 import { translations } from '../../i18n/translations';
-import { AccountSwitcherModal } from '../accounts/AccountSwitcherModal';
+import { UserProfileModal } from '../profile/UserProfileModal';
 import {
   LayoutDashboard,
   CheckSquare,
@@ -17,7 +18,7 @@ import {
   Settings,
   X,
   LogOut,
-  Users,
+  User,
 } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
@@ -28,7 +29,7 @@ export const Navbar: React.FC = () => {
   const activeAccount = accounts.find((a) => a.id === activeAccountId) || accounts[0];
 
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
-  const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   const mainNavItems: {
     id: ScreenId | 'more';
@@ -53,8 +54,8 @@ export const Navbar: React.FC = () => {
 
   return (
     <>
-      {/* Mobile Notion-style Bottom Navigation Bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#1a1a1a]/95 backdrop-blur-md border-t border-[#e3e2de] dark:border-[#2f2f2f] px-4 py-1.5 safe-area-bottom shadow-sm">
+      {/* Mobile Apple-style Bottom Navigation Bar with layoutId sliding pill */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/85 dark:bg-zinc-900/85 backdrop-blur-2xl border-t border-black/[0.06] dark:border-white/[0.08] px-4 py-2 safe-area-bottom shadow-lg">
         <div className="flex items-center justify-around max-w-md mx-auto">
           {mainNavItems.map((item) => {
             const Icon = item.icon;
@@ -70,13 +71,25 @@ export const Navbar: React.FC = () => {
                     setActiveScreen(item.id as ScreenId);
                   }
                 }}
-                className={`flex flex-col items-center justify-center py-1 px-3 rounded-md transition-colors ${
+                className={`relative flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-colors z-10 ${
                   isActive
-                    ? 'text-[#2383e2] dark:text-[#2383e2] font-medium'
-                    : 'text-[#787774] dark:text-[#9b9a97] hover:text-[#37352f] dark:hover:text-[#ecebed]'
+                    ? 'text-blue-600 dark:text-blue-400 font-bold'
+                    : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
                 }`}
               >
-                <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.2]' : 'stroke-[1.8]'}`} />
+                {isActive && (
+                  <motion.div
+                    layoutId="mobile-navbar-pill"
+                    className="absolute inset-0 bg-blue-500/10 dark:bg-blue-500/15 rounded-xl -z-10"
+                    transition={{
+                      type: 'spring',
+                      stiffness: 420,
+                      damping: 32,
+                      mass: 0.8,
+                    }}
+                  />
+                )}
+                <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.3]' : 'stroke-[1.8]'}`} />
                 <span className="text-[10px] mt-0.5">{item.label}</span>
               </button>
             );
@@ -88,26 +101,26 @@ export const Navbar: React.FC = () => {
       {isMoreMenuOpen && (
         <div className="fixed inset-0 z-50 flex items-end justify-center md:hidden animate-in fade-in duration-150">
           <div
-            className="fixed inset-0 bg-black/40 backdrop-blur-[2px]"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setIsMoreMenuOpen(false)}
           />
 
-          <div className="relative w-full max-h-[80vh] overflow-y-auto bg-white dark:bg-[#202020] rounded-t-xl p-5 shadow-xl border-t border-[#e3e2de] dark:border-[#2f2f2f] z-10 space-y-3 pb-8 safe-area-bottom">
-            <div className="w-10 h-1 bg-[#e3e2de] dark:bg-[#2f2f2f] rounded-full mx-auto -mt-1 mb-2" />
+          <div className="relative w-full max-h-[80vh] overflow-y-auto bg-white/95 dark:bg-zinc-900/95 backdrop-blur-2xl rounded-t-3xl p-6 shadow-2xl border-t border-black/[0.08] dark:border-white/[0.1] z-10 space-y-4 pb-10 safe-area-bottom">
+            <div className="w-12 h-1.5 bg-zinc-300 dark:bg-zinc-700 rounded-full mx-auto -mt-2 mb-3" />
 
-            <div className="flex items-center justify-between pb-2 border-b border-[#e3e2de] dark:border-[#2f2f2f]">
-              <h3 className="font-semibold text-sm text-[#37352f] dark:text-[#ecebed]">
+            <div className="flex items-center justify-between pb-3 border-b border-black/[0.05] dark:border-white/[0.06]">
+              <h3 className="font-bold text-sm text-zinc-900 dark:text-white tracking-tight">
                 {t.morePages}
               </h3>
               <button
                 onClick={() => setIsMoreMenuOpen(false)}
-                className="p-1 rounded text-[#787774] hover:text-[#37352f]"
+                className="p-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:text-zinc-900"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2.5">
               {moreScreens.map((item) => {
                 const Icon = item.icon;
                 const isActive = activeScreen === item.id;
@@ -118,38 +131,38 @@ export const Navbar: React.FC = () => {
                       setActiveScreen(item.id);
                       setIsMoreMenuOpen(false);
                     }}
-                    className={`flex items-center gap-2.5 p-3 rounded-lg border text-left transition-colors ${
+                    className={`flex items-center gap-2.5 p-3 rounded-2xl border text-left transition-all ${
                       isActive
-                        ? 'bg-[#f1f0ee] dark:bg-[#282828] border-[#d3d1cb] dark:border-[#3f3f3f] font-medium text-[#37352f] dark:text-[#ecebed]'
-                        : 'bg-white dark:bg-[#1a1a1a] border-[#e3e2de] dark:border-[#2f2f2f] text-[#5f5e5b] dark:text-[#9b9a97]'
+                        ? 'bg-blue-500/10 dark:bg-blue-500/20 border-blue-500/30 font-semibold text-blue-600 dark:text-blue-400'
+                        : 'bg-zinc-50 dark:bg-zinc-800/60 border-black/[0.04] dark:border-white/[0.06] text-zinc-700 dark:text-zinc-300'
                     }`}
                   >
-                    <Icon className="w-4 h-4 text-[#787774] dark:text-[#9b9a97] shrink-0" />
+                    <Icon className="w-4 h-4 shrink-0" />
                     <span className="text-xs truncate">{item.label}</span>
                   </button>
                 );
               })}
             </div>
 
-            {/* Mobile Account & Log Out Controls */}
-            <div className="pt-2 border-t border-[#e3e2de] dark:border-[#2f2f2f] space-y-2">
+            {/* Mobile Account Profile & Log Out Controls */}
+            <div className="pt-3 border-t border-black/[0.05] dark:border-white/[0.06] space-y-2">
               <button
                 onClick={() => {
                   setIsMoreMenuOpen(false);
-                  setIsAccountModalOpen(true);
+                  setIsProfileModalOpen(true);
                 }}
-                className="w-full flex items-center justify-between p-2.5 rounded-lg border border-[#e3e2de] dark:border-[#2f2f2f] bg-[#fbfbfa] dark:bg-[#1a1a1a] text-xs font-medium text-[#37352f] dark:text-[#ecebed] hover:bg-[#f1f0ee]"
+                className="w-full flex items-center justify-between p-3 rounded-2xl border border-black/[0.06] dark:border-white/[0.08] bg-zinc-50 dark:bg-zinc-800/60 text-xs font-semibold text-zinc-900 dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2.5">
                   <div
-                    className="w-5 h-5 rounded flex items-center justify-center text-white text-[9px] font-bold"
+                    className="w-6 h-6 rounded-lg flex items-center justify-center text-white text-[10px] font-bold"
                     style={{ backgroundColor: activeAccount?.avatarColor || '#2383e2' }}
                   >
                     {activeAccount?.name?.charAt(0).toUpperCase() || 'U'}
                   </div>
-                  <span>{isAr ? 'تبديل الحساب' : language === 'en' ? 'Switch profile' : 'Changer d’utilisateur'}</span>
+                  <span>{activeAccount?.name || 'Mon Profil'}</span>
                 </div>
-                <Users className="w-4 h-4 text-[#787774]" />
+                <User className="w-4 h-4 text-zinc-400" />
               </button>
 
               <button
@@ -157,19 +170,19 @@ export const Navbar: React.FC = () => {
                   setIsMoreMenuOpen(false);
                   logout();
                 }}
-                className="w-full flex items-center justify-center gap-2 p-2.5 rounded-lg border border-rose-200/70 dark:border-rose-900/40 bg-rose-50/60 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 text-xs font-semibold hover:bg-rose-100/80 transition-colors"
+                className="w-full flex items-center justify-center gap-2 p-3 rounded-2xl border border-rose-500/20 bg-rose-500/10 text-rose-600 dark:text-rose-400 text-xs font-bold hover:bg-rose-500/20 transition-colors"
               >
                 <LogOut className="w-4 h-4" />
-                <span>{isAr ? 'تسجيل الخروج (قفل الجلسة)' : language === 'en' ? 'Sign out' : 'Se déconnecter (Verrouiller)'}</span>
+                <span>{isAr ? 'تسجيل الخروج وقفل الجلسة' : language === 'en' ? 'Log out & Lock' : 'Se déconnecter (Verrouiller)'}</span>
               </button>
             </div>
           </div>
         </div>
       )}
 
-      <AccountSwitcherModal
-        isOpen={isAccountModalOpen}
-        onClose={() => setIsAccountModalOpen(false)}
+      <UserProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
       />
     </>
   );

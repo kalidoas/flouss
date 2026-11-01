@@ -1,4 +1,5 @@
 import React from 'react';
+import { useAppStore } from '../../store/useAppStore';
 
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg';
@@ -11,48 +12,45 @@ export const Logo: React.FC<LogoProps> = ({
   showWordmark = true,
   className = '',
 }) => {
+  const language = useAppStore((s) => s.language);
+
   const sizeMap = {
     sm: {
-      box: 'w-6 h-6 rounded',
+      box: 'w-6 h-6 rounded-lg',
       svg: 'w-3.5 h-3.5',
       text: 'text-sm',
-      arabic: 'text-[10px]',
     },
     md: {
-      box: 'w-7 h-7 rounded-md',
+      box: 'w-7 h-7 rounded-xl',
       svg: 'w-4 h-4',
-      text: 'text-sm',
-      arabic: 'text-[11px]',
+      text: 'text-sm font-bold',
     },
     lg: {
-      box: 'w-9 h-9 rounded-md',
+      box: 'w-9 h-9 rounded-2xl',
       svg: 'w-5 h-5',
-      text: 'text-lg',
-      arabic: 'text-xs',
+      text: 'text-lg font-bold',
     },
   };
 
   const s = sizeMap[size];
+  const titleText = language === 'ar' ? 'فلوس' : 'Flouss';
 
   return (
     <div className={`inline-flex items-center gap-2 select-none ${className}`}>
-      {/* Notion-style minimal icon box */}
+      {/* Apple-style translucent icon badge */}
       <div
-        className={`${s.box} bg-[#37352f] text-white dark:bg-[#ecebed] dark:text-[#191919] flex items-center justify-center shrink-0 font-bold`}
+        className={`${s.box} bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs flex items-center justify-center shrink-0 font-bold`}
       >
         <span className="text-xs font-mono">F</span>
       </div>
 
-      {/* Wordmark & Arabic subtitle */}
+      {/* Dynamic Locale Wordmark */}
       {showWordmark && (
-        <div className="flex items-center gap-1.5 leading-none">
+        <div className="flex items-center leading-none">
           <span
-            className={`font-semibold ${s.text} text-[#37352f] dark:text-[#ecebed] tracking-tight`}
+            className={`font-bold ${s.text} text-zinc-900 dark:text-white tracking-tight`}
           >
-            Flouss
-          </span>
-          <span className="text-[10px] text-[#787774] dark:text-[#9b9a97] font-normal">
-            فلوس
+            {titleText}
           </span>
         </div>
       )}

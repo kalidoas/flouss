@@ -3,6 +3,7 @@ import { Header } from './Header';
 import { Sidebar } from './Sidebar';
 import { Navbar } from './Navbar';
 import { QuickAddButton } from './QuickAddButton';
+import { DynamicIsland } from './DynamicIsland';
 import { useAppStore } from '../../store/useAppStore';
 
 interface LayoutProps {
@@ -60,6 +61,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden relative">
+        {/* iOS Dynamic Island Activity Pill (Top-Center) */}
+        <DynamicIsland />
+
         <Header />
 
         <main className="flex-1 overflow-y-auto pb-24 md:pb-8 px-4 sm:px-8 py-6 max-w-5xl w-full mx-auto">

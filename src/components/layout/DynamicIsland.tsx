@@ -1,0 +1,147 @@
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { islandManager, IslandNotification } from '../../utils/islandManager';
+import { useAppStore } from '../../store/useAppStore';
+import {
+  CheckCircle2,
+  Cloud,
+  Pin,
+  CreditCard,
+  Globe,
+  Wallet,
+  Sparkles,
+} from 'lucide-react';
+
+export const DynamicIsland: React.FC = () => {
+  const [notification, setNotification] = useState<IslandNotification | null>(null);
+  const [isHovered, setIsHovered] = useState(false);
+  const { language, firebaseUser, firestoreDisabled } = useAppStore();
+
+  useEffect(() => {
+    return islandManager.subscribe((notif) => {
+      setNotification(notif);
+    });
+  }, []);
+
+  const getIcon = (type: IslandNotification['type']) => {
+    switch (type) {
+      case 'check':
+        return <CheckCircle2 className="w-4 h-4 text-emerald-400 stroke-[2.5]" />;
+      case 'cloud':
+      case 'sync':
+        return <Cloud className="w-4 h-4 text-sky-400 stroke-[2.5]" />;
+      case 'pin':
+        return <Pin className="w-4 h-4 text-amber-400 fill-amber-400 stroke-[2.5]" />;
+      case 'bill':
+        return <CreditCard className="w-4 h-4 text-purple-400 stroke-[2.5]" />;
+      case 'lang':
+        return <Globe className="w-4 h-4 text-emerald-400 stroke-[2.5]" />;
+      case 'wallet':
+        return <Wallet className="w-4 h-4 text-emerald-400 stroke-[2.5]" />;
+      default:
+        return <Sparkles className="w-4 h-4 text-blue-400 stroke-[2.5]" />;
+    }
+  };
+
+  const isExpanded = Boolean(notification) || isHovered;
+
+  const idleSyncText =
+    language === 'ar'
+      ? firestoreDisabled
+        ? 'حفظ محلي'
+        : 'مزامنة السحابة نشطة'
+      : language === 'en'
+      ? firestoreDisabled
+        ? 'Local Storage'
+        : 'Cloud Firestore Synced'
+      : firestoreDisabled
+      ? 'Stockage local'
+      : 'Cloud Firestore synchronisé';
+
+  return (
+    <div className="fixed top-2.5 left-1/2 -translate-x-1/2 z-50 pointer-events-none select-none">
+      <motion.div
+        layout
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        transition={{
+          type: 'spring',
+          stiffness: 420,
+          damping: 32,
+          mass: 0.8,
+        }}
+        className={`pointer-events-auto cursor-pointer relative bg-black/95 text-white backdrop-blur-2xl border border-white/20 shadow-[0_12px_40px_0_rgba(0,0,0,0.6),inset_0_1px_0_0_rgba(255,255,255,0.2)] rounded-full flex items-center justify-between overflow-hidden px-3.5 py-1.5 transition-all ${
+          isExpanded ? 'min-w-[280px] sm:min-w-[340px] px-4 py-2.5' : 'min-w-[140px]'
+        }`}
+      >
+        <AnimatePresence mode="wait">
+          {notification ? (
+            /* ACTIVE EXPANDED MORPH STATE */
+            <motion.div
+              key={notification.id}
+              initial={{ opacity: 0, scale: 0.85, y: -4 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.85, y: 4 }}
+              transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+              className="flex items-center justify-between w-full gap-3"
+            >
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+                  {getIcon(notification.type)}
+                </div>
+                <div className="min-w-0 text-left">
+                  <div className="text-xs font-semibold text-white tracking-tight truncate">
+                    {notification.title}
+                  </div>
+                  {notification.subtitle && (
+                    <div className="text-[10px] text-zinc-400 truncate">
+                      {notification.subtitle}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0 shadow-[0_0_8px_#34d399] animate-pulse" />
+            </motion.div>
+          ) : isHovered ? (
+            /* HOVER DETAILS STATE */
+            <motion.div
+              key="hover-state"
+              initial={{ opacity: 0, y: -2 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 2 }}
+              className="flex items-center justify-between w-full gap-3 text-xs"
+            >
+              <div className="flex items-center gap-2">
+                <Cloud className="w-3.5 h-3.5 text-sky-400" />
+                <span className="text-[11px] font-medium text-zinc-200">{idleSyncText}</span>
+              </div>
+              <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0 shadow-[0_0_8px_#34d399]" />
+            </motion.div>
+          ) : (
+            /* COMPACT IDLE STATE */
+            <motion.div
+              key="idle-state"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex items-center justify-between w-full gap-2 text-[11px]"
+            >
+              <div className="flex items-center gap-1.5 font-semibold text-zinc-200">
+                <span className="font-mono text-[10px] bg-white/15 px-1 rounded">F</span>
+                <span className="text-[10px] tracking-tight text-zinc-300">Flouss</span>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-mono text-zinc-400">
+                  {firebaseUser ? (language === 'ar' ? 'متصل' : 'Sync') : 'Local'}
+                </span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0 shadow-[0_0_6px_#34d399] animate-pulse" />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+    </div>
+  );
+};
