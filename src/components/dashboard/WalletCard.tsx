@@ -52,13 +52,18 @@ export const WalletCard: React.FC<WalletCardProps> = ({
   const [selectedMonth, setSelectedMonth] = useState<string>(currentMonth);
   const isCurrentMonth = selectedMonth === currentMonth;
 
-  // Strictly prioritize the globally synced store balance
+  // Mathematically computed ground truth balance from live transactions
+  const computedLiveBalance = calculateAvailableBalance(initialBalance, transactions);
+
+  // When viewing current month, prioritize the mathematically live balance to react immediately to transactions without lag
   const activeBalance =
-    typeof storeBalance === 'number' && !isNaN(storeBalance)
+    (transactions && transactions.length > 0) || initialBalance !== null
+      ? computedLiveBalance
+      : typeof storeBalance === 'number' && !isNaN(storeBalance)
       ? storeBalance
       : typeof propBalance === 'number' && !isNaN(propBalance)
       ? propBalance
-      : calculateAvailableBalance(initialBalance, transactions);
+      : computedLiveBalance;
 
   // Calculate historical balance and cashflow if viewing past months
   const { displayBalance, displayIncome, displayExpense } = useMemo(() => {

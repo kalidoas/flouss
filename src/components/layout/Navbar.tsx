@@ -115,8 +115,8 @@ export const Navbar: React.FC = () => {
 
   return (
     <>
-      {/* Floating Apple Glass Bottom Dock (iOS 18 HIG style) */}
-      <nav className="md:hidden fixed bottom-3 inset-x-3 h-16 rounded-3xl bg-zinc-900/85 backdrop-blur-2xl border border-white/10 shadow-2xl z-50 flex items-center justify-around px-2">
+      {/* Native Apple iOS Frosted Glass Dock */}
+      <nav className="md:hidden fixed bottom-0 w-full pb-safe pt-3 px-4 backdrop-blur-2xl bg-zinc-900/85 border-t border-white/10 z-50 flex items-center justify-around">
         {/* Tab 1: Dashboard */}
         <button
           onClick={() => setActiveScreen('dashboard')}
@@ -165,14 +165,15 @@ export const Navbar: React.FC = () => {
           <span className="text-[10px] mt-0.5 tracking-tight">{t.categories}</span>
         </button>
 
-        {/* Tab 3 (Center): Glowing + Action Button */}
-        <div className="flex-1 flex items-center justify-center">
+        {/* Tab 3 (Center): Elevated Prominent '+' Action Button */}
+        <div className="flex-1 flex items-center justify-center relative -top-3">
           <motion.button
-            whileHover={{ scale: 1.06 }}
+            whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 0.92 }}
             onClick={() => setIsActionSheetOpen(true)}
-            title={isAr ? 'إضافة سريعة' : language === 'en' ? 'Quick Add' : 'Ajout Rapide'}
-            className="relative -top-3 w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-400 flex items-center justify-center text-white shadow-[0_0_24px_rgba(59,130,246,0.65),0_6px_16px_rgba(0,0,0,0.4)] border border-white/25 active:shadow-[0_0_12px_rgba(59,130,246,0.4)] transition-all"
+            title={isAr ? 'إضافة معاملة سريعة' : language === 'en' ? 'Add Transaction' : 'Ajouter une transaction'}
+            className="w-13 h-13 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-400 flex items-center justify-center text-white shadow-[0_0_24px_rgba(59,130,246,0.65),0_6px_16px_rgba(0,0,0,0.4)] border border-white/30 active:shadow-[0_0_12px_rgba(59,130,246,0.4)] transition-all"
+            aria-label={isAr ? 'إضافة معاملة سريعة' : language === 'en' ? 'Add Transaction' : 'Ajouter une transaction'}
           >
             <Plus className="w-6 h-6 stroke-[2.8]" />
             <span className="sr-only">Add</span>

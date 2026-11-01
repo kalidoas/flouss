@@ -70,11 +70,8 @@ export const DashboardPage: React.FC = () => {
   const today = new Date();
   const currentDayOfMonth = today.getDate();
 
-  // Metrics - Strictly prioritize the globally synced store balance
-  const balance =
-    typeof storeBalance === 'number' && !isNaN(storeBalance)
-      ? storeBalance
-      : calculateAvailableBalance(initialBalance, transactions);
+  // Ground truth mathematical balance
+  const balance = calculateAvailableBalance(initialBalance, transactions);
   const totalInGoals = calculateTotalSavingsInGoals(categories, transactions);
   const netWorth = balance + totalInGoals;
 
