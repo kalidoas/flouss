@@ -10,7 +10,7 @@ import { AddContributionModal } from '../components/transactions/AddContribution
 import { Button } from '../components/common/Button';
 import { translations } from '../i18n/translations';
 import { getCategoryName, getSubCategoryName, getCategoryGroupName } from '../utils/i18nHelpers';
-import { CATEGORY_GROUPS_META } from '../utils/categoryTheme';
+import { CATEGORY_GROUPS_META, resolveCategoryGroup } from '../utils/categoryTheme';
 import { getCategoryIcon } from '../utils/icons';
 import { formatMAD, getCurrentMonthStr } from '../utils/formatters';
 import {
@@ -111,9 +111,10 @@ export const CategoriesPage: React.FC = () => {
       if (activeTab === 'expenses' && cat.isGoal) return false;
     }
 
-    // Group filter
+    // Group filter with semantic fallback for custom & legacy categories
     if (selectedGroup !== 'all') {
-      if (cat.group !== selectedGroup) return false;
+      const resolvedGroup = resolveCategoryGroup(cat);
+      if (resolvedGroup !== selectedGroup) return false;
     }
 
     // Search filter
@@ -442,7 +443,8 @@ export const CategoriesPage: React.FC = () => {
           {filteredCategories.map((category: Category) => {
             const IconComp = getCategoryIcon(category.icon);
             const categoryName = getCategoryName(category, language);
-            const groupName = category.group ? getCategoryGroupName(category.group, language) : null;
+            const resolvedGroup = resolveCategoryGroup(category);
+            const groupName = getCategoryGroupName(resolvedGroup, language);
             const spentThisMonth = calculateCategorySpentAmount(category.id, transactions, currentMonth);
             const goalCalc = category.isGoal ? calculateGoalProgress(category, transactions) : null;
 
@@ -562,6 +564,7 @@ export const CategoriesPage: React.FC = () => {
           setCategoryToEdit(null);
         }}
         categoryToEdit={categoryToEdit}
+        defaultGroup={selectedGroup !== 'all' ? selectedGroup : undefined}
       />
 
       <CategoryDetailModal

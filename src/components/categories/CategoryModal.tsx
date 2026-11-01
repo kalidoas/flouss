@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Category, SubCategory } from '../../types';
+import { Category, SubCategory, CategoryGroupId } from '../../types';
 import { useAppStore } from '../../store/useAppStore';
 import { Modal } from '../common/Modal';
 import { Button } from '../common/Button';
@@ -9,7 +9,8 @@ import { ColorPicker } from '../common/ColorPicker';
 import { getCategoryIcon } from '../../utils/icons';
 import { formatMAD } from '../../utils/formatters';
 import { translations } from '../../i18n/translations';
-import { getCategoryName, getSubCategoryName } from '../../utils/i18nHelpers';
+import { getCategoryName, getSubCategoryName, getCategoryGroupName } from '../../utils/i18nHelpers';
+import { CATEGORY_GROUPS_META, resolveCategoryGroup } from '../../utils/categoryTheme';
 import { Target, Layers, Calculator, Plus, Trash2, X } from 'lucide-react';
 
 interface CategoryModalProps {
@@ -17,6 +18,7 @@ interface CategoryModalProps {
   onClose: () => void;
   categoryToEdit?: Category | null;
   initialIsGoal?: boolean;
+  defaultGroup?: CategoryGroupId;
 }
 
 export const CategoryModal: React.FC<CategoryModalProps> = ({
@@ -24,12 +26,14 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
   onClose,
   categoryToEdit,
   initialIsGoal = false,
+  defaultGroup,
 }) => {
   const { addCategory, updateCategory, language } = useAppStore();
   const tCat = translations[language].categories;
   const tCommon = translations[language].common;
 
   const [name, setName] = useState('');
+  const [group, setGroup] = useState<CategoryGroupId>(defaultGroup || 'lifestyle_entertainment');
   const [icon, setIcon] = useState('ShoppingBag');
   const [color, setColor] = useState('#10b981');
   const [isGoal, setIsGoal] = useState(false);
@@ -46,6 +50,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
   useEffect(() => {
     if (categoryToEdit) {
       setName(getCategoryName(categoryToEdit, language));
+      setGroup(resolveCategoryGroup(categoryToEdit));
       setIcon(categoryToEdit.icon);
       setColor(categoryToEdit.color);
       setIsGoal(categoryToEdit.isGoal);
@@ -58,6 +63,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
       setDurationMode(categoryToEdit.targetDate ? 'date' : 'months');
     } else {
       setName('');
+      setGroup(defaultGroup || 'lifestyle_entertainment');
       setIcon('ShoppingBag');
       setColor('#10b981');
       setIsGoal(initialIsGoal);
@@ -71,7 +77,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
     }
     setError('');
     setNewSubcatName('');
-  }, [categoryToEdit, isOpen, initialIsGoal, language]);
+  }, [categoryToEdit, isOpen, initialIsGoal, defaultGroup, language]);
 
   const targetAmount = parseFloat(targetAmountStr.replace(/\s/g, '').replace(',', '.')) || 0;
   const monthlyBudget = parseFloat(monthlyBudgetStr.replace(/\s/g, '').replace(',', '.')) || null;
@@ -127,6 +133,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
     if (categoryToEdit) {
       updateCategory(categoryToEdit.id, {
         name: name.trim(),
+        group,
         icon,
         color,
         isGoal,
@@ -141,6 +148,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
       addCategory({
         id: 'cat_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
         name: name.trim(),
+        group,
         icon,
         color,
         isGoal,
@@ -197,6 +205,38 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
           }}
           error={error}
         />
+
+        {/* Financial Taxonomy Group */}
+        <div>
+          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+            {language === 'ar' ? 'تصنيف المجموعة' : language === 'en' ? 'Category Group' : 'Groupe financier'}
+          </label>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-36 overflow-y-auto p-1 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-200/60 dark:border-slate-800">
+            {(Object.keys(CATEGORY_GROUPS_META) as CategoryGroupId[]).map((grpId) => {
+              const meta = CATEGORY_GROUPS_META[grpId];
+              const isSelected = group === grpId;
+              const label = getCategoryGroupName(grpId, language);
+              return (
+                <button
+                  key={grpId}
+                  type="button"
+                  onClick={() => setGroup(grpId)}
+                  className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all text-left rtl:text-right ${
+                    isSelected
+                      ? `${meta.badgeClass} ring-1 ring-current shadow-2xs`
+                      : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200/60 dark:border-slate-700/60'
+                  }`}
+                >
+                  <span
+                    className="w-2 h-2 rounded-full shrink-0"
+                    style={{ backgroundColor: meta.color }}
+                  />
+                  <span className="truncate">{label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         {/* Color Picker */}
         <div>

@@ -4,6 +4,7 @@ import { useAppStore } from '../../store/useAppStore';
 import { translations } from '../../i18n/translations';
 import { FocusTask, FocusListMenu } from '../../types';
 import { islandManager } from '../../utils/islandManager';
+import { GoogleCalendarAlarmModal } from '../common/GoogleCalendarAlarmModal';
 import confetti from 'canvas-confetti';
 import {
   Plus,
@@ -16,6 +17,7 @@ import {
   X,
   ListTodo,
   FolderPlus,
+  Bell,
 } from 'lucide-react';
 
 export const FocusTaskList: React.FC = () => {
@@ -51,6 +53,7 @@ export const FocusTaskList: React.FC = () => {
   const [editText, setEditText] = useState('');
   const [editPriority, setEditPriority] = useState<'urgent' | 'normal'>('normal');
   const [editDueDate, setEditDueDate] = useState('');
+  const [alarmFocusTask, setAlarmFocusTask] = useState<FocusTask | null>(null);
 
   // Active list ID fallback
   const currentListId = activeFocusListId || 'default';
@@ -394,6 +397,29 @@ export const FocusTaskList: React.FC = () => {
               <div className="flex items-center gap-1.5">
                 <button
                   type="button"
+                  onClick={() => {
+                    const cur = (focusTasks || []).find((t) => t.id === editingId);
+                    if (cur) {
+                      setAlarmFocusTask(cur);
+                    } else if (editText.trim()) {
+                      setAlarmFocusTask({
+                        id: editingId || 'temp',
+                        text: editText.trim(),
+                        completed: false,
+                        priority: editPriority,
+                        dueDate: editDueDate || undefined,
+                        createdAt: new Date().toISOString(),
+                      });
+                    }
+                  }}
+                  className="px-2.5 py-1.5 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 font-bold text-xs flex items-center gap-1 border border-blue-500/20 transition-all"
+                  title={tFocus.googleCalendarAlarmBtn}
+                >
+                  <Bell className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">{tFocus.googleCalendarAlarmBtn}</span>
+                </button>
+                <button
+                  type="button"
                   onClick={() => setEditingId(null)}
                   className="px-3 py-1.5 rounded-xl text-xs text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
                 >
@@ -444,8 +470,8 @@ export const FocusTaskList: React.FC = () => {
 
                 <div className="min-w-0 flex-1 space-y-0.5">
                   <span
-                    onClick={() => handleToggleTask(task.id, task.completed)}
-                    className={`cursor-pointer block text-xs leading-normal select-none transition-colors ${
+                    onClick={() => handleStartEdit(task)}
+                    className={`cursor-pointer block text-xs leading-normal select-none transition-colors hover:underline ${
                       task.completed
                         ? 'text-zinc-400 dark:text-zinc-500 line-through'
                         : 'text-zinc-800 dark:text-zinc-200 font-medium'
@@ -473,8 +499,17 @@ export const FocusTaskList: React.FC = () => {
                 </div>
               </div>
 
-              {/* Action Buttons: Pin, Edit, Delete */}
+              {/* Action Buttons: Pin, Alarm, Edit, Delete */}
               <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 shrink-0 transition-opacity">
+                <button
+                  type="button"
+                  onClick={() => setAlarmFocusTask(task)}
+                  title={tFocus.googleCalendarAlarmBtn}
+                  className="p-1.5 rounded-lg text-blue-500 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-500/10 transition-colors"
+                >
+                  <Bell className="w-3.5 h-3.5" />
+                </button>
+
                 <button
                   onClick={() => togglePinFocusTask(task.id)}
                   title="Épingler"
@@ -506,6 +541,17 @@ export const FocusTaskList: React.FC = () => {
             </motion.div>
           ))}
         </div>
+      )}
+
+      {/* Standalone Google Calendar Alarm Modal */}
+      {alarmFocusTask && (
+        <GoogleCalendarAlarmModal
+          isOpen={Boolean(alarmFocusTask)}
+          onClose={() => setAlarmFocusTask(null)}
+          taskTitle={alarmFocusTask.text}
+          taskDescription={alarmFocusTask.priority === 'urgent' ? 'Tâche urgente' : 'Tâche de ma liste'}
+          defaultDate={alarmFocusTask.dueDate}
+        />
       )}
     </div>
   );

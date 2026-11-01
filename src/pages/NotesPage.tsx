@@ -5,6 +5,7 @@ import { NoteItem } from '../types';
 import { Modal } from '../components/common/Modal';
 import { Button } from '../components/common/Button';
 import { EmptyState } from '../components/common/EmptyState';
+import { GoogleCalendarAlarmModal } from '../components/common/GoogleCalendarAlarmModal';
 import { translations } from '../i18n/translations';
 import {
   FileText,
@@ -14,6 +15,7 @@ import {
   Edit2,
   Search,
   Lock,
+  Bell,
 } from 'lucide-react';
 
 const NOTE_COLORS = [
@@ -38,6 +40,7 @@ export const NotesPage: React.FC = () => {
   const [noteContent, setNoteContent] = useState('');
   const [noteColor, setNoteColor] = useState('#10b981');
   const [noteCategory, setNoteCategory] = useState('');
+  const [alarmNote, setAlarmNote] = useState<NoteItem | null>(null);
 
   const filteredNotes = useMemo(() => {
     return (notes || []).filter((n) => {
@@ -172,6 +175,7 @@ export const NotesPage: React.FC = () => {
                     key={note.id}
                     note={note}
                     onEdit={() => handleOpenEdit(note)}
+                    onAlarm={() => setAlarmNote(note)}
                     onDelete={() => deleteNoteItem(note.id)}
                     onTogglePin={() => togglePinNote(note.id)}
                     generalLabel={tNote.general}
@@ -195,6 +199,7 @@ export const NotesPage: React.FC = () => {
                     key={note.id}
                     note={note}
                     onEdit={() => handleOpenEdit(note)}
+                    onAlarm={() => setAlarmNote(note)}
                     onDelete={() => deleteNoteItem(note.id)}
                     onTogglePin={() => togglePinNote(note.id)}
                     generalLabel={tNote.general}
@@ -275,7 +280,27 @@ export const NotesPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+          {/* Prominent Action Button: Add Alarm via Google Calendar */}
+          <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800">
+            <button
+              type="button"
+              onClick={() => {
+                setAlarmNote({
+                  id: editingNote?.id || 'temp_' + Date.now(),
+                  title: noteTitle.trim() || tNote.untitled,
+                  content: noteContent.trim(),
+                  createdAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString(),
+                });
+              }}
+              className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98]"
+            >
+              <Bell className="w-4 h-4" />
+              <span>{tNote.googleCalendarAlarmBtn}</span>
+            </button>
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
             <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>
               {tNote.cancel}
             </Button>
@@ -285,6 +310,16 @@ export const NotesPage: React.FC = () => {
           </div>
         </form>
       </Modal>
+
+      {/* Standalone Google Calendar Alarm Modal for Notes */}
+      {alarmNote && (
+        <GoogleCalendarAlarmModal
+          isOpen={Boolean(alarmNote)}
+          onClose={() => setAlarmNote(null)}
+          taskTitle={alarmNote.title}
+          taskDescription={alarmNote.content}
+        />
+      )}
     </div>
   );
 };
@@ -292,18 +327,20 @@ export const NotesPage: React.FC = () => {
 interface NoteCardProps {
   note: NoteItem;
   onEdit: () => void;
+  onAlarm: () => void;
   onDelete: () => void;
   onTogglePin: () => void;
   generalLabel: string;
 }
 
-const NoteCard: React.FC<NoteCardProps> = ({ note, onEdit, onDelete, onTogglePin, generalLabel }) => {
+const NoteCard: React.FC<NoteCardProps> = ({ note, onEdit, onAlarm, onDelete, onTogglePin, generalLabel }) => {
   const accentColor = note.color || '#2383e2';
 
   return (
     <motion.div
       whileHover={{ y: -2 }}
-      className="relative group bg-white/80 dark:bg-zinc-900/65 backdrop-blur-2xl rounded-2xl p-4 sm:p-5 border border-black/[0.06] dark:border-white/[0.08] shadow-[0_4px_24px_-1px_rgba(0,0,0,0.05),inset_0_1px_0_0_rgba(255,255,255,0.7)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.36),inset_0_1px_0_0_rgba(255,255,255,0.08)] flex flex-col justify-between space-y-3 transition-all"
+      className="relative group bg-white/80 dark:bg-zinc-900/65 backdrop-blur-2xl rounded-2xl p-4 sm:p-5 border border-black/[0.06] dark:border-white/[0.08] shadow-[0_4px_24px_-1px_rgba(0,0,0,0.05),inset_0_1px_0_0_rgba(255,255,255,0.7)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.36),inset_0_1px_0_0_rgba(255,255,255,0.08)] flex flex-col justify-between space-y-3 transition-all cursor-pointer"
+      onClick={onEdit}
     >
       <div className="space-y-2">
         <div className="flex items-start justify-between gap-2">
@@ -318,7 +355,10 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onEdit, onDelete, onTogglePin
           </div>
 
           <button
-            onClick={onTogglePin}
+            onClick={(e) => {
+              e.stopPropagation();
+              onTogglePin();
+            }}
             className={`p-1.5 rounded-lg transition-colors ${
               note.isPinned
                 ? 'text-blue-600 bg-blue-50 dark:bg-blue-950/40'
@@ -338,7 +378,15 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onEdit, onDelete, onTogglePin
       <div className="pt-2.5 border-t border-black/[0.04] dark:border-white/[0.05] flex items-center justify-between text-[11px] text-zinc-400">
         <span>{note.category || generalLabel}</span>
 
-        <div className="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+          <button
+            type="button"
+            onClick={onAlarm}
+            className="p-1.5 rounded-lg text-blue-500 hover:text-blue-600 hover:bg-blue-500/10 transition-colors"
+            title="Google Calendar"
+          >
+            <Bell className="w-3.5 h-3.5" />
+          </button>
           <button
             onClick={onEdit}
             className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"

@@ -6,6 +6,8 @@ import { Modal } from '../components/common/Modal';
 import { Button } from '../components/common/Button';
 import { EmptyState } from '../components/common/EmptyState';
 import { translations } from '../i18n/translations';
+import { getProgramTrackTitle } from '../utils/i18nHelpers';
+import { GoogleCalendarAlarmModal } from '../components/common/GoogleCalendarAlarmModal';
 import confetti from 'canvas-confetti';
 import { createGoogleCalendarEvent } from '../services/googleCalendar';
 import {
@@ -144,6 +146,28 @@ const FREQUENCY_LABELS: Record<TaskFrequency, { fr: string; ar: string; en: stri
   custom_days: { fr: 'Jours choisis', ar: 'أيام محددة', en: 'Selected days' },
 };
 
+const GYM_CHIPS = ['Chest', 'Back', 'Arms', 'Shoulders', 'Legs', 'Push', 'Pull', 'Core'] as const;
+
+const GYM_CHIP_LABELS: Record<string, { ar: string; fr: string; en: string; icon: string }> = {
+  Chest: { ar: 'الصدر (Chest)', fr: 'Pectoraux (Chest)', en: 'Chest', icon: '🫁' },
+  Back: { ar: 'الظهر (Back)', fr: 'Dos (Back)', en: 'Back', icon: '🥋' },
+  Arms: { ar: 'الذراعين (Arms)', fr: 'Bras (Arms)', en: 'Arms', icon: '💪' },
+  Shoulders: { ar: 'الأكتاف (Shoulders)', fr: 'Épaules (Shoulders)', en: 'Shoulders', icon: '🦾' },
+  Legs: { ar: 'الأرجل (Legs)', fr: 'Jambes (Legs)', en: 'Legs', icon: '🦵' },
+  Push: { ar: 'Push (دفع)', fr: 'Push (Poussée)', en: 'Push', icon: '⚡' },
+  Pull: { ar: 'Pull (سحب)', fr: 'Pull (Tirage)', en: 'Pull', icon: '🔥' },
+  Core: { ar: 'البطن (Core)', fr: 'Abdos (Core)', en: 'Core', icon: '🎯' },
+};
+
+const ECONOMICS_S3_MODULES = [
+  'Marketing de Base',
+  'Comptabilité Analytique',
+  'Économie Monétaire et Financière',
+  'Échantillonnage et Estimation',
+  'Problèmes Économiques et Sociaux',
+  'Gestion des Ressources Humaines',
+] as const;
+
 function formatISODate(date: Date): string {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -164,6 +188,7 @@ export const TasksPage: React.FC = () => {
     studyModules,
     addStudyModule,
     toggleStudyModule,
+    updateStudyModule,
     deleteStudyModule,
     gymLogs,
     addGymLog,
@@ -172,6 +197,7 @@ export const TasksPage: React.FC = () => {
     addProgramTrack,
     deleteProgramTrack,
     addProgramSubTask,
+    updateProgramSubTask,
     toggleProgramSubTask,
     deleteProgramSubTask,
     showToast,
@@ -209,9 +235,18 @@ export const TasksPage: React.FC = () => {
   const [moduleSubject, setModuleSubject] = useState('');
 
   // ── Gym Workout Input State ──
+  const [selectedGymMuscles, setSelectedGymMuscles] = useState<string[]>([]);
   const [gymMuscles, setGymMuscles] = useState('');
   const [gymExercises, setGymExercises] = useState('');
   const [gymTomorrowPlan, setGymTomorrowPlan] = useState('');
+
+  // ── SubTask & Study Module Detail / Edit State ──
+  const [editingSubTask, setEditingSubTask] = useState<{ trackId: string; subId: string; title: string; points: number } | null>(null);
+  const [editingStudyModule, setEditingStudyModule] = useState<StudyModuleItem | null>(null);
+
+  // ── Standalone Google Calendar Alarm Modal State ──
+  const [alarmModalTaskTitle, setAlarmModalTaskTitle] = useState<string | null>(null);
+  const [alarmModalDescription, setAlarmModalDescription] = useState<string>('');
 
   // Generate 7 days around selected date for quick navigation strip
   const dateStrip = useMemo(() => {
@@ -401,15 +436,52 @@ export const TasksPage: React.FC = () => {
     setModuleSubject('');
   };
 
+  const handleQuickAddEconomicsModule = (moduleName: string) => {
+    const exists = (studyModules || []).some(
+      (m) => m.title.toLowerCase() === moduleName.toLowerCase()
+    );
+    if (exists) {
+      showToast({
+        message: language === 'ar'
+          ? `الوحدة "${moduleName}" موجودة بالفعل في قائمتك.`
+          : `Le module "${moduleName}" est déjà dans votre liste.`,
+      });
+      return;
+    }
+    addStudyModule(moduleName, 'Économie & Gestion (S3)');
+    showToast({
+      message: language === 'ar'
+        ? `✓ تمت إضافة وحدة "${moduleName}" بنجاح!`
+        : `✓ Module "${moduleName}" ajouté avec succès !`,
+    });
+  };
+
+  const toggleMuscleChip = (chip: string) => {
+    setSelectedGymMuscles((prev) =>
+      prev.includes(chip) ? prev.filter((m) => m !== chip) : [...prev, chip]
+    );
+  };
+
   const handleAddGym = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!gymMuscles.trim()) return;
+    const muscleText = selectedGymMuscles.length > 0
+      ? selectedGymMuscles.join(', ')
+      : gymMuscles.trim();
+    if (!muscleText) {
+      showToast({
+        message: language === 'ar'
+          ? 'يرجى اختيار مجموعة عضلية واحدة على الأقل'
+          : 'Veuillez sélectionner au moins un groupe musculaire',
+      });
+      return;
+    }
     addGymLog({
       date: selectedDate,
-      muscleGroups: gymMuscles.trim(),
+      muscleGroups: muscleText,
       exercises: gymExercises.trim() || undefined,
       tomorrowPlan: gymTomorrowPlan.trim() || undefined,
     });
+    setSelectedGymMuscles([]);
     setGymMuscles('');
     setGymExercises('');
     setGymTomorrowPlan('');
@@ -916,7 +988,7 @@ export const TasksPage: React.FC = () => {
                     {/* Middle: Title & Quick Preview */}
                     <div className="my-3">
                       <h3 className="font-bold text-base sm:text-lg text-zinc-900 dark:text-white tracking-tight truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                        {track.title}
+                        {getProgramTrackTitle(track, language)}
                       </h3>
 
                       <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-1">
@@ -1052,7 +1124,8 @@ export const TasksPage: React.FC = () => {
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
                           <span
-                            className={`font-semibold text-sm tracking-tight truncate ${
+                            onClick={() => handleOpenEdit(task)}
+                            className={`font-semibold text-sm tracking-tight truncate cursor-pointer hover:underline ${
                               isCompleted
                                 ? 'line-through text-zinc-400 dark:text-zinc-500'
                                 : 'text-zinc-900 dark:text-white'
@@ -1098,6 +1171,17 @@ export const TasksPage: React.FC = () => {
 
                     {/* Actions */}
                     <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAlarmModalTaskTitle(task.title);
+                          setAlarmModalDescription(task.notes || 'Rappel Routine Flouss');
+                        }}
+                        className="p-1.5 rounded-lg text-blue-500 hover:text-blue-600 hover:bg-blue-500/10 transition-colors"
+                        title={tTask.googleCalendarAlarmBtn}
+                      >
+                        <Bell className="w-4 h-4" />
+                      </button>
                       <button
                         onClick={() => handleOpenEdit(task)}
                         className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
@@ -1366,32 +1450,47 @@ export const TasksPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Google Calendar Native Phone Alarm Toggle */}
-            <div className="pt-2 border-t border-zinc-200/50 dark:border-zinc-700/50 flex items-start justify-between gap-3">
-              <div className="flex items-start gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 mt-0.5">
-                  <Bell className="w-3.5 h-3.5" />
-                </div>
-                <div>
-                  <label htmlFor="calendar-alarm-toggle" className="text-xs font-bold text-zinc-900 dark:text-white cursor-pointer select-none">
-                    {tTask.googleCalendarToggle}
-                  </label>
-                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5 leading-relaxed">
-                    {tTask.googleCalendarDesc}
-                  </p>
-                </div>
-              </div>
+            {/* Direct Instant Action Button: Add Alarm via Google Calendar */}
+            <div className="pt-2 border-t border-zinc-200/50 dark:border-zinc-700/50 space-y-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setAlarmModalTaskTitle(taskTitle || 'Tâche Routine');
+                  setAlarmModalDescription(taskNotes || 'Rappel Flouss');
+                }}
+                className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98]"
+              >
+                <Bell className="w-4 h-4" />
+                <span>{tTask.googleCalendarAlarmBtn}</span>
+              </button>
 
-              <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
-                <input
-                  id="calendar-alarm-toggle"
-                  type="checkbox"
-                  checked={syncToCalendar}
-                  onChange={(e) => setSyncToCalendar(e.target.checked)}
-                  className="sr-only peer"
-                />
-                <div className="w-10 h-6 bg-zinc-200 peer-focus:outline-none rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-zinc-600 peer-checked:bg-blue-600 shadow-xs"></div>
-              </label>
+              {/* Google Calendar Native Phone Alarm Toggle */}
+              <div className="flex items-start justify-between gap-3 pt-1">
+                <div className="flex items-start gap-2.5">
+                  <div className="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 mt-0.5">
+                    <Bell className="w-3.5 h-3.5" />
+                  </div>
+                  <div>
+                    <label htmlFor="calendar-alarm-toggle" className="text-xs font-bold text-zinc-900 dark:text-white cursor-pointer select-none">
+                      {tTask.googleCalendarToggle}
+                    </label>
+                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5 leading-relaxed">
+                      {tTask.googleCalendarDesc}
+                    </p>
+                  </div>
+                </div>
+
+                <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
+                  <input
+                    id="calendar-alarm-toggle"
+                    type="checkbox"
+                    checked={syncToCalendar}
+                    onChange={(e) => setSyncToCalendar(e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-10 h-6 bg-zinc-200 peer-focus:outline-none rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-zinc-600 peer-checked:bg-blue-600 shadow-xs"></div>
+                </label>
+              </div>
             </div>
           </div>
 
@@ -1419,7 +1518,7 @@ export const TasksPage: React.FC = () => {
       <Modal
         isOpen={Boolean(selectedTrackId && activeTrack)}
         onClose={() => setSelectedTrackId(null)}
-        title={activeTrack?.title}
+        title={getProgramTrackTitle(activeTrack, language)}
         subtitle={
           selectedDate === todayStr
             ? (language === 'ar' ? 'اليوم' : language === 'en' ? 'Today' : "Aujourd'hui")
@@ -1573,11 +1672,24 @@ export const TasksPage: React.FC = () => {
                               : 'bg-zinc-50 dark:bg-zinc-800/60 border-zinc-200/60 dark:border-zinc-700/60 text-zinc-800 dark:text-zinc-200'
                           }`}
                         >
-                          <div className="flex items-center gap-3 min-w-0">
+                          <div
+                            className="flex items-center gap-3 min-w-0 flex-1 cursor-pointer"
+                            onClick={() =>
+                              setEditingSubTask({
+                                trackId: activeTrack.id,
+                                subId: sub.id,
+                                title: sub.title,
+                                points: sub.points || 10,
+                              })
+                            }
+                          >
                             <button
                               type="button"
-                              onClick={() => handleToggleSubTask(activeTrack.id, sub.id)}
-                              className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all ${
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleToggleSubTask(activeTrack.id, sub.id);
+                              }}
+                              className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all shrink-0 ${
                                 isDone
                                   ? 'bg-blue-600 text-white shadow-xs'
                                   : 'bg-zinc-200 dark:bg-zinc-700 text-transparent hover:text-zinc-400'
@@ -1585,12 +1697,38 @@ export const TasksPage: React.FC = () => {
                             >
                               <Check className="w-3.5 h-3.5 stroke-[2.5]" />
                             </button>
-                            <span className={`text-xs font-bold truncate ${isDone ? 'line-through text-zinc-400' : ''}`}>
+                            <span className={`text-xs font-bold truncate hover:underline ${isDone ? 'line-through text-zinc-400' : ''}`}>
                               {sub.title}
                             </span>
                           </div>
 
-                          <div className="flex items-center gap-2 shrink-0">
+                          <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setAlarmModalTaskTitle(`${getProgramTrackTitle(activeTrack, language)}: ${sub.title}`);
+                                setAlarmModalDescription(`Rappel pour ${sub.title}`);
+                              }}
+                              className="p-1 rounded-lg text-blue-500 hover:text-blue-600 hover:bg-blue-500/10 transition-colors"
+                              title={tTask.googleCalendarAlarmBtn}
+                            >
+                              <Bell className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setEditingSubTask({
+                                  trackId: activeTrack.id,
+                                  subId: sub.id,
+                                  title: sub.title,
+                                  points: sub.points || 10,
+                                })
+                              }
+                              className="p-1 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
+                              title="Modifier"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
                             <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 tabular-nums">
                               +{sub.points || 10} XP
                             </span>
@@ -1641,47 +1779,70 @@ export const TasksPage: React.FC = () => {
                 </div>
 
                 {/* Form */}
-                <form onSubmit={handleAddGym} className="p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-700/60 space-y-3">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    <div>
-                      <label className="block text-[11px] font-bold text-zinc-600 dark:text-zinc-300 mb-1">
-                        {tTask.muscleGroups} *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={gymMuscles}
-                        onChange={(e) => setGymMuscles(e.target.value)}
-                        placeholder={tTask.musclePlaceholder}
-                        className="w-full px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-rose-500"
-                      />
-                    </div>
+                <form onSubmit={handleAddGym} className="p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-700/60 space-y-3.5">
+                  {/* 1-Click Apple-style Muscle Group Toggle Chips */}
+                  <div>
+                    <label className="block text-[11px] font-bold text-zinc-600 dark:text-zinc-300 mb-1.5 flex items-center justify-between">
+                      <span>{tTask.muscleGroups} *</span>
+                      {selectedGymMuscles.length > 0 && (
+                        <span className="text-[10px] text-rose-600 dark:text-rose-400 font-semibold tabular-nums">
+                          {selectedGymMuscles.length} {language === 'ar' ? 'محددة' : 'sélectionné(s)'}
+                        </span>
+                      )}
+                    </label>
 
-                    <div>
-                      <label className="block text-[11px] font-bold text-zinc-600 dark:text-zinc-300 mb-1">
-                        {tTask.tomorrowPlan}
-                      </label>
-                      <input
-                        type="text"
-                        value={gymTomorrowPlan}
-                        onChange={(e) => setGymTomorrowPlan(e.target.value)}
-                        placeholder={tTask.tomorrowPlaceholder}
-                        className="w-full px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-rose-500"
-                      />
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                      {GYM_CHIPS.map((chip) => {
+                        const isSelected = selectedGymMuscles.includes(chip);
+                        const chipMeta = GYM_CHIP_LABELS[chip];
+                        const label = chipMeta?.[language] || chip;
+                        return (
+                          <button
+                            key={chip}
+                            type="button"
+                            onClick={() => toggleMuscleChip(chip)}
+                            className={`px-2.5 py-2 rounded-xl text-xs font-semibold transition-all border flex items-center justify-center gap-1.5 ${
+                              isSelected
+                                ? 'bg-rose-600 text-white border-rose-600 shadow-xs scale-[1.02]'
+                                : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                            }`}
+                          >
+                            <span>{chipMeta?.icon || '💪'}</span>
+                            <span className="truncate">{label}</span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-[11px] font-bold text-zinc-600 dark:text-zinc-300 mb-1">
-                      {tTask.exercisesLabel}
-                    </label>
-                    <input
-                      type="text"
-                      value={gymExercises}
-                      onChange={(e) => setGymExercises(e.target.value)}
-                      placeholder={tTask.exercisesPlaceholder}
-                      className="w-full px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-rose-500"
-                    />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {/* Optional Exercise Details Textarea */}
+                    <div>
+                      <label className="block text-[11px] font-bold text-zinc-600 dark:text-zinc-300 mb-1">
+                        {tTask.exercisesLabel} ({language === 'ar' ? 'اختياري' : 'optionnel'})
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={gymExercises}
+                        onChange={(e) => setGymExercises(e.target.value)}
+                        placeholder={tTask.exercisesPlaceholder || (language === 'ar' ? 'تفاصيل التمارين والأوزان...' : 'Détails des exercices, séries et charges...')}
+                        className="w-full px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-rose-500"
+                      />
+                    </div>
+
+                    {/* Tomorrow's Plan */}
+                    <div>
+                      <label className="block text-[11px] font-bold text-zinc-600 dark:text-zinc-300 mb-1">
+                        {tTask.tomorrowPlan} ({language === 'ar' ? 'اختياري' : 'optionnel'})
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={gymTomorrowPlan}
+                        onChange={(e) => setGymTomorrowPlan(e.target.value)}
+                        placeholder={tTask.tomorrowPlaceholder || (language === 'ar' ? 'خطة تمرين الغد...' : 'Programme pour demain...')}
+                        className="w-full px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-rose-500"
+                      />
+                    </div>
                   </div>
 
                   <div className="flex justify-end pt-1">
@@ -1724,7 +1885,18 @@ export const TasksPage: React.FC = () => {
                           )}
                         </div>
 
-                        <div className="flex items-center gap-2 shrink-0">
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setAlarmModalTaskTitle(`Séance Gym: ${log.muscleGroups}`);
+                              setAlarmModalDescription(log.tomorrowPlan ? `Plan: ${log.tomorrowPlan}` : 'Séance de musculation');
+                            }}
+                            className="p-1 rounded-lg text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
+                            title={language === 'ar' ? 'تذكير عبر تقويم جوجل' : 'Ajouter une alarme Google Calendar'}
+                          >
+                            <Bell className="w-3.5 h-3.5" />
+                          </button>
                           <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400">
                             +40 XP
                           </span>
@@ -1755,6 +1927,36 @@ export const TasksPage: React.FC = () => {
                   <span className="font-bold text-zinc-500 tabular-nums">
                     {(studyModules ?? []).filter((m) => m.completed).length} / {(studyModules ?? []).length}
                   </span>
+                </div>
+
+                {/* 1-Click Apple-style Economics & Management S3 Modules Chips */}
+                <div>
+                  <label className="block text-[11px] font-bold text-zinc-600 dark:text-zinc-300 mb-1.5 flex items-center justify-between">
+                    <span>{language === 'ar' ? 'وحدات الاقتصاد والتدبير (S3)' : language === 'en' ? 'Economics & Management (S3) Modules' : 'Modules Économie & Gestion (S3)'}</span>
+                    <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold">{language === 'ar' ? 'إضافة سريعة بنقرة واحدة' : 'Ajout rapide 1-clic'}</span>
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 mb-3">
+                    {ECONOMICS_S3_MODULES.map((modName) => {
+                      const isAlreadyAdded = (studyModules || []).some(
+                        (m) => m.title.toLowerCase() === modName.toLowerCase()
+                      );
+                      return (
+                        <button
+                          key={modName}
+                          type="button"
+                          onClick={() => handleQuickAddEconomicsModule(modName)}
+                          className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all text-left rtl:text-right border ${
+                            isAlreadyAdded
+                              ? 'bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-500/30 shadow-2xs'
+                              : 'bg-white dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 hover:border-indigo-300'
+                          }`}
+                        >
+                          <span className="text-indigo-500 font-bold shrink-0">{isAlreadyAdded ? '✓' : '+'}</span>
+                          <span className="truncate">{modName}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 {/* Quick Add Module Form */}
@@ -1794,11 +1996,17 @@ export const TasksPage: React.FC = () => {
                             : 'bg-zinc-50 dark:bg-zinc-800/60 border-zinc-200/60 dark:border-zinc-700/60 text-zinc-800 dark:text-zinc-200'
                         }`}
                       >
-                        <div className="flex items-center gap-3 min-w-0">
+                        <div
+                          className="flex items-center gap-3 min-w-0 flex-1 cursor-pointer"
+                          onClick={() => setEditingStudyModule(mod)}
+                        >
                           <button
                             type="button"
-                            onClick={() => toggleStudyModule(mod.id)}
-                            className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all ${
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleStudyModule(mod.id);
+                            }}
+                            className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all shrink-0 ${
                               mod.completed
                                 ? 'bg-indigo-600 text-white'
                                 : 'bg-zinc-200 dark:bg-zinc-700 text-transparent hover:text-zinc-400'
@@ -1807,7 +2015,7 @@ export const TasksPage: React.FC = () => {
                             <Check className="w-3.5 h-3.5 stroke-[2.5]" />
                           </button>
                           <div className="truncate">
-                            <span className={`text-xs font-bold block ${mod.completed ? 'line-through text-zinc-400' : ''}`}>
+                            <span className={`text-xs font-bold block hover:underline ${mod.completed ? 'line-through text-zinc-400' : ''}`}>
                               {mod.title}
                             </span>
                             {mod.subject && (
@@ -1818,7 +2026,26 @@ export const TasksPage: React.FC = () => {
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setAlarmModalTaskTitle(`Révision: ${mod.title}${mod.subject ? ` (${mod.subject})` : ''}`);
+                              setAlarmModalDescription(`Session de révision S3: ${mod.title}`);
+                            }}
+                            className="p-1 rounded-lg text-indigo-500 hover:text-indigo-600 hover:bg-indigo-500/10 transition-colors"
+                            title={tTask.googleCalendarAlarmBtn}
+                          >
+                            <Bell className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEditingStudyModule(mod)}
+                            className="p-1 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
+                            title="Modifier"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </button>
                           <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400">
                             +30 XP
                           </span>
@@ -1922,6 +2149,164 @@ export const TasksPage: React.FC = () => {
           </div>
         </form>
       </Modal>
+
+      {/* ── PROGRAM SUBTASK DETAIL / EDIT MODAL ── */}
+      <Modal
+        isOpen={Boolean(editingSubTask)}
+        onClose={() => setEditingSubTask(null)}
+        title={language === 'ar' ? 'تفاصيل المهمة الفرعية' : language === 'en' ? 'Sub-task Details' : 'Détails de la sous-tâche'}
+        subtitle={activeTrack ? getProgramTrackTitle(activeTrack, language) : undefined}
+      >
+        {editingSubTask && (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!editingSubTask.title.trim()) return;
+              updateProgramSubTask(editingSubTask.trackId, editingSubTask.subId, {
+                title: editingSubTask.title.trim(),
+                points: Number(editingSubTask.points) || 10,
+              });
+              setEditingSubTask(null);
+            }}
+            className="space-y-4 pt-2"
+          >
+            <div>
+              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+                {language === 'ar' ? 'عنوان المهمة الفرعية' : language === 'en' ? 'Sub-task Title' : 'Titre de la sous-tâche'} *
+              </label>
+              <input
+                type="text"
+                required
+                value={editingSubTask.title}
+                onChange={(e) => setEditingSubTask({ ...editingSubTask, title: e.target.value })}
+                className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+                {language === 'ar' ? 'نقاط الخبرة (XP)' : 'Points XP'}
+              </label>
+              <input
+                type="number"
+                min={1}
+                max={100}
+                value={editingSubTask.points}
+                onChange={(e) => setEditingSubTask({ ...editingSubTask, points: Number(e.target.value) })}
+                className="w-full px-3.5 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            {/* Prominent Action Button: Add Alarm via Google Calendar */}
+            <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800">
+              <button
+                type="button"
+                onClick={() => {
+                  const trackTitle = activeTrack ? getProgramTrackTitle(activeTrack, language) : 'Programme';
+                  setAlarmModalTaskTitle(`${trackTitle}: ${editingSubTask.title}`);
+                  setAlarmModalDescription(`Rappel pour ${editingSubTask.title}`);
+                }}
+                className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98]"
+              >
+                <Bell className="w-4 h-4" />
+                <span>{tTask.googleCalendarAlarmBtn}</span>
+              </button>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+              <Button type="button" variant="ghost" onClick={() => setEditingSubTask(null)}>
+                {tTask.cancel}
+              </Button>
+              <Button type="submit" variant="primary">
+                {tTask.save}
+              </Button>
+            </div>
+          </form>
+        )}
+      </Modal>
+
+      {/* ── STUDY MODULE DETAIL / EDIT MODAL ── */}
+      <Modal
+        isOpen={Boolean(editingStudyModule)}
+        onClose={() => setEditingStudyModule(null)}
+        title={language === 'ar' ? 'تفاصيل الوحدة الدراسية' : language === 'en' ? 'Study Module Details' : 'Détails du module d’étude'}
+        subtitle="Économie & Gestion (S3)"
+      >
+        {editingStudyModule && (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!editingStudyModule.title.trim()) return;
+              updateStudyModule(editingStudyModule.id, {
+                title: editingStudyModule.title.trim(),
+                subject: editingStudyModule.subject?.trim() || undefined,
+              });
+              setEditingStudyModule(null);
+            }}
+            className="space-y-4 pt-2"
+          >
+            <div>
+              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+                {tTask.modulePlaceholder || 'Nom du module'} *
+              </label>
+              <input
+                type="text"
+                required
+                value={editingStudyModule.title}
+                onChange={(e) => setEditingStudyModule({ ...editingStudyModule, title: e.target.value })}
+                className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+                {tTask.subjectPlaceholder || 'Discipline'}
+              </label>
+              <input
+                type="text"
+                value={editingStudyModule.subject || ''}
+                onChange={(e) => setEditingStudyModule({ ...editingStudyModule, subject: e.target.value })}
+                className="w-full px-3.5 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+
+            {/* Prominent Action Button: Add Alarm via Google Calendar */}
+            <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800">
+              <button
+                type="button"
+                onClick={() => {
+                  setAlarmModalTaskTitle(`Révision: ${editingStudyModule.title}${editingStudyModule.subject ? ` (${editingStudyModule.subject})` : ''}`);
+                  setAlarmModalDescription(`Session de révision S3: ${editingStudyModule.title}`);
+                }}
+                className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98]"
+              >
+                <Bell className="w-4 h-4" />
+                <span>{tTask.googleCalendarAlarmBtn}</span>
+              </button>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+              <Button type="button" variant="ghost" onClick={() => setEditingStudyModule(null)}>
+                {tTask.cancel}
+              </Button>
+              <Button type="submit" variant="primary">
+                {tTask.save}
+              </Button>
+            </div>
+          </form>
+        )}
+      </Modal>
+
+      {/* ── STANDALONE GOOGLE CALENDAR ALARM MODAL ── */}
+      {alarmModalTaskTitle && (
+        <GoogleCalendarAlarmModal
+          isOpen={Boolean(alarmModalTaskTitle)}
+          onClose={() => setAlarmModalTaskTitle(null)}
+          taskTitle={alarmModalTaskTitle}
+          taskDescription={alarmModalDescription}
+          defaultDate={taskScheduledDate || selectedDate || todayStr}
+        />
+      )}
     </div>
   );
 };

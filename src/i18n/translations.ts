@@ -573,6 +573,7 @@ export const translations = {
       save: "Enregistrer",
       untitled: "Sans titre",
       general: "Général",
+      googleCalendarAlarmBtn: "📅 Ajouter un rappel via Google Calendar",
     },
 
     tasks: {
@@ -655,6 +656,7 @@ export const translations = {
       googleCalendarDesc: "Alarme native et notification sur votre téléphone à l'heure exacte.",
       googleCalendarSynced: "Tâche synchronisée avec Google Calendar ! Alarme programmée.",
       googleCalendarFailed: "Échec de la synchronisation avec Google Calendar.",
+      googleCalendarAlarmBtn: "📅 Ajouter une alarme via Google Calendar",
     },
 
     focusList: {
@@ -673,6 +675,7 @@ export const translations = {
       allLists: "Tous",
       createListBtn: "Créer",
       deleteListConfirm: "Supprimer ce menu et ses tâches ?",
+      googleCalendarAlarmBtn: "📅 Alarme Google Calendar",
     },
 
 
@@ -1326,6 +1329,7 @@ export const translations = {
       save: "حفظ",
       untitled: "بدون عنوان",
       general: "عام",
+      googleCalendarAlarmBtn: "📅 تذكير عبر تقويم جوجل",
     },
 
     tasks: {
@@ -1408,6 +1412,7 @@ export const translations = {
       googleCalendarDesc: "إنذار وتنبيه مباشر على هاتفك في الوقت المحدد بالضبط.",
       googleCalendarSynced: "تمت مزامنة المهمة مع Google Calendar بنجاح! تم تفعيل المنبه.",
       googleCalendarFailed: "تعذر إنشاء التنبيه في Google Calendar.",
+      googleCalendarAlarmBtn: "📅 تذكير عبر تقويم جوجل",
     },
 
     focusList: {
@@ -1426,6 +1431,7 @@ export const translations = {
       allLists: "الكل",
       createListBtn: "إضافة",
       deleteListConfirm: "هل تريد حذف هذه القائمة ومهامها؟",
+      googleCalendarAlarmBtn: "📅 تذكير تقويم جوجل",
     },
 
 
@@ -2080,6 +2086,7 @@ export const translations = {
       save: "Save",
       untitled: "Untitled",
       general: "General",
+      googleCalendarAlarmBtn: "📅 Add Alarm via Google Calendar",
     },
 
     tasks: {
@@ -2162,6 +2169,7 @@ export const translations = {
       googleCalendarDesc: "Native phone alarm and push notification at the exact scheduled time.",
       googleCalendarSynced: "Task synced to Google Calendar! Native alarm scheduled.",
       googleCalendarFailed: "Failed to sync event with Google Calendar.",
+      googleCalendarAlarmBtn: "📅 Add Alarm via Google Calendar",
     },
 
     focusList: {
@@ -2180,6 +2188,7 @@ export const translations = {
       allLists: "All",
       createListBtn: "Create",
       deleteListConfirm: "Delete this menu and its tasks?",
+      googleCalendarAlarmBtn: "📅 Google Calendar Alarm",
     },
 
 

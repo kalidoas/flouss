@@ -1,4 +1,4 @@
-import { Category, CategoryGroupId, IncomeSource, Language, SubCategory, NoteItem } from '../types';
+import { Category, CategoryGroupId, IncomeSource, Language, SubCategory, NoteItem, ProgramTrack } from '../types';
 import { translations } from '../i18n/translations';
 
 /**
@@ -116,3 +116,31 @@ export function getNoteItemDisplay(
   }
   return { title: note.title, content: note.content };
 }
+
+/**
+ * Returns strictly localized title for program tracks across AR, EN, FR.
+ * Eliminates all language leaks from hardcoded database seed strings.
+ */
+export function getProgramTrackTitle(
+  track: ProgramTrack | null | undefined,
+  language: Language = 'fr'
+): string {
+  if (!track) return '';
+  if (track.type === 'salat') {
+    return language === 'ar' ? 'الصلوات الخمس (Salat)' : language === 'en' ? 'Daily Prayers (Salat)' : 'Prières quotidiennes (Salat)';
+  }
+  if (track.type === 'coding') {
+    return language === 'ar' ? 'البرمجة والتطوير (Coding)' : language === 'en' ? 'Coding & Development' : 'Programmation & Code';
+  }
+  if (track.type === 'english') {
+    return language === 'ar' ? 'اللغة الإنجليزية (English)' : language === 'en' ? 'English Mastery' : 'Pratique de l’Anglais';
+  }
+  if (track.type === 'gym') {
+    return language === 'ar' ? 'الرياضة والجيم (Gym)' : language === 'en' ? 'Gym & Fitness' : 'Sport & Musculation (Gym)';
+  }
+  if (track.type === 'study') {
+    return language === 'ar' ? 'المراجعة والدراسة (Study)' : language === 'en' ? 'Study & Revision' : 'Études & Révisions (S3)';
+  }
+  return track.title;
+}
+

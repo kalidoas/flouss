@@ -113,3 +113,110 @@ export function getSemanticBadgeClass(color?: string, isGoal?: boolean): string 
 
   return 'bg-slate-500/15 text-slate-600 dark:text-slate-400 border border-slate-500/20';
 }
+
+/**
+ * Resolves a category's financial taxonomy group with semantic inference
+ * for custom or legacy categories missing an explicit `group` field.
+ */
+export function resolveCategoryGroup(category: Category | null | undefined): CategoryGroupId {
+  if (!category) return 'lifestyle_entertainment';
+  if (category.group && category.group in CATEGORY_GROUPS_META) {
+    return category.group;
+  }
+  if ((category as any).groupId && (category as any).groupId in CATEGORY_GROUPS_META) {
+    return (category as any).groupId as CategoryGroupId;
+  }
+  if (category.isGoal) {
+    return 'savings';
+  }
+
+  const key = (category.key || category.id || '').toLowerCase();
+  const name = (category.name || '').toLowerCase();
+
+  // Food & dining
+  if (
+    key.includes('food') ||
+    key.includes('nourriture') ||
+    key.includes('cafe') ||
+    key.includes('resto') ||
+    name.includes('nourriture') ||
+    name.includes('café') ||
+    name.includes('مطعم') ||
+    name.includes('طعام') ||
+    name.includes('أكل') ||
+    name.includes('قهوة')
+  ) {
+    return 'food_dining';
+  }
+
+  // Transport & mobility
+  if (
+    key.includes('transport') ||
+    name.includes('transport') ||
+    name.includes('taxi') ||
+    name.includes('car') ||
+    name.includes('voiture') ||
+    name.includes('نقل') ||
+    name.includes('مواصلات')
+  ) {
+    return 'transport_mobility';
+  }
+
+  // Essentials & housing
+  if (
+    key.includes('home') ||
+    key.includes('maison') ||
+    key.includes('logement') ||
+    key.includes('ecole') ||
+    key.includes('sante') ||
+    key.includes('education') ||
+    key.includes('health') ||
+    name.includes('logement') ||
+    name.includes('santé') ||
+    name.includes('loyer') ||
+    name.includes('école') ||
+    name.includes('تعليم') ||
+    name.includes('سكن') ||
+    name.includes('صحة')
+  ) {
+    return 'essentials_housing';
+  }
+
+  // Subscriptions & utilities
+  if (
+    key.includes('telecom') ||
+    key.includes('phone') ||
+    key.includes('subscription') ||
+    key.includes('abonnement') ||
+    name.includes('télécom') ||
+    name.includes('abonnement') ||
+    name.includes('اشتراك') ||
+    name.includes('هاتف')
+  ) {
+    return 'subscriptions_utilities';
+  }
+
+  // Income & investments
+  if (
+    key.includes('invest') ||
+    key.includes('income') ||
+    name.includes('invest') ||
+    name.includes('bourse') ||
+    name.includes('استثمار')
+  ) {
+    return 'income_investments';
+  }
+
+  // Savings
+  if (
+    key.includes('epargne') ||
+    key.includes('saving') ||
+    name.includes('épargne') ||
+    name.includes('ادخار')
+  ) {
+    return 'savings';
+  }
+
+  return 'lifestyle_entertainment';
+}
+

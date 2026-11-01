@@ -131,6 +131,7 @@ export interface AppState {
   toggleSalatPrayer: (date: string, prayer: PrayerKey) => void;
   addStudyModule: (title: string, subject?: string, notes?: string) => void;
   toggleStudyModule: (id: string) => void;
+  updateStudyModule: (id: string, patch: Partial<StudyModuleItem>) => void;
   deleteStudyModule: (id: string) => void;
   addGymLog: (log: Omit<GymWorkoutLog, 'id' | 'createdAt'>) => void;
   deleteGymLog: (id: string) => void;
@@ -138,6 +139,7 @@ export interface AppState {
   addProgramTrack: (title: string, icon?: string, color?: string) => void;
   deleteProgramTrack: (trackId: string) => void;
   addProgramSubTask: (trackId: string, title: string, points?: number) => void;
+  updateProgramSubTask: (trackId: string, subTaskId: string, patch: Partial<ProgramSubTask>) => void;
   toggleProgramSubTask: (trackId: string, subTaskId: string, dateStr: string) => void;
   deleteProgramSubTask: (trackId: string, subTaskId: string) => void;
 
@@ -1046,6 +1048,14 @@ export const useAppStore = create<AppState>()(
             studyModules: (a.studyModules ?? []).filter((m: StudyModuleItem) => m.id !== id),
           }));
         },
+        updateStudyModule: (id: string, patch: Partial<StudyModuleItem>) => {
+          updateActive((a) => ({
+            ...a,
+            studyModules: (a.studyModules ?? []).map((m: StudyModuleItem) =>
+              m.id === id ? { ...m, ...patch } : m
+            ),
+          }));
+        },
 
         // ── Gym & Workout Logs ──────────────────────────────────────
         addGymLog: (log: Omit<GymWorkoutLog, 'id' | 'createdAt'>) => {
@@ -1155,6 +1165,26 @@ export const useAppStore = create<AppState>()(
                   return {
                     ...t,
                     subtasks: (t.subtasks ?? []).filter((sub) => sub.id !== subTaskId),
+                  };
+                }
+                return t;
+              }),
+            };
+          });
+        },
+
+        updateProgramSubTask: (trackId: string, subTaskId: string, patch: Partial<ProgramSubTask>) => {
+          updateActive((a) => {
+            const currentTracks = a.programTracks ?? DEFAULT_PROGRAM_TRACKS;
+            return {
+              ...a,
+              programTracks: currentTracks.map((t) => {
+                if (t.id === trackId) {
+                  return {
+                    ...t,
+                    subtasks: (t.subtasks ?? []).map((sub) =>
+                      sub.id === subTaskId ? { ...sub, ...patch } : sub
+                    ),
                   };
                 }
                 return t;
