@@ -85,6 +85,7 @@ export interface AppState {
   setActiveScreen: (screen: ScreenId) => void;
   setTheme: (theme: ThemeMode) => void;
   setLanguage: (language: Language) => void;
+  resetLanguageToSystem: () => Language;
   setHideBalance: (v: boolean) => void;
   toggleHideBalance: () => void;
   setPinUnlocked: (v: boolean) => void;
@@ -191,6 +192,35 @@ export function makeInitialAccount(uid: string, name: string, email?: string): U
   };
 }
 
+export function detectSystemLanguage(): Language {
+  if (typeof window === 'undefined' || !navigator) return 'ar';
+  const navLangs = navigator.languages?.length ? navigator.languages : [navigator.language || ''];
+  for (const l of navLangs) {
+    if (!l) continue;
+    const lower = l.toLowerCase();
+    if (lower.startsWith('ar')) return 'ar';
+    if (lower.startsWith('fr')) return 'fr';
+    if (lower.startsWith('en')) return 'en';
+  }
+  return 'fr';
+}
+
+export function getInitialLanguage(): Language {
+  try {
+    const isManual = localStorage.getItem('flouss_manual_language_selected');
+    if (isManual === 'true') {
+      const stored = localStorage.getItem('flouss_app_storage_v2');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed?.state?.language && ['ar', 'fr', 'en'].includes(parsed.state.language)) {
+          return parsed.state.language;
+        }
+      }
+    }
+  } catch (e) {}
+  return detectSystemLanguage();
+}
+
 export function extractAccountState(account: UserAccount | null) {
   if (!account) {
     return {
@@ -213,12 +243,19 @@ export function extractAccountState(account: UserAccount | null) {
       recentNotes: [],
     };
   }
+
+  // Ensure all comprehensive categories ("ga3 categorie") are available to existing accounts
+  const accountCategories = account.categories ?? DEFAULT_CATEGORIES;
+  const existingCatIds = new Set(accountCategories.map((c: Category) => c.id));
+  const missingCats = DEFAULT_CATEGORIES.filter((c: Category) => !existingCatIds.has(c.id));
+  const mergedCategories = missingCats.length > 0 ? [...accountCategories, ...missingCats] : accountCategories;
+
   return {
     currentAccount: account,
     isOnboarded: Boolean(account.isOnboarded),
     initialBalance: account.initialBalance ?? null,
     initialBalanceLockedAt: account.initialBalanceLockedAt ?? null,
-    categories: account.categories ?? DEFAULT_CATEGORIES,
+    categories: mergedCategories,
     incomeSources: account.incomeSources ?? DEFAULT_INCOME_SOURCES,
     transactions: account.transactions ?? [],
     recurringRules: account.recurringRules ?? [],
@@ -304,11 +341,11 @@ export const useAppStore = create<AppState>()(
 
         // ── UI Preferences ──────────────────────────────────────────
         theme: 'system' as ThemeMode,
-        language: 'ar' as Language,
+        language: getInitialLanguage() as Language,
         activeScreen: 'dashboard' as ScreenId,
         activeFocusListId: 'default',
         isPinUnlocked: true,
-        hideBalance: false,
+        hideBalance: true, // Sensitive wealth blurred on startup by default (user requirement)
         lastBackupDate: null,
         dismissedRecurringForMonth: [] as string[],
         isTourActive: false,
@@ -687,7 +724,20 @@ export const useAppStore = create<AppState>()(
         // ── UI Setters ──────────────────────────────────────────────
         setActiveScreen: (screen: ScreenId) => set({ activeScreen: screen }),
         setTheme: (theme: ThemeMode) => set({ theme }),
-        setLanguage: (language: Language) => set({ language }),
+        setLanguage: (language: Language) => {
+          try {
+            localStorage.setItem('flouss_manual_language_selected', 'true');
+          } catch (e) {}
+          set({ language });
+        },
+        resetLanguageToSystem: () => {
+          try {
+            localStorage.removeItem('flouss_manual_language_selected');
+          } catch (e) {}
+          const sys = detectSystemLanguage();
+          set({ language: sys });
+          return sys;
+        },
         setHideBalance: (v: boolean) => set({ hideBalance: v }),
         toggleHideBalance: () => set((s: any) => ({ hideBalance: !s.hideBalance })),
         setPinUnlocked: (v: boolean) => set({ isPinUnlocked: v }),

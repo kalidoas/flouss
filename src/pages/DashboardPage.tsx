@@ -276,11 +276,7 @@ export const DashboardPage: React.FC = () => {
             <span className="font-medium">{tDash.incomeThisMonth}</span>
             <span className="w-2 h-2 rounded-full bg-emerald-500" />
           </div>
-          <div
-            className={`text-xl sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400 tabular-nums tracking-tight transition-[filter] duration-200 ${
-              hideBalance ? 'privacy-blur' : ''
-            }`}
-          >
+          <div className="text-xl sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400 tabular-nums tracking-tight">
             +{formatMAD(incomeThisMonth, false, language)}
           </div>
           <span className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-1 block tabular-nums">
@@ -296,11 +292,7 @@ export const DashboardPage: React.FC = () => {
             <span className="font-medium">{tDash.expensesThisMonth}</span>
             <span className="w-2 h-2 rounded-full bg-rose-500" />
           </div>
-          <div
-            className={`text-xl sm:text-2xl font-bold text-rose-600 dark:text-rose-400 tabular-nums tracking-tight transition-[filter] duration-200 ${
-              hideBalance ? 'privacy-blur' : ''
-            }`}
-          >
+          <div className="text-xl sm:text-2xl font-bold text-rose-600 dark:text-rose-400 tabular-nums tracking-tight">
             -{formatMAD(expenseThisMonth, false, language)}
           </div>
           <span className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-1 block tabular-nums">

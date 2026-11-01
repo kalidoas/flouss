@@ -67,15 +67,39 @@ export const WalletCard: React.FC<WalletCardProps> = ({
         </div>
       </div>
 
-      {/* Slot-Machine Rolling Balance Number */}
+      {/* Slot-Machine Rolling Balance Number with Heavy Privacy Blur specifically on Solde Disponible */}
       <div className="space-y-1 relative z-10">
-        <div className="text-3xl sm:text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-white tabular-nums">
+        <div
+          onClick={toggleHideBalance}
+          className={`inline-flex items-center gap-2 cursor-pointer group text-3xl sm:text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-white tabular-nums transition-all ${
+            hideBalance ? 'balance-heavy-blur' : ''
+          }`}
+          title={
+            hideBalance
+              ? language === 'ar'
+                ? 'اضغط لإظهار الرصيد'
+                : language === 'en'
+                ? 'Click to reveal balance'
+                : 'Cliquer pour afficher le solde'
+              : language === 'ar'
+              ? 'اضغط لإخفاء الرصيد'
+              : language === 'en'
+              ? 'Click to hide balance'
+              : 'Cliquer pour masquer le solde'
+          }
+        >
           <AnimatedCurrency
             value={balance}
             language={language}
-            hideBalance={hideBalance}
+            hideBalance={false}
             showCurrency={true}
           />
+          {hideBalance && (
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-zinc-900/10 dark:bg-white/10 text-zinc-700 dark:text-zinc-200 border border-black/10 dark:border-white/15 backdrop-blur-xl shadow-xs group-hover:scale-105 transition-transform">
+              <Eye className="w-3.5 h-3.5 text-emerald-500" />
+              <span>{language === 'ar' ? 'إظهار' : language === 'en' ? 'Show' : 'Afficher'}</span>
+            </span>
+          )}
         </div>
       </div>
 
@@ -118,11 +142,7 @@ export const WalletCard: React.FC<WalletCardProps> = ({
           <span className="text-[10px] text-zinc-400 uppercase tracking-wider block font-medium">
             {tWallet.income}
           </span>
-          <span
-            className={`font-bold text-emerald-600 dark:text-emerald-400 tabular-nums ${
-              hideBalance ? 'privacy-blur' : ''
-            }`}
-          >
+          <span className="font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
             +{formatMAD(incomeThisMonth, false, language)}
           </span>
         </div>
@@ -133,11 +153,7 @@ export const WalletCard: React.FC<WalletCardProps> = ({
           <span className="text-[10px] text-zinc-400 uppercase tracking-wider block font-medium">
             {tWallet.expenses}
           </span>
-          <span
-            className={`font-bold text-rose-600 dark:text-rose-400 tabular-nums ${
-              hideBalance ? 'privacy-blur' : ''
-            }`}
-          >
+          <span className="font-bold text-rose-600 dark:text-rose-400 tabular-nums">
             -{formatMAD(expenseThisMonth, false, language)}
           </span>
         </div>

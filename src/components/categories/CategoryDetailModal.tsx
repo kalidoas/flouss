@@ -181,27 +181,32 @@ export const CategoryDetailModal: React.FC<CategoryDetailModalProps> = ({
             </div>
           )}
 
-          {/* Subcategories strip if defined */}
+          {/* Subcategories visual icon strip without textual clutter */}
           {subcategories.length > 0 && (
-            <div className="p-4 rounded-3xl bg-slate-50/70 dark:bg-slate-800/30 border border-slate-100 dark:border-slate-800 space-y-2">
+            <div className="p-4 rounded-3xl bg-slate-50/70 dark:bg-slate-800/30 border border-slate-100 dark:border-slate-800 space-y-2.5">
               <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
-                Sous-catégories associées ({subcategories.length})
+                {language === 'ar' ? `الأقسام الفرعية (${subcategories.length})` : `Sous-catégories (${subcategories.length})`}
               </span>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-2">
                 {subcategories.map((sub) => {
                   const subTx = categoryTransactions.filter((tx) => tx.subCategoryId === sub.id);
                   const subSpent = subTx.reduce((s, tx) => s + tx.amount, 0);
+                  const SubIcon = getCategoryIcon(sub.icon);
                   return (
                     <div
                       key={sub.id}
-                      className="px-2.5 py-1 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs flex items-center gap-1.5"
+                      title={getSubCategoryName(sub, language)}
+                      className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 text-xs flex items-center gap-2 shadow-2xs hover:border-slate-300 dark:hover:border-slate-600 transition-colors"
                     >
+                      <div className="w-5 h-5 rounded-md bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-300">
+                        <SubIcon className="w-3.5 h-3.5 stroke-[2.2]" />
+                      </div>
                       <span className="font-semibold text-slate-800 dark:text-slate-200">
                         {getSubCategoryName(sub, language)}
                       </span>
                       {subSpent > 0 && (
-                        <span className="text-[10px] text-slate-400 tabular-nums">
-                          ({formatMAD(subSpent, hideBalance, language)})
+                        <span className="text-[11px] font-mono text-slate-400 tabular-nums">
+                          {formatMAD(subSpent, false, language)}
                         </span>
                       )}
                     </div>

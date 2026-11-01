@@ -42,6 +42,19 @@
   transition: filter 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Deep Apple Frosted Privacy Blur specifically for Solde Disponible */
+.balance-heavy-blur:not(input):not(textarea) {
+  filter: blur(16px) !important;
+  opacity: 0.5;
+  user-select: none !important;
+  transition: filter 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
+}
+
+.balance-heavy-blur:hover {
+  filter: blur(9px) !important;
+  opacity: 0.75;
+}
+
 /* Safe areas for mobile devices */
 .safe-area-bottom {
   padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));

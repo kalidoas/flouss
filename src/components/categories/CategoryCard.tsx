@@ -10,7 +10,7 @@ import {
 import { formatMAD, getCurrentMonthStr } from '../../utils/formatters';
 import { getCategoryIcon } from '../../utils/icons';
 import { translations } from '../../i18n/translations';
-import { getCategoryName, getCategoryGroupName } from '../../utils/i18nHelpers';
+import { getCategoryName, getCategoryGroupName, getSubCategoryName } from '../../utils/i18nHelpers';
 import { getSemanticBadgeClass } from '../../utils/categoryTheme';
 import { ArrowUpRight, Plus, Target, CheckCircle2, AlertTriangle, ChevronRight } from 'lucide-react';
 
@@ -123,6 +123,29 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({
               : tCat.expenseBadge}
           </span>
         </div>
+
+        {/* Clean Pure-Icon Badges: Strictly icons without raw text (user requirement) */}
+        {category.subcategories && category.subcategories.length > 0 && (
+          <div className="flex items-center gap-1.5 flex-wrap my-2.5">
+            {category.subcategories.slice(0, 6).map((sub) => {
+              const SubIcon = getCategoryIcon(sub.icon);
+              return (
+                <div
+                  key={sub.id}
+                  title={getSubCategoryName(sub, language)}
+                  className="w-7 h-7 rounded-lg bg-zinc-100/90 dark:bg-zinc-800/80 border border-black/[0.05] dark:border-white/[0.08] flex items-center justify-center text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200/90 dark:hover:bg-zinc-700/80 hover:scale-110 transition-all cursor-default shadow-2xs"
+                >
+                  <SubIcon className="w-3.5 h-3.5 stroke-[2.2]" />
+                </div>
+              );
+            })}
+            {category.subcategories.length > 6 && (
+              <span className="text-[10px] font-mono font-medium text-zinc-400 dark:text-zinc-500 px-1 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800/60">
+                +{category.subcategories.length - 6}
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Goal Specific Content */}
         {category.isGoal && goalCalc ? (

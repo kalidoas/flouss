@@ -41,6 +41,7 @@ export const SettingsPage: React.FC = () => {
     setTheme,
     language,
     setLanguage,
+    resetLanguageToSystem,
     pinEnabled,
     pinCode,
     setPinCode,
@@ -450,22 +451,45 @@ export const SettingsPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Language selector (Français, العربية RTL, English) */}
+          {/* Language selector (Système Auto / Français / العربية RTL / English) */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
             <div>
-              <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                {t.language}
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                  {t.language}
+                </p>
+                {!localStorage.getItem('flouss_manual_language_selected') && (
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                    {language === 'ar' ? 'تلقائي (لغة الجهاز)' : language === 'en' ? 'Auto (System)' : 'Auto (Système)'}
+                  </span>
+                )}
+              </div>
               <p className="text-xs text-slate-400">
-                Support complet de l’arabe (RTL), français et anglais
+                {language === 'ar'
+                  ? 'يتبع النظام تلقائياً أو يمكنك تحديد لغتك المفضلة'
+                  : 'Synchronisé avec votre appareil par défaut ou sélection manuelle'}
               </p>
             </div>
 
-            <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl">
+            <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl flex-wrap">
+              <button
+                onClick={() => {
+                  resetLanguageToSystem();
+                }}
+                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${
+                  !localStorage.getItem('flouss_manual_language_selected')
+                    ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-sm'
+                    : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                }`}
+                title="Langue automatique du système"
+              >
+                <Smartphone className="w-3 h-3" />
+                <span>Auto</span>
+              </button>
               <button
                 onClick={() => setLanguage('fr')}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                  language === 'fr'
+                  language === 'fr' && localStorage.getItem('flouss_manual_language_selected')
                     ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-sm'
                     : 'text-slate-500'
                 }`}
@@ -475,7 +499,7 @@ export const SettingsPage: React.FC = () => {
               <button
                 onClick={() => setLanguage('ar')}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold font-['Cairo',sans-serif] transition-all ${
-                  language === 'ar'
+                  language === 'ar' && localStorage.getItem('flouss_manual_language_selected')
                     ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-sm'
                     : 'text-slate-500'
                 }`}
@@ -485,7 +509,7 @@ export const SettingsPage: React.FC = () => {
               <button
                 onClick={() => setLanguage('en')}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                  language === 'en'
+                  language === 'en' && localStorage.getItem('flouss_manual_language_selected')
                     ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-sm'
                     : 'text-slate-500'
                 }`}
