@@ -15,6 +15,8 @@ import {
   DebtItem,
   SubscriptionItem,
   NoteItem,
+  FocusTask,
+  FocusListMenu,
 } from '../types';
 import {
   DEFAULT_CATEGORIES,
@@ -23,6 +25,8 @@ import {
   DEFAULT_DEBTS,
   DEFAULT_SUBSCRIPTIONS,
   DEFAULT_NOTES,
+  DEFAULT_FOCUS_LISTS,
+  DEFAULT_FOCUS_TASKS,
 } from './defaultData';
 
 export interface AppState {
@@ -51,6 +55,9 @@ export interface AppState {
   debts: DebtItem[];
   subscriptions: SubscriptionItem[];
   notes: NoteItem[];
+  focusTasks: FocusTask[];
+  focusLists: FocusListMenu[];
+  activeFocusListId: string;
   pinEnabled: boolean;
   pinCode: string | null;
   recentNotes: string[];
@@ -107,6 +114,15 @@ export interface AppState {
   deleteTask: (id: string) => void;
   toggleTaskDone: (id: string, date: string) => void;
   toggleTaskCompletion: (id: string, date: string) => void;
+
+  setActiveFocusListId: (id: string) => void;
+  addFocusList: (name: string, color?: string) => void;
+  deleteFocusList: (id: string) => void;
+  addFocusTask: (task: FocusTask) => void;
+  updateFocusTask: (id: string, patch: Partial<FocusTask>) => void;
+  deleteFocusTask: (id: string) => void;
+  toggleFocusTask: (id: string) => void;
+  togglePinFocusTask: (id: string) => void;
 
   addDebt: (debt: DebtItem) => void;
   updateDebt: (id: string, patch: Partial<DebtItem>) => void;
@@ -166,6 +182,8 @@ export function makeInitialAccount(uid: string, name: string, email?: string): U
     recurringRules: [],
     recentNotes: [],
     tasks: DEFAULT_TASKS,
+    focusTasks: DEFAULT_FOCUS_TASKS,
+    focusLists: DEFAULT_FOCUS_LISTS,
     debts: DEFAULT_DEBTS,
     subscriptions: DEFAULT_SUBSCRIPTIONS,
     notes: DEFAULT_NOTES,
@@ -185,6 +203,8 @@ export function extractAccountState(account: UserAccount | null) {
       transactions: [],
       recurringRules: [],
       tasks: DEFAULT_TASKS,
+      focusTasks: DEFAULT_FOCUS_TASKS,
+      focusLists: DEFAULT_FOCUS_LISTS,
       debts: DEFAULT_DEBTS,
       subscriptions: DEFAULT_SUBSCRIPTIONS,
       notes: DEFAULT_NOTES,
@@ -203,6 +223,8 @@ export function extractAccountState(account: UserAccount | null) {
     transactions: account.transactions ?? [],
     recurringRules: account.recurringRules ?? [],
     tasks: account.tasks ?? DEFAULT_TASKS,
+    focusTasks: account.focusTasks ?? DEFAULT_FOCUS_TASKS,
+    focusLists: account.focusLists ?? DEFAULT_FOCUS_LISTS,
     debts: account.debts ?? DEFAULT_DEBTS,
     subscriptions: account.subscriptions ?? DEFAULT_SUBSCRIPTIONS,
     notes: account.notes ?? DEFAULT_NOTES,
@@ -284,6 +306,7 @@ export const useAppStore = create<AppState>()(
         theme: 'system' as ThemeMode,
         language: 'ar' as Language,
         activeScreen: 'dashboard' as ScreenId,
+        activeFocusListId: 'default',
         isPinUnlocked: true,
         hideBalance: false,
         lastBackupDate: null,
@@ -327,6 +350,17 @@ export const useAppStore = create<AppState>()(
           let resolvedAccount: UserAccount | null = null;
 
           // 1. Gather any existing local data on this client device (e.g. from PC session)
+          let legacyFocusTasks: FocusTask[] = [];
+          try {
+            const rawFT = localStorage.getItem('flouss_focus_tasks_v1');
+            if (rawFT) {
+              const parsed = JSON.parse(rawFT);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                legacyFocusTasks = parsed;
+              }
+            }
+          } catch (e) {}
+
           let localAccount: UserAccount | null = null;
           try {
             const raw = localStorage.getItem(`flouss_user_${uid}`);
@@ -338,6 +372,10 @@ export const useAppStore = create<AppState>()(
               const rawDefault = localStorage.getItem('flouss_user_default');
               if (rawDefault) localAccount = JSON.parse(rawDefault);
             } catch (e) {}
+          }
+
+          if (localAccount && legacyFocusTasks.length > 0 && (!localAccount.focusTasks || localAccount.focusTasks.length === 0)) {
+            localAccount.focusTasks = legacyFocusTasks;
           }
 
           if (!localAccount) {
@@ -357,6 +395,7 @@ export const useAppStore = create<AppState>()(
                 (Array.isArray(localAccount.transactions) && localAccount.transactions.length > 0) ||
                 (Array.isArray(localAccount.notes) && localAccount.notes.length > 0) ||
                 (Array.isArray(localAccount.subscriptions) && localAccount.subscriptions.length > 0) ||
+                (Array.isArray(localAccount.focusTasks) && localAccount.focusTasks.length > 0) ||
                 Boolean(localAccount.isOnboarded))
           );
 
@@ -417,6 +456,21 @@ export const useAppStore = create<AppState>()(
             // Case B: Cloud Firestore has existing user document -> HYDRATE LOCAL STORE
             console.log(`☁️ [Flouss Cloud] Hydrating store from existing Firestore document users/${uid}...`);
             firestorePin = cloudData.pinCode ?? cloudAccount?.pinCode ?? null;
+
+            const cloudFT = cloudAccount?.focusTasks ?? cloudData?.focusTasks;
+            const resolvedFT =
+              Array.isArray(cloudFT) && cloudFT.length > 0
+                ? cloudFT
+                : legacyFocusTasks.length > 0
+                ? legacyFocusTasks
+                : DEFAULT_FOCUS_TASKS;
+
+            const cloudFL = cloudAccount?.focusLists ?? cloudData?.focusLists;
+            const resolvedFL =
+              Array.isArray(cloudFL) && cloudFL.length > 0
+                ? cloudFL
+                : DEFAULT_FOCUS_LISTS;
+
             resolvedAccount = {
               ...makeInitialAccount(uid, user.displayName || 'Utilisateur', user.email || ''),
               ...cloudAccount,
@@ -424,17 +478,37 @@ export const useAppStore = create<AppState>()(
               isOnboarded: true,
               pinCode: firestorePin,
               pinEnabled: !!firestorePin,
+              focusTasks: resolvedFT,
+              focusLists: resolvedFL,
             };
+
+            // If cloud didn't have focusTasks yet but we had legacy local tasks, sync them up immediately!
+            if (!cloudFT && legacyFocusTasks.length > 0) {
+              debouncedFirestoreSync(uid, resolvedAccount);
+            }
           } else if (localAccount) {
             // Case C: Fallback to localAccount
             resolvedAccount = {
               ...makeInitialAccount(uid, user.displayName || 'Utilisateur', user.email || ''),
               ...localAccount,
               id: uid,
+              focusTasks:
+                localAccount.focusTasks && localAccount.focusTasks.length > 0
+                  ? localAccount.focusTasks
+                  : legacyFocusTasks.length > 0
+                  ? legacyFocusTasks
+                  : DEFAULT_FOCUS_TASKS,
+              focusLists:
+                localAccount.focusLists && localAccount.focusLists.length > 0
+                  ? localAccount.focusLists
+                  : DEFAULT_FOCUS_LISTS,
             };
           } else {
             // Case D: Completely new user registration
             const freshAccount = makeInitialAccount(uid, user.displayName || 'Utilisateur', user.email || '');
+            if (legacyFocusTasks.length > 0) {
+              freshAccount.focusTasks = legacyFocusTasks;
+            }
             resolvedAccount = freshAccount;
             try {
               await setDoc(
@@ -825,6 +899,74 @@ export const useAppStore = create<AppState>()(
         },
         toggleTaskCompletion: (id: string, date: string) => {
           get().toggleTaskDone(id, date);
+        },
+
+        // ── Focus Tasks & Custom Menus ("قائمتي") ───────────────────
+        setActiveFocusListId: (id: string) => set({ activeFocusListId: id }),
+
+        addFocusList: (name: string, color?: string) => {
+          const trimmed = name.trim();
+          if (!trimmed) return;
+          const newList: FocusListMenu = {
+            id: 'fl_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+            name: trimmed,
+            color: color || '#3b82f6',
+            createdAt: new Date().toISOString(),
+          };
+          updateActive((a) => ({
+            ...a,
+            focusLists: [...(a.focusLists ?? DEFAULT_FOCUS_LISTS), newList],
+          }));
+          set({ activeFocusListId: newList.id });
+        },
+
+        deleteFocusList: (id: string) => {
+          if (id === 'default') return;
+          updateActive((a) => ({
+            ...a,
+            focusLists: (a.focusLists ?? DEFAULT_FOCUS_LISTS).filter((l) => l.id !== id),
+            focusTasks: (a.focusTasks ?? []).filter((t) => t.listId !== id),
+          }));
+          set({ activeFocusListId: 'default' });
+        },
+
+        addFocusTask: (task: FocusTask) => {
+          updateActive((a) => ({
+            ...a,
+            focusTasks: [task, ...(a.focusTasks ?? [])],
+          }));
+        },
+
+        updateFocusTask: (id: string, patch: Partial<FocusTask>) => {
+          updateActive((a) => ({
+            ...a,
+            focusTasks: (a.focusTasks ?? []).map((t) => (t.id === id ? { ...t, ...patch } : t)),
+          }));
+        },
+
+        deleteFocusTask: (id: string) => {
+          updateActive((a) => ({
+            ...a,
+            focusTasks: (a.focusTasks ?? []).filter((t) => t.id !== id),
+          }));
+        },
+
+        toggleFocusTask: (id: string) => {
+          updateActive((a) => ({
+            ...a,
+            focusTasks: (a.focusTasks ?? []).map((t) =>
+              t.id === id ? { ...t, completed: !t.completed } : t
+            ),
+          }));
+        },
+
+        togglePinFocusTask: (id: string) => {
+          updateActive((a) => ({
+            ...a,
+            focusTasks: (a.focusTasks ?? []).map((t) =>
+              t.id === id ? { ...t, isPinned: !t.isPinned } : t
+            ),
+          }));
         },
 
         // ── Debts ───────────────────────────────────────────────────

@@ -569,6 +569,11 @@ export const translations = {
       update: "Mettre à jour",
       empty: "Aucune tâche dans votre liste.",
       urgentBadge: "Urgent",
+      newList: "Nouveau menu",
+      newListPlaceholder: "Nom du menu...",
+      allLists: "Tous",
+      createListBtn: "Créer",
+      deleteListConfirm: "Supprimer ce menu et ses tâches ?",
     },
 
 
@@ -1213,6 +1218,11 @@ export const translations = {
       update: "تحديث",
       empty: "قائمتك فارغة، أضف أول مهمة",
       urgentBadge: "عاجل",
+      newList: "قائمة جديدة",
+      newListPlaceholder: "اسم القائمة...",
+      allLists: "الكل",
+      createListBtn: "إضافة",
+      deleteListConfirm: "هل تريد حذف هذه القائمة ومهامها؟",
     },
 
 
@@ -1858,6 +1868,11 @@ export const translations = {
       update: "Update",
       empty: "No tasks in your list.",
       urgentBadge: "Urgent",
+      newList: "New menu",
+      newListPlaceholder: "Menu name...",
+      allLists: "All",
+      createListBtn: "Create",
+      deleteListConfirm: "Delete this menu and its tasks?",
     },
 
 

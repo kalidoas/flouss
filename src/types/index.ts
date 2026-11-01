@@ -134,9 +134,30 @@ export interface UserAccount {
   recurringRules: RecurringIncomeRule[];
   recentNotes: string[];
   tasks?: TaskItem[];
+  focusTasks?: FocusTask[];
+  focusLists?: FocusListMenu[];
   debts?: DebtItem[];
   subscriptions?: SubscriptionItem[];
   notes?: NoteItem[];
+  createdAt: string;
+}
+
+export interface FocusListMenu {
+  id: string;
+  name: string;
+  icon?: string;
+  color?: string;
+  createdAt: string;
+}
+
+export interface FocusTask {
+  id: string;
+  listId?: string; // Links task to a menu/list (defaults to 'default')
+  text: string;
+  completed: boolean;
+  isPinned: boolean;
+  priority: 'urgent' | 'normal';
+  dueDate?: string; // YYYY-MM-DD
   createdAt: string;
 }
 

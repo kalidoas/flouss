@@ -1,4 +1,4 @@
-import { Category, IncomeSource, TaskItem, DebtItem, SubscriptionItem, NoteItem } from '../types';
+import { Category, IncomeSource, TaskItem, DebtItem, SubscriptionItem, NoteItem, FocusTask, FocusListMenu } from '../types';
 
 export const DEFAULT_CATEGORIES: Category[] = [
   {
@@ -537,6 +537,46 @@ export const DEFAULT_NOTES: NoteItem[] = [
     isPinned: true,
     category: 'Personnel',
     updatedAt: new Date().toISOString(),
+    createdAt: new Date().toISOString(),
+  },
+];
+
+export const DEFAULT_FOCUS_LISTS: FocusListMenu[] = [
+  {
+    id: 'default',
+    name: 'قائمتي',
+    color: '#3b82f6',
+    createdAt: new Date().toISOString(),
+  },
+];
+
+export const DEFAULT_FOCUS_TASKS: FocusTask[] = [
+  {
+    id: 'ft_1',
+    listId: 'default',
+    text: 'دفع فاتورة الويفي والماء قبل 10 في الشهر',
+    completed: false,
+    isPinned: true,
+    priority: 'urgent',
+    dueDate: new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0],
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'ft_2',
+    listId: 'default',
+    text: 'تحويل 1 000 درهم لحساب صندوق الطوارئ',
+    completed: false,
+    isPinned: true,
+    priority: 'normal',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'ft_3',
+    listId: 'default',
+    text: 'مراجعة مصاريف الأسبوع الماضي',
+    completed: true,
+    isPinned: false,
+    priority: 'normal',
     createdAt: new Date().toISOString(),
   },
 ];
