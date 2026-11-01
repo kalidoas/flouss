@@ -21,9 +21,18 @@ interface ChartPoint {
 }
 
 export const AppleCardBalanceChart: React.FC = () => {
-  const { initialBalance, transactions, language, isBalanceHidden, hideBalance } = useAppStore();
+  const { balance: storeBalance, initialBalance, transactions, language, isBalanceHidden, hideBalance } = useAppStore();
   const currentMonth = getCurrentMonthStr(); // "YYYY-MM"
   const isHidden = isBalanceHidden ?? hideBalance;
+
+  // Single source of truth calculation matching WalletCard exactly
+  const liveBalance = calculateAvailableBalance(initialBalance, transactions);
+  const currentBalance =
+    (transactions && transactions.length > 0) || initialBalance !== null
+      ? liveBalance
+      : typeof storeBalance === 'number' && !isNaN(storeBalance)
+      ? storeBalance
+      : liveBalance;
 
   // Build daily balance curve for the current month
   const { data, deltaAmount, deltaPercent } = useMemo(() => {
@@ -32,8 +41,7 @@ export const AppleCardBalanceChart: React.FC = () => {
     const currentMonthNum = today.getMonth(); // 0-indexed
     const todayDay = today.getDate();
 
-    // Transactions up to the end of last month determine the month-opening balance
-    const lastMonthEndStr = `${currentYear}-${String(currentMonthNum).padStart(2, '0')}-31`;
+    // Prior transactions determine the month-opening balance
     const priorTransactions = (transactions || []).filter((tx) => tx.date.slice(0, 10) < `${currentMonth}-01`);
     const startingBalance = calculateAvailableBalance(initialBalance, priorTransactions);
 
@@ -44,13 +52,14 @@ export const AppleCardBalanceChart: React.FC = () => {
 
     const points: ChartPoint[] = [];
     let runningBalance = startingBalance;
+    const maxDay = Math.max(todayDay, 5);
 
     // Build timeline for days 1 through today
-    for (let day = 1; day <= Math.max(todayDay, 5); day++) {
+    for (let day = 1; day <= maxDay; day++) {
       const dayStr = String(day).padStart(2, '0');
       const dateStr = `${currentMonth}-${dayStr}`;
 
-      // Sum transactions that happened on or up to this day
+      // Sum transactions that happened on this day
       const daysTx = monthTx.filter((t) => t.date.slice(0, 10) === dateStr);
       for (const tx of daysTx) {
         const amt = Number(tx.amount) || 0;
@@ -67,23 +76,32 @@ export const AppleCardBalanceChart: React.FC = () => {
       });
     }
 
-    // Fallback if flat or no transactions yet: create smooth aesthetic curve around current balance
-    if (points.every((p) => p.balance === points[0]?.balance)) {
-      const base = points[0]?.balance || 0;
-      const smoothCurve = points.map((p, idx) => ({
-        ...p,
-        balance: base + Math.sin(idx * 0.8) * Math.min(25, Math.abs(base) * 0.02),
-      }));
+    // Always guarantee that the latest/current point matches currentBalance exactly
+    if (points.length > 0) {
+      points[points.length - 1].balance = currentBalance;
+    }
+
+    // If flat (no current month transactions yet), all points consistently equal currentBalance
+    if (points.length === 0 || points.every((p) => p.balance === points[0]?.balance)) {
+      const flatPoints: ChartPoint[] = [];
+      const numPoints = Math.max(5, todayDay);
+      for (let day = 1; day <= numPoints; day++) {
+        flatPoints.push({
+          day: `J${day}`,
+          date: `${currentMonth}-${String(day).padStart(2, '0')}`,
+          balance: currentBalance,
+        });
+      }
       return {
-        data: smoothCurve,
+        data: flatPoints,
         deltaAmount: 0,
         deltaPercent: 0,
       };
     }
 
     const firstBal = points[0]?.balance || 0;
-    const lastBal = points[points.length - 1]?.balance || 0;
-    const diff = lastBal - firstBal;
+    const lastBal = points[points.length - 1]?.balance ?? currentBalance;
+    const diff = Math.round((lastBal - firstBal) * 100) / 100;
     const pct = firstBal !== 0 ? Math.round((diff / Math.abs(firstBal)) * 100) : 0;
 
     return {
@@ -91,7 +109,7 @@ export const AppleCardBalanceChart: React.FC = () => {
       deltaAmount: diff,
       deltaPercent: pct,
     };
-  }, [initialBalance, transactions, currentMonth]);
+  }, [initialBalance, transactions, currentMonth, currentBalance]);
 
   const isPositive = deltaAmount >= 0;
   const isAr = language === 'ar';
@@ -116,7 +134,7 @@ export const AppleCardBalanceChart: React.FC = () => {
 
           <div className="flex items-baseline gap-2">
             <PrivacyCurrency
-              amount={data[data.length - 1]?.balance ?? 0}
+              amount={currentBalance}
               className="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-white"
             />
           </div>
@@ -195,3 +213,5 @@ export const AppleCardBalanceChart: React.FC = () => {
     </AppleGlassCard>
   );
 };
+
+export const DashboardChart = AppleCardBalanceChart;

@@ -6,7 +6,7 @@ import { FocusTask, FocusListMenu } from '../../types';
 import { islandManager } from '../../utils/islandManager';
 import { GoogleCalendarAlarmModal } from '../common/GoogleCalendarAlarmModal';
 import { getFocusListName, getFocusTaskText } from '../../utils/i18nHelpers';
-import { triggerHaptic } from '../../utils/haptics';
+import { playHapticFeedback } from '../../utils/haptics';
 import confetti from 'canvas-confetti';
 import {
   Plus,
@@ -126,7 +126,7 @@ export const FocusTaskList: React.FC = () => {
     };
 
     addFocusTask(newTask);
-    triggerHaptic(50);
+    playHapticFeedback('medium');
     setNewTaskText('');
     setNewDueDate('');
     setNewPriority('normal');
@@ -140,7 +140,7 @@ export const FocusTaskList: React.FC = () => {
   };
 
   const handleToggleTask = (id: string, currentState: boolean) => {
-    triggerHaptic(currentState ? 30 : 60);
+    playHapticFeedback(currentState ? 'light' : 'success');
     toggleFocusTask(id);
     if (!currentState) {
       // Confetti burst on completion

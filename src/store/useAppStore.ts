@@ -37,7 +37,7 @@ import {
   DEFAULT_PROGRAM_TRACKS,
 } from './defaultData';
 import { calculateAvailableBalance, calculateGoalProgress } from '../utils/calculations';
-import { triggerHaptic } from '../utils/haptics';
+import { triggerHaptic, playHapticFeedback } from '../utils/haptics';
 
 export interface AppState {
   // ── Auth & Session ──────────────────────────────────────────
@@ -79,6 +79,7 @@ export interface AppState {
 
   // ── UI Preferences ──────────────────────────────────────────
   theme: ThemeMode;
+  isDarkMode: boolean;
   language: Language;
   activeScreen: ScreenId;
   isPinUnlocked: boolean;
@@ -100,6 +101,7 @@ export interface AppState {
 
   setActiveScreen: (screen: ScreenId) => void;
   setTheme: (theme: ThemeMode) => void;
+  toggleTheme: () => void;
   setLanguage: (language: Language) => void;
   resetLanguageToSystem: () => Language;
   setHideBalance: (v: boolean) => void;
@@ -400,6 +402,22 @@ const executeImmediateFirestoreSync = async (uid: string, account: UserAccount) 
   }
 };
 
+export function applyThemeToDOM(isDark: boolean): void {
+  if (typeof document === 'undefined') return;
+  const root = document.documentElement;
+  const body = document.body;
+
+  if (isDark) {
+    root.classList.add('dark');
+    body.classList.add('dark');
+    root.style.colorScheme = 'dark';
+  } else {
+    root.classList.remove('dark');
+    body.classList.remove('dark');
+    root.style.colorScheme = 'light';
+  }
+}
+
 export const useAppStore = create<AppState>()(
   persist(
     (set, get) => {
@@ -460,6 +478,9 @@ export const useAppStore = create<AppState>()(
 
         // ── UI Preferences ──────────────────────────────────────────
         theme: 'system' as ThemeMode,
+        isDarkMode:
+          typeof window !== 'undefined' &&
+          Boolean(window.matchMedia?.('(prefers-color-scheme: dark)').matches),
         language: getInitialLanguage() as Language,
         activeScreen: 'dashboard' as ScreenId,
         activeFocusListId: 'default',
@@ -901,7 +922,34 @@ export const useAppStore = create<AppState>()(
 
         // ── UI Setters ──────────────────────────────────────────────
         setActiveScreen: (screen: ScreenId) => set({ activeScreen: screen }),
-        setTheme: (theme: ThemeMode) => set({ theme }),
+        setTheme: (theme: ThemeMode) => {
+          const isDark =
+            theme === 'dark' ||
+            (theme === 'system' &&
+              typeof window !== 'undefined' &&
+              Boolean(window.matchMedia?.('(prefers-color-scheme: dark)').matches));
+
+          applyThemeToDOM(isDark);
+          set({ theme, isDarkMode: isDark });
+
+          try {
+            localStorage.setItem('flouss_theme', theme);
+          } catch (e) {}
+
+          updateActive((a) => ({ ...a, theme }));
+        },
+        toggleTheme: () => {
+          const s = get();
+          const currentIsDark =
+            s.isDarkMode ??
+            (s.theme === 'dark' ||
+              (s.theme === 'system' &&
+                typeof window !== 'undefined' &&
+                Boolean(window.matchMedia?.('(prefers-color-scheme: dark)').matches)));
+
+          const nextTheme: ThemeMode = currentIsDark ? 'light' : 'dark';
+          get().setTheme(nextTheme);
+        },
         setLanguage: (language: Language) => {
           try {
             localStorage.setItem('flouss_manual_language_selected', 'true');
@@ -1019,7 +1067,7 @@ export const useAppStore = create<AppState>()(
 
         // ── Transactions ────────────────────────────────────────────
         addTransaction: (tx: Transaction) => {
-          triggerHaptic(50);
+          playHapticFeedback('success');
           const amt =
             typeof tx.amount === 'number' && !isNaN(tx.amount)
               ? tx.amount
@@ -1037,7 +1085,7 @@ export const useAppStore = create<AppState>()(
           }, true);
         },
         deleteTransaction: (id: string) => {
-          triggerHaptic(40);
+          playHapticFeedback('medium');
           updateActive((a) => {
             const updatedTransactions = (a.transactions ?? []).filter((t: Transaction) => t.id !== id);
             const newBalance = calculateAvailableBalance(a.initialBalance ?? null, updatedTransactions);
@@ -1050,7 +1098,7 @@ export const useAppStore = create<AppState>()(
           }, true);
         },
         updateTransaction: (id: string, patch: Partial<Transaction>) => {
-          triggerHaptic(40);
+          playHapticFeedback('light');
           updateActive((a) => {
             const updatedTransactions = (a.transactions ?? []).map((t: Transaction) => {
               if (t.id !== id) return t;
@@ -1723,11 +1771,23 @@ export const useAppStore = create<AppState>()(
       name: 'flouss_app_storage_v2',
       partialize: (state: any) => ({
         theme: state.theme,
+        isDarkMode: state.isDarkMode,
         language: state.language,
         hideBalance: state.hideBalance,
         isBalanceHidden: state.isBalanceHidden,
         activeScreen: state.activeScreen,
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          const isDark =
+            state.theme === 'dark' ||
+            (state.theme === 'system' &&
+              typeof window !== 'undefined' &&
+              Boolean(window.matchMedia?.('(prefers-color-scheme: dark)').matches)) ||
+            Boolean(state.isDarkMode);
+          applyThemeToDOM(isDark);
+        }
+      },
     }
   )
 );

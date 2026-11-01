@@ -6,18 +6,26 @@ import { Logo } from '../common/Logo';
 import { Language } from '../../types';
 import { islandManager } from '../../utils/islandManager';
 import { translations } from '../../i18n/translations';
-import { triggerHaptic } from '../../utils/haptics';
+import { playHapticFeedback } from '../../utils/haptics';
 
 export const Header: React.FC = () => {
   const {
     hideBalance,
     toggleHideBalance,
     theme,
-    setTheme,
+    isDarkMode,
+    toggleTheme,
     language,
     setLanguage,
     activeScreen,
   } = useAppStore();
+
+  const isDark =
+    isDarkMode ??
+    (theme === 'dark' ||
+      (theme === 'system' &&
+        typeof window !== 'undefined' &&
+        Boolean(window.matchMedia?.('(prefers-color-scheme: dark)').matches)));
 
   const tNav = translations[language].nav;
 
@@ -116,15 +124,18 @@ export const Header: React.FC = () => {
 
         {/* Theme toggle */}
         <button
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          title="Changer de thème"
+          onClick={() => {
+            playHapticFeedback('light');
+            toggleTheme();
+          }}
+          title={isDark ? 'Passer en mode clair' : 'Passer en mode sombre'}
           className="p-1.5 rounded-xl text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 transition-colors"
-          aria-label="Toggle theme"
+          aria-label={isDark ? 'Passer en mode clair' : 'Passer en mode sombre'}
         >
-          {theme === 'dark' ? (
-            <Sun className="w-3.5 h-3.5 text-amber-400" />
+          {isDark ? (
+            <Moon className="w-4 h-4 text-indigo-400 fill-indigo-400/20" />
           ) : (
-            <Moon className="w-3.5 h-3.5" />
+            <Sun className="w-4 h-4 text-amber-500 fill-amber-500/20" />
           )}
         </button>
       </div>

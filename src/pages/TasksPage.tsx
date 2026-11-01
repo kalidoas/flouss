@@ -7,6 +7,7 @@ import { Button } from '../components/common/Button';
 import { EmptyState } from '../components/common/EmptyState';
 import { translations } from '../i18n/translations';
 import { getProgramTrackTitle } from '../utils/i18nHelpers';
+import { playHapticFeedback } from '../utils/haptics';
 import { GoogleCalendarAlarmModal } from '../components/common/GoogleCalendarAlarmModal';
 import confetti from 'canvas-confetti';
 import { createGoogleCalendarEvent } from '../services/googleCalendar';
@@ -417,6 +418,7 @@ export const TasksPage: React.FC = () => {
   }, [programTracks, selectedTrackId]);
 
   const handleToggleSalat = (prayer: PrayerKey) => {
+    playHapticFeedback('success');
     toggleSalatPrayer(selectedDate, prayer);
     const wasCompleted = selectedDatePrayers.includes(prayer);
     if (!wasCompleted && selectedDatePrayers.length === 4) {

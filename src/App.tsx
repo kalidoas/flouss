@@ -26,6 +26,7 @@ export const App: React.FC = () => {
   const isOnboarded = useAppStore((s) => s.isOnboarded);
   const activeScreen = useAppStore((s) => s.activeScreen);
   const theme = useAppStore((s) => s.theme);
+  const isDarkMode = useAppStore((s) => s.isDarkMode);
   const language = useAppStore((s) => s.language);
   const pinEnabled = useAppStore((s) => s.pinEnabled);
   const isPinUnlocked = useAppStore((s) => s.isPinUnlocked);
@@ -44,19 +45,26 @@ export const App: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
-  // Apply dark theme and language direction to <html>
+  // Apply dark theme and language direction to <html> and <body>
   useEffect(() => {
     const root = document.documentElement;
+    const body = document.body;
     const isDark =
       theme === 'dark' ||
       (theme === 'system' &&
+        typeof window !== 'undefined' &&
         window.matchMedia &&
-        window.matchMedia('(prefers-color-scheme: dark)').matches);
+        window.matchMedia('(prefers-color-scheme: dark)').matches) ||
+      Boolean(isDarkMode);
 
     if (isDark) {
       root.classList.add('dark');
+      body.classList.add('dark');
+      root.style.colorScheme = 'dark';
     } else {
       root.classList.remove('dark');
+      body.classList.remove('dark');
+      root.style.colorScheme = 'light';
     }
 
     root.lang = language;
@@ -66,7 +74,31 @@ export const App: React.FC = () => {
     } else {
       root.classList.remove('font-arabic');
     }
-  }, [theme, language]);
+  }, [theme, isDarkMode, language]);
+
+  // Dynamic system theme change listener
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleMediaChange = (e: MediaQueryListEvent) => {
+      const currentTheme = useAppStore.getState().theme;
+      if (currentTheme === 'system') {
+        const root = document.documentElement;
+        const body = document.body;
+        if (e.matches) {
+          root.classList.add('dark');
+          body.classList.add('dark');
+          root.style.colorScheme = 'dark';
+        } else {
+          root.classList.remove('dark');
+          body.classList.remove('dark');
+          root.style.colorScheme = 'light';
+        }
+      }
+    };
+    media.addEventListener?.('change', handleMediaChange);
+    return () => media.removeEventListener?.('change', handleMediaChange);
+  }, []);
 
   // 1. Loading Authentication & Firestore Profile (Apple Shimmer Skeleton)
   if (loadingAuth) {
