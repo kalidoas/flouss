@@ -36,6 +36,7 @@ import {
   DEFAULT_GYM_LOGS,
   DEFAULT_PROGRAM_TRACKS,
 } from './defaultData';
+import { calculateAvailableBalance, calculateGoalProgress } from '../utils/calculations';
 
 export interface AppState {
   // ── Auth & Session ──────────────────────────────────────────
@@ -55,6 +56,7 @@ export interface AppState {
   isOnboarded: boolean;
   initialBalance: number | null;
   initialBalanceLockedAt: string | null;
+  balance: number;
   categories: Category[];
   incomeSources: IncomeSource[];
   transactions: Transaction[];
@@ -203,6 +205,7 @@ export function makeInitialAccount(uid: string, name: string, email?: string): U
     avatarIcon: '👤',
     initialBalance: null,
     initialBalanceLockedAt: null,
+    balance: 0,
     isOnboarded: false,
     categories: DEFAULT_CATEGORIES,
     incomeSources: DEFAULT_INCOME_SOURCES,
@@ -260,6 +263,7 @@ export function extractAccountState(account: UserAccount | null) {
       isOnboarded: false,
       initialBalance: null,
       initialBalanceLockedAt: null,
+      balance: 0,
       categories: DEFAULT_CATEGORIES,
       incomeSources: DEFAULT_INCOME_SOURCES,
       transactions: [],
@@ -286,11 +290,20 @@ export function extractAccountState(account: UserAccount | null) {
     (c: Category) => !deletedIds.has(c.id)
   );
 
+  const resolvedBalance =
+    account.balance !== undefined && account.balance !== null && !isNaN(account.balance)
+      ? account.balance
+      : calculateAvailableBalance(account.initialBalance ?? null, account.transactions ?? []);
+
   return {
-    currentAccount: account,
+    currentAccount: {
+      ...account,
+      balance: resolvedBalance,
+    },
     isOnboarded: Boolean(account.isOnboarded),
     initialBalance: account.initialBalance ?? null,
     initialBalanceLockedAt: account.initialBalanceLockedAt ?? null,
+    balance: resolvedBalance,
     categories: accountCategories,
     incomeSources: account.incomeSources ?? DEFAULT_INCOME_SOURCES,
     transactions: account.transactions ?? [],
@@ -319,6 +332,11 @@ const debouncedFirestoreSync = (uid: string, account: UserAccount) => {
   syncTimer = setTimeout(async () => {
     try {
       const userRef = doc(db, 'users', uid);
+      const computedBal =
+        account.balance !== undefined && account.balance !== null && !isNaN(account.balance)
+          ? account.balance
+          : calculateAvailableBalance(account.initialBalance ?? null, account.transactions ?? []);
+
       const payload = {
         uid,
         email: account.email || null,
@@ -326,12 +344,16 @@ const debouncedFirestoreSync = (uid: string, account: UserAccount) => {
         pinCode: account.pinCode ?? null,
         pinEnabled: !!account.pinCode,
         initialBalance: account.initialBalance ?? null,
+        balance: computedBal,
         isOnboarded: Boolean(account.isOnboarded),
-        account,
+        account: {
+          ...account,
+          balance: computedBal,
+        },
         updatedAt: new Date().toISOString(),
       };
       await setDoc(userRef, payload, { merge: true });
-      console.log(`✅ [Flouss Cloud] Successfully synced mutation to Firestore users/${uid}`);
+      console.log(`✅ [Flouss Cloud] Successfully synced mutation (balance: ${computedBal}) to Firestore users/${uid}`);
     } catch (err: any) {
       console.error(`❌ [Flouss Cloud] Error syncing to Firestore users/${uid}:`, err);
     }
@@ -501,10 +523,16 @@ export const useAppStore = create<AppState>()(
           if (!hasCloudData && hasLocalData && localAccount) {
             // Case A: Cloud Firestore is empty, but this device has local data -> AUTO-MIGRATE IMMEDIATELY!
             console.log(`🚀 [Flouss Cloud] Empty Firestore detected with existing local data. Auto-migrating to users/${uid}...`);
+            const computedBal =
+              localAccount.balance !== undefined && localAccount.balance !== null && !isNaN(localAccount.balance)
+                ? localAccount.balance
+                : calculateAvailableBalance(localAccount.initialBalance ?? null, localAccount.transactions ?? []);
+
             const migratedAccount: UserAccount = {
               ...makeInitialAccount(uid, user.displayName || 'Utilisateur', user.email || ''),
               ...localAccount,
               id: uid,
+              balance: computedBal,
               isOnboarded: true,
             };
             firestorePin = migratedAccount.pinCode ?? null;
@@ -517,6 +545,7 @@ export const useAppStore = create<AppState>()(
               pinCode: firestorePin,
               pinEnabled: !!firestorePin,
               initialBalance: migratedAccount.initialBalance ?? null,
+              balance: computedBal,
               isOnboarded: true,
               account: migratedAccount,
               createdAt: new Date().toISOString(),
@@ -548,10 +577,21 @@ export const useAppStore = create<AppState>()(
                 ? cloudFL
                 : DEFAULT_FOCUS_LISTS;
 
+            const remoteBal =
+              cloudAccount?.balance !== undefined && cloudAccount?.balance !== null && !isNaN(cloudAccount.balance)
+                ? cloudAccount.balance
+                : cloudData?.balance !== undefined && cloudData?.balance !== null && !isNaN(cloudData.balance)
+                ? cloudData.balance
+                : calculateAvailableBalance(
+                    cloudAccount?.initialBalance ?? cloudData?.initialBalance ?? null,
+                    cloudAccount?.transactions ?? cloudData?.transactions ?? []
+                  );
+
             resolvedAccount = {
               ...makeInitialAccount(uid, user.displayName || 'Utilisateur', user.email || ''),
               ...cloudAccount,
               id: uid,
+              balance: remoteBal,
               isOnboarded: true,
               pinCode: firestorePin,
               pinEnabled: !!firestorePin,
@@ -565,10 +605,16 @@ export const useAppStore = create<AppState>()(
             }
           } else if (localAccount) {
             // Case C: Fallback to localAccount
+            const localBal =
+              localAccount.balance !== undefined && localAccount.balance !== null && !isNaN(localAccount.balance)
+                ? localAccount.balance
+                : calculateAvailableBalance(localAccount.initialBalance ?? null, localAccount.transactions ?? []);
+
             resolvedAccount = {
               ...makeInitialAccount(uid, user.displayName || 'Utilisateur', user.email || ''),
               ...localAccount,
               id: uid,
+              balance: localBal,
               focusTasks:
                 localAccount.focusTasks && localAccount.focusTasks.length > 0
                   ? localAccount.focusTasks
@@ -597,6 +643,8 @@ export const useAppStore = create<AppState>()(
                   photoURL: user.photoURL || null,
                   pinCode: null,
                   pinEnabled: false,
+                  initialBalance: null,
+                  balance: 0,
                   account: freshAccount,
                   createdAt: new Date().toISOString(),
                   updatedAt: new Date().toISOString(),
@@ -646,11 +694,22 @@ export const useAppStore = create<AppState>()(
 
                   if (incomingStr !== currentStr) {
                     const remotePin = data.pinCode ?? incomingAccount?.pinCode ?? null;
+                    const remoteBal =
+                      incomingAccount?.balance !== undefined && incomingAccount?.balance !== null && !isNaN(incomingAccount.balance)
+                        ? incomingAccount.balance
+                        : data.balance !== undefined && data.balance !== null && !isNaN(data.balance)
+                        ? data.balance
+                        : calculateAvailableBalance(
+                            incomingAccount?.initialBalance ?? null,
+                            incomingAccount?.transactions ?? []
+                          );
+
                     const syncedAccount: UserAccount = {
                       ...incomingAccount,
                       id: uid,
                       pinCode: remotePin,
                       pinEnabled: !!remotePin,
+                      balance: remoteBal,
                     };
 
                     try {
@@ -741,6 +800,11 @@ export const useAppStore = create<AppState>()(
           }
           try {
             const userRef = doc(db, 'users', uid);
+            const computedBal =
+              acc.balance !== undefined && acc.balance !== null && !isNaN(acc.balance)
+                ? acc.balance
+                : calculateAvailableBalance(acc.initialBalance ?? null, acc.transactions ?? []);
+
             const payload = {
               uid,
               email: acc.email || s.firebaseUser?.email || null,
@@ -748,8 +812,12 @@ export const useAppStore = create<AppState>()(
               pinCode: acc.pinCode ?? null,
               pinEnabled: !!acc.pinCode,
               initialBalance: acc.initialBalance ?? null,
+              balance: computedBal,
               isOnboarded: Boolean(acc.isOnboarded),
-              account: acc,
+              account: {
+                ...acc,
+                balance: computedBal,
+              },
               updatedAt: new Date().toISOString(),
             };
             await setDoc(userRef, payload, { merge: true });
@@ -811,6 +879,7 @@ export const useAppStore = create<AppState>()(
               makeInitialAccount(uid, metadata?.accountName || 'Utilisateur', metadata?.email || '')),
             initialBalance: amount,
             initialBalanceLockedAt: new Date().toISOString(),
+            balance: amount,
             isOnboarded: true,
             name: metadata?.accountName || currentAcc?.name || 'Utilisateur',
             email: metadata?.email || currentAcc?.email || '',
@@ -855,6 +924,7 @@ export const useAppStore = create<AppState>()(
                 pinCode: updatedAccount.pinCode ?? null,
                 pinEnabled: !!updatedAccount.pinCode,
                 initialBalance: amount,
+                balance: amount,
                 isOnboarded: true,
                 account: updatedAccount,
                 updatedAt: new Date().toISOString(),
@@ -869,24 +939,94 @@ export const useAppStore = create<AppState>()(
 
         // ── Transactions ────────────────────────────────────────────
         addTransaction: (tx: Transaction) => {
-          updateActive((a) => ({
-            ...a,
-            transactions: [tx, ...a.transactions],
-          }));
+          const amt = typeof tx.amount === 'number' && !isNaN(tx.amount) ? tx.amount : parseFloat(String(tx.amount || 0)) || 0;
+          updateActive((a) => {
+            const currentBal =
+              a.balance !== undefined && a.balance !== null && !isNaN(a.balance)
+                ? a.balance
+                : calculateAvailableBalance(a.initialBalance ?? null, a.transactions ?? []);
+
+            let newBalance = currentBal;
+            if (tx.type === 'income' || tx.type === 'goal_withdraw') {
+              newBalance = currentBal + amt;
+            } else if (tx.type === 'expense' || tx.type === 'contribution') {
+              newBalance = currentBal - amt;
+            }
+
+            return {
+              ...a,
+              balance: newBalance,
+              transactions: [{ ...tx, amount: amt }, ...(a.transactions ?? [])],
+            };
+          });
         },
         deleteTransaction: (id: string) => {
-          updateActive((a) => ({
-            ...a,
-            transactions: a.transactions.filter((t: Transaction) => t.id !== id),
-          }));
+          updateActive((a) => {
+            const txToDelete = (a.transactions ?? []).find((t: Transaction) => t.id === id);
+            if (!txToDelete) return a;
+
+            const amt = typeof txToDelete.amount === 'number' && !isNaN(txToDelete.amount)
+              ? txToDelete.amount
+              : parseFloat(String(txToDelete.amount || 0)) || 0;
+
+            const currentBal =
+              a.balance !== undefined && a.balance !== null && !isNaN(a.balance)
+                ? a.balance
+                : calculateAvailableBalance(a.initialBalance ?? null, a.transactions ?? []);
+
+            let newBalance = currentBal;
+            if (txToDelete.type === 'income' || txToDelete.type === 'goal_withdraw') {
+              newBalance = currentBal - amt;
+            } else if (txToDelete.type === 'expense' || txToDelete.type === 'contribution') {
+              newBalance = currentBal + amt;
+            }
+
+            return {
+              ...a,
+              balance: newBalance,
+              transactions: (a.transactions ?? []).filter((t: Transaction) => t.id !== id),
+            };
+          });
         },
         updateTransaction: (id: string, patch: Partial<Transaction>) => {
-          updateActive((a) => ({
-            ...a,
-            transactions: a.transactions.map((t: Transaction) =>
-              t.id === id ? { ...t, ...patch } : t
-            ),
-          }));
+          updateActive((a) => {
+            const oldTx = (a.transactions ?? []).find((t: Transaction) => t.id === id);
+            if (!oldTx) return a;
+
+            const updatedTx: Transaction = { ...oldTx, ...patch };
+            const oldAmt = typeof oldTx.amount === 'number' && !isNaN(oldTx.amount)
+              ? oldTx.amount
+              : parseFloat(String(oldTx.amount || 0)) || 0;
+            const newAmt = typeof updatedTx.amount === 'number' && !isNaN(updatedTx.amount)
+              ? updatedTx.amount
+              : parseFloat(String(updatedTx.amount || 0)) || 0;
+
+            const currentBal =
+              a.balance !== undefined && a.balance !== null && !isNaN(a.balance)
+                ? a.balance
+                : calculateAvailableBalance(a.initialBalance ?? null, a.transactions ?? []);
+
+            let net = currentBal;
+            if (oldTx.type === 'income' || oldTx.type === 'goal_withdraw') {
+              net -= oldAmt;
+            } else if (oldTx.type === 'expense' || oldTx.type === 'contribution') {
+              net += oldAmt;
+            }
+
+            if (updatedTx.type === 'income' || updatedTx.type === 'goal_withdraw') {
+              net += newAmt;
+            } else if (updatedTx.type === 'expense' || updatedTx.type === 'contribution') {
+              net -= newAmt;
+            }
+
+            return {
+              ...a,
+              balance: net,
+              transactions: (a.transactions ?? []).map((t: Transaction) =>
+                t.id === id ? { ...updatedTx, amount: newAmt } : t
+              ),
+            };
+          });
         },
 
         // ── Categories ──────────────────────────────────────────────
@@ -940,19 +1080,66 @@ export const useAppStore = create<AppState>()(
           }));
         },
         confirmRecurringIncome: (ruleId: string, month: string, tx: Transaction) => {
-          updateActive((a) => ({
-            ...a,
-            transactions: [tx, ...a.transactions],
-            recurringRules: a.recurringRules.map((r: RecurringIncomeRule) =>
-              r.id === ruleId ? { ...r, lastConfirmedMonth: month } : r
-            ),
-          }));
+          const amt = typeof tx.amount === 'number' && !isNaN(tx.amount) ? tx.amount : parseFloat(String(tx.amount || 0)) || 0;
+          updateActive((a) => {
+            const currentBal =
+              a.balance !== undefined && a.balance !== null && !isNaN(a.balance)
+                ? a.balance
+                : calculateAvailableBalance(a.initialBalance ?? null, a.transactions ?? []);
+
+            const newBalance = currentBal + amt;
+
+            return {
+              ...a,
+              balance: newBalance,
+              transactions: [{ ...tx, amount: amt }, ...a.transactions],
+              recurringRules: a.recurringRules.map((r: RecurringIncomeRule) =>
+                r.id === ruleId ? { ...r, lastConfirmedMonth: month } : r
+              ),
+            };
+          });
         },
         dismissRecurringPrompt: (month: string) => {
           const s = get();
           set({ dismissedRecurringForMonth: [...(s.dismissedRecurringForMonth ?? []), month] });
         },
-        contributeToAllGoals: () => {},
+        contributeToAllGoals: () => {
+          updateActive((a) => {
+            const activeGoals = (a.categories || []).filter(
+              (c: Category) => c.isGoal && !c.isArchived && (c.targetAmount || 0) > 0
+            );
+            const newTxs: Transaction[] = [];
+            let currentBal =
+              a.balance !== undefined && a.balance !== null && !isNaN(a.balance)
+                ? a.balance
+                : calculateAvailableBalance(a.initialBalance ?? null, a.transactions ?? []);
+
+            for (const goal of activeGoals) {
+              const calc = calculateGoalProgress(goal, a.transactions || []);
+              if (calc.status !== 'completed' && calc.monthlyNeeded > 0) {
+                const amount = Math.min(calc.monthlyNeeded, Math.max(0, currentBal));
+                if (amount > 0) {
+                  currentBal -= amount;
+                  newTxs.push({
+                    id: 'tx_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+                    type: 'contribution',
+                    amount,
+                    categoryId: goal.id,
+                    date: new Date().toISOString(),
+                    note: `Cotisation mensuelle auto : ${goal.name}`,
+                    createdAt: new Date().toISOString(),
+                  });
+                }
+              }
+            }
+            if (newTxs.length === 0) return a;
+            return {
+              ...a,
+              balance: currentBal,
+              transactions: [...newTxs, ...(a.transactions || [])],
+            };
+          });
+        },
 
         // ── Tasks ───────────────────────────────────────────────────
         addTask: (task: TaskItem) => {

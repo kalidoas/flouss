@@ -10,17 +10,18 @@ export function calculateAvailableBalance(
   initialBalance: number | null,
   transactions: Transaction[]
 ): number {
-  const base = initialBalance || 0;
-  return transactions.reduce((acc, tx) => {
+  const base = typeof initialBalance === 'number' && !isNaN(initialBalance) ? initialBalance : 0;
+  return (transactions || []).reduce((acc, tx) => {
+    const amt = typeof tx.amount === 'number' && !isNaN(tx.amount) ? tx.amount : parseFloat(String(tx.amount || 0)) || 0;
     switch (tx.type) {
       case 'income':
-        return acc + tx.amount;
+        return acc + amt;
       case 'expense':
-        return acc - tx.amount;
+        return acc - amt;
       case 'contribution':
-        return acc - tx.amount;
+        return acc - amt;
       case 'goal_withdraw':
-        return acc + tx.amount;
+        return acc + amt;
       default:
         return acc;
     }

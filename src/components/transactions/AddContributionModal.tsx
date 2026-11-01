@@ -31,7 +31,7 @@ export const AddContributionModal: React.FC<AddContributionModalProps> = ({
   onClose,
   defaultCategoryId,
 }) => {
-  const { categories, addTransaction, initialBalance, transactions, language } = useAppStore();
+  const { categories, addTransaction, balance: storeBalance, initialBalance, transactions, language } = useAppStore();
   const t = translations[language].common;
   const tCat = translations[language].categories;
 
@@ -66,7 +66,10 @@ export const AddContributionModal: React.FC<AddContributionModalProps> = ({
     ? calculateGoalProgress(selectedCategory, transactions)
     : null;
 
-  const availableBalance = calculateAvailableBalance(initialBalance, transactions);
+  const availableBalance =
+    typeof storeBalance === 'number' && !isNaN(storeBalance)
+      ? storeBalance
+      : calculateAvailableBalance(initialBalance, transactions);
   const numericAmount = parseFloat(amountStr.replace(/\s/g, '').replace(',', '.')) || 0;
   const isOverBalance = numericAmount > availableBalance;
 

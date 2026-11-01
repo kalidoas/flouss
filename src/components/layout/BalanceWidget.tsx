@@ -6,10 +6,13 @@ import { Transaction } from '../../types';
 import { Coins, ChevronUp, ChevronDown, ArrowUpRight, ArrowDownRight, Target } from 'lucide-react';
 
 export const BalanceWidget: React.FC = () => {
-  const { initialBalance, transactions, categories, hideBalance, language } = useAppStore();
+  const { balance: storeBalance, initialBalance, transactions, categories, hideBalance, language } = useAppStore();
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const balance = calculateAvailableBalance(initialBalance, transactions);
+  const balance =
+    typeof storeBalance === 'number' && !isNaN(storeBalance)
+      ? storeBalance
+      : calculateAvailableBalance(initialBalance, transactions);
   const totalInGoals = calculateTotalSavingsInGoals(categories, transactions);
 
   const currentMonth = getCurrentMonthStr();

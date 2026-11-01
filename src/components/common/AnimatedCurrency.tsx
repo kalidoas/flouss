@@ -19,37 +19,39 @@ export const AnimatedCurrency: React.FC<AnimatedCurrencyProps> = ({
   showCurrency = true,
   prefix = '',
 }) => {
-  const prevValueRef = useRef(value);
+  const safeValue = typeof value === 'number' && !isNaN(value) ? value : 0;
+  const prevValueRef = useRef(safeValue);
   const [pulseColor, setPulseColor] = useState<'green' | 'red' | null>(null);
 
   // Smooth Apple spring for rolling numerical interpolation
-  const springValue = useSpring(value, {
+  const springValue = useSpring(safeValue, {
     stiffness: 280,
     damping: 30,
     mass: 0.6,
   });
 
   useEffect(() => {
-    springValue.set(value);
+    springValue.set(safeValue);
 
-    if (value !== prevValueRef.current) {
-      if (value > prevValueRef.current) {
+    if (safeValue !== prevValueRef.current) {
+      if (safeValue > prevValueRef.current) {
         setPulseColor('green');
-      } else if (value < prevValueRef.current) {
+      } else if (safeValue < prevValueRef.current) {
         setPulseColor('red');
       }
-      prevValueRef.current = value;
+      prevValueRef.current = safeValue;
 
       const timer = setTimeout(() => {
         setPulseColor(null);
       }, 1200);
       return () => clearTimeout(timer);
     }
-  }, [value, springValue]);
+  }, [safeValue, springValue]);
 
   // Transform spring float into formatted currency string
   const displayValue = useTransform(springValue, (current) => {
-    const rounded = Math.round(current * 100) / 100;
+    const safeCurrent = typeof current === 'number' && !isNaN(current) ? current : 0;
+    const rounded = Math.round(safeCurrent * 100) / 100;
     const parts = rounded.toFixed(2).split('.');
     const integerPart = parts[0];
     const decimalPart = parts[1];

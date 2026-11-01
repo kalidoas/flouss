@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 
 interface WalletCardProps {
-  balance: number;
+  balance?: number;
   incomeThisMonth: number;
   expenseThisMonth: number;
   onOpenIncome: () => void;
@@ -37,14 +37,14 @@ function getShiftedMonth(baseMonth: string, delta: number): string {
 }
 
 export const WalletCard: React.FC<WalletCardProps> = ({
-  balance: currentLiveBalance,
+  balance: propBalance,
   incomeThisMonth: currentLiveIncome,
   expenseThisMonth: currentLiveExpense,
   onOpenIncome,
   onOpenExpense,
   onOpenGoal,
 }) => {
-  const { initialBalance, transactions, language, hideBalance, toggleHideBalance } = useAppStore();
+  const { balance: storeBalance, initialBalance, transactions, language, hideBalance, toggleHideBalance } = useAppStore();
   const tWallet = translations[language].walletCard;
   const currentMonth = getCurrentMonthStr();
 
@@ -52,11 +52,19 @@ export const WalletCard: React.FC<WalletCardProps> = ({
   const [selectedMonth, setSelectedMonth] = useState<string>(currentMonth);
   const isCurrentMonth = selectedMonth === currentMonth;
 
+  // Strictly prioritize the globally synced store balance
+  const activeBalance =
+    typeof storeBalance === 'number' && !isNaN(storeBalance)
+      ? storeBalance
+      : typeof propBalance === 'number' && !isNaN(propBalance)
+      ? propBalance
+      : calculateAvailableBalance(initialBalance, transactions);
+
   // Calculate historical balance and cashflow if viewing past months
   const { displayBalance, displayIncome, displayExpense } = useMemo(() => {
     if (isCurrentMonth) {
       return {
-        displayBalance: currentLiveBalance,
+        displayBalance: activeBalance,
         displayIncome: currentLiveIncome,
         displayExpense: currentLiveExpense,
       };
@@ -72,10 +80,10 @@ export const WalletCard: React.FC<WalletCardProps> = ({
     const monthTx = (transactions || []).filter((tx) => tx.date.slice(0, 7) === selectedMonth);
     const historicalIncome = monthTx
       .filter((tx) => tx.type === 'income')
-      .reduce((sum, tx) => sum + tx.amount, 0);
+      .reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
     const historicalExpense = monthTx
       .filter((tx) => tx.type === 'expense')
-      .reduce((sum, tx) => sum + tx.amount, 0);
+      .reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
 
     return {
       displayBalance: historicalBalance,
@@ -85,7 +93,7 @@ export const WalletCard: React.FC<WalletCardProps> = ({
   }, [
     isCurrentMonth,
     selectedMonth,
-    currentLiveBalance,
+    activeBalance,
     currentLiveIncome,
     currentLiveExpense,
     transactions,

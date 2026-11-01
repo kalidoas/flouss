@@ -140,7 +140,10 @@ export const AccountSwitcherModal: React.FC<AccountSwitcherModalProps> = ({
           <div className="space-y-2">
             {accounts.map((acc) => {
               const isActive = acc.id === activeAccountId;
-              const balance = calculateAvailableBalance(acc.initialBalance, acc.transactions || []);
+              const balance =
+                acc.balance !== undefined && acc.balance !== null && !isNaN(acc.balance)
+                  ? acc.balance
+                  : calculateAvailableBalance(acc.initialBalance, acc.transactions || []);
 
               return (
                 <div

@@ -29,6 +29,7 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
   const {
     categories,
     addTransaction,
+    balance: storeBalance,
     initialBalance,
     transactions,
     recentNotes,
@@ -46,7 +47,10 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
   const [note, setNote] = useState('');
   const [error, setError] = useState('');
 
-  const availableBalance = calculateAvailableBalance(initialBalance, transactions);
+  const availableBalance =
+    typeof storeBalance === 'number' && !isNaN(storeBalance)
+      ? storeBalance
+      : calculateAvailableBalance(initialBalance, transactions);
   const numericAmount = parseFloat(amountStr.replace(/\s/g, '').replace(',', '.')) || 0;
   const isOverBalance = numericAmount > availableBalance;
 

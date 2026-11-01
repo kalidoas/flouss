@@ -42,6 +42,7 @@ import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 
 export const DashboardPage: React.FC = () => {
   const {
+    balance: storeBalance,
     initialBalance,
     transactions,
     categories,
@@ -69,10 +70,13 @@ export const DashboardPage: React.FC = () => {
   const today = new Date();
   const currentDayOfMonth = today.getDate();
 
-  // Metrics
-  const balance = calculateAvailableBalance(initialBalance, transactions);
-  const netWorth = calculateNetWorth(initialBalance, transactions, categories);
+  // Metrics - Strictly prioritize the globally synced store balance
+  const balance =
+    typeof storeBalance === 'number' && !isNaN(storeBalance)
+      ? storeBalance
+      : calculateAvailableBalance(initialBalance, transactions);
   const totalInGoals = calculateTotalSavingsInGoals(categories, transactions);
+  const netWorth = balance + totalInGoals;
 
   // Month-to-date metrics
   const currentMonthTx = transactions.filter((t: Transaction) => t.date.startsWith(currentMonth));

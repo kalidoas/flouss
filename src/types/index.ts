@@ -127,6 +127,7 @@ export interface UserAccount {
   avatarIcon?: string;
   initialBalance: number | null;
   initialBalanceLockedAt: string | null;
+  balance?: number;
   isOnboarded: boolean;
   categories: Category[];
   incomeSources: IncomeSource[];
