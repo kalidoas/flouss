@@ -13,6 +13,7 @@ import {
 import { Trash2, AlertTriangle } from 'lucide-react';
 import { Modal } from '../common/Modal';
 import { Button } from '../common/Button';
+import { PrivacyCurrency } from '../common/PrivacyCurrency';
 
 interface TransactionItemProps {
   transaction: Transaction;
@@ -147,10 +148,11 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
 
         {/* Right: Amount & Delete action */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-2">
-          <span className={`text-xs sm:text-sm tabular-nums font-semibold transition-[filter] duration-200 ${hideBalance ? 'privacy-blur' : ''} ${details.amountClass}`}>
-            {details.amountPrefix}
-            {formatMAD(transaction.amount, false, language)}
-          </span>
+          <PrivacyCurrency
+            amount={transaction.amount}
+            prefix={details.amountPrefix}
+            className={`text-xs sm:text-sm font-semibold ${details.amountClass}`}
+          />
 
           <button
             onClick={() => setShowDeleteConfirm(true)}

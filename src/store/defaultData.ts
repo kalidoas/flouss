@@ -615,7 +615,7 @@ export const DEFAULT_NOTES: NoteItem[] = [
 export const DEFAULT_FOCUS_LISTS: FocusListMenu[] = [
   {
     id: 'default',
-    name: 'قائمتي',
+    name: 'myList',
     color: '#3b82f6',
     createdAt: new Date().toISOString(),
   },
@@ -625,7 +625,7 @@ export const DEFAULT_FOCUS_TASKS: FocusTask[] = [
   {
     id: 'ft_1',
     listId: 'default',
-    text: 'دفع فاتورة الويفي والماء قبل 10 في الشهر',
+    text: 'Payer la facture Wi-Fi et eau avant le 10',
     completed: false,
     isPinned: true,
     priority: 'urgent',
@@ -635,7 +635,7 @@ export const DEFAULT_FOCUS_TASKS: FocusTask[] = [
   {
     id: 'ft_2',
     listId: 'default',
-    text: 'تحويل 1 000 درهم لحساب صندوق الطوارئ',
+    text: 'Transférer 1 000 DH vers le fonds d’urgence',
     completed: false,
     isPinned: true,
     priority: 'normal',
@@ -644,7 +644,7 @@ export const DEFAULT_FOCUS_TASKS: FocusTask[] = [
   {
     id: 'ft_3',
     listId: 'default',
-    text: 'مراجعة مصاريف الأسبوع الماضي',
+    text: 'Vérifier les dépenses de la semaine passée',
     completed: true,
     isPinned: false,
     priority: 'normal',
@@ -709,7 +709,7 @@ export const DEFAULT_GYM_LOGS: GymWorkoutLog[] = [];
 export const DEFAULT_PROGRAM_TRACKS: ProgramTrack[] = [
   {
     id: 'prog_salat',
-    title: 'الصلاة (Salat)',
+    title: 'Salat',
     icon: '🕌',
     color: '#10b981',
     type: 'salat',
@@ -717,7 +717,7 @@ export const DEFAULT_PROGRAM_TRACKS: ProgramTrack[] = [
   },
   {
     id: 'prog_coding',
-    title: 'Coding (البرمجة)',
+    title: 'Coding',
     icon: '💻',
     color: '#3b82f6',
     type: 'coding',
@@ -730,7 +730,7 @@ export const DEFAULT_PROGRAM_TRACKS: ProgramTrack[] = [
   },
   {
     id: 'prog_english',
-    title: 'English (الإنجليزية)',
+    title: 'English',
     icon: '🗣️',
     color: '#8b5cf6',
     type: 'english',
@@ -743,7 +743,7 @@ export const DEFAULT_PROGRAM_TRACKS: ProgramTrack[] = [
   },
   {
     id: 'prog_gym',
-    title: 'الرياضة والجيم (Gym)',
+    title: 'Gym & Fitness',
     icon: '🏋️',
     color: '#f43f5e',
     type: 'gym',
@@ -751,7 +751,7 @@ export const DEFAULT_PROGRAM_TRACKS: ProgramTrack[] = [
   },
   {
     id: 'prog_study',
-    title: 'المراجعة والدراسة (Study)',
+    title: 'Study & Revision',
     icon: '📚',
     color: '#6366f1',
     type: 'study',

@@ -14,6 +14,9 @@ import { CountUpNumber } from '../components/common/CountUpNumber';
 import { FocusTaskList } from '../components/dashboard/FocusTaskList';
 import { PriorityHub } from '../components/dashboard/PriorityHub';
 import { WalletCard } from '../components/dashboard/WalletCard';
+import { AppleCardBalanceChart } from '../components/dashboard/AppleCardBalanceChart';
+import { AIAssistantCard } from '../components/dashboard/AIAssistantCard';
+import { PrivacyCurrency } from '../components/common/PrivacyCurrency';
 import {
   calculateAvailableBalance,
   calculateNetWorth,
@@ -218,6 +221,12 @@ export const DashboardPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Apple HIG Data Viz & Smart AI Insights */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
+        <AppleCardBalanceChart />
+        <AIAssistantCard onQuickAction={() => setIsSaveAllModalOpen(true)} />
+      </div>
+
       {/* Notion Focus View: "Ma liste" Section */}
       <FocusTaskList />
 
@@ -232,20 +241,16 @@ export const DashboardPage: React.FC = () => {
               <div className="flex items-center gap-2">
                 <h4 className="font-semibold text-zinc-900 dark:text-white text-sm tracking-tight">
                   {tDash.savingsReminderTitle} :{' '}
-                  <span
-                    className={`font-bold tabular-nums text-emerald-600 dark:text-emerald-400 transition-[filter] duration-200 ${
-                      hideBalance ? 'privacy-blur' : ''
-                    }`}
-                  >
-                    {formatMAD(totalMonthlyGoalTarget, false, language)}
-                  </span>
+                  <PrivacyCurrency
+                    amount={totalMonthlyGoalTarget}
+                    className="font-bold text-emerald-600 dark:text-emerald-400"
+                  />
                 </h4>
               </div>
               <p className="text-zinc-500 dark:text-zinc-400 mt-0.5">
-                <span className={hideBalance ? 'privacy-blur' : ''}>
-                  {formatMAD(savedThisMonthToGoals, false, language)}
-                </span>{' '}
-                {tDash.alreadySavedOf} {formatMAD(totalMonthlyGoalTarget, false, language)}{' '}
+                <PrivacyCurrency amount={savedThisMonthToGoals} className="font-medium" />{' '}
+                {tDash.alreadySavedOf}{' '}
+                <PrivacyCurrency amount={totalMonthlyGoalTarget} className="font-medium" />{' '}
                 {tDash.monthlyTarget}.
               </p>
             </div>
@@ -277,9 +282,11 @@ export const DashboardPage: React.FC = () => {
             <span className="font-medium">{tDash.incomeThisMonth}</span>
             <span className="w-2 h-2 rounded-full bg-emerald-500" />
           </div>
-          <div className="text-xl sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400 tabular-nums tracking-tight">
-            +{formatMAD(incomeThisMonth, false, language)}
-          </div>
+          <PrivacyCurrency
+            amount={incomeThisMonth}
+            showSign={true}
+            className="text-xl sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400 tracking-tight"
+          />
           <span className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-1 block tabular-nums">
             {tDash.incomeCount.replace(
               '{count}',
@@ -293,9 +300,11 @@ export const DashboardPage: React.FC = () => {
             <span className="font-medium">{tDash.expensesThisMonth}</span>
             <span className="w-2 h-2 rounded-full bg-rose-500" />
           </div>
-          <div className="text-xl sm:text-2xl font-bold text-rose-600 dark:text-rose-400 tabular-nums tracking-tight">
-            -{formatMAD(expenseThisMonth, false, language)}
-          </div>
+          <PrivacyCurrency
+            amount={expenseThisMonth}
+            prefix="-"
+            className="text-xl sm:text-2xl font-bold text-rose-600 dark:text-rose-400 tracking-tight"
+          />
           <span className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-1 block tabular-nums">
             {tDash.expenseCount.replace(
               '{count}',

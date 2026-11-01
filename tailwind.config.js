@@ -20,12 +20,12 @@ export default {
       },
       fontFamily: {
         sans: [
-          '"Plus Jakarta Sans"',
-          'Inter',
+          'system-ui',
           '-apple-system',
           'BlinkMacSystemFont',
-          '"Segoe UI"',
-          'Roboto',
+          '"SF Pro Display"',
+          'Inter',
+          '"Plus Jakarta Sans"',
           'sans-serif',
         ],
       },

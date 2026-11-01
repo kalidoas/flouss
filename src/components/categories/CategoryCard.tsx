@@ -11,6 +11,7 @@ import { formatMAD, getCurrentMonthStr } from '../../utils/formatters';
 import { getCategoryIcon } from '../../utils/icons';
 import { translations } from '../../i18n/translations';
 import { getCategoryName } from '../../utils/i18nHelpers';
+import { PrivacyCurrency } from '../common/PrivacyCurrency';
 
 interface CategoryCardProps {
   category: Category;
@@ -77,9 +78,10 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({
         {category.isGoal && goalCalc ? (
           <>
             <div className="flex items-center justify-between text-xs">
-              <span className={`font-bold text-zinc-900 dark:text-white tabular-nums ${hideBalance ? 'privacy-blur' : ''}`}>
-                {formatMAD(goalCalc.savedAmount, false, language)}
-              </span>
+              <PrivacyCurrency
+                amount={goalCalc.savedAmount}
+                className="font-bold text-zinc-900 dark:text-white"
+              />
               <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 tabular-nums">
                 {goalCalc.progressPercent}%
               </span>
@@ -102,9 +104,10 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({
               <span className="text-[11px] text-zinc-400 font-medium">
                 {tCat.spentThisMonth}
               </span>
-              <span className={`font-bold text-zinc-900 dark:text-white tabular-nums ${hideBalance ? 'privacy-blur' : ''}`}>
-                {formatMAD(spentThisMonth, false, language)}
-              </span>
+              <PrivacyCurrency
+                amount={spentThisMonth}
+                className="font-bold text-zinc-900 dark:text-white"
+              />
             </div>
 
             {budgetStatus.hasBudget ? (

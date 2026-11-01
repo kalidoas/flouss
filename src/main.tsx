@@ -31,32 +31,32 @@ class RootErrorBoundary extends Component<Props, State> {
       const errorMsg = this.state.error?.message || 'Une erreur inattendue est survenue.';
 
       return (
-        <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-white p-4 sm:p-6 font-sans">
-          <div className="max-w-lg w-full bg-zinc-900/90 backdrop-blur-2xl rounded-3xl p-6 sm:p-8 border border-white/10 text-center shadow-2xl space-y-5">
-            <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-500/15 border border-amber-500/25 text-amber-400 flex items-center justify-center text-2xl shadow-sm">
+        <div className="min-h-screen flex items-center justify-center bg-[#f7f6f3] dark:bg-zinc-950 text-zinc-900 dark:text-white p-4 sm:p-6 font-sans">
+          <div className="max-w-lg w-full bg-white/95 dark:bg-zinc-900/90 backdrop-blur-2xl rounded-3xl p-6 sm:p-8 border border-black/10 dark:border-white/10 text-center shadow-2xl space-y-5">
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-500/15 border border-amber-500/25 text-amber-500 dark:text-amber-400 flex items-center justify-center text-2xl shadow-sm">
               ⚡
             </div>
 
             <div>
-              <h2 className="text-lg font-bold text-white tracking-tight">
+              <h2 className="text-lg font-bold text-zinc-900 dark:text-white tracking-tight">
                 Mode de Récupération Local (Flouss)
               </h2>
-              <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 leading-relaxed">
                 Une exception a été interceptée lors du chargement. Vos données locales restent sécurisées.
               </p>
             </div>
 
             {/* Error Message Box */}
-            <div className="p-3.5 rounded-xl bg-black/40 border border-white/5 text-left text-xs font-mono text-rose-300 break-words max-h-32 overflow-y-auto">
+            <div className="p-3.5 rounded-xl bg-black/5 dark:bg-black/40 border border-black/5 dark:border-white/5 text-left text-xs font-mono text-rose-600 dark:text-rose-300 break-words max-h-32 overflow-y-auto">
               {errorMsg}
             </div>
 
             {/* Diagnostic .env.local guide */}
-            <div className="p-4 rounded-2xl bg-zinc-800/60 border border-white/5 text-left space-y-2">
-              <span className="text-[11px] font-bold text-zinc-300 uppercase tracking-wider block">
+            <div className="p-4 rounded-2xl bg-zinc-100 dark:bg-zinc-800/60 border border-black/5 dark:border-white/5 text-left space-y-2">
+              <span className="text-[11px] font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider block">
                 Configuration requise (.env.local) :
               </span>
-              <pre className="text-[10px] font-mono text-zinc-400 bg-black/50 p-2.5 rounded-xl overflow-x-auto select-all">
+              <pre className="text-[10px] font-mono text-zinc-600 dark:text-zinc-400 bg-black/5 dark:bg-black/50 p-2.5 rounded-xl overflow-x-auto select-all">
 {`VITE_FIREBASE_API_KEY=AIzaSy...
 VITE_FIREBASE_AUTH_DOMAIN=floss-6799f.firebaseapp.com
 VITE_FIREBASE_PROJECT_ID=floss-6799f

@@ -7,6 +7,7 @@ import { Button } from '../components/common/Button';
 import { EmptyState } from '../components/common/EmptyState';
 import { formatMAD } from '../utils/formatters';
 import { translations } from '../i18n/translations';
+import { PrivacyCurrency } from '../components/common/PrivacyCurrency';
 import {
   HandCoins,
   ArrowUpRight,
@@ -212,13 +213,10 @@ export const DebtsPage: React.FC = () => {
               <ArrowDownLeft className="w-3.5 h-3.5 stroke-[2.2]" />
             </div>
           </div>
-          <span
-            className={`text-xl sm:text-2xl font-bold text-zinc-900 dark:text-white tabular-nums tracking-tight transition-[filter] duration-200 ${
-              hideBalance ? 'privacy-blur' : ''
-            }`}
-          >
-            {formatMAD(summary.toCollect, false, language)}
-          </span>
+          <PrivacyCurrency
+            amount={summary.toCollect}
+            className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-white tracking-tight"
+          />
         </motion.div>
 
         {/* Je dois */}
@@ -234,13 +232,10 @@ export const DebtsPage: React.FC = () => {
               <ArrowUpRight className="w-3.5 h-3.5 stroke-[2.2]" />
             </div>
           </div>
-          <span
-            className={`text-xl sm:text-2xl font-bold text-zinc-900 dark:text-white tabular-nums tracking-tight transition-[filter] duration-200 ${
-              hideBalance ? 'privacy-blur' : ''
-            }`}
-          >
-            {formatMAD(summary.toPay, false, language)}
-          </span>
+          <PrivacyCurrency
+            amount={summary.toPay}
+            className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-white tracking-tight"
+          />
         </motion.div>
 
         {/* Net */}
@@ -256,18 +251,15 @@ export const DebtsPage: React.FC = () => {
               <Coins className="w-3.5 h-3.5 stroke-[2.2]" />
             </div>
           </div>
-          <span
-            className={`text-xl sm:text-2xl font-bold tabular-nums tracking-tight transition-[filter] duration-200 ${
-              hideBalance ? 'privacy-blur' : ''
-            } ${
+          <PrivacyCurrency
+            amount={summary.net}
+            showSign={true}
+            className={`text-xl sm:text-2xl font-bold tracking-tight ${
               summary.net >= 0
                 ? 'text-emerald-600 dark:text-emerald-400'
                 : 'text-rose-600 dark:text-rose-400'
             }`}
-          >
-            {summary.net > 0 ? '+' : ''}
-            {formatMAD(summary.net, false, language)}
-          </span>
+          />
         </motion.div>
       </div>
 
@@ -404,26 +396,19 @@ export const DebtsPage: React.FC = () => {
                       <div className="text-[10px] text-zinc-400 uppercase tracking-wider font-medium">
                         {tDebt.remainingLabel}
                       </div>
-                      <div
-                        className={`text-base sm:text-lg font-bold tabular-nums tracking-tight transition-[filter] duration-200 ${
-                          hideBalance ? 'privacy-blur' : ''
-                        } ${
+                      <PrivacyCurrency
+                        amount={remaining}
+                        className={`text-base sm:text-lg font-bold tracking-tight block ${
                           debt.isSettled
                             ? 'text-zinc-400 line-through'
                             : isLend
                             ? 'text-emerald-600 dark:text-emerald-400'
                             : 'text-rose-600 dark:text-rose-400'
                         }`}
-                      >
-                        {formatMAD(remaining, false, language)}
-                      </div>
+                      />
                       {debt.paidAmount > 0 && !debt.isSettled && (
-                        <div
-                          className={`text-[10px] text-zinc-400 tabular-nums transition-[filter] duration-200 ${
-                            hideBalance ? 'privacy-blur' : ''
-                          }`}
-                        >
-                          {formatMAD(debt.paidAmount, false, language)} {tDebt.alreadyPaid}
+                        <div className="text-[10px] text-zinc-400 tabular-nums">
+                          <PrivacyCurrency amount={debt.paidAmount} /> {tDebt.alreadyPaid}
                         </div>
                       )}
                     </div>

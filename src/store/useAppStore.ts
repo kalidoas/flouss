@@ -37,6 +37,7 @@ import {
   DEFAULT_PROGRAM_TRACKS,
 } from './defaultData';
 import { calculateAvailableBalance, calculateGoalProgress } from '../utils/calculations';
+import { triggerHaptic } from '../utils/haptics';
 
 export interface AppState {
   // ── Auth & Session ──────────────────────────────────────────
@@ -82,6 +83,7 @@ export interface AppState {
   activeScreen: ScreenId;
   isPinUnlocked: boolean;
   hideBalance: boolean;
+  isBalanceHidden: boolean;
   lastBackupDate: string | null;
   dismissedRecurringForMonth: string[];
   isTourActive: boolean;
@@ -102,6 +104,8 @@ export interface AppState {
   resetLanguageToSystem: () => Language;
   setHideBalance: (v: boolean) => void;
   toggleHideBalance: () => void;
+  setIsBalanceHidden: (v: boolean) => void;
+  toggleBalanceHidden: () => void;
   setPinUnlocked: (v: boolean) => void;
   setPinCode: (code: string | null) => Promise<void>;
 
@@ -461,6 +465,7 @@ export const useAppStore = create<AppState>()(
         activeFocusListId: 'default',
         isPinUnlocked: true,
         hideBalance: true, // Sensitive wealth blurred on startup by default (user requirement)
+        isBalanceHidden: true,
         lastBackupDate: null,
         dismissedRecurringForMonth: [] as string[],
         isTourActive: false,
@@ -911,8 +916,18 @@ export const useAppStore = create<AppState>()(
           set({ language: sys });
           return sys;
         },
-        setHideBalance: (v: boolean) => set({ hideBalance: v }),
-        toggleHideBalance: () => set((s: any) => ({ hideBalance: !s.hideBalance })),
+        setHideBalance: (v: boolean) => set({ hideBalance: v, isBalanceHidden: v }),
+        setIsBalanceHidden: (v: boolean) => set({ hideBalance: v, isBalanceHidden: v }),
+        toggleHideBalance: () =>
+          set((s: any) => ({
+            hideBalance: !s.hideBalance,
+            isBalanceHidden: !s.hideBalance,
+          })),
+        toggleBalanceHidden: () =>
+          set((s: any) => ({
+            hideBalance: !s.hideBalance,
+            isBalanceHidden: !s.hideBalance,
+          })),
         setPinUnlocked: (v: boolean) => set({ isPinUnlocked: v }),
 
         setPinCode: async (code: string | null) => {
@@ -1004,6 +1019,7 @@ export const useAppStore = create<AppState>()(
 
         // ── Transactions ────────────────────────────────────────────
         addTransaction: (tx: Transaction) => {
+          triggerHaptic(50);
           const amt =
             typeof tx.amount === 'number' && !isNaN(tx.amount)
               ? tx.amount
@@ -1021,6 +1037,7 @@ export const useAppStore = create<AppState>()(
           }, true);
         },
         deleteTransaction: (id: string) => {
+          triggerHaptic(40);
           updateActive((a) => {
             const updatedTransactions = (a.transactions ?? []).filter((t: Transaction) => t.id !== id);
             const newBalance = calculateAvailableBalance(a.initialBalance ?? null, updatedTransactions);
@@ -1033,6 +1050,7 @@ export const useAppStore = create<AppState>()(
           }, true);
         },
         updateTransaction: (id: string, patch: Partial<Transaction>) => {
+          triggerHaptic(40);
           updateActive((a) => {
             const updatedTransactions = (a.transactions ?? []).map((t: Transaction) => {
               if (t.id !== id) return t;
@@ -1707,6 +1725,7 @@ export const useAppStore = create<AppState>()(
         theme: state.theme,
         language: state.language,
         hideBalance: state.hideBalance,
+        isBalanceHidden: state.isBalanceHidden,
         activeScreen: state.activeScreen,
       }),
     }

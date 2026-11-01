@@ -3,6 +3,7 @@ import { useAppStore } from '../../store/useAppStore';
 import { calculateAvailableBalance, calculateTotalSavingsInGoals } from '../../utils/calculations';
 import { formatMAD, getCurrentMonthStr } from '../../utils/formatters';
 import { Transaction } from '../../types';
+import { PrivacyCurrency } from '../common/PrivacyCurrency';
 import { Coins, ChevronUp, ChevronDown, ArrowUpRight, ArrowDownRight, Target } from 'lucide-react';
 
 export const BalanceWidget: React.FC = () => {
@@ -46,13 +47,10 @@ export const BalanceWidget: React.FC = () => {
               <span className="text-[10px] text-[#787774] dark:text-[#9b9a97] block leading-tight">
                 {isAr ? 'الرصيد المتاح' : 'Solde disponible'}
               </span>
-              <span
-                className={`text-xs font-semibold tabular-nums text-[#37352f] dark:text-[#ecebed] block truncate transition-[filter] duration-200 ${
-                  hideBalance ? 'privacy-blur' : ''
-                }`}
-              >
-                {formatMAD(balance, false, language)}
-              </span>
+              <PrivacyCurrency
+                amount={balance}
+                className="text-xs font-semibold text-[#37352f] dark:text-[#ecebed] block truncate"
+              />
             </div>
           </div>
 
@@ -70,13 +68,11 @@ export const BalanceWidget: React.FC = () => {
                 <ArrowUpRight className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                 <span>{isAr ? 'مداخيل الشهر' : 'Revenus'}</span>
               </span>
-              <span
-                className={`font-medium tabular-nums text-emerald-600 dark:text-emerald-400 transition-[filter] duration-200 ${
-                  hideBalance ? 'privacy-blur' : ''
-                }`}
-              >
-                +{formatMAD(incomeThisMonth, false, language)}
-              </span>
+              <PrivacyCurrency
+                amount={incomeThisMonth}
+                showSign={true}
+                className="font-medium text-emerald-600 dark:text-emerald-400"
+              />
             </div>
 
             {/* Expenses */}
@@ -85,13 +81,11 @@ export const BalanceWidget: React.FC = () => {
                 <ArrowDownRight className="w-3 h-3 text-rose-600 dark:text-rose-400" />
                 <span>{isAr ? 'مصاريف الشهر' : 'Dépenses'}</span>
               </span>
-              <span
-                className={`font-medium tabular-nums text-rose-600 dark:text-rose-400 transition-[filter] duration-200 ${
-                  hideBalance ? 'privacy-blur' : ''
-                }`}
-              >
-                -{formatMAD(expenseThisMonth, false, language)}
-              </span>
+              <PrivacyCurrency
+                amount={expenseThisMonth}
+                prefix="-"
+                className="font-medium text-rose-600 dark:text-rose-400"
+              />
             </div>
 
             {/* Savings in Goals */}
@@ -100,13 +94,10 @@ export const BalanceWidget: React.FC = () => {
                 <Target className="w-3 h-3 text-blue-600 dark:text-blue-400" />
                 <span>{isAr ? 'في الأهداف' : 'En épargne'}</span>
               </span>
-              <span
-                className={`font-medium tabular-nums text-[#37352f] dark:text-[#ecebed] transition-[filter] duration-200 ${
-                  hideBalance ? 'privacy-blur' : ''
-                }`}
-              >
-                {formatMAD(totalInGoals, false, language)}
-              </span>
+              <PrivacyCurrency
+                amount={totalInGoals}
+                className="font-medium text-[#37352f] dark:text-[#ecebed]"
+              />
             </div>
           </div>
         )}

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '../../store/useAppStore';
 import { AppleGlassCard } from '../common/AppleGlassCard';
 import { AnimatedCurrency } from '../common/AnimatedCurrency';
+import { PrivacyCurrency } from '../common/PrivacyCurrency';
 import { translations } from '../../i18n/translations';
 import { formatMAD, getCurrentMonthStr, formatMonthYear } from '../../utils/formatters';
 import { calculateAvailableBalance } from '../../utils/calculations';
@@ -285,9 +286,11 @@ export const WalletCard: React.FC<WalletCardProps> = ({
           <span className="text-[10px] text-zinc-400 uppercase tracking-wider block font-medium">
             {tWallet.income}
           </span>
-          <span className="font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
-            +{formatMAD(displayIncome, false, language)}
-          </span>
+          <PrivacyCurrency
+            amount={displayIncome}
+            showSign={true}
+            className="font-bold text-emerald-600 dark:text-emerald-400 text-xs"
+          />
         </div>
 
         <div className="w-px h-6 bg-zinc-200 dark:bg-zinc-800" />
@@ -296,9 +299,11 @@ export const WalletCard: React.FC<WalletCardProps> = ({
           <span className="text-[10px] text-zinc-400 uppercase tracking-wider block font-medium">
             {tWallet.expenses}
           </span>
-          <span className="font-bold text-rose-600 dark:text-rose-400 tabular-nums">
-            -{formatMAD(displayExpense, false, language)}
-          </span>
+          <PrivacyCurrency
+            amount={displayExpense}
+            prefix="-"
+            className="font-bold text-rose-600 dark:text-rose-400 text-xs"
+          />
         </div>
       </div>
     </AppleGlassCard>

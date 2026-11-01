@@ -5,6 +5,7 @@ import { SubscriptionItem } from '../types';
 import { Modal } from '../components/common/Modal';
 import { Button } from '../components/common/Button';
 import { EmptyState } from '../components/common/EmptyState';
+import { PrivacyCurrency } from '../components/common/PrivacyCurrency';
 import { formatMAD, getCurrentMonthStr } from '../utils/formatters';
 import { translations } from '../i18n/translations';
 import {
@@ -236,13 +237,10 @@ export const SubscriptionsPage: React.FC = () => {
               <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 block">
                 {tSub.monthlyLiability || tSub.totalMonthly}
               </span>
-              <div
-                className={`text-2xl sm:text-3xl font-black tracking-tight text-zinc-900 dark:text-white tabular-nums transition-[filter] duration-200 ${
-                  hideBalance ? 'privacy-blur' : ''
-                }`}
-              >
-                {formatMAD(stats.totalMonthly, false, language)}
-              </div>
+              <PrivacyCurrency
+                amount={stats.totalMonthly}
+                className="text-2xl sm:text-3xl font-black tracking-tight text-zinc-900 dark:text-white"
+              />
             </div>
             <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-500/15">
               <Receipt className="w-5 h-5 stroke-[2.2]" />
@@ -270,13 +268,10 @@ export const SubscriptionsPage: React.FC = () => {
               <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 block">
                 {tSub.paidThisMonth}
               </span>
-              <div
-                className={`text-2xl sm:text-3xl font-black tracking-tight text-emerald-600 dark:text-emerald-400 tabular-nums transition-[filter] duration-200 ${
-                  hideBalance ? 'privacy-blur' : ''
-                }`}
-              >
-                {formatMAD(stats.totalPaidThisMonth, false, language)}
-              </div>
+              <PrivacyCurrency
+                amount={stats.totalPaidThisMonth}
+                className="text-2xl sm:text-3xl font-black tracking-tight text-emerald-600 dark:text-emerald-400"
+              />
             </div>
             <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/15">
               <CheckCircle2 className="w-5 h-5 stroke-[2.2]" />
@@ -311,13 +306,10 @@ export const SubscriptionsPage: React.FC = () => {
               <span className="text-[11px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 block">
                 {tSub.remainingThisMonth || tSub.remaining}
               </span>
-              <div
-                className={`text-2xl sm:text-3xl font-black tracking-tight text-amber-600 dark:text-amber-400 tabular-nums transition-[filter] duration-200 ${
-                  hideBalance ? 'privacy-blur' : ''
-                }`}
-              >
-                {formatMAD(stats.remaining, false, language)}
-              </div>
+              <PrivacyCurrency
+                amount={stats.remaining}
+                className="text-2xl sm:text-3xl font-black tracking-tight text-amber-600 dark:text-amber-400"
+              />
             </div>
             <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 border border-amber-500/15">
               <Clock className="w-5 h-5 stroke-[2.2]" />
@@ -504,13 +496,10 @@ export const SubscriptionsPage: React.FC = () => {
                   {/* Amount and Status Toggle */}
                   <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-zinc-100 dark:border-zinc-800">
                     <div className="text-right">
-                      <div
-                        className={`text-base sm:text-lg font-black text-zinc-900 dark:text-white tabular-nums tracking-tight transition-[filter] duration-200 ${
-                          hideBalance ? 'privacy-blur' : ''
-                        }`}
-                      >
-                        {formatMAD(sub.amount, false, language)}
-                      </div>
+                      <PrivacyCurrency
+                        amount={sub.amount}
+                        className="text-base sm:text-lg font-black text-zinc-900 dark:text-white tracking-tight"
+                      />
                       <span
                         className={`text-[10px] font-bold block ${
                           isPaid

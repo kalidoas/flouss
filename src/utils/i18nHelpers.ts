@@ -144,3 +144,52 @@ export function getProgramTrackTitle(
   return track.title;
 }
 
+/**
+ * Returns translated focus list menu name (e.g. for default "قائمتي" / "Ma liste" / "My Focus List")
+ */
+export function getFocusListName(
+  list: { id?: string; name: string } | null | undefined,
+  language: Language = 'fr'
+): string {
+  if (!list) return '';
+  const isDefault =
+    list.id === 'default' ||
+    list.name === 'قائمتي' ||
+    list.name === 'Ma liste' ||
+    list.name === 'My Focus List' ||
+    list.name === 'myList' ||
+    list.name === 'default_my_list';
+
+  if (isDefault) {
+    return translations[language]?.focusList?.title || 'Ma liste';
+  }
+  return list.name;
+}
+
+/**
+ * Returns dynamically translated default seeded focus tasks (ft_1, ft_2, ft_3)
+ */
+export function getFocusTaskText(
+  task: { id?: string; text: string } | null | undefined,
+  language: Language = 'fr'
+): string {
+  if (!task) return '';
+  if (task.id === 'ft_1') {
+    if (language === 'ar') return 'دفع فاتورة الويفي والماء قبل 10 في الشهر';
+    if (language === 'en') return 'Pay Wi-Fi & utilities bill before the 10th';
+    return "Payer la facture d'Internet et eau avant le 10 du mois";
+  }
+  if (task.id === 'ft_2') {
+    if (language === 'ar') return 'تحويل 1 000 درهم لحساب صندوق الطوارئ';
+    if (language === 'en') return 'Transfer 1,000 DH to Emergency Fund';
+    return "Transférer 1 000 DH vers le fonds d'urgence";
+  }
+  if (task.id === 'ft_3') {
+    if (language === 'ar') return 'مراجعة مصاريف الأسبوع الماضي';
+    if (language === 'en') return 'Review last week spending';
+    return 'Vérifier les dépenses de la semaine passée';
+  }
+  return task.text;
+}
+
+

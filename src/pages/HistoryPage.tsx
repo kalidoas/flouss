@@ -15,6 +15,7 @@ import {
 import { exportToExcel } from '../utils/excelExport';
 import { Search, RotateCcw, FileSpreadsheet, Receipt } from 'lucide-react';
 import { EmptyState } from '../components/common/EmptyState';
+import { PrivacyCurrency } from '../components/common/PrivacyCurrency';
 
 export const HistoryPage: React.FC = () => {
   const { initialBalance, transactions, categories, incomeSources, hideBalance, language } = useAppStore();
@@ -131,33 +132,36 @@ export const HistoryPage: React.FC = () => {
           <span className="text-[10px] text-[#787774] dark:text-[#9b9a97] uppercase tracking-wider block">
             {t.totalIn}
           </span>
-          <span className={`text-sm sm:text-base font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums mt-0.5 block transition-[filter] duration-200 ${hideBalance ? 'privacy-blur' : ''}`}>
-            +{formatMAD(totalIn, false, language)}
-          </span>
+          <PrivacyCurrency
+            amount={totalIn}
+            showSign={true}
+            className="text-sm sm:text-base font-semibold text-emerald-600 dark:text-emerald-400 mt-0.5 block"
+          />
         </Card>
 
         <Card padding="sm" className="text-left">
           <span className="text-[10px] text-[#787774] dark:text-[#9b9a97] uppercase tracking-wider block">
             {t.totalOut}
           </span>
-          <span className={`text-sm sm:text-base font-semibold text-rose-600 dark:text-rose-400 tabular-nums mt-0.5 block transition-[filter] duration-200 ${hideBalance ? 'privacy-blur' : ''}`}>
-            -{formatMAD(totalOut, false, language)}
-          </span>
+          <PrivacyCurrency
+            amount={totalOut}
+            prefix="-"
+            className="text-sm sm:text-base font-semibold text-rose-600 dark:text-rose-400 mt-0.5 block"
+          />
         </Card>
 
         <Card padding="sm" className="text-left">
           <span className="text-[10px] text-[#787774] dark:text-[#9b9a97] uppercase tracking-wider block">
             {t.netTotal}
           </span>
-          <span
-            className={`text-sm sm:text-base font-semibold tabular-nums mt-0.5 block transition-[filter] duration-200 ${hideBalance ? 'privacy-blur' : ''} ${
+          <PrivacyCurrency
+            amount={netTotal}
+            className={`text-sm sm:text-base font-semibold mt-0.5 block ${
               netTotal >= 0
                 ? 'text-emerald-600 dark:text-emerald-400'
                 : 'text-rose-600 dark:text-rose-400'
             }`}
-          >
-            {formatMAD(netTotal, false, language)}
-          </span>
+          />
         </Card>
       </div>
 

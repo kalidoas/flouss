@@ -6,6 +6,7 @@ import { Logo } from '../common/Logo';
 import { Language } from '../../types';
 import { islandManager } from '../../utils/islandManager';
 import { translations } from '../../i18n/translations';
+import { triggerHaptic } from '../../utils/haptics';
 
 export const Header: React.FC = () => {
   const {
@@ -93,7 +94,10 @@ export const Header: React.FC = () => {
 
         {/* Toggle hide balance with keyboard hint */}
         <button
-          onClick={toggleHideBalance}
+          onClick={() => {
+            triggerHaptic(30);
+            toggleHideBalance();
+          }}
           title={hideBalance ? 'Afficher les montants (H)' : 'Masquer les montants (H)'}
           className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-normal transition-all duration-150 border ${
             hideBalance

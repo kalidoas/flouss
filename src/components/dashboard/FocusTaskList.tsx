@@ -5,6 +5,8 @@ import { translations } from '../../i18n/translations';
 import { FocusTask, FocusListMenu } from '../../types';
 import { islandManager } from '../../utils/islandManager';
 import { GoogleCalendarAlarmModal } from '../common/GoogleCalendarAlarmModal';
+import { getFocusListName, getFocusTaskText } from '../../utils/i18nHelpers';
+import { triggerHaptic } from '../../utils/haptics';
 import confetti from 'canvas-confetti';
 import {
   Plus,
@@ -124,6 +126,7 @@ export const FocusTaskList: React.FC = () => {
     };
 
     addFocusTask(newTask);
+    triggerHaptic(50);
     setNewTaskText('');
     setNewDueDate('');
     setNewPriority('normal');
@@ -137,6 +140,7 @@ export const FocusTaskList: React.FC = () => {
   };
 
   const handleToggleTask = (id: string, currentState: boolean) => {
+    triggerHaptic(currentState ? 30 : 60);
     toggleFocusTask(id);
     if (!currentState) {
       // Confetti burst on completion
@@ -212,7 +216,7 @@ export const FocusTaskList: React.FC = () => {
               }`}
               onClick={() => setActiveFocusListId(list.id)}
             >
-              <span>{list.name}</span>
+              <span>{getFocusListName(list, language)}</span>
               <span
                 className={`ml-1.5 text-[10px] tabular-nums px-1.5 py-0.2 rounded-full ${
                   isActive
@@ -477,7 +481,7 @@ export const FocusTaskList: React.FC = () => {
                         : 'text-zinc-800 dark:text-zinc-200 font-medium'
                     }`}
                   >
-                    {task.text}
+                    {getFocusTaskText(task, language)}
                   </span>
 
                   {/* Badges: Due Date & Urgent */}
