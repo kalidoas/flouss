@@ -19,6 +19,9 @@ import { TasksPage } from './pages/TasksPage';
 import { DebtsPage } from './pages/DebtsPage';
 import { SubscriptionsPage } from './pages/SubscriptionsPage';
 import { NotesPage } from './pages/NotesPage';
+import { ExpensesPage } from './pages/ExpensesPage';
+import { NotificationService } from './services/notificationService';
+import { calculateAvailableBalance } from './utils/calculations';
 
 import { AppleShimmerSkeleton } from './components/common/AppleShimmerSkeleton';
 
@@ -81,6 +84,36 @@ export const App: React.FC = () => {
     return () => media.removeEventListener?.('change', handleMediaChange);
   }, []);
 
+  // Initialize Notification Service, Scheduler, and Reactive Negative Balance monitoring
+  useEffect(() => {
+    // 1. Gracefully request notification permission if not yet decided
+    if (NotificationService.isSupported() && NotificationService.getPermission() === 'default') {
+      NotificationService.requestPermission().catch(() => {});
+    }
+
+    // 2. Start recurring background scheduler for due bills and precise 10m/exact event reminders
+    const stopScheduler = NotificationService.startScheduler(() => useAppStore.getState());
+
+    // 3. Reactively monitor available balance for negative transitions
+    let previousBalance = calculateAvailableBalance(
+      useAppStore.getState().initialBalance,
+      useAppStore.getState().transactions
+    );
+
+    const unsubBalance = useAppStore.subscribe((state) => {
+      const currentBalance = calculateAvailableBalance(state.initialBalance, state.transactions);
+      if (previousBalance >= 0 && currentBalance < 0) {
+        NotificationService.checkNegativeBalance(currentBalance, previousBalance, state.language);
+      }
+      previousBalance = currentBalance;
+    });
+
+    return () => {
+      stopScheduler();
+      unsubBalance();
+    };
+  }, []);
+
   // 1. Loading Authentication & Firestore Profile (Apple Shimmer Skeleton)
   if (loadingAuth) {
     return <AppleShimmerSkeleton />;
@@ -118,6 +151,7 @@ export const App: React.FC = () => {
       case 'notes':         return <NotesPage />;
       case 'categories':    return <CategoriesPage />;
       case 'income':        return <IncomePage />;
+      case 'expenses':      return <ExpensesPage />;
       case 'history':       return <HistoryPage />;
       case 'stats':         return <StatsPage />;
       case 'settings':      return <SettingsPage />;

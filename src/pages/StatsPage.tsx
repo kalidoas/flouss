@@ -1,11 +1,14 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useAppStore } from '../store/useAppStore';
 import { Card } from '../components/common/Card';
+import { PrivacyCurrency } from '../components/common/PrivacyCurrency';
 import {
   getMonthlyStats,
   getCategorySpendingBreakdown,
 } from '../utils/calculations';
-import { formatMAD, getCurrentMonthStr } from '../utils/formatters';
+import { formatMAD, formatDate, getCurrentMonthStr } from '../utils/formatters';
+import { getCategoryIcon } from '../utils/icons';
+import { getCategoryName, getSubCategoryName } from '../utils/i18nHelpers';
 import { translations } from '../i18n/translations';
 import { Transaction } from '../types';
 import {
@@ -17,31 +20,54 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
+  PieChart,
+  Pie,
+  Cell,
 } from 'recharts';
 import {
   Percent,
   ShoppingBag,
   Award,
+  TrendingDown,
+  TrendingUp,
+  PieChart as PieChartIcon,
+  Flame,
+  Clock,
+  Sparkles,
 } from 'lucide-react';
 
 export const StatsPage: React.FC = () => {
   const { transactions, categories, hideBalance, language } = useAppStore();
   const t = translations[language].stats;
+  const isAr = language === 'ar';
 
   const currentMonth = getCurrentMonthStr();
-  const monthlyStats = getMonthlyStats(transactions, 6, language);
+  const monthlyStats = useMemo(() => {
+    return getMonthlyStats(transactions, 6, language);
+  }, [transactions, language]);
 
   // Current month transactions
-  const currentMonthTx = transactions.filter((tx: Transaction) => tx.date.startsWith(currentMonth));
-  const currentIncome = currentMonthTx
-    .filter((tx: Transaction) => tx.type === 'income')
-    .reduce((s: number, tx: Transaction) => s + tx.amount, 0);
-  const currentExpense = currentMonthTx
-    .filter((tx: Transaction) => tx.type === 'expense')
-    .reduce((s: number, tx: Transaction) => s + tx.amount, 0);
-  const currentSavings = currentMonthTx
-    .filter((tx: Transaction) => tx.type === 'contribution')
-    .reduce((s: number, tx: Transaction) => s + tx.amount, 0);
+  const currentMonthTx = useMemo(() => {
+    return (transactions || []).filter((tx: Transaction) => tx.date.startsWith(currentMonth));
+  }, [transactions, currentMonth]);
+
+  const currentIncome = useMemo(() => {
+    return currentMonthTx
+      .filter((tx: Transaction) => tx.type === 'income')
+      .reduce((s: number, tx: Transaction) => s + (Number(tx.amount) || 0), 0);
+  }, [currentMonthTx]);
+
+  const currentExpense = useMemo(() => {
+    return currentMonthTx
+      .filter((tx: Transaction) => tx.type === 'expense')
+      .reduce((s: number, tx: Transaction) => s + (Number(tx.amount) || 0), 0);
+  }, [currentMonthTx]);
+
+  const currentSavings = useMemo(() => {
+    return currentMonthTx
+      .filter((tx: Transaction) => tx.type === 'contribution')
+      .reduce((s: number, tx: Transaction) => s + (Number(tx.amount) || 0), 0);
+  }, [currentMonthTx]);
 
   // Savings rate calculation
   const savingsRate =
@@ -49,29 +75,48 @@ export const StatsPage: React.FC = () => {
       ? Math.max(0, Math.min(100, Math.round((currentSavings / currentIncome) * 100)))
       : 0;
 
-  // Category breakdown for current month (or all time if no expenses this month)
-  const categoryBreakdownMonth = getCategorySpendingBreakdown(
-    categories,
-    transactions,
-    currentMonth,
-    language
-  );
+  // Category breakdown for current month (or all-time if no expenses this month)
+  const categoryBreakdownData = useMemo(() => {
+    const monthData = getCategorySpendingBreakdown(categories, transactions, currentMonth, language);
+    if (monthData.breakdown.length > 0) return monthData;
+    return getCategorySpendingBreakdown(categories, transactions, undefined, language);
+  }, [categories, transactions, currentMonth, language]);
 
-  const breakdownToDisplay =
-    categoryBreakdownMonth.breakdown.length > 0
-      ? categoryBreakdownMonth.breakdown
-      : getCategorySpendingBreakdown(categories, transactions, undefined, language).breakdown;
-
+  const breakdownToDisplay = categoryBreakdownData.breakdown;
+  const totalCategorySpent = categoryBreakdownData.totalExpense;
   const topCategory = breakdownToDisplay[0];
 
+  // Top 3 most expensive transactions this month ("أكبر المصاريف" / Top Spends)
+  const top3Spends = useMemo(() => {
+    const monthExpenses = currentMonthTx.filter((tx: Transaction) => tx.type === 'expense');
+    return [...monthExpenses]
+      .sort((a, b) => (Number(b.amount) || 0) - (Number(a.amount) || 0))
+      .slice(0, 3);
+  }, [currentMonthTx]);
+
+  // Helper to extract time
+  const getExactTime = (dateStr: string, createdAt?: string): string => {
+    if (dateStr.includes('T')) return dateStr.split('T')[1].slice(0, 5);
+    if (createdAt && createdAt.includes('T')) {
+      const part = createdAt.split('T')[1];
+      return part ? part.slice(0, 5) : '12:00';
+    }
+    return '12:00';
+  };
+
   return (
-    <div className="max-w-[1200px] mx-auto space-y-6 sm:space-y-8 animate-page">
+    <div className="max-w-[1200px] mx-auto space-y-6 sm:space-y-8 animate-page select-text pb-12">
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-          {t.title}
-        </h1>
-        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 flex items-center justify-center font-bold">
+            <PieChartIcon className="w-4 h-4 stroke-[2.4]" />
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
+            {t.title}
+          </h1>
+        </div>
+        <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1">
           {t.subtitle}
         </p>
       </div>
@@ -79,217 +124,402 @@ export const StatsPage: React.FC = () => {
       {/* KPI Highlight Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Savings Rate Card */}
-        <Card padding="md">
-          <div className="flex items-center justify-between text-xs text-[#787774] dark:text-[#9b9a97] mb-1">
-            <span className="font-medium text-[11px]">
+        <div className="p-4 sm:p-5 rounded-2xl bg-white/80 dark:bg-zinc-900/60 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs">
+          <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 mb-1">
+            <span className="font-semibold text-[11px] uppercase tracking-wider">
               {t.savingsRate}
             </span>
-            <Percent className="w-3.5 h-3.5 text-emerald-500" />
+            <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+              <Percent className="w-3.5 h-3.5" />
+            </div>
           </div>
-          <div className="text-2xl font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">
+          <div className="text-2xl sm:text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 tabular-nums">
             {savingsRate}%
           </div>
-          <p className="text-[11px] text-[#787774] dark:text-[#9b9a97] mt-0.5">
+          <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1">
             {currentSavings > 0 ? (
               <>
-                <span className={`tabular-nums transition-[filter] duration-200 ${hideBalance ? 'privacy-blur' : ''}`}>
-                  {formatMAD(currentSavings, false, language)}
-                </span>{' '}
-                mis de côté pour vos projets
+                <PrivacyCurrency
+                  amount={currentSavings}
+                  className="font-semibold text-zinc-900 dark:text-zinc-100"
+                />{' '}
+                {t.savedForGoals}
               </>
             ) : (
-              'Aucune contribution ce mois-ci'
+              t.noSavingsThisMonth
             )}
           </p>
-        </Card>
+        </div>
 
         {/* Top Spending Category */}
-        <Card padding="md">
-          <div className="flex items-center justify-between text-xs text-[#787774] dark:text-[#9b9a97] mb-1">
-            <span className="font-medium text-[11px]">
+        <div className="p-4 sm:p-5 rounded-2xl bg-white/80 dark:bg-zinc-900/60 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs">
+          <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 mb-1">
+            <span className="font-semibold text-[11px] uppercase tracking-wider">
               {t.topSpendingCategory}
             </span>
-            <ShoppingBag className="w-3.5 h-3.5 text-rose-500" />
+            <div className="w-7 h-7 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+              <ShoppingBag className="w-3.5 h-3.5" />
+            </div>
           </div>
           {topCategory ? (
             <>
-              <div className="text-lg font-semibold text-[#37352f] dark:text-[#ecebed] truncate">
+              <div className="text-xl sm:text-2xl font-extrabold text-zinc-900 dark:text-white truncate">
                 {topCategory.name}
               </div>
-              <p className="text-[11px] text-[#787774] dark:text-[#9b9a97] mt-0.5">
-                <span className={`tabular-nums font-medium transition-[filter] duration-200 ${hideBalance ? 'privacy-blur' : ''}`}>
-                  {formatMAD(topCategory.amount, false, language)}
-                </span>{' '}
-                ({topCategory.percentage}% du total)
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 flex items-center gap-1.5">
+                <PrivacyCurrency
+                  amount={topCategory.amount}
+                  className="font-semibold text-rose-600 dark:text-rose-400"
+                />
+                <span className="px-1.5 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-[10px] font-bold text-zinc-600 dark:text-zinc-300">
+                  {topCategory.percentage}%
+                </span>
               </p>
             </>
           ) : (
-            <div className="text-xs text-[#787774] mt-2">Aucune dépense enregistrée</div>
+            <div className="text-xs text-zinc-400 mt-2 font-medium">
+              {t.noExpensesRecorded}
+            </div>
           )}
-        </Card>
+        </div>
 
         {/* Financial Health Status */}
-        <Card padding="md">
-          <div className="flex items-center justify-between text-xs text-[#787774] dark:text-[#9b9a97] mb-1">
-            <span className="font-medium text-[11px]">
+        <div className="p-4 sm:p-5 rounded-2xl bg-white/80 dark:bg-zinc-900/60 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs">
+          <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 mb-1">
+            <span className="font-semibold text-[11px] uppercase tracking-wider">
               {t.summary}
             </span>
-            <Award className="w-3.5 h-3.5 text-teal-500" />
+            <div className="w-7 h-7 rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center">
+              <Award className="w-3.5 h-3.5" />
+            </div>
           </div>
-          <div className="text-lg font-semibold text-[#37352f] dark:text-[#ecebed]">
-            {currentIncome >= currentExpense ? 'Budget Équilibré 👍' : 'Déficit mensuel ⚠️'}
+          <div className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-white">
+            {currentIncome >= currentExpense ? t.balancedBudget : t.deficitBudget}
           </div>
-          <p className="text-[11px] text-[#787774] dark:text-[#9b9a97] mt-0.5">
+          <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1">
             {currentIncome >= currentExpense ? (
               <>
-                Excédent net de{' '}
-                <span className={`tabular-nums font-medium transition-[filter] duration-200 ${hideBalance ? 'privacy-blur' : ''}`}>
-                  {formatMAD(currentIncome - currentExpense, false, language)}
-                </span>
+                {t.netSurplus}{' '}
+                <PrivacyCurrency
+                  amount={currentIncome - currentExpense}
+                  className="font-bold text-emerald-600 dark:text-emerald-400"
+                />
               </>
             ) : (
               <>
-                Dépenses supérieures aux revenus de{' '}
-                <span className={`tabular-nums font-medium transition-[filter] duration-200 ${hideBalance ? 'privacy-blur' : ''}`}>
-                  {formatMAD(currentExpense - currentIncome, false, language)}
-                </span>
+                {t.netDeficit}{' '}
+                <PrivacyCurrency
+                  amount={currentExpense - currentIncome}
+                  className="font-bold text-rose-600 dark:text-rose-400"
+                />
               </>
             )}
           </p>
-        </Card>
+        </div>
       </div>
 
-      {/* Monthly Bar Chart (Last 6 Months) */}
-      <Card padding="lg">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
-          <div>
-            <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
-              {t.incomeVsExpense}
-            </h2>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Comparaison mois par mois de vos flux financiers
-            </p>
+      {/* Top Spends Widget ("أكبر المصاريف" / Top 3 Bleeds) */}
+      <div className="p-5 sm:p-6 rounded-3xl bg-white/80 dark:bg-zinc-900/60 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center justify-center">
+              <Flame className="w-4 h-4 stroke-[2.4]" />
+            </div>
+            <div>
+              <h2 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white">
+                {t.topSpends}
+              </h2>
+              <p className="text-xs text-zinc-400">
+                {t.topSpendsSubtitle}
+              </p>
+            </div>
           </div>
         </div>
 
-        <div className="h-64 sm:h-80 w-full">
+        {top3Spends.length === 0 ? (
+          <div className="py-6 text-center text-xs text-zinc-400">
+            {t.noTopSpends}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {top3Spends.map((tx, idx) => {
+              const cat = categories.find((c) => c.id === tx.categoryId);
+              const subCat = cat?.subcategories?.find((s) => s.id === tx.subCategoryId);
+              const IconComp = cat ? getCategoryIcon(cat.icon) : ShoppingBag;
+              const catName = cat ? getCategoryName(cat, language) : 'Autre';
+              const subCatName = subCat ? getSubCategoryName(subCat, language) : null;
+              const exactTime = getExactTime(tx.date, tx.createdAt);
+              const rankColor =
+                idx === 0
+                  ? 'bg-amber-500 text-white shadow-amber-500/20'
+                  : idx === 1
+                  ? 'bg-zinc-400 dark:bg-zinc-600 text-white shadow-zinc-500/20'
+                  : 'bg-amber-700/80 text-white shadow-amber-700/20';
+
+              return (
+                <div
+                  key={tx.id}
+                  className="p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 border border-black/[0.04] dark:border-white/[0.06] flex items-center justify-between gap-3 relative overflow-hidden group hover:border-black/[0.1] dark:hover:border-white/[0.12] transition-colors"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    {/* Rank Badge */}
+                    <div
+                      className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 shadow-xs ${rankColor}`}
+                    >
+                      {idx + 1}
+                    </div>
+
+                    {/* Category Icon */}
+                    <div
+                      className="w-9 h-9 rounded-xl flex items-center justify-center text-white shrink-0 shadow-xs"
+                      style={{ backgroundColor: cat?.color || '#f43f5e' }}
+                    >
+                      <IconComp className="w-4 h-4" />
+                    </div>
+
+                    <div className="min-w-0">
+                      <h4 className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-white truncate">
+                        {tx.note || catName}
+                      </h4>
+                      <div className="flex items-center gap-1.5 text-[10px] text-zinc-400 mt-0.5">
+                        <span className="truncate">{catName}</span>
+                        <span>•</span>
+                        <span className="tabular-nums">{formatDate(tx.date, language)}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="text-right shrink-0">
+                    <span className="text-sm sm:text-base font-extrabold text-rose-600 dark:text-rose-400 tabular-nums">
+                      <PrivacyCurrency
+                        amount={Number(tx.amount)}
+                        prefix="-"
+                        className="font-extrabold text-rose-600 dark:text-rose-400"
+                      />
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Monthly Apple Fitness Style Bar Chart (Last 6 Months) */}
+      <div className="p-5 sm:p-6 rounded-3xl bg-white/80 dark:bg-zinc-900/60 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h2 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white">
+              {t.incomeVsExpense}
+            </h2>
+            <p className="text-xs text-zinc-400 mt-0.5">
+              {t.incomeVsExpenseSubtitle}
+            </p>
+          </div>
+
+          {/* Minimalist Legend Pills */}
+          <div className="flex items-center gap-3 text-xs">
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+              <span className="text-zinc-600 dark:text-zinc-300 font-medium">{t.incomeLabel}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
+              <span className="text-zinc-600 dark:text-zinc-300 font-medium">{t.expenseLabel}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+              <span className="text-zinc-600 dark:text-zinc-300 font-medium">{t.savingsLabel}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="h-64 sm:h-80 w-full pt-2">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={monthlyStats}
-              margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
+              margin={{ top: 10, right: 10, left: -15, bottom: 0 }}
+              barGap={4}
             >
-              <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
+              <CartesianGrid
+                strokeDasharray="4 4"
+                vertical={false}
+                stroke="#71717a"
+                opacity={0.12}
+              />
               <XAxis
                 dataKey="label"
-                tick={{ fontSize: 12, fill: '#94a3b8' }}
+                tick={{ fontSize: 11, fill: '#a1a1aa' }}
                 axisLine={false}
                 tickLine={false}
               />
               <YAxis
-                tick={{ fontSize: 11, fill: '#94a3b8' }}
+                tick={{ fontSize: 10, fill: '#a1a1aa' }}
                 axisLine={false}
                 tickLine={false}
-                tickFormatter={(val) => `${val / 1000}k`}
+                tickFormatter={(val) => (val >= 1000 ? `${(val / 1000).toFixed(0)}k` : `${val}`)}
               />
               <Tooltip
+                cursor={{ fill: 'rgba(255, 255, 255, 0.04)', radius: 8 }}
                 formatter={(value: number, name: string) => [
                   formatMAD(value, false, language),
                   name === 'income'
-                    ? 'Revenus'
+                    ? t.incomeLabel
                     : name === 'expense'
-                    ? 'Dépenses'
-                    : 'Épargne',
+                    ? t.expenseLabel
+                    : t.savingsLabel,
                 ]}
                 contentStyle={{
                   borderRadius: '16px',
-                  backgroundColor: '#0f172a',
-                  border: 'none',
+                  backgroundColor: 'rgba(24, 24, 27, 0.95)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  backdropFilter: 'blur(12px)',
                   color: '#fff',
                   fontSize: '12px',
+                  boxShadow: '0 10px 30px -10px rgba(0,0,0,0.5)',
                 }}
-              />
-              <Legend
-                formatter={(value) =>
-                  value === 'income'
-                    ? 'Revenus'
-                    : value === 'expense'
-                    ? 'Dépenses'
-                    : 'Épargne'
-                }
               />
               <Bar
                 dataKey="income"
                 fill="#10b981"
-                radius={[6, 6, 0, 0]}
-                maxBarSize={40}
+                radius={[6, 6, 6, 6]}
+                maxBarSize={28}
               />
               <Bar
                 dataKey="expense"
                 fill="#f43f5e"
-                radius={[6, 6, 0, 0]}
-                maxBarSize={40}
+                radius={[6, 6, 6, 6]}
+                maxBarSize={28}
               />
               <Bar
                 dataKey="savings"
                 fill="#3b82f6"
-                radius={[6, 6, 0, 0]}
-                maxBarSize={40}
+                radius={[6, 6, 6, 6]}
+                maxBarSize={28}
               />
             </BarChart>
           </ResponsiveContainer>
         </div>
-      </Card>
+      </div>
 
-      {/* Category Breakdown Table / Progress bars */}
-      <Card padding="lg">
-        <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-1">
-          Répartition des dépenses par catégorie
-        </h2>
-        <p className="text-xs text-slate-400 mb-6">
-          Classement de vos postes de dépenses par volume financier
-        </p>
+      {/* Category Breakdown Overhaul: Donut Chart + Ranked List */}
+      <div className="p-5 sm:p-6 rounded-3xl bg-white/80 dark:bg-zinc-900/60 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs space-y-6">
+        <div>
+          <h2 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white">
+            {t.categoryBreakdown}
+          </h2>
+          <p className="text-xs text-zinc-400 mt-0.5">
+            {t.categoryBreakdownSubtitle}
+          </p>
+        </div>
 
         {breakdownToDisplay.length === 0 ? (
-          <div className="py-8 text-center text-xs text-slate-400">
-            Aucune dépense à analyser.
+          <div className="py-12 text-center text-xs text-zinc-400">
+            {t.noExpensesRecorded}
           </div>
         ) : (
-          <div className="space-y-4">
-            {breakdownToDisplay.map((item) => (
-              <div key={item.id} className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="w-3 h-3 rounded-full shrink-0"
-                      style={{ backgroundColor: item.color }}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            {/* Left: Animated Apple Donut Chart */}
+            <div className="lg:col-span-5 flex flex-col items-center justify-center relative">
+              <div className="w-56 h-56 sm:w-64 sm:h-64 relative flex items-center justify-center">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Tooltip
+                      formatter={(val: number) => [
+                        formatMAD(val, false, language),
+                        t.donutCenterTotal,
+                      ]}
+                      contentStyle={{
+                        borderRadius: '14px',
+                        backgroundColor: 'rgba(24, 24, 27, 0.95)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        backdropFilter: 'blur(10px)',
+                        color: '#fff',
+                        fontSize: '11px',
+                      }}
                     />
-                    <span className="font-bold text-slate-800 dark:text-slate-200">
-                      {item.name}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[#787774] text-[11px] tabular-nums">{item.percentage}%</span>
-                    <span className={`font-medium text-[#37352f] dark:text-[#ecebed] tabular-nums transition-[filter] duration-200 ${hideBalance ? 'privacy-blur' : ''}`}>
-                      {formatMAD(item.amount, false, language)}
-                    </span>
-                  </div>
-                </div>
+                    <Pie
+                      data={breakdownToDisplay}
+                      dataKey="amount"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={68}
+                      outerRadius={96}
+                      paddingAngle={3}
+                      cornerRadius={6}
+                      animationDuration={800}
+                    >
+                      {breakdownToDisplay.map((entry) => (
+                        <Cell
+                          key={entry.id}
+                          fill={entry.color}
+                          stroke="transparent"
+                        />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
 
-                {/* Progress bar: 0% empty */}
-                <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all duration-300"
-                    style={{
-                      width: item.percentage === 0 ? '0%' : `${item.percentage}%`,
-                      backgroundColor: item.color,
-                    }}
-                  />
+                {/* Donut Center Totals */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
+                    {t.donutCenterTotal}
+                  </span>
+                  <div className="text-base sm:text-lg font-extrabold text-zinc-900 dark:text-white tabular-nums mt-0.5">
+                    <PrivacyCurrency
+                      amount={totalCategorySpent}
+                      className="font-extrabold text-zinc-900 dark:text-white"
+                    />
+                  </div>
                 </div>
               </div>
-            ))}
+            </div>
+
+            {/* Right: Detailed Ranked Category List with Progress Bars */}
+            <div className="lg:col-span-7 space-y-3.5">
+              {breakdownToDisplay.map((item) => (
+                <div key={item.id} className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="w-2.5 h-2.5 rounded-full shrink-0 shadow-2xs"
+                        style={{ backgroundColor: item.color }}
+                      />
+                      <span className="font-bold text-zinc-800 dark:text-zinc-200">
+                        {item.name}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span className="text-zinc-400 text-[11px] font-semibold tabular-nums">
+                        {item.percentage}%
+                      </span>
+                      <span className="font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">
+                        <PrivacyCurrency
+                          amount={item.amount}
+                          className="font-bold text-zinc-900 dark:text-zinc-100"
+                        />
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* High contrast sleek progress bar */}
+                  <div className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-full h-2 overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-500 ease-out"
+                      style={{
+                        width: item.percentage === 0 ? '0%' : `${item.percentage}%`,
+                        backgroundColor: item.color,
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
-      </Card>
+      </div>
     </div>
   );
 };

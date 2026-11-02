@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   Tags,
   TrendingUp,
+  TrendingDown,
   History,
   PieChart,
   Settings,
@@ -51,6 +52,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
     { id: 'dashboard', label: t.dashboard, icon: LayoutDashboard },
     { id: 'categories', label: t.categories, icon: Tags },
     { id: 'income', label: t.income, icon: TrendingUp },
+    { id: 'expenses', label: t.expenses, icon: TrendingDown },
     { id: 'history', label: t.history, icon: History },
     { id: 'stats', label: t.stats, icon: PieChart },
   ];

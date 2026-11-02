@@ -74,6 +74,7 @@ export const Navbar: React.FC = () => {
     label: string;
     icon: React.ComponentType<{ className?: string }>;
   }[] = [
+    { id: 'expenses', label: t.expenses, icon: ArrowDownRight },
     { id: 'notes', label: t.notes, icon: FileText },
     { id: 'debts', label: t.debts, icon: HandCoins },
     { id: 'subscriptions', label: t.subscriptions, icon: CreditCard },

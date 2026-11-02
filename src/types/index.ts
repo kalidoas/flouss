@@ -89,6 +89,7 @@ export type ScreenId =
   | 'notes'
   | 'categories'
   | 'income'
+  | 'expenses'
   | 'history'
   | 'stats'
   | 'settings'

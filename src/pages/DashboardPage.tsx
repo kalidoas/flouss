@@ -15,7 +15,6 @@ import { FocusTaskList } from '../components/dashboard/FocusTaskList';
 import { PriorityHub } from '../components/dashboard/PriorityHub';
 import { WalletCard } from '../components/dashboard/WalletCard';
 import { AppleCardBalanceChart } from '../components/dashboard/AppleCardBalanceChart';
-import { AIAssistantCard } from '../components/dashboard/AIAssistantCard';
 import { PrivacyCurrency } from '../components/common/PrivacyCurrency';
 import {
   calculateAvailableBalance,
@@ -221,11 +220,8 @@ export const DashboardPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Apple HIG Data Viz & Smart AI Insights */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
-        <AppleCardBalanceChart balance={balance} />
-        <AIAssistantCard onQuickAction={() => setIsSaveAllModalOpen(true)} />
-      </div>
+      {/* Apple HIG Financial Balance Chart */}
+      <AppleCardBalanceChart balance={balance} />
 
       {/* Notion Focus View: "Ma liste" Section */}
       <FocusTaskList />

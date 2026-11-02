@@ -35,7 +35,10 @@ import {
   Compass,
   Smartphone,
   CheckCircle2,
+  Bell,
+  BellRing,
 } from 'lucide-react';
+import { NotificationService } from '../services/notificationService';
 
 export const SettingsPage: React.FC = () => {
   const {
@@ -62,6 +65,7 @@ export const SettingsPage: React.FC = () => {
     firebaseUser,
     hideBalance,
     startTour,
+    showToast,
   } = useAppStore();
 
   const activeAccount =
@@ -79,6 +83,11 @@ export const SettingsPage: React.FC = () => {
   const t = translations[language].settings;
   const tCommon = translations[language].common;
   const tAcc = translations[language].accounts;
+  const tNotif = translations[language].notifications;
+
+  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>(() =>
+    NotificationService.getPermission()
+  );
 
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
 
@@ -110,6 +119,36 @@ export const SettingsPage: React.FC = () => {
     if (nextCount >= 7) {
       setIsDevMode(true);
       playHapticFeedback('success');
+    }
+  };
+
+  const handleEnableNotifications = async () => {
+    const status = await NotificationService.requestPermission();
+    setNotificationPermission(status);
+    if (status === 'granted') {
+      playHapticFeedback('success');
+      showToast({ message: tNotif.testSuccess });
+      NotificationService.showNotification(
+        language === 'ar' ? 'فلوس - إشعارات النظام' : 'Flouss - Notifications Système',
+        {
+          body: tNotif.testSuccess,
+          tag: 'flouss-permission-granted',
+        }
+      );
+    }
+  };
+
+  const handleTestNotification = async () => {
+    playHapticFeedback('medium');
+    const sent = await NotificationService.showNotification(
+      language === 'ar' ? 'فلوس - إشعار تجريبي' : 'Flouss - Test Notification',
+      {
+        body: tNotif.testSuccess,
+        tag: 'flouss-test',
+      }
+    );
+    if (sent) {
+      showToast({ message: tNotif.testSuccess });
     }
   };
 
@@ -431,6 +470,78 @@ export const SettingsPage: React.FC = () => {
               </li>
             </ol>
           </div>
+        </div>
+      </Card>
+
+      {/* OS-Level System Notifications (PWA) */}
+      <Card padding="lg">
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center justify-center shrink-0">
+              <BellRing className="w-5 h-5 stroke-[2.2]" />
+            </div>
+            <div>
+              <h2 className="text-base font-extrabold text-zinc-900 dark:text-white">
+                {tNotif.title}
+              </h2>
+              <p className="text-xs text-zinc-400">
+                {tNotif.subtitle}
+              </p>
+            </div>
+          </div>
+
+          {notificationPermission === 'granted' ? (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 text-xs font-bold border border-emerald-500/30">
+              <CheckCircle2 className="w-3.5 h-3.5" /> {tNotif.statusGranted}
+            </span>
+          ) : notificationPermission === 'denied' ? (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/15 text-rose-700 dark:text-rose-300 text-xs font-bold border border-rose-500/30">
+              <AlertTriangle className="w-3.5 h-3.5" /> {tNotif.statusDenied}
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 text-xs font-bold border border-black/[0.06] dark:border-white/[0.08]">
+              {tNotif.statusDefault}
+            </span>
+          )}
+        </div>
+
+        {/* Features Checklist */}
+        <div className="space-y-2 py-2 text-xs text-zinc-600 dark:text-zinc-300 border-t border-b border-black/[0.05] dark:border-white/[0.06] my-3">
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
+            <span>{tNotif.feature1}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
+            <span>{tNotif.feature2}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
+            <span>{tNotif.feature3}</span>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="pt-2 flex flex-wrap gap-2.5">
+          {notificationPermission !== 'granted' ? (
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleEnableNotifications}
+              icon={<Bell className="w-4 h-4" />}
+            >
+              {tNotif.enableBtn}
+            </Button>
+          ) : (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleTestNotification}
+              icon={<BellRing className="w-4 h-4" />}
+            >
+              {tNotif.testBtn}
+            </Button>
+          )}
         </div>
       </Card>
 
