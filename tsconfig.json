@@ -18,15 +18,7 @@
     "strict": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "noFallthroughCasesInSwitch": true,
-
-    /* Direct module paths */
-    "baseUrl": ".",
-    "paths": {
-      "@firebase/firestore": ["node_modules/@firebase/firestore/dist/index.d.ts"],
-      "@firebase/auth": ["node_modules/@firebase/auth/dist/index.d.ts"],
-      "@firebase/app": ["node_modules/@firebase/app/dist/app-public.d.ts"]
-    }
+    "noFallthroughCasesInSwitch": true
   },
   "include": ["src"]
 }
