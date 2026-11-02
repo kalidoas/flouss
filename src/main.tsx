@@ -2,6 +2,10 @@ import React, { Component, ErrorInfo, ReactNode } from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './index.css';
+import { initGlobalHaptics } from './utils/haptics';
+
+// Initialize global capture-phase haptics delegation (0ms sensory latency)
+initGlobalHaptics();
 
 interface Props {
   children: ReactNode;

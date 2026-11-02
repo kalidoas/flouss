@@ -10,6 +10,13 @@ import { Language } from '../types';
 import { exportToExcel } from '../utils/excelExport';
 import { UserProfileModal } from '../components/profile/UserProfileModal';
 import {
+  isHapticsEnabled,
+  setHapticsEnabled,
+  isSoundEnabled,
+  setSoundEnabled,
+  playHapticFeedback,
+} from '../utils/haptics';
+import {
   Lock,
   Download,
   Upload,
@@ -85,6 +92,26 @@ export const SettingsPage: React.FC = () => {
   const [showPinSetupModal, setShowPinSetupModal] = useState(false);
   const [newPin, setNewPin] = useState('');
   const [pinError, setPinError] = useState('');
+
+  // Haptics & Sensory Preferences State
+  const [hapticsOn, setHapticsOn] = useState(() => isHapticsEnabled());
+  const [soundOn, setSoundOn] = useState(() => isSoundEnabled());
+  const [devTapCount, setDevTapCount] = useState(0);
+  const [isDevMode, setIsDevMode] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return new URLSearchParams(window.location.search).get('dev') === '1';
+  });
+  const [playgroundToggle, setPlaygroundToggle] = useState(false);
+
+  const handleVersionTap = () => {
+    playHapticFeedback('light');
+    const nextCount = devTapCount + 1;
+    setDevTapCount(nextCount);
+    if (nextCount >= 7) {
+      setIsDevMode(true);
+      playHapticFeedback('success');
+    }
+  };
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -544,6 +571,66 @@ export const SettingsPage: React.FC = () => {
               MAD (د.م.)
             </span>
           </div>
+
+          {/* Haptic Feedback Toggle (Default: ON) */}
+          <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800 text-xs">
+            <div className="max-w-[75%]">
+              <p className="font-bold text-slate-800 dark:text-slate-200">
+                {t.hapticsTitle}
+              </p>
+              <p className="text-slate-400 text-[11px] leading-relaxed">{t.hapticsDesc}</p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={hapticsOn}
+              onClick={() => {
+                const next = !hapticsOn;
+                setHapticsOn(next);
+                setHapticsEnabled(next);
+                if (next) playHapticFeedback('medium');
+              }}
+              className={`w-11 h-6 rounded-full transition-colors relative flex items-center p-0.5 cursor-pointer ${
+                hapticsOn ? 'bg-emerald-600' : 'bg-slate-300 dark:bg-slate-700'
+              }`}
+            >
+              <span
+                className={`w-5 h-5 rounded-full bg-white shadow-md transition-transform ${
+                  hapticsOn ? (language === 'ar' ? '-translate-x-5' : 'translate-x-5') : 'translate-x-0'
+                }`}
+              />
+            </button>
+          </div>
+
+          {/* Sound Effects Toggle (Default: OFF) */}
+          <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800 text-xs">
+            <div className="max-w-[75%]">
+              <p className="font-bold text-slate-800 dark:text-slate-200">
+                {t.soundTitle}
+              </p>
+              <p className="text-slate-400 text-[11px] leading-relaxed">{t.soundDesc}</p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={soundOn}
+              onClick={() => {
+                const next = !soundOn;
+                setSoundOn(next);
+                setSoundEnabled(next);
+                if (next) playHapticFeedback('success');
+              }}
+              className={`w-11 h-6 rounded-full transition-colors relative flex items-center p-0.5 cursor-pointer ${
+                soundOn ? 'bg-emerald-600' : 'bg-slate-300 dark:bg-slate-700'
+              }`}
+            >
+              <span
+                className={`w-5 h-5 rounded-full bg-white shadow-md transition-transform ${
+                  soundOn ? (language === 'ar' ? '-translate-x-5' : 'translate-x-5') : 'translate-x-0'
+                }`}
+              />
+            </button>
+          </div>
         </div>
       </Card>
 
@@ -784,6 +871,104 @@ export const SettingsPage: React.FC = () => {
           </div>
         </div>
       </Modal>
+
+      {/* Dev Mode: Haptics & Sensory Playground */}
+      {isDevMode && (
+        <Card padding="lg" className="border-indigo-300/80 dark:border-indigo-800/60 bg-indigo-50/20 dark:bg-indigo-950/20 shadow-md">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-base font-extrabold text-indigo-900 dark:text-indigo-200">
+                    {t.hapticsPlayground}
+                  </h2>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30">
+                    DEV MODE
+                  </span>
+                </div>
+                <p className="text-xs text-indigo-600/80 dark:text-indigo-300/80 mt-0.5">
+                  {t.hapticsPlaygroundDesc}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                data-haptic="light"
+                onClick={() => playHapticFeedback('light')}
+              >
+                {t.testLight}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                data-haptic="medium"
+                onClick={() => playHapticFeedback('medium')}
+              >
+                {t.testMedium}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                data-haptic="rigid"
+                onClick={() => playHapticFeedback('rigid')}
+              >
+                {t.testRigid}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                data-haptic="selection"
+                onClick={() => playHapticFeedback('selection')}
+              >
+                {t.testSelection}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                data-haptic="success"
+                onClick={() => playHapticFeedback('success')}
+              >
+                {t.testSuccess}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                data-haptic="error"
+                onClick={() => playHapticFeedback('error')}
+              >
+                {t.testError}
+              </Button>
+            </div>
+
+            {/* Native Switch Test */}
+            <div className="pt-3 border-t border-indigo-200/50 dark:border-indigo-800/40 flex items-center justify-between text-xs">
+              <span className="font-semibold text-indigo-900 dark:text-indigo-200">
+                {t.toggleTest}
+              </span>
+              <input
+                type="checkbox"
+                checked={playgroundToggle}
+                onChange={(e) => setPlaygroundToggle(e.target.checked)}
+                className="w-5 h-5 rounded accent-indigo-600 cursor-pointer"
+              />
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* Secret Dev Mode Unlock Counter on App Version */}
+      <div className="text-center pt-2 pb-6 select-none">
+        <button
+          type="button"
+          onClick={handleVersionTap}
+          className="text-xs text-zinc-400 dark:text-zinc-500 font-mono hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors cursor-pointer"
+        >
+          Flouss v1.2.0 • Build 2026.11 {isDevMode ? '(Dev Unlocked ⚡)' : ''}
+        </button>
+      </div>
 
       {/* User Profile & Cloud Sync Modal */}
       <UserProfileModal
