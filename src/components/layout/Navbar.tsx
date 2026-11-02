@@ -266,7 +266,7 @@ export const Navbar: React.FC = () => {
       {/* Sleek iOS Bottom-Sheet Action Menu (Center + Triggered) */}
       <AnimatePresence>
         {isActionSheetOpen && (
-          <div className="fixed inset-0 z-50 flex items-end justify-center md:hidden">
+          <div className="fixed inset-0 z-[150] flex items-end justify-center md:hidden">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -280,7 +280,7 @@ export const Navbar: React.FC = () => {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 350 }}
-              className="relative w-full max-h-[85vh] bg-white/95 dark:bg-zinc-900/95 text-zinc-900 dark:text-white backdrop-blur-2xl rounded-t-3xl p-6 shadow-2xl border-t border-black/10 dark:border-white/15 z-10 space-y-4 pb-10 safe-area-bottom"
+              className="relative w-full max-h-[85vh] bg-white/95 dark:bg-zinc-900/95 text-zinc-900 dark:text-white backdrop-blur-2xl rounded-t-3xl p-6 shadow-2xl border-t border-black/10 dark:border-white/15 z-10 space-y-4 pb-12 safe-area-bottom pb-safe"
             >
               <div className="w-12 h-1.5 bg-zinc-300 dark:bg-zinc-700 rounded-full mx-auto -mt-2 mb-2" />
 
@@ -411,7 +411,7 @@ export const Navbar: React.FC = () => {
       {/* Quick Pinned Note Modal (Mobile) */}
       <AnimatePresence>
         {isQuickNoteModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -478,7 +478,7 @@ export const Navbar: React.FC = () => {
       {/* More Pages iOS Bottom Drawer */}
       <AnimatePresence>
         {isMoreMenuOpen && (
-          <div className="fixed inset-0 z-50 flex items-end justify-center md:hidden">
+          <div className="fixed inset-0 z-[150] flex items-end justify-center md:hidden">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -492,7 +492,7 @@ export const Navbar: React.FC = () => {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 350 }}
-              className="relative w-full max-h-[85vh] overflow-y-auto bg-white/95 dark:bg-zinc-900/95 text-zinc-900 dark:text-white backdrop-blur-2xl rounded-t-3xl p-6 shadow-2xl border-t border-black/10 dark:border-white/15 z-10 space-y-4 pb-10 safe-area-bottom"
+              className="relative w-full max-h-[85vh] overflow-y-auto bg-white/95 dark:bg-zinc-900/95 text-zinc-900 dark:text-white backdrop-blur-2xl rounded-t-3xl p-6 shadow-2xl border-t border-black/10 dark:border-white/15 z-10 space-y-4 pb-14 safe-area-bottom pb-safe"
             >
               <div className="w-12 h-1.5 bg-zinc-300 dark:bg-zinc-700 rounded-full mx-auto -mt-2 mb-3" />
 
