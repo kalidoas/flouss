@@ -32,6 +32,161 @@
     font-variant-numeric: tabular-nums;
     font-feature-settings: 'tnum' on, 'lnum' on;
   }
+
+  /* ==========================================================================
+     PHASE 2/3 STEP B: Global Press & Tactile Physical Response Layer
+     ========================================================================== */
+
+  /* 1. All interactive elements get springy transition & touch manipulation */
+  button,
+  a[href],
+  [role="button"],
+  [role="tab"],
+  [role="switch"],
+  [role="menuitem"],
+  [role="option"],
+  summary,
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"] {
+    transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1),
+                filter 0.18s ease,
+                background-color 0.18s ease;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* 2. Default Active Scale (.97) */
+  button:active:not(:disabled):not([aria-disabled="true"]),
+  a[href]:active,
+  [role="button"]:active:not([aria-disabled="true"]),
+  [role="switch"]:active:not([aria-disabled="true"]),
+  [role="menuitem"]:active,
+  [role="option"]:active,
+  summary:active,
+  input[type="button"]:active:not(:disabled),
+  input[type="submit"]:active:not(:disabled),
+  input[type="reset"]:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  /* 3. Tab Items Active Scale (.92) */
+  [role="tab"]:active,
+  nav button:active,
+  .tab-item:active,
+  [data-press="tab"]:active {
+    transform: scale(0.92) !important;
+  }
+
+  /* 4. Rows & Cards Active Scale (.985) */
+  .interactive-card:active,
+  .pressable-card:active,
+  .card-pressable:active,
+  [data-press="card"]:active,
+  .interactive-row:active,
+  .pressable-row:active,
+  .row-pressable:active,
+  [data-press="row"]:active {
+    transform: scale(0.985) !important;
+  }
+
+  /* 5. UI Chrome User-Select: none & Touch-Callout: none */
+  button,
+  [role="button"],
+  [role="tab"],
+  [role="switch"],
+  [role="menuitem"],
+  [role="option"],
+  nav,
+  header,
+  aside,
+  summary,
+  .ui-chrome {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  /* Never disable user-select or callout on editable inputs, textareas, and notes */
+  input,
+  textarea,
+  [contenteditable="true"],
+  .selectable-text,
+  .note-content,
+  [data-selectable="true"] {
+    user-select: text !important;
+    -webkit-user-select: text !important;
+    -webkit-touch-callout: default !important;
+  }
+
+  /* 6. Sheets & Dialogs Overscroll Containment */
+  .bottom-sheet,
+  .sheet-content,
+  [role="dialog"],
+  .modal-content,
+  [data-sheet],
+  [data-flouss-modal] {
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ==========================================================================
+   macOS & Desktop Hover Feel, Pointer Cursors & Focus Rings
+   ========================================================================== */
+@media (hover: hover) and (pointer: fine) {
+  button,
+  a[href],
+  [role="button"],
+  [role="tab"],
+  [role="switch"],
+  [role="menuitem"],
+  [role="option"],
+  summary {
+    cursor: pointer;
+  }
+
+  /* Subtle hover lift and brightness boost on cards and rows */
+  .interactive-card:hover,
+  .pressable-card:hover,
+  .card-pressable:hover,
+  [data-press="card"]:hover,
+  .interactive-row:hover,
+  .pressable-row:hover,
+  .row-pressable:hover,
+  [data-press="row"]:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.04);
+  }
+
+  /* Visible accessible focus rings */
+  button:focus-visible,
+  a[href]:focus-visible,
+  [role="button"]:focus-visible,
+  [role="tab"]:focus-visible,
+  [role="switch"]:focus-visible,
+  summary:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+  }
+}
+
+/* ==========================================================================
+   Accessibility: Strict Respect for prefers-reduced-motion
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+    transform: none !important;
+  }
 }
 
 /* Privacy Mode Blur Effect for amounts (keeps inputs clear) */

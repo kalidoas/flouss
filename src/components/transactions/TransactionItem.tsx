@@ -113,7 +113,10 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
 
   return (
     <>
-      <div className="group flex items-center justify-between p-2.5 sm:p-3 rounded-md bg-white dark:bg-[#202020] border border-[#e3e2de] dark:border-[#2f2f2f] hover:bg-[#fbfbfa] dark:hover:bg-[#252525] transition-colors">
+      <div
+        data-press="row"
+        className="group interactive-row flex items-center justify-between p-2.5 sm:p-3 rounded-md bg-white dark:bg-[#202020] border border-[#e3e2de] dark:border-[#2f2f2f] hover:bg-[#fbfbfa] dark:hover:bg-[#252525] transition-colors"
+      >
         {/* Left: Icon & Names */}
         <div className="flex items-center gap-2.5 min-w-0">
           <div

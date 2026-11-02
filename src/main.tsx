@@ -7,6 +7,11 @@ import { initGlobalHaptics } from './utils/haptics';
 // Initialize global capture-phase haptics delegation (0ms sensory latency)
 initGlobalHaptics();
 
+// Enable iOS Safari :active pseudo-class state reliability
+if (typeof document !== 'undefined') {
+  document.addEventListener('touchstart', () => {}, { passive: true });
+}
+
 interface Props {
   children: ReactNode;
 }

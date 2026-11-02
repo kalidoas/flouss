@@ -122,6 +122,9 @@ export const Navbar: React.FC = () => {
         <div className="flex items-center justify-around flex-1 gap-1">
           {/* Tab 1: Dashboard */}
           <button
+            role="tab"
+            data-press="tab"
+            aria-selected={activeScreen === 'dashboard'}
             onClick={() => {
               playHapticFeedback('light');
               setActiveScreen('dashboard');
@@ -149,6 +152,9 @@ export const Navbar: React.FC = () => {
 
           {/* Tab 2: Categories */}
           <button
+            role="tab"
+            data-press="tab"
+            aria-selected={activeScreen === 'categories'}
             onClick={() => {
               playHapticFeedback('light');
               setActiveScreen('categories');
@@ -197,6 +203,9 @@ export const Navbar: React.FC = () => {
         <div className="flex items-center justify-around flex-1 gap-1">
           {/* Tab 4: Program (Tasks) */}
           <button
+            role="tab"
+            data-press="tab"
+            aria-selected={activeScreen === 'tasks'}
             onClick={() => {
               playHapticFeedback('light');
               setActiveScreen('tasks');
@@ -224,6 +233,9 @@ export const Navbar: React.FC = () => {
 
           {/* Tab 5: More */}
           <button
+            role="tab"
+            data-press="tab"
+            aria-selected={isMoreActive}
             onClick={() => {
               playHapticFeedback('light');
               setIsMoreMenuOpen(true);
