@@ -13,6 +13,13 @@ export const springs = {
     mass: 0.8,
   } as const satisfies SpringPreset,
 
+  smooth: {
+    type: 'spring',
+    stiffness: 260,
+    damping: 28,
+    mass: 1,
+  } as const satisfies SpringPreset,
+
   bouncy: {
     type: 'spring',
     stiffness: 300,

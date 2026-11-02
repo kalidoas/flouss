@@ -53,12 +53,11 @@ export const WalletCard: React.FC<WalletCardProps> = ({
   const [selectedMonth, setSelectedMonth] = useState<string>(currentMonth);
   const isCurrentMonth = selectedMonth === currentMonth;
 
-  // Single source of truth selector matching AppleCardBalanceChart
-  const activeBalance = selectAvailableBalance({
-    initialBalance,
-    transactions,
-    balance: typeof propBalance === 'number' && !isNaN(propBalance) ? propBalance : storeBalance,
-  });
+  // Single source of truth: strictly consume calculateAvailableBalance
+  const activeBalance =
+    typeof propBalance === 'number' && !isNaN(propBalance)
+      ? propBalance
+      : calculateAvailableBalance(initialBalance, transactions);
 
   // Calculate historical balance and cashflow if viewing past months
   const { displayBalance, displayIncome, displayExpense } = useMemo(() => {

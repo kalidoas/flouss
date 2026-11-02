@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useAppStore } from './store/useAppStore';
+import { useAppStore, applyThemeToDOM } from './store/useAppStore';
 import { auth } from './lib/firebase';
 import { onAuthStateChanged } from '@firebase/auth';
 import { Login } from './components/common/Login';
@@ -47,26 +47,17 @@ export const App: React.FC = () => {
 
   // Apply dark theme and language direction to <html> and <body>
   useEffect(() => {
-    const root = document.documentElement;
-    const body = document.body;
     const isDark =
-      theme === 'dark' ||
-      (theme === 'system' &&
-        typeof window !== 'undefined' &&
-        window.matchMedia &&
-        window.matchMedia('(prefers-color-scheme: dark)').matches) ||
-      Boolean(isDarkMode);
+      theme === 'dark'
+        ? true
+        : theme === 'light'
+        ? false
+        : typeof window !== 'undefined' &&
+          Boolean(window.matchMedia?.('(prefers-color-scheme: dark)').matches);
 
-    if (isDark) {
-      root.classList.add('dark');
-      body.classList.add('dark');
-      root.style.colorScheme = 'dark';
-    } else {
-      root.classList.remove('dark');
-      body.classList.remove('dark');
-      root.style.colorScheme = 'light';
-    }
+    applyThemeToDOM(isDark);
 
+    const root = document.documentElement;
     root.lang = language;
     root.dir = language === 'ar' ? 'rtl' : 'ltr';
     if (language === 'ar') {
@@ -83,17 +74,7 @@ export const App: React.FC = () => {
     const handleMediaChange = (e: MediaQueryListEvent) => {
       const currentTheme = useAppStore.getState().theme;
       if (currentTheme === 'system') {
-        const root = document.documentElement;
-        const body = document.body;
-        if (e.matches) {
-          root.classList.add('dark');
-          body.classList.add('dark');
-          root.style.colorScheme = 'dark';
-        } else {
-          root.classList.remove('dark');
-          body.classList.remove('dark');
-          root.style.colorScheme = 'light';
-        }
+        applyThemeToDOM(e.matches);
       }
     };
     media.addEventListener?.('change', handleMediaChange);

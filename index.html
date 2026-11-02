@@ -24,6 +24,42 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
+    <!-- Theme Initialization Script (Prevents flash and ensures dark class on <html>) -->
+    <script>
+      (function() {
+        try {
+          var t = localStorage.getItem('flouss_theme');
+          var isDark = false;
+          if (t === 'dark') {
+            isDark = true;
+          } else if (t === 'light') {
+            isDark = false;
+          } else {
+            var raw = localStorage.getItem('flouss_app_storage_v2');
+            if (raw) {
+              var s = JSON.parse(raw);
+              if (s && s.state) {
+                if (s.state.theme === 'dark') isDark = true;
+                else if (s.state.theme === 'light') isDark = false;
+                else if (s.state.theme === 'system' || !s.state.theme) {
+                  isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                }
+              }
+            } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+              isDark = true;
+            }
+          }
+          if (isDark) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.style.colorScheme = 'dark';
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.style.colorScheme = 'light';
+          }
+        } catch (e) {}
+      })();
+    </script>
+
     <title>Flouss — Finances Personnelles (MAD)</title>
   </head>
   <body class="h-full bg-[#f7f6f3] text-[#37352f] antialiased selection:bg-[#2383e2] selection:text-white dark:bg-[#191919] dark:text-[#ecebed] font-sans">

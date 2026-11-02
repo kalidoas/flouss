@@ -21,11 +21,12 @@ export const Header: React.FC = () => {
   } = useAppStore();
 
   const isDark =
-    isDarkMode ??
-    (theme === 'dark' ||
-      (theme === 'system' &&
-        typeof window !== 'undefined' &&
-        Boolean(window.matchMedia?.('(prefers-color-scheme: dark)').matches)));
+    theme === 'dark'
+      ? true
+      : theme === 'light'
+      ? false
+      : typeof window !== 'undefined' &&
+        Boolean(window.matchMedia?.('(prefers-color-scheme: dark)').matches);
 
   const tNav = translations[language].nav;
 

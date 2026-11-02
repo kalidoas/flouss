@@ -118,72 +118,69 @@ export const Navbar: React.FC = () => {
   return (
     <>
       {/* Native Apple iOS Frosted Glass Dock */}
-      <nav className="md:hidden fixed bottom-0 inset-x-0 pb-safe pt-2 px-6 flex justify-between items-center backdrop-blur-3xl bg-white/70 dark:bg-zinc-900/70 border-t border-white/20 shadow-[0_-8px_30px_rgba(0,0,0,0.12)] z-[100]">
-        {/* Left Pair: Dashboard & Categories */}
-        <div className="flex items-center justify-around flex-1 gap-1">
-          {/* Tab 1: Dashboard */}
-          <button
-            role="tab"
-            data-press="tab"
-            aria-selected={activeScreen === 'dashboard'}
-            onClick={() => {
-              playHapticFeedback('light');
-              setActiveScreen('dashboard');
-            }}
-            className={`relative flex flex-col items-center justify-center py-1 px-2.5 transition-colors min-w-[56px] ${
-              activeScreen === 'dashboard'
-                ? 'text-blue-600 dark:text-blue-400 font-semibold'
-                : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200'
-            }`}
-          >
-            {activeScreen === 'dashboard' && (
-              <motion.div
-                layoutId="mobile-dock-active"
-                className="absolute inset-x-0.5 inset-y-0 bg-blue-500/10 dark:bg-white/15 rounded-2xl -z-10"
-                transition={{ type: 'spring', stiffness: 450, damping: 32 }}
-              />
-            )}
-            <LayoutDashboard
-              className={`w-5 h-5 ${
-                activeScreen === 'dashboard' ? 'stroke-[2.4] text-blue-600 dark:text-blue-400' : 'stroke-[1.8]'
-              }`}
+      <nav className="md:hidden fixed bottom-0 inset-x-0 pb-safe pt-2 px-3 sm:px-6 flex justify-between items-center backdrop-blur-3xl bg-white/70 dark:bg-zinc-900/70 border-t border-white/20 shadow-[0_-8px_30px_rgba(0,0,0,0.12)] z-[100]">
+        {/* Tab 1: Dashboard */}
+        <button
+          role="tab"
+          data-press="tab"
+          aria-selected={activeScreen === 'dashboard'}
+          onClick={() => {
+            playHapticFeedback('light');
+            setActiveScreen('dashboard');
+          }}
+          className={`flex-1 min-w-0 relative flex flex-col items-center justify-center py-1 px-1 transition-colors ${
+            activeScreen === 'dashboard'
+              ? 'text-blue-600 dark:text-blue-400 font-semibold'
+              : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200'
+          }`}
+        >
+          {activeScreen === 'dashboard' && (
+            <motion.div
+              layoutId="mobile-dock-active"
+              className="absolute inset-x-1 inset-y-0.5 bg-blue-500/10 dark:bg-white/15 rounded-2xl -z-10"
+              transition={{ type: 'spring', stiffness: 450, damping: 32 }}
             />
-            <span className="text-[10px] mt-0.5 tracking-tight">{t.dashboard}</span>
-          </button>
+          )}
+          <LayoutDashboard
+            className={`w-5 h-5 ${
+              activeScreen === 'dashboard' ? 'stroke-[2.4] text-blue-600 dark:text-blue-400' : 'stroke-[1.8]'
+            }`}
+          />
+          <span className="text-[10px] mt-0.5 tracking-tight truncate max-w-full text-center">{t.dashboard}</span>
+        </button>
 
-          {/* Tab 2: Categories */}
-          <button
-            role="tab"
-            data-press="tab"
-            aria-selected={activeScreen === 'categories'}
-            onClick={() => {
-              playHapticFeedback('light');
-              setActiveScreen('categories');
-            }}
-            className={`relative flex flex-col items-center justify-center py-1 px-2.5 transition-colors min-w-[56px] ${
-              activeScreen === 'categories'
-                ? 'text-blue-600 dark:text-blue-400 font-semibold'
-                : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200'
-            }`}
-          >
-            {activeScreen === 'categories' && (
-              <motion.div
-                layoutId="mobile-dock-active"
-                className="absolute inset-x-0.5 inset-y-0 bg-blue-500/10 dark:bg-white/15 rounded-2xl -z-10"
-                transition={{ type: 'spring', stiffness: 450, damping: 32 }}
-              />
-            )}
-            <Layers
-              className={`w-5 h-5 ${
-                activeScreen === 'categories' ? 'stroke-[2.4] text-blue-600 dark:text-blue-400' : 'stroke-[1.8]'
-              }`}
+        {/* Tab 2: Categories */}
+        <button
+          role="tab"
+          data-press="tab"
+          aria-selected={activeScreen === 'categories'}
+          onClick={() => {
+            playHapticFeedback('light');
+            setActiveScreen('categories');
+          }}
+          className={`flex-1 min-w-0 relative flex flex-col items-center justify-center py-1 px-1 transition-colors ${
+            activeScreen === 'categories'
+              ? 'text-blue-600 dark:text-blue-400 font-semibold'
+              : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200'
+          }`}
+        >
+          {activeScreen === 'categories' && (
+            <motion.div
+              layoutId="mobile-dock-active"
+              className="absolute inset-x-1 inset-y-0.5 bg-blue-500/10 dark:bg-white/15 rounded-2xl -z-10"
+              transition={{ type: 'spring', stiffness: 450, damping: 32 }}
             />
-            <span className="text-[10px] mt-0.5 tracking-tight">{t.categories}</span>
-          </button>
-        </div>
+          )}
+          <Layers
+            className={`w-5 h-5 ${
+              activeScreen === 'categories' ? 'stroke-[2.4] text-blue-600 dark:text-blue-400' : 'stroke-[1.8]'
+            }`}
+          />
+          <span className="text-[10px] mt-0.5 tracking-tight truncate max-w-full text-center">{t.categories}</span>
+        </button>
 
         {/* Center: Elevated Prominent Apple Frosted '+' Action Button (Clean Clearance) */}
-        <div className="px-3 shrink-0 flex items-center justify-center relative -top-3.5">
+        <div className="flex-1 min-w-0 flex items-center justify-center relative -top-3.5 shrink-0 px-1">
           <motion.button
             whileHover={{ scale: 1.06 }}
             whileTap={{ scale: 0.92 }}
@@ -192,76 +189,73 @@ export const Navbar: React.FC = () => {
               setIsActionSheetOpen(true);
             }}
             title={isAr ? 'إضافة معاملة سريعة' : language === 'en' ? 'Add Transaction' : 'Ajouter une transaction'}
-            className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-[0_8px_20px_rgba(37,99,235,0.45)] border border-white/30 backdrop-blur-xl transition-all"
+            className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-[0_6px_18px_rgba(37,99,235,0.4)] border border-white/30 backdrop-blur-xl transition-all"
             aria-label={isAr ? 'إضافة معاملة سريعة' : language === 'en' ? 'Add Transaction' : 'Ajouter une transaction'}
           >
-            <Plus className="w-6 h-6 stroke-[2.8]" />
+            <Plus className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.8]" />
             <span className="sr-only">Add</span>
           </motion.button>
         </div>
 
-        {/* Right Pair: Program & More */}
-        <div className="flex items-center justify-around flex-1 gap-1">
-          {/* Tab 4: Program (Tasks) */}
-          <button
-            role="tab"
-            data-press="tab"
-            aria-selected={activeScreen === 'tasks'}
-            onClick={() => {
-              playHapticFeedback('light');
-              setActiveScreen('tasks');
-            }}
-            className={`relative flex flex-col items-center justify-center py-1 px-2.5 transition-colors min-w-[56px] ${
-              activeScreen === 'tasks'
-                ? 'text-blue-600 dark:text-blue-400 font-semibold'
-                : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200'
-            }`}
-          >
-            {activeScreen === 'tasks' && (
-              <motion.div
-                layoutId="mobile-dock-active"
-                className="absolute inset-x-0.5 inset-y-0 bg-blue-500/10 dark:bg-white/15 rounded-2xl -z-10"
-                transition={{ type: 'spring', stiffness: 450, damping: 32 }}
-              />
-            )}
-            <CheckSquare
-              className={`w-5 h-5 ${
-                activeScreen === 'tasks' ? 'stroke-[2.4] text-blue-600 dark:text-blue-400' : 'stroke-[1.8]'
-              }`}
+        {/* Tab 4: Program (Tasks) */}
+        <button
+          role="tab"
+          data-press="tab"
+          aria-selected={activeScreen === 'tasks'}
+          onClick={() => {
+            playHapticFeedback('light');
+            setActiveScreen('tasks');
+          }}
+          className={`flex-1 min-w-0 relative flex flex-col items-center justify-center py-1 px-1 transition-colors ${
+            activeScreen === 'tasks'
+              ? 'text-blue-600 dark:text-blue-400 font-semibold'
+              : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200'
+          }`}
+        >
+          {activeScreen === 'tasks' && (
+            <motion.div
+              layoutId="mobile-dock-active"
+              className="absolute inset-x-1 inset-y-0.5 bg-blue-500/10 dark:bg-white/15 rounded-2xl -z-10"
+              transition={{ type: 'spring', stiffness: 450, damping: 32 }}
             />
-            <span className="text-[10px] mt-0.5 tracking-tight">{t.tasks}</span>
-          </button>
+          )}
+          <CheckSquare
+            className={`w-5 h-5 ${
+              activeScreen === 'tasks' ? 'stroke-[2.4] text-blue-600 dark:text-blue-400' : 'stroke-[1.8]'
+            }`}
+          />
+          <span className="text-[10px] mt-0.5 tracking-tight truncate max-w-full text-center">{t.tasks}</span>
+        </button>
 
-          {/* Tab 5: More */}
-          <button
-            role="tab"
-            data-press="tab"
-            aria-selected={isMoreActive}
-            onClick={() => {
-              playHapticFeedback('light');
-              setIsMoreMenuOpen(true);
-            }}
-            className={`relative flex flex-col items-center justify-center py-1 px-2.5 transition-colors min-w-[56px] ${
-              isMoreActive
-                ? 'text-blue-600 dark:text-blue-400 font-semibold'
-                : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200'
-            }`}
-          >
-            {isMoreActive && (
-              <motion.div
-                layoutId="mobile-dock-active"
-                className="absolute inset-x-0.5 inset-y-0 bg-blue-500/10 dark:bg-white/15 rounded-2xl -z-10"
-                transition={{ type: 'spring', stiffness: 450, damping: 32 }}
-              />
-            )}
-            <Menu
-              className={`w-5 h-5 ${
-                isMoreMenuOpen ? 'stroke-[2.4] text-blue-600 dark:text-blue-400' : 'stroke-[1.8]'
-              }`}
+        {/* Tab 5: More */}
+        <button
+          role="tab"
+          data-press="tab"
+          aria-selected={isMoreActive}
+          onClick={() => {
+            playHapticFeedback('light');
+            setIsMoreMenuOpen(true);
+          }}
+          className={`flex-1 min-w-0 relative flex flex-col items-center justify-center py-1 px-1 transition-colors ${
+            isMoreActive
+              ? 'text-blue-600 dark:text-blue-400 font-semibold'
+              : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200'
+          }`}
+        >
+          {isMoreActive && (
+            <motion.div
+              layoutId="mobile-dock-active"
+              className="absolute inset-x-1 inset-y-0.5 bg-blue-500/10 dark:bg-white/15 rounded-2xl -z-10"
+              transition={{ type: 'spring', stiffness: 450, damping: 32 }}
             />
-            <span className="text-[10px] mt-0.5 tracking-tight">{t.more}</span>
-          </button>
-        </div>
+          )}
+          <Menu
+            className={`w-5 h-5 ${
+              isMoreMenuOpen ? 'stroke-[2.4] text-blue-600 dark:text-blue-400' : 'stroke-[1.8]'
+            }`}
+          />
+          <span className="text-[10px] mt-0.5 tracking-tight truncate max-w-full text-center">{t.more}</span>
+        </button>
       </nav>
 
       {/* Sleek iOS Bottom-Sheet Action Menu (Center + Triggered) */}

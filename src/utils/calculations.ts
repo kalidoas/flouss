@@ -11,7 +11,7 @@ export function calculateAvailableBalance(
   transactions: Transaction[]
 ): number {
   const base = typeof initialBalance === 'number' && !isNaN(initialBalance) ? initialBalance : 0;
-  return (transactions || []).reduce((acc, tx) => {
+  const raw = (transactions || []).reduce((acc, tx) => {
     const amt = typeof tx.amount === 'number' && !isNaN(tx.amount) ? tx.amount : parseFloat(String(tx.amount || 0)) || 0;
     switch (tx.type) {
       case 'income':
@@ -26,6 +26,7 @@ export function calculateAvailableBalance(
         return acc;
     }
   }, base);
+  return Math.round(raw * 100) / 100;
 }
 
 /**

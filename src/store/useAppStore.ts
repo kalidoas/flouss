@@ -82,6 +82,8 @@ export interface AppState {
   isDarkMode: boolean;
   language: Language;
   activeScreen: ScreenId;
+  screenHistory: ScreenId[];
+  navigationDirection: 'forward' | 'back';
   isPinUnlocked: boolean;
   hideBalance: boolean;
   isBalanceHidden: boolean;
@@ -100,6 +102,7 @@ export interface AppState {
   forceSyncToCloud: () => Promise<{ success: boolean; message: string }>;
 
   setActiveScreen: (screen: ScreenId) => void;
+  navigateBack: () => void;
   setTheme: (theme: ThemeMode) => void;
   toggleTheme: () => void;
   setLanguage: (language: Language) => void;
@@ -483,6 +486,8 @@ export const useAppStore = create<AppState>()(
           Boolean(window.matchMedia?.('(prefers-color-scheme: dark)').matches),
         language: getInitialLanguage() as Language,
         activeScreen: 'dashboard' as ScreenId,
+        screenHistory: [] as ScreenId[],
+        navigationDirection: 'forward' as const,
         activeFocusListId: 'default',
         isPinUnlocked: true,
         hideBalance: true, // Sensitive wealth blurred on startup by default (user requirement)
@@ -925,13 +930,41 @@ export const useAppStore = create<AppState>()(
         },
 
         // ── UI Setters ──────────────────────────────────────────────
-        setActiveScreen: (screen: ScreenId) => set({ activeScreen: screen }),
+        setActiveScreen: (screen: ScreenId) =>
+          set((state: any) => {
+            if (state.activeScreen === screen) return state;
+            const history = [...(state.screenHistory || []), state.activeScreen];
+            return {
+              activeScreen: screen,
+              screenHistory: history.slice(-20),
+              navigationDirection: 'forward',
+            };
+          }),
+
+        navigateBack: () =>
+          set((state: any) => {
+            if (!state.screenHistory || state.screenHistory.length === 0) {
+              if (state.activeScreen !== 'dashboard') {
+                return { activeScreen: 'dashboard', navigationDirection: 'back' };
+              }
+              return state;
+            }
+            const history = [...state.screenHistory];
+            const prevScreen = history.pop() || 'dashboard';
+            return {
+              activeScreen: prevScreen,
+              screenHistory: history,
+              navigationDirection: 'back',
+            };
+          }),
         setTheme: (theme: ThemeMode) => {
           const isDark =
-            theme === 'dark' ||
-            (theme === 'system' &&
-              typeof window !== 'undefined' &&
-              Boolean(window.matchMedia?.('(prefers-color-scheme: dark)').matches));
+            theme === 'dark'
+              ? true
+              : theme === 'light'
+              ? false
+              : typeof window !== 'undefined' &&
+                Boolean(window.matchMedia?.('(prefers-color-scheme: dark)').matches);
 
           applyThemeToDOM(isDark);
           set({ theme, isDarkMode: isDark });
@@ -945,11 +978,12 @@ export const useAppStore = create<AppState>()(
         toggleTheme: () => {
           const s = get();
           const currentIsDark =
-            s.isDarkMode ??
-            (s.theme === 'dark' ||
-              (s.theme === 'system' &&
-                typeof window !== 'undefined' &&
-                Boolean(window.matchMedia?.('(prefers-color-scheme: dark)').matches)));
+            s.theme === 'dark'
+              ? true
+              : s.theme === 'light'
+              ? false
+              : typeof window !== 'undefined' &&
+                Boolean(window.matchMedia?.('(prefers-color-scheme: dark)').matches);
 
           const nextTheme: ThemeMode = currentIsDark ? 'light' : 'dark';
           get().setTheme(nextTheme);
@@ -1784,11 +1818,12 @@ export const useAppStore = create<AppState>()(
       onRehydrateStorage: () => (state) => {
         if (state) {
           const isDark =
-            state.theme === 'dark' ||
-            (state.theme === 'system' &&
-              typeof window !== 'undefined' &&
-              Boolean(window.matchMedia?.('(prefers-color-scheme: dark)').matches)) ||
-            Boolean(state.isDarkMode);
+            state.theme === 'dark'
+              ? true
+              : state.theme === 'light'
+              ? false
+              : typeof window !== 'undefined' &&
+                Boolean(window.matchMedia?.('(prefers-color-scheme: dark)').matches);
           applyThemeToDOM(isDark);
         }
       },

@@ -223,7 +223,7 @@ export const DashboardPage: React.FC = () => {
 
       {/* Apple HIG Data Viz & Smart AI Insights */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
-        <AppleCardBalanceChart />
+        <AppleCardBalanceChart balance={balance} />
         <AIAssistantCard onQuickAction={() => setIsSaveAllModalOpen(true)} />
       </div>
 

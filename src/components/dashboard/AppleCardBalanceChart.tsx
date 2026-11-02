@@ -20,13 +20,22 @@ interface ChartPoint {
   balance: number;
 }
 
-export const AppleCardBalanceChart: React.FC = () => {
-  const { balance: storeBalance, initialBalance, transactions, language, isBalanceHidden, hideBalance } = useAppStore();
+export interface AppleCardBalanceChartProps {
+  balance?: number;
+}
+
+export const AppleCardBalanceChart: React.FC<AppleCardBalanceChartProps> = ({
+  balance: propBalance,
+}) => {
+  const { initialBalance, transactions, language, isBalanceHidden, hideBalance } = useAppStore();
   const currentMonth = getCurrentMonthStr(); // "YYYY-MM"
   const isHidden = isBalanceHidden ?? hideBalance;
 
-  // Single source of truth calculation matching WalletCard exactly
-  const currentBalance = selectAvailableBalance({ initialBalance, transactions, balance: storeBalance });
+  // Single source of truth calculation strictly matching WalletCard
+  const currentBalance =
+    typeof propBalance === 'number' && !isNaN(propBalance)
+      ? propBalance
+      : calculateAvailableBalance(initialBalance, transactions);
 
   // Build daily balance curve for the current month
   const { data, deltaAmount, deltaPercent } = useMemo(() => {
@@ -54,7 +63,7 @@ export const AppleCardBalanceChart: React.FC = () => {
       const dateStr = `${currentMonth}-${dayStr}`;
 
       // Sum transactions that happened on this day
-      const daysTx = monthTx.filter((t) => t.date.slice(0, 10) === dateStr);
+      const daysTx = monthTx.filter((t) => t.date && t.date.slice(0, 10) === dateStr);
       for (const tx of daysTx) {
         const amt = typeof tx.amount === 'number' && !isNaN(tx.amount) ? tx.amount : parseFloat(String(tx.amount || 0)) || 0;
         if (tx.type === 'income') runningBalance += amt;
@@ -68,6 +77,11 @@ export const AppleCardBalanceChart: React.FC = () => {
         date: dateStr,
         balance: Math.round(runningBalance * 100) / 100,
       });
+    }
+
+    // Anchor the current day / last point to exact ground-truth balance
+    if (points.length > 0) {
+      points[points.length - 1].balance = currentBalance;
     }
 
     // If flat (no current month transactions yet), all points consistently equal currentBalance
