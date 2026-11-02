@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   calculateAvailableBalance,
+  calculateReconciledInitialBalance,
   selectAvailableBalance,
   calculateCategorySavedAmount,
   calculateCategorySpentAmount,
@@ -49,6 +50,44 @@ describe('calculateAvailableBalance', () => {
 
     // 0 + 450.5 - 0 - 0 - 50.5 = 400
     expect(calculateAvailableBalance(0, dirtyTransactions)).toBe(400);
+  });
+});
+
+describe('calculateReconciledInitialBalance', () => {
+  it('calculates the exact initial balance required so available balance matches target without altering transactions', () => {
+    const transactions: Transaction[] = [
+      { id: '1', type: 'income', amount: 1500, date: '2025-05-01', createdAt: '2025-05-01' },
+      { id: '2', type: 'expense', amount: 350.5, date: '2025-05-02', createdAt: '2025-05-02' },
+      { id: '3', type: 'contribution', amount: 200, date: '2025-05-03', createdAt: '2025-05-03' },
+    ];
+
+    // Net transactions impact: +1500 - 350.5 - 200 = +949.50
+    // Target balance: 231.50 MAD (as requested by user)
+    const targetBalance = 231.5;
+    const requiredInitial = calculateReconciledInitialBalance(targetBalance, transactions);
+
+    // requiredInitial = 231.5 - 949.5 = -718.00
+    expect(requiredInitial).toBe(-718);
+
+    // Verify round-trip ground truth:
+    const reconciledAvailable = calculateAvailableBalance(requiredInitial, transactions);
+    expect(reconciledAvailable).toBe(231.5);
+  });
+
+  it('handles empty transactions list (target becomes initial balance)', () => {
+    const required = calculateReconciledInitialBalance(500.75, []);
+    expect(required).toBe(500.75);
+    expect(calculateAvailableBalance(required, [])).toBe(500.75);
+  });
+
+  it('prevents IEEE-754 floating point drift on fine decimal reconciliation', () => {
+    const transactions: Transaction[] = [
+      { id: '1', type: 'expense', amount: 147.85, date: '2025-05-01', createdAt: '2025-05-01' },
+    ];
+    // Target is 147.68
+    const target = 147.68;
+    const initial = calculateReconciledInitialBalance(target, transactions);
+    expect(calculateAvailableBalance(initial, transactions)).toBe(147.68);
   });
 });
 

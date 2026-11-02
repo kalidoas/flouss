@@ -7,6 +7,7 @@ import { PrivacyCurrency } from '../common/PrivacyCurrency';
 import { translations } from '../../i18n/translations';
 import { formatMAD, getCurrentMonthStr, formatMonthYear } from '../../utils/formatters';
 import { calculateAvailableBalance, selectAvailableBalance } from '../../utils/calculations';
+import { AdjustBalanceModal } from './AdjustBalanceModal';
 import {
   Wallet,
   ArrowUpRight,
@@ -18,6 +19,7 @@ import {
   ChevronRight,
   History,
   RotateCcw,
+  Pencil,
 } from 'lucide-react';
 
 interface WalletCardProps {
@@ -51,6 +53,7 @@ export const WalletCard: React.FC<WalletCardProps> = ({
 
   // Historical Month Navigation State
   const [selectedMonth, setSelectedMonth] = useState<string>(currentMonth);
+  const [isAdjustBalanceOpen, setIsAdjustBalanceOpen] = useState<boolean>(false);
   const isCurrentMonth = selectedMonth === currentMonth;
 
   // Single source of truth: strictly consume calculateAvailableBalance
@@ -206,36 +209,55 @@ export const WalletCard: React.FC<WalletCardProps> = ({
 
       {/* Slot-Machine Rolling Balance Number with Heavy Privacy Blur specifically on Solde Disponible */}
       <div className="space-y-1 relative z-10">
-        <div
-          onClick={toggleHideBalance}
-          className={`inline-flex items-center gap-2 cursor-pointer group text-3xl sm:text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-white tabular-nums transition-all ${
-            hideBalance ? 'balance-heavy-blur' : ''
-          }`}
-          title={
-            hideBalance
-              ? language === 'ar'
-                ? 'اضغط لإظهار الرصيد'
+        <div className="flex items-center gap-2 flex-wrap">
+          <div
+            onClick={toggleHideBalance}
+            className={`inline-flex items-center gap-2 cursor-pointer group text-3xl sm:text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-white tabular-nums transition-all ${
+              hideBalance ? 'balance-heavy-blur' : ''
+            }`}
+            title={
+              hideBalance
+                ? language === 'ar'
+                  ? 'اضغط لإظهار الرصيد'
+                  : language === 'en'
+                  ? 'Click to reveal balance'
+                  : 'Cliquer pour afficher le solde'
+                : language === 'ar'
+                ? 'اضغط لإخفاء الرصيد'
                 : language === 'en'
-                ? 'Click to reveal balance'
-                : 'Cliquer pour afficher le solde'
-              : language === 'ar'
-              ? 'اضغط لإخفاء الرصيد'
-              : language === 'en'
-              ? 'Click to hide balance'
-              : 'Cliquer pour masquer le solde'
-          }
-        >
-          <AnimatedCurrency
-            value={displayBalance}
-            language={language}
-            hideBalance={false}
-            showCurrency={true}
-          />
-          {hideBalance && (
-            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-zinc-900/10 dark:bg-white/10 text-zinc-700 dark:text-zinc-200 border border-black/10 dark:border-white/15 backdrop-blur-xl shadow-xs group-hover:scale-105 transition-transform">
-              <Eye className="w-3.5 h-3.5 text-emerald-500" />
-              <span>{language === 'ar' ? 'إظهار' : language === 'en' ? 'Show' : 'Afficher'}</span>
-            </span>
+                ? 'Click to hide balance'
+                : 'Cliquer pour masquer le solde'
+            }
+          >
+            <AnimatedCurrency
+              value={displayBalance}
+              language={language}
+              hideBalance={false}
+              showCurrency={true}
+            />
+            {hideBalance && (
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-zinc-900/10 dark:bg-white/10 text-zinc-700 dark:text-zinc-200 border border-black/10 dark:border-white/15 backdrop-blur-xl shadow-xs group-hover:scale-105 transition-transform">
+                <Eye className="w-3.5 h-3.5 text-emerald-500" />
+                <span>{language === 'ar' ? 'إظهار' : language === 'en' ? 'Show' : 'Afficher'}</span>
+              </span>
+            )}
+          </div>
+
+          {/* Subtle Pencil Edit Button to Adjust Balance */}
+          {isCurrentMonth && (
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.92 }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsAdjustBalanceOpen(true);
+              }}
+              className="p-1.5 rounded-xl text-zinc-400 hover:text-blue-600 dark:text-zinc-500 dark:hover:text-blue-400 hover:bg-blue-500/10 transition-all shrink-0 cursor-pointer"
+              title={tWallet.adjustBalance}
+              aria-label={tWallet.adjustBalance}
+            >
+              <Pencil className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.2]" />
+            </motion.button>
           )}
         </div>
       </div>
@@ -299,6 +321,13 @@ export const WalletCard: React.FC<WalletCardProps> = ({
           />
         </div>
       </div>
+
+      {/* Adjust Balance Modal */}
+      <AdjustBalanceModal
+        isOpen={isAdjustBalanceOpen}
+        onClose={() => setIsAdjustBalanceOpen(false)}
+        currentBalance={activeBalance}
+      />
     </AppleGlassCard>
   );
 };

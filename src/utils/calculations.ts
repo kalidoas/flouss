@@ -30,6 +30,20 @@ export function calculateAvailableBalance(
 }
 
 /**
+ * Calculate the required initial balance to reconcile to an exact target balance
+ * without modifying any historical transactions.
+ * Formula: targetBalance = initialBalance + netTxImpact
+ *       => initialBalance = targetBalance - netTxImpact
+ */
+export function calculateReconciledInitialBalance(
+  targetBalance: number,
+  transactions: Transaction[]
+): number {
+  const netTxImpact = calculateAvailableBalance(0, transactions);
+  return Math.round((targetBalance - netTxImpact) * 100) / 100;
+}
+
+/**
  * Single source of truth selector for available balance across WalletCard, AppleCardBalanceChart, etc.
  */
 export function selectAvailableBalance(state: {

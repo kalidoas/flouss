@@ -36,7 +36,11 @@ import {
   DEFAULT_GYM_LOGS,
   DEFAULT_PROGRAM_TRACKS,
 } from './defaultData';
-import { calculateAvailableBalance, calculateGoalProgress } from '../utils/calculations';
+import {
+  calculateAvailableBalance,
+  calculateGoalProgress,
+  calculateReconciledInitialBalance,
+} from '../utils/calculations';
 import { playHapticFeedback } from '../utils/haptics';
 
 export interface AppState {
@@ -115,6 +119,7 @@ export interface AppState {
   setPinCode: (code: string | null) => Promise<void>;
 
   lockInitialBalance: (amount: number, metadata?: { email?: string; pinCode?: string; accountName?: string }) => Promise<void>;
+  reconcileCurrentBalance: (targetBalance: number) => Promise<void>;
 
   addTransaction: (tx: Transaction) => void;
   deleteTransaction: (id: string) => void;
@@ -1101,6 +1106,37 @@ export const useAppStore = create<AppState>()(
           } catch (err: any) {
             console.error('❌ [Flouss Cloud] Error in lockInitialBalance Firestore write:', err);
           }
+        },
+
+        reconcileCurrentBalance: async (targetBalance: number) => {
+          playHapticFeedback('success');
+          const sanitizedTarget =
+            typeof targetBalance === 'number' && !isNaN(targetBalance)
+              ? Math.round(targetBalance * 100) / 100
+              : parseFloat(String(targetBalance || 0)) || 0;
+
+          const s = get();
+          const activeId = s.activeAccountId || s.accounts[0]?.id;
+          const currentAcc = s.accounts.find((a: UserAccount) => a.id === activeId) || s.accounts[0];
+          if (!currentAcc) return;
+
+          const newInitialBalance = calculateReconciledInitialBalance(
+            sanitizedTarget,
+            currentAcc.transactions ?? []
+          );
+
+          updateActive(
+            (acc) => ({
+              ...acc,
+              initialBalance: newInitialBalance,
+              balance: sanitizedTarget,
+            }),
+            true
+          );
+
+          console.log(
+            `🎯 [Flouss Balance Reconciled] Target: ${sanitizedTarget} MAD => New Initial Balance: ${newInitialBalance} MAD`
+          );
         },
 
         // ── Transactions ────────────────────────────────────────────
