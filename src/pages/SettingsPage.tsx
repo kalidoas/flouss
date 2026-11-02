@@ -966,7 +966,7 @@ export const SettingsPage: React.FC = () => {
           onClick={handleVersionTap}
           className="text-xs text-zinc-400 dark:text-zinc-500 font-mono hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors cursor-pointer"
         >
-          Flouss v1.2.0 • Build 2026.11 {isDevMode ? '(Dev Unlocked ⚡)' : ''}
+          v1.0.0 · {__BUILD_SHA__} {isDevMode ? '(Dev Unlocked ⚡)' : ''}
         </button>
       </div>
 
