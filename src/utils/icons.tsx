@@ -88,7 +88,7 @@ export const COLOR_OPTIONS: { hex: string; label: string }[] = [
   { hex: '#78716c', label: 'Terre' },
 ];
 
-export function getCategoryIcon(name: string): React.ComponentType<LucideProps> {
-  const match = ICON_OPTIONS.find((item) => item.name === name);
+export function getCategoryIcon(name?: string | null): React.ComponentType<LucideProps> {
+  const match = name ? ICON_OPTIONS.find((item) => item.name === name) : null;
   return match ? match.icon : Wallet;
 }

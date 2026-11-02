@@ -235,7 +235,7 @@ export const SubscriptionsPage: React.FC = () => {
           <div className="flex items-start justify-between">
             <div className="space-y-1">
               <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 block">
-                {tSub.monthlyLiability || tSub.totalMonthly}
+                {tSub.monthlyLiability}
               </span>
               <PrivacyCurrency
                 amount={stats.totalMonthly}
@@ -304,7 +304,7 @@ export const SubscriptionsPage: React.FC = () => {
           <div className="flex items-start justify-between">
             <div className="space-y-1">
               <span className="text-[11px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 block">
-                {tSub.remainingThisMonth || tSub.remaining}
+                {tSub.remainingThisMonth}
               </span>
               <PrivacyCurrency
                 amount={stats.remaining}

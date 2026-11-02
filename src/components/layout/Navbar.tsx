@@ -503,7 +503,7 @@ export const Navbar: React.FC = () => {
                     <button
                       key={item.id}
                       onClick={() => {
-                        triggerHaptic(30);
+                        playHapticFeedback('light');
                         setActiveScreen(item.id);
                         setIsMoreMenuOpen(false);
                       }}
@@ -543,26 +543,7 @@ export const Navbar: React.FC = () => {
 
                 <button
                   onClick={() => {
-                    triggerHaptic(50);
-                    setIsMoreMenuOpen(false);
-                    logout();
-                  }}
-                  className="w-full flex items-center justify-center gap-2 p-3 rounded-2xl border border-rose-500/30 bg-rose-500/15 text-rose-600 dark:text-rose-400 text-xs font-bold hover:bg-rose-500/25 transition-colors"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div
-                      className="w-6 h-6 rounded-lg flex items-center justify-center text-white text-[10px] font-bold"
-                      style={{ backgroundColor: activeAccount?.avatarColor || '#2383e2' }}
-                    >
-                      {activeAccount?.name?.charAt(0).toUpperCase() || 'U'}
-                    </div>
-                    <span>{activeAccount?.name || 'Mon Profil'}</span>
-                  </div>
-                  <User className="w-4 h-4 text-zinc-400" />
-                </button>
-
-                <button
-                  onClick={() => {
+                    playHapticFeedback('medium');
                     setIsMoreMenuOpen(false);
                     logout();
                   }}

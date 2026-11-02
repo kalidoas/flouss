@@ -81,7 +81,7 @@ export const PriorityHub: React.FC = () => {
 
   const activeDebts = useMemo(() => {
     return (debts || [])
-      .filter((d: DebtItem) => !d.isPaid)
+      .filter((d: DebtItem) => !d.isSettled)
       .slice(0, 2);
   }, [debts]);
 

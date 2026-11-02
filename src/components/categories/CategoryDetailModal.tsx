@@ -108,7 +108,6 @@ export const CategoryDetailModal: React.FC<CategoryDetailModalProps> = ({
         amount: savedAmount,
         categoryId: otherCategories[0]?.id || 'cat_autre',
         date: new Date().toISOString().split('T')[0],
-        time: new Date().toTimeString().slice(0, 5),
         note: language === 'ar' ? `استرداد مدخرات فئة: ${categoryName}` : `Remboursement épargne : ${categoryName}`,
         createdAt: new Date().toISOString(),
       });
@@ -222,7 +221,7 @@ export const CategoryDetailModal: React.FC<CategoryDetailModalProps> = ({
                 {subcategories.map((sub) => {
                   const subTx = categoryTransactions.filter((tx) => tx.subCategoryId === sub.id);
                   const subSpent = subTx.reduce((s, tx) => s + tx.amount, 0);
-                  const SubIcon = getCategoryIcon(sub.icon);
+                  const SubIcon = getCategoryIcon(sub.icon || 'Folder');
                   return (
                     <div
                       key={sub.id}

@@ -6,7 +6,7 @@ import { AnimatedCurrency } from '../common/AnimatedCurrency';
 import { PrivacyCurrency } from '../common/PrivacyCurrency';
 import { translations } from '../../i18n/translations';
 import { formatMAD, getCurrentMonthStr, formatMonthYear } from '../../utils/formatters';
-import { calculateAvailableBalance } from '../../utils/calculations';
+import { calculateAvailableBalance, selectAvailableBalance } from '../../utils/calculations';
 import {
   Wallet,
   ArrowUpRight,
@@ -53,18 +53,12 @@ export const WalletCard: React.FC<WalletCardProps> = ({
   const [selectedMonth, setSelectedMonth] = useState<string>(currentMonth);
   const isCurrentMonth = selectedMonth === currentMonth;
 
-  // Mathematically computed ground truth balance from live transactions
-  const computedLiveBalance = calculateAvailableBalance(initialBalance, transactions);
-
-  // When viewing current month, prioritize the mathematically live balance to react immediately to transactions without lag
-  const activeBalance =
-    (transactions && transactions.length > 0) || initialBalance !== null
-      ? computedLiveBalance
-      : typeof storeBalance === 'number' && !isNaN(storeBalance)
-      ? storeBalance
-      : typeof propBalance === 'number' && !isNaN(propBalance)
-      ? propBalance
-      : computedLiveBalance;
+  // Single source of truth selector matching AppleCardBalanceChart
+  const activeBalance = selectAvailableBalance({
+    initialBalance,
+    transactions,
+    balance: typeof propBalance === 'number' && !isNaN(propBalance) ? propBalance : storeBalance,
+  });
 
   // Calculate historical balance and cashflow if viewing past months
   const { displayBalance, displayIncome, displayExpense } = useMemo(() => {

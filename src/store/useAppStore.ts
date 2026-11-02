@@ -37,7 +37,7 @@ import {
   DEFAULT_PROGRAM_TRACKS,
 } from './defaultData';
 import { calculateAvailableBalance, calculateGoalProgress } from '../utils/calculations';
-import { triggerHaptic, playHapticFeedback } from '../utils/haptics';
+import { playHapticFeedback } from '../utils/haptics';
 
 export interface AppState {
   // ── Auth & Session ──────────────────────────────────────────
@@ -685,7 +685,7 @@ export const useAppStore = create<AppState>()(
             };
 
             // If cloud didn't have focusTasks yet but we had legacy local tasks, sync them up immediately!
-            if (!cloudFT && legacyFocusTasks.length > 0) {
+            if (!cloudFT && legacyFocusTasks.length > 0 && resolvedAccount) {
               debouncedFirestoreSync(uid, resolvedAccount);
             }
           } else if (localAccount) {
@@ -738,6 +738,10 @@ export const useAppStore = create<AppState>()(
               );
               console.log(`🆕 [Flouss Cloud] Created initial document for users/${uid}`);
             } catch (err) {}
+          }
+
+          if (!resolvedAccount) {
+            resolvedAccount = makeInitialAccount(uid, user.displayName || 'Utilisateur', user.email || '');
           }
 
           resolvedAccount.id = uid;
@@ -885,7 +889,7 @@ export const useAppStore = create<AppState>()(
           if (!uid) {
             return { success: false, message: 'Non connecté à un compte Firebase' };
           }
-          const acc = s.currentAccount || s.accounts.find((a) => a.id === uid) || s.accounts[0];
+          const acc = s.currentAccount || (s.accounts || []).find((a: UserAccount) => a.id === uid) || s.accounts[0];
           if (!acc) {
             return { success: false, message: 'Aucun compte actif trouvé' };
           }

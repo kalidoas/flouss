@@ -410,6 +410,7 @@ export const FocusTaskList: React.FC = () => {
                         id: editingId || 'temp',
                         text: editText.trim(),
                         completed: false,
+                        isPinned: false,
                         priority: editPriority,
                         dueDate: editDueDate || undefined,
                         createdAt: new Date().toISOString(),

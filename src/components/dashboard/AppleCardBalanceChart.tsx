@@ -11,7 +11,7 @@ import { useAppStore } from '../../store/useAppStore';
 import { AppleGlassCard } from '../common/AppleGlassCard';
 import { PrivacyCurrency } from '../common/PrivacyCurrency';
 import { formatMAD, getCurrentMonthStr } from '../../utils/formatters';
-import { calculateAvailableBalance } from '../../utils/calculations';
+import { calculateAvailableBalance, selectAvailableBalance } from '../../utils/calculations';
 import { TrendingUp, TrendingDown, Activity } from 'lucide-react';
 
 interface ChartPoint {
@@ -26,35 +26,29 @@ export const AppleCardBalanceChart: React.FC = () => {
   const isHidden = isBalanceHidden ?? hideBalance;
 
   // Single source of truth calculation matching WalletCard exactly
-  const liveBalance = calculateAvailableBalance(initialBalance, transactions);
-  const currentBalance =
-    (transactions && transactions.length > 0) || initialBalance !== null
-      ? liveBalance
-      : typeof storeBalance === 'number' && !isNaN(storeBalance)
-      ? storeBalance
-      : liveBalance;
+  const currentBalance = selectAvailableBalance({ initialBalance, transactions, balance: storeBalance });
 
   // Build daily balance curve for the current month
   const { data, deltaAmount, deltaPercent } = useMemo(() => {
     const today = new Date();
-    const currentYear = today.getFullYear();
-    const currentMonthNum = today.getMonth(); // 0-indexed
     const todayDay = today.getDate();
 
     // Prior transactions determine the month-opening balance
-    const priorTransactions = (transactions || []).filter((tx) => tx.date.slice(0, 10) < `${currentMonth}-01`);
+    const priorTransactions = (transactions || []).filter((tx) => !tx.date || tx.date.slice(0, 7) < currentMonth);
     const startingBalance = calculateAvailableBalance(initialBalance, priorTransactions);
 
     // Current month transactions sorted ascending by date
     const monthTx = (transactions || [])
-      .filter((tx) => tx.date.slice(0, 7) === currentMonth)
+      .filter((tx) => tx.date && tx.date.slice(0, 7) === currentMonth)
       .sort((a, b) => a.date.localeCompare(b.date));
+
+    const txDays = monthTx.map((t) => parseInt(t.date.slice(8, 10), 10)).filter((d) => !isNaN(d));
+    const maxDay = Math.max(todayDay, 5, ...txDays);
 
     const points: ChartPoint[] = [];
     let runningBalance = startingBalance;
-    const maxDay = Math.max(todayDay, 5);
 
-    // Build timeline for days 1 through today
+    // Build timeline for days 1 through maxDay
     for (let day = 1; day <= maxDay; day++) {
       const dayStr = String(day).padStart(2, '0');
       const dateStr = `${currentMonth}-${dayStr}`;
@@ -62,11 +56,11 @@ export const AppleCardBalanceChart: React.FC = () => {
       // Sum transactions that happened on this day
       const daysTx = monthTx.filter((t) => t.date.slice(0, 10) === dateStr);
       for (const tx of daysTx) {
-        const amt = Number(tx.amount) || 0;
+        const amt = typeof tx.amount === 'number' && !isNaN(tx.amount) ? tx.amount : parseFloat(String(tx.amount || 0)) || 0;
         if (tx.type === 'income') runningBalance += amt;
         else if (tx.type === 'expense') runningBalance -= amt;
+        else if (tx.type === 'contribution') runningBalance -= amt;
         else if (tx.type === 'goal_withdraw') runningBalance += amt;
-        else if (tx.type === 'goal_contribution') runningBalance -= amt;
       }
 
       points.push({
@@ -74,11 +68,6 @@ export const AppleCardBalanceChart: React.FC = () => {
         date: dateStr,
         balance: Math.round(runningBalance * 100) / 100,
       });
-    }
-
-    // Always guarantee that the latest/current point matches currentBalance exactly
-    if (points.length > 0) {
-      points[points.length - 1].balance = currentBalance;
     }
 
     // If flat (no current month transactions yet), all points consistently equal currentBalance

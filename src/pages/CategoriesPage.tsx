@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { useAppStore } from '../store/useAppStore';
 import { Category, CategoryGroupId, Transaction } from '../types';
 import { CategoryCard } from '../components/categories/CategoryCard';
@@ -33,7 +33,7 @@ import {
 } from 'lucide-react';
 import { EmptyState } from '../components/common/EmptyState';
 
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
@@ -44,7 +44,7 @@ const containerVariants = {
   },
 };
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 12 },
   show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 380, damping: 26 } },
 };
@@ -492,7 +492,7 @@ export const CategoriesPage: React.FC = () => {
                     {category.subcategories && category.subcategories.length > 0 && (
                       <div className="flex items-center gap-1 mt-1">
                         {category.subcategories.slice(0, 5).map((sub) => {
-                          const SubIcon = getCategoryIcon(sub.icon);
+                          const SubIcon = getCategoryIcon(sub.icon || 'Folder');
                           return (
                             <div
                               key={sub.id}

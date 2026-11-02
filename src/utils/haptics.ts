@@ -120,11 +120,3 @@ export function playHapticFeedback(type: HapticType = 'light'): void {
     playSubtleAudioTick(type);
   }
 }
-
-/**
- * Backwards compatible alias
- */
-export function triggerHaptic(duration = 50): void {
-  const type: HapticType = duration > 40 ? 'medium' : 'light';
-  playHapticFeedback(type);
-}

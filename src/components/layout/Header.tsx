@@ -103,7 +103,7 @@ export const Header: React.FC = () => {
         {/* Toggle hide balance with keyboard hint */}
         <button
           onClick={() => {
-            triggerHaptic(30);
+            playHapticFeedback('light');
             toggleHideBalance();
           }}
           title={hideBalance ? 'Afficher les montants (H)' : 'Masquer les montants (H)'}

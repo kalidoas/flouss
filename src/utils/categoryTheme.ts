@@ -1,4 +1,4 @@
-import { CategoryGroupId } from '../types';
+import { Category, CategoryGroupId } from '../types';
 
 export interface CategoryGroupMeta {
   id: CategoryGroupId;

@@ -29,6 +29,23 @@ export function calculateAvailableBalance(
 }
 
 /**
+ * Single source of truth selector for available balance across WalletCard, AppleCardBalanceChart, etc.
+ */
+export function selectAvailableBalance(state: {
+  initialBalance: number | null;
+  transactions?: Transaction[];
+  balance?: number;
+}): number {
+  const txs = state.transactions || [];
+  if (txs.length > 0 || state.initialBalance !== null) {
+    return calculateAvailableBalance(state.initialBalance, txs);
+  }
+  return typeof state.balance === 'number' && !isNaN(state.balance)
+    ? state.balance
+    : calculateAvailableBalance(state.initialBalance, txs);
+}
+
+/**
  * Calculate the amount saved in a specific category goal
  */
 export function calculateCategorySavedAmount(
