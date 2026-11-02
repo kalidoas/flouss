@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useAppStore } from './store/useAppStore';
 import { auth } from './lib/firebase';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged } from '@firebase/auth';
 import { Login } from './components/common/Login';
 import { Layout } from './components/layout/Layout';
 import { OnboardingModal } from './components/onboarding/OnboardingModal';

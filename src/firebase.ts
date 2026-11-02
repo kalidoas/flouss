@@ -1,6 +1,6 @@
-import { initializeApp, FirebaseApp, getApps, getApp } from 'firebase/app';
-import { getAuth, Auth, GoogleAuthProvider } from 'firebase/auth';
-import { initializeFirestore, getFirestore, Firestore } from 'firebase/firestore';
+import { initializeApp, FirebaseApp, getApps, getApp } from '@firebase/app';
+import { getAuth, Auth, GoogleAuthProvider } from '@firebase/auth';
+import { initializeFirestore, getFirestore, Firestore } from '@firebase/firestore';
 
 // Default project credentials guarantee production builds always connect to the verified Firebase project
 const DEFAULT_CONFIG = {

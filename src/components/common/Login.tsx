@@ -8,7 +8,7 @@ import {
   isSignInWithEmailLink,
   signInWithEmailLink,
   GoogleAuthProvider,
-} from 'firebase/auth';
+} from '@firebase/auth';
 import { setStoredGoogleAccessToken } from '../../services/googleCalendar';
 import { useAppStore } from '../../store/useAppStore';
 import { Logo } from './Logo';
