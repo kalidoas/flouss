@@ -1,6 +1,10 @@
 # Dependencies
 node_modules/
 
+# Local session files & artifacts
+.claw/
+index.chunk-*.js
+
 # Production build
 dist/
 dist-ssr/

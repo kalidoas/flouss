@@ -40,12 +40,15 @@ Suivi des dépenses, gestion des objectifs d'épargne par catégorie et pilotage
 - Graphique Donut de répartition des dépenses par catégorie.
 - Taux d'épargne mensuel (part des revenus mise de côté).
 
-### 6. PWA & Données 100% Locales
-- Fonctionne entièrement hors-ligne (Service Worker + Web App Manifest).
+### 6. PWA & Synchronisation Cloud Sécurisée
+- Support PWA installable sur iOS Safari et Desktop.
+- Synchronisation en temps réel via Firebase Firestore avec persistance locale Zustand (`localStorage`).
+- Mode hors-ligne complet prévu dans la Phase 4.
 - Sauvegarde et restauration locale par fichier JSON (`flouss_backup_*.json`).
 - Bouton de chargement de données de démonstration marocaines.
-- Thème Sombre / Clair / Système.
-- Masquage du solde d'un clic pour la confidentialité dans les lieux publics.
+- Thème Sombre / Clair / Système avec bascule instantanée.
+- Masquage du solde d'un clic (Mode Confidentialité) pour les lieux publics.
+- Support trilingue complet (Arabe RTL, Français, Anglais).
 
 ---
 

@@ -1,3 +1,0 @@
-{"created_at_ms":1793192324950,"model":"auto/best-coding","session_id":"session-1793192324951-0","type":"session_meta","updated_at_ms":1793192328980,"version":1,"workspace_root":"/home/khalid/Documents/Default Project"}
-{"message":{"blocks":[{"text":"Reply exactly CLAW_ENV_TEST_SUCCESS","type":"text"}],"role":"user"},"type":"message"}
-{"message":{"blocks":[{"text":"CLAW_ENV_TEST_SUCCESS","type":"text"}],"role":"assistant","usage":{"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"input_tokens":5266,"output_tokens":62}},"type":"message"}
