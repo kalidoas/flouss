@@ -8,6 +8,7 @@ index.chunk-*.js
 # Production build
 dist/
 dist-ssr/
+*.tsbuildinfo
 
 # Environment files and credentials
 .env

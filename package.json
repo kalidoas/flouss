@@ -12,6 +12,9 @@
     "check:i18n": "node scripts/check-i18n.mjs"
   },
   "dependencies": {
+    "@firebase/app": "^0.16.4",
+    "@firebase/auth": "^1.13.8",
+    "@firebase/firestore": "^4.19.0",
     "canvas-confetti": "^1.9.4",
     "clsx": "^2.1.1",
     "firebase": "^13.1.0",

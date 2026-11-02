@@ -146,7 +146,7 @@ export const Login: React.FC = () => {
   useEffect(() => {
     let isMounted = true;
     getRedirectResult(auth)
-      .then((result) => {
+      .then((result: any) => {
         if (!isMounted) return;
         if (result?.user) {
           try {

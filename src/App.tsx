@@ -39,7 +39,7 @@ export const App: React.FC = () => {
 
   // Listen to Firebase authentication state changes once on mount
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (u) => {
+    const unsubscribe = onAuthStateChanged(auth, async (u: any) => {
       await useAppStore.getState().initAuthSession(u);
     });
     return () => unsubscribe();

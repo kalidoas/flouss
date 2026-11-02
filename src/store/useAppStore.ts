@@ -770,8 +770,8 @@ export const useAppStore = create<AppState>()(
           try {
             activeSnapshotUnsubscribe = onSnapshot(
               userDocRef,
-              (snap) => {
-                if (snap.metadata.hasPendingWrites) return;
+              (snap: any) => {
+                if (snap.metadata?.hasPendingWrites) return;
                 if (!snap.exists()) return;
 
                 const data = snap.data();
@@ -820,7 +820,7 @@ export const useAppStore = create<AppState>()(
                   }
                 }
               },
-              (err) => {
+              (err: any) => {
                 console.warn('[Flouss Cloud] onSnapshot listener warning:', err?.message || err);
               }
             );
