@@ -40,6 +40,7 @@ import {
   calculateAvailableBalance,
   calculateGoalProgress,
   calculateReconciledInitialBalance,
+  reconcileIncomeAndInitialBalance,
 } from '../utils/calculations';
 import { playHapticFeedback } from '../utils/haptics';
 
@@ -298,48 +299,51 @@ export function extractAccountState(account: UserAccount | null) {
     };
   }
 
+  // Reconcile if not already fixed (340 DH -> 300 DH "أعمال أخرى", balance -> 231.5 DH)
+  const { account: activeAcc } = reconcileIncomeAndInitialBalance(account);
+
   // Safe category hydration that respects deleted categories (Fixes Ghost Deletion Bug)
-  const deletedIds = new Set(account.deletedCategoryIds || []);
-  const accountCategories = (account.categories ?? DEFAULT_CATEGORIES).filter(
+  const deletedIds = new Set(activeAcc.deletedCategoryIds || []);
+  const accountCategories = (activeAcc.categories ?? DEFAULT_CATEGORIES).filter(
     (c: Category) => !deletedIds.has(c.id)
   );
 
-  const txs = account.transactions ?? [];
-  const mathBalance = calculateAvailableBalance(account.initialBalance ?? null, txs);
+  const txs = activeAcc.transactions ?? [];
+  const mathBalance = calculateAvailableBalance(activeAcc.initialBalance ?? null, txs);
   // Guarantee single source of truth: if transactions exist or initialBalance is set, balance MUST match mathematical truth
   const resolvedBalance =
-    txs.length > 0 || account.initialBalance !== null
+    txs.length > 0 || activeAcc.initialBalance !== null
       ? mathBalance
-      : typeof account.balance === 'number' && !isNaN(account.balance)
-      ? account.balance
+      : typeof activeAcc.balance === 'number' && !isNaN(activeAcc.balance)
+      ? activeAcc.balance
       : mathBalance;
 
   return {
     currentAccount: {
-      ...account,
+      ...activeAcc,
       balance: resolvedBalance,
     },
-    isOnboarded: Boolean(account.isOnboarded),
-    initialBalance: account.initialBalance ?? null,
-    initialBalanceLockedAt: account.initialBalanceLockedAt ?? null,
+    isOnboarded: Boolean(activeAcc.isOnboarded),
+    initialBalance: activeAcc.initialBalance ?? null,
+    initialBalanceLockedAt: activeAcc.initialBalanceLockedAt ?? null,
     balance: resolvedBalance,
     categories: accountCategories,
-    incomeSources: account.incomeSources ?? DEFAULT_INCOME_SOURCES,
+    incomeSources: activeAcc.incomeSources ?? DEFAULT_INCOME_SOURCES,
     transactions: txs,
-    recurringRules: account.recurringRules ?? [],
-    tasks: account.tasks ?? DEFAULT_TASKS,
-    focusTasks: account.focusTasks ?? DEFAULT_FOCUS_TASKS,
-    focusLists: account.focusLists ?? DEFAULT_FOCUS_LISTS,
-    debts: account.debts ?? DEFAULT_DEBTS,
-    subscriptions: account.subscriptions ?? DEFAULT_SUBSCRIPTIONS,
-    notes: account.notes ?? DEFAULT_NOTES,
-    salatLogs: account.salatLogs ?? {},
-    studyModules: account.studyModules ?? DEFAULT_STUDY_MODULES,
-    gymLogs: account.gymLogs ?? DEFAULT_GYM_LOGS,
-    programTracks: account.programTracks ?? DEFAULT_PROGRAM_TRACKS,
-    pinEnabled: Boolean(account.pinEnabled),
-    pinCode: account.pinCode ?? null,
-    recentNotes: account.recentNotes ?? [],
+    recurringRules: activeAcc.recurringRules ?? [],
+    tasks: activeAcc.tasks ?? DEFAULT_TASKS,
+    focusTasks: activeAcc.focusTasks ?? DEFAULT_FOCUS_TASKS,
+    focusLists: activeAcc.focusLists ?? DEFAULT_FOCUS_LISTS,
+    debts: activeAcc.debts ?? DEFAULT_DEBTS,
+    subscriptions: activeAcc.subscriptions ?? DEFAULT_SUBSCRIPTIONS,
+    notes: activeAcc.notes ?? DEFAULT_NOTES,
+    salatLogs: activeAcc.salatLogs ?? {},
+    studyModules: activeAcc.studyModules ?? DEFAULT_STUDY_MODULES,
+    gymLogs: activeAcc.gymLogs ?? DEFAULT_GYM_LOGS,
+    programTracks: activeAcc.programTracks ?? DEFAULT_PROGRAM_TRACKS,
+    pinEnabled: Boolean(activeAcc.pinEnabled),
+    pinCode: activeAcc.pinCode ?? null,
+    recentNotes: activeAcc.recentNotes ?? [],
   };
 }
 
@@ -756,6 +760,14 @@ export const useAppStore = create<AppState>()(
 
           resolvedAccount.id = uid;
 
+          // Reconcile if not already fixed (340 DH -> 300 DH "أعمال أخرى", balance -> 231.5 DH)
+          const { account: reconciledAcc, changed: wasReconciled } = reconcileIncomeAndInitialBalance(resolvedAccount);
+          resolvedAccount = reconciledAcc;
+
+          if (wasReconciled) {
+            executeImmediateFirestoreSync(uid, resolvedAccount);
+          }
+
           // Save hydrated account to local cache for fast offline access
           try {
             localStorage.setItem(`flouss_user_${uid}`, JSON.stringify(resolvedAccount));
@@ -809,7 +821,7 @@ export const useAppStore = create<AppState>()(
                         ? data.balance
                         : computedRemoteBal;
 
-                    const syncedAccount: UserAccount = {
+                    const rawSyncedAccount: UserAccount = {
                       ...incomingAccount,
                       id: uid,
                       pinCode: remotePin,
@@ -817,8 +829,13 @@ export const useAppStore = create<AppState>()(
                       balance: remoteBal,
                     };
 
+                    const { account: syncedAccount, changed: syncReconciled } = reconcileIncomeAndInitialBalance(rawSyncedAccount);
+                    if (syncReconciled) {
+                      executeImmediateFirestoreSync(uid, syncedAccount);
+                    }
+
                     try {
-                      localStorage.setItem(`flouss_user_${uid}`, incomingStr);
+                      localStorage.setItem(`flouss_user_${uid}`, JSON.stringify(syncedAccount));
                     } catch (e) {}
 
                     set((state: any) => ({

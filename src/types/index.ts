@@ -146,6 +146,7 @@ export interface UserAccount {
   studyModules?: StudyModuleItem[];
   gymLogs?: GymWorkoutLog[];
   programTracks?: ProgramTrack[];
+  incomeBalanceFixedV1?: boolean;
   createdAt: string;
 }
 

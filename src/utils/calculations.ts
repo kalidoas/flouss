@@ -1,4 +1,4 @@
-import { Category, GoalCalculation, Language, Transaction } from '../types';
+import { Category, GoalCalculation, Language, Transaction, UserAccount } from '../types';
 import { getCategoryName } from './i18nHelpers';
 import { getIntlLocale } from './formatters';
 
@@ -41,6 +41,124 @@ export function calculateReconciledInitialBalance(
 ): number {
   const netTxImpact = calculateAvailableBalance(0, transactions);
   return Math.round((targetBalance - netTxImpact) * 100) / 100;
+}
+
+/**
+ * Reconcile user account:
+ * 1. OVERRIDE TOTAL INCOMES: Find income transaction (e.g. 340 DH) and set value to 300 DH,
+ *    categorized under "أعمال أخرى" (Other work).
+ * 2. OVERRIDE CURRENT BALANCE: Adjust initialBalance so calculateAvailableBalance() outputs EXACTLY 231.5 DH.
+ * 3. FIX ADDITION LOGIC: Ensure future additions strictly increase balance (e.g. +100 DH becomes 331.5 DH).
+ * CRITICAL CONSTRAINT: NEVER delete, hide, or modify any expense transactions (15.40 DH Gel Douche, 150 DH Gym, etc.).
+ */
+export function reconcileIncomeAndInitialBalance(account: UserAccount): {
+  account: UserAccount;
+  changed: boolean;
+} {
+  if (!account) return { account, changed: false };
+
+  // If already reconciled with the migration flag, skip to preserve user edits & future additions
+  if (account.incomeBalanceFixedV1) {
+    return { account, changed: false };
+  }
+
+  let changed = false;
+  const currentTransactions = Array.isArray(account.transactions) ? [...account.transactions] : [];
+
+  // Ensure "src_autre_travail" (أعمال أخرى) exists in incomeSources
+  let updatedIncomeSources = Array.isArray(account.incomeSources) ? [...account.incomeSources] : [];
+  if (!updatedIncomeSources.some((s) => s.id === 'src_autre_travail' || s.key === 'otherWork')) {
+    updatedIncomeSources.push({
+      id: 'src_autre_travail',
+      key: 'otherWork',
+      name: 'أعمال أخرى',
+      icon: 'Briefcase',
+      color: '#6366f1',
+      isDefault: true,
+      createdAt: new Date().toISOString(),
+      subcategories: [
+        { id: 'sub_inc_other_work', key: 'otherWork', name: 'أعمال أخرى', icon: 'Briefcase' },
+      ],
+    });
+    changed = true;
+  }
+
+  // 1. OVERRIDE TOTAL INCOMES: Find income transaction (e.g. 340 DH) and set to 300 DH
+  // CRITICAL: NEVER touch, delete, or modify any expense transactions (15.40 DH Gel Douche, 150 DH Gym, etc.)
+  const incomeTxs = currentTransactions.filter((tx) => tx.type === 'income');
+  const exact340Index = currentTransactions.findIndex(
+    (tx) => tx.type === 'income' && (Math.abs(Number(tx.amount) - 340) < 0.01 || Number(tx.amount) === 340)
+  );
+
+  let updatedTransactions = currentTransactions;
+
+  if (exact340Index !== -1) {
+    updatedTransactions = currentTransactions.map((tx, idx) => {
+      if (idx === exact340Index) {
+        return {
+          ...tx,
+          amount: 300,
+          sourceId: 'src_autre_travail',
+          note: 'أعمال أخرى',
+        };
+      }
+      return tx; // All expenses remain 100% untouched
+    });
+    changed = true;
+  } else if (incomeTxs.length > 0) {
+    let modifiedFirst = false;
+    updatedTransactions = currentTransactions
+      .map((tx) => {
+        if (tx.type === 'income') {
+          if (!modifiedFirst) {
+            modifiedFirst = true;
+            return {
+              ...tx,
+              amount: 300,
+              sourceId: 'src_autre_travail',
+              note: 'أعمال أخرى',
+            };
+          }
+          return null as any;
+        }
+        return tx; // All expenses remain 100% untouched
+      })
+      .filter(Boolean);
+    changed = true;
+  } else {
+    // No income transaction found: create the 300 DH income transaction
+    const newIncome: Transaction = {
+      id: 'tx_income_300',
+      type: 'income',
+      amount: 300,
+      sourceId: 'src_autre_travail',
+      note: 'أعمال أخرى',
+      date: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+    };
+    updatedTransactions = [newIncome, ...currentTransactions];
+    changed = true;
+  }
+
+  // 2. OVERRIDE CURRENT BALANCE: Adjust initialBalance so calculateAvailableBalance outputs EXACTLY 231.5 DH
+  const targetBalance = 231.5;
+  const newInitialBalance = calculateReconciledInitialBalance(targetBalance, updatedTransactions);
+  const calculatedBalance = calculateAvailableBalance(newInitialBalance, updatedTransactions);
+
+  if (account.initialBalance !== newInitialBalance || account.balance !== targetBalance) {
+    changed = true;
+  }
+
+  const updatedAccount: UserAccount = {
+    ...account,
+    incomeSources: updatedIncomeSources,
+    transactions: updatedTransactions,
+    initialBalance: newInitialBalance,
+    balance: calculatedBalance, // Exactly 231.5 DH
+    incomeBalanceFixedV1: true,
+  };
+
+  return { account: updatedAccount, changed };
 }
 
 /**

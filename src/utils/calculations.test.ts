@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   calculateAvailableBalance,
   calculateReconciledInitialBalance,
+  reconcileIncomeAndInitialBalance,
   selectAvailableBalance,
   calculateCategorySavedAmount,
   calculateCategorySpentAmount,
@@ -10,7 +11,7 @@ import {
   calculateNetWorth,
   calculateGoalProgress,
 } from './calculations';
-import { Category, Transaction } from '../types';
+import { Category, Transaction, UserAccount } from '../types';
 
 describe('calculateAvailableBalance', () => {
   it('correctly calculates balance with initial balance, income, expense, contribution, and goal_withdraw', () => {
@@ -263,5 +264,101 @@ describe('calculateGoalProgress', () => {
     expect(progress.remainingAmount).toBe(5000);
     expect(progress.progressPercent).toBe(0);
     expect(progress.status).toBe('not_started');
+  });
+});
+
+describe('reconcileIncomeAndInitialBalance (Critical Balance & Income Fix)', () => {
+  it('overrides 340 DH income to 300 DH "أعمال أخرى", sets balance to 231.50 DH, leaves expenses untouched, and allows future additions to strictly increase balance', () => {
+    const rawAccount: UserAccount = {
+      id: 'user_123',
+      name: 'Khalid',
+      avatarColor: '#2383e2',
+      initialBalance: 0,
+      initialBalanceLockedAt: null,
+      balance: 174.6,
+      isOnboarded: true,
+      categories: [],
+      incomeSources: [],
+      transactions: [
+        {
+          id: 'tx_inc_1',
+          type: 'income',
+          amount: 340,
+          date: '2026-11-01',
+          createdAt: '2026-11-01',
+          note: 'Previous Salary',
+        },
+        {
+          id: 'tx_exp_gel',
+          type: 'expense',
+          amount: 15.4,
+          categoryId: 'cat_hygiene',
+          date: '2026-11-01',
+          createdAt: '2026-11-01',
+          note: 'Gel Douche',
+        },
+        {
+          id: 'tx_exp_gym',
+          type: 'expense',
+          amount: 150,
+          categoryId: 'cat_gym',
+          date: '2026-11-02',
+          createdAt: '2026-11-02',
+          note: 'Gym',
+        },
+      ],
+      recurringRules: [],
+      recentNotes: [],
+      createdAt: '2026-11-01',
+    };
+
+    const { account: reconciled, changed } = reconcileIncomeAndInitialBalance(rawAccount);
+
+    expect(changed).toBe(true);
+    expect(reconciled.incomeBalanceFixedV1).toBe(true);
+
+    // 1. Incomes: 340 DH changed to 300 DH categorized under "أعمال أخرى"
+    const incomes = reconciled.transactions.filter((t) => t.type === 'income');
+    expect(incomes.length).toBe(1);
+    expect(incomes[0].amount).toBe(300);
+    expect(incomes[0].sourceId).toBe('src_autre_travail');
+    expect(incomes[0].note).toBe('أعمال أخرى');
+
+    // 2. CRITICAL CONSTRAINT: Expenses remain untouched
+    const expenses = reconciled.transactions.filter((t) => t.type === 'expense');
+    expect(expenses.length).toBe(2);
+    expect(expenses.find((e) => e.note === 'Gel Douche')?.amount).toBe(15.4);
+    expect(expenses.find((e) => e.note === 'Gym')?.amount).toBe(150);
+
+    // 3. Current Balance: calculateAvailableBalance() evaluates to EXACTLY 231.50 DH
+    const calculatedBalance = calculateAvailableBalance(
+      reconciled.initialBalance,
+      reconciled.transactions
+    );
+    expect(calculatedBalance).toBe(231.5);
+    expect(reconciled.balance).toBe(231.5);
+
+    // 4. Future addition logic: adding +100 DH income strictly increases balance to 331.50 DH
+    const futureIncomeTx: Transaction = {
+      id: 'tx_future_100',
+      type: 'income',
+      amount: 100,
+      date: '2026-11-03',
+      createdAt: '2026-11-03',
+    };
+    const nextTransactions = [futureIncomeTx, ...reconciled.transactions];
+    const newBalanceWith100 = calculateAvailableBalance(
+      reconciled.initialBalance,
+      nextTransactions
+    );
+    expect(newBalanceWith100).toBe(331.5);
+
+    // 5. Re-running reconcile does not overwrite future additions because flag is set
+    const { changed: secondRunChanged } = reconcileIncomeAndInitialBalance({
+      ...reconciled,
+      transactions: nextTransactions,
+      balance: newBalanceWith100,
+    });
+    expect(secondRunChanged).toBe(false);
   });
 });

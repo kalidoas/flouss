@@ -496,6 +496,18 @@ export const DEFAULT_INCOME_SOURCES: IncomeSource[] = [
     ],
   },
   {
+    id: 'src_autre_travail',
+    key: 'otherWork',
+    name: 'أعمال أخرى',
+    icon: 'Briefcase',
+    color: '#6366f1',
+    isDefault: true,
+    createdAt: new Date().toISOString(),
+    subcategories: [
+      { id: 'sub_inc_other_work', key: 'otherWork', name: 'أعمال أخرى', icon: 'Briefcase' },
+    ],
+  },
+  {
     id: 'src_autre',
     key: 'other',
     name: 'Autre revenu',

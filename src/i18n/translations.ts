@@ -507,6 +507,7 @@ export const translations = {
       sale: 'Vente d’objets',
       refund: 'Remboursement reçu',
       other: 'Autre revenu',
+      otherWork: 'Autre travail (أعمال أخرى)',
 
       mainJob: 'Emploi principal',
       bonus: 'Prime & Bonus',
@@ -1335,6 +1336,7 @@ export const translations = {
       sale: 'بيع مقتنيات وأغراض',
       refund: 'مبالغ مستردة',
       other: 'مداخيل أخرى',
+      otherWork: 'أعمال أخرى',
 
       mainJob: 'الوظيفة الأساسية',
       bonus: 'علاوة ومكافأة',
@@ -2164,6 +2166,7 @@ export const translations = {
       sale: 'Item sales',
       refund: 'Refunds received',
       other: 'Other income',
+      otherWork: 'Other work (أعمال أخرى)',
 
       mainJob: 'Main job',
       bonus: 'Bonus & Incentives',
