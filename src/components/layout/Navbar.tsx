@@ -8,6 +8,7 @@ import { playHapticFeedback } from '../../utils/haptics';
 import { UserProfileModal } from '../profile/UserProfileModal';
 import { AddExpenseModal } from '../transactions/AddExpenseModal';
 import { AddIncomeModal } from '../transactions/AddIncomeModal';
+import { BottomSheet } from '../common/BottomSheet';
 import {
   LayoutDashboard,
   Layers,
@@ -475,106 +476,80 @@ export const Navbar: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* More Pages iOS Bottom Drawer */}
-      <AnimatePresence>
-        {isMoreMenuOpen && (
-          <div className="fixed inset-0 z-[150] flex items-end justify-center md:hidden">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-md"
-              onClick={() => setIsMoreMenuOpen(false)}
-            />
-
-            <motion.div
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 28, stiffness: 350 }}
-              className="relative w-full max-h-[85vh] overflow-y-auto bg-white/95 dark:bg-zinc-900/95 text-zinc-900 dark:text-white backdrop-blur-2xl rounded-t-3xl p-6 shadow-2xl border-t border-black/10 dark:border-white/15 z-10 space-y-4 pb-14 safe-area-bottom pb-safe"
-            >
-              <div className="w-12 h-1.5 bg-zinc-300 dark:bg-zinc-700 rounded-full mx-auto -mt-2 mb-3" />
-
-              <div className="flex items-center justify-between pb-3 border-b border-black/[0.08] dark:border-white/10">
-                <h3 className="font-bold text-sm text-zinc-900 dark:text-white tracking-tight">{t.morePages}</h3>
+      {/* More Pages iOS Bottom Sheet */}
+      <BottomSheet
+        isOpen={isMoreMenuOpen}
+        onClose={() => setIsMoreMenuOpen(false)}
+        title={t.morePages}
+      >
+        <div className="space-y-4">
+          {/* Grid of More Pages (Notes, Debts, Subscriptions, Analytics, History, Settings) */}
+          <div className="grid grid-cols-2 gap-2.5">
+            {moreScreens.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeScreen === item.id;
+              return (
                 <button
-                  onClick={() => setIsMoreMenuOpen(false)}
-                  className="p-1.5 rounded-full bg-black/5 dark:bg-white/10 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Grid of More Pages (Notes, Debts, Subscriptions, Analytics, History, Settings) */}
-              <div className="grid grid-cols-2 gap-2.5">
-                {moreScreens.map((item) => {
-                  const Icon = item.icon;
-                  const isActive = activeScreen === item.id;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => {
-                        playHapticFeedback('light');
-                        setActiveScreen(item.id);
-                        setIsMoreMenuOpen(false);
-                      }}
-                      className={`flex items-center gap-2.5 p-3 rounded-2xl border text-left transition-all ${
-                        isActive
-                          ? 'bg-blue-500/15 border-blue-500/30 font-semibold text-blue-600 dark:text-blue-400'
-                          : 'bg-black/[0.03] dark:bg-white/[0.05] border-black/[0.06] dark:border-white/10 text-zinc-700 dark:text-zinc-200 hover:bg-black/[0.06] dark:hover:bg-white/[0.08]'
-                      }`}
-                    >
-                      <Icon className="w-4 h-4 shrink-0" />
-                      <span className="text-xs truncate">{item.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Mobile Account Profile & Log Out Controls */}
-              <div className="pt-3 border-t border-black/[0.08] dark:border-white/10 space-y-2">
-                <button
+                  key={item.id}
                   onClick={() => {
+                    playHapticFeedback('light');
+                    setActiveScreen(item.id);
                     setIsMoreMenuOpen(false);
-                    setIsProfileModalOpen(true);
                   }}
-                  className="w-full flex items-center justify-between p-3 rounded-2xl border border-black/[0.08] dark:border-white/10 bg-black/[0.03] dark:bg-white/[0.05] text-xs font-semibold text-zinc-900 dark:text-white hover:bg-black/[0.06] dark:hover:bg-white/[0.08] transition-colors"
+                  className={`flex items-center gap-2.5 p-3 rounded-2xl border text-left transition-all ${
+                    isActive
+                      ? 'bg-blue-500/15 border-blue-500/30 font-semibold text-blue-600 dark:text-blue-400'
+                      : 'bg-black/[0.03] dark:bg-white/[0.05] border-black/[0.06] dark:border-white/10 text-zinc-700 dark:text-zinc-200 hover:bg-black/[0.06] dark:hover:bg-white/[0.08]'
+                  }`}
                 >
-                  <div className="flex items-center gap-2.5">
-                    <div
-                      className="w-6 h-6 rounded-lg flex items-center justify-center text-white text-[10px] font-bold"
-                      style={{ backgroundColor: activeAccount?.avatarColor || '#2383e2' }}
-                    >
-                      {activeAccount?.name?.charAt(0).toUpperCase() || 'U'}
-                    </div>
-                    <span>{activeAccount?.name || 'Mon Profil'}</span>
-                  </div>
-                  <User className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
+                  <Icon className="w-4 h-4 shrink-0" />
+                  <span className="text-xs truncate">{item.label}</span>
                 </button>
-
-                <button
-                  onClick={() => {
-                    playHapticFeedback('medium');
-                    setIsMoreMenuOpen(false);
-                    logout();
-                  }}
-                  className="w-full flex items-center justify-center gap-2 p-3 rounded-2xl border border-rose-500/30 bg-rose-500/15 text-rose-400 text-xs font-bold hover:bg-rose-500/25 transition-colors"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span>
-                    {isAr
-                      ? 'تسجيل الخروج وقفل الجلسة'
-                      : language === 'en'
-                      ? 'Log out & Lock'
-                      : 'Se déconnecter (Verrouiller)'}
-                  </span>
-                </button>
-              </div>
-            </motion.div>
+              );
+            })}
           </div>
-        )}
-      </AnimatePresence>
+
+          {/* Mobile Account Profile & Log Out Controls */}
+          <div className="pt-3 border-t border-black/[0.08] dark:border-white/10 space-y-2">
+            <button
+              onClick={() => {
+                setIsMoreMenuOpen(false);
+                setIsProfileModalOpen(true);
+              }}
+              className="w-full flex items-center justify-between p-3 rounded-2xl border border-black/[0.08] dark:border-white/10 bg-black/[0.03] dark:bg-white/[0.05] text-xs font-semibold text-zinc-900 dark:text-white hover:bg-black/[0.06] dark:hover:bg-white/[0.08] transition-colors"
+            >
+              <div className="flex items-center gap-2.5">
+                <div
+                  className="w-6 h-6 rounded-lg flex items-center justify-center text-white text-[10px] font-bold"
+                  style={{ backgroundColor: activeAccount?.avatarColor || '#2383e2' }}
+                >
+                  {activeAccount?.name?.charAt(0).toUpperCase() || 'U'}
+                </div>
+                <span>{activeAccount?.name || 'Mon Profil'}</span>
+              </div>
+              <User className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
+            </button>
+
+            <button
+              onClick={() => {
+                playHapticFeedback('medium');
+                setIsMoreMenuOpen(false);
+                logout();
+              }}
+              className="w-full flex items-center justify-center gap-2 p-3 rounded-2xl border border-rose-500/30 bg-rose-500/15 text-rose-400 text-xs font-bold hover:bg-rose-500/25 transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>
+                {isAr
+                  ? 'تسجيل الخروج وقفل الجلسة'
+                  : language === 'en'
+                  ? 'Log out & Lock'
+                  : 'Se déconnecter (Verrouiller)'}
+              </span>
+            </button>
+          </div>
+        </div>
+      </BottomSheet>
 
       {/* Transaction & Profile Modals triggered from Mobile Navigation */}
       <AddExpenseModal isOpen={isExpenseOpen} onClose={() => setIsExpenseOpen(false)} />

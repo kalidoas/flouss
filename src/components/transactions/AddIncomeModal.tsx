@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useAppStore } from '../../store/useAppStore';
-import { Modal } from '../common/Modal';
+import { BottomSheet } from '../common/BottomSheet';
 import { Button } from '../common/Button';
 import { Input } from '../common/Input';
 import {
@@ -94,12 +94,11 @@ export const AddIncomeModal: React.FC<AddIncomeModalProps> = ({
   };
 
   return (
-    <Modal
+    <BottomSheet
       isOpen={isOpen}
       onClose={onClose}
       title={t.transactionTitleIncome}
       subtitle={t.transactionSubtitleIncome}
-      maxWidth="md"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Amount */}
@@ -331,6 +330,6 @@ export const AddIncomeModal: React.FC<AddIncomeModalProps> = ({
           </Button>
         </div>
       </form>
-    </Modal>
+    </BottomSheet>
   );
 };
