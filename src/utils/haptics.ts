@@ -104,6 +104,7 @@ export function getOrInitIOSSwitch(): HTMLLabelElement | null {
     const container = document.createElement('div');
     container.id = 'flouss-ios-switch-container';
     container.setAttribute('aria-hidden', 'true');
+    container.setAttribute('data-haptic', 'none');
     container.style.cssText =
       'position:fixed;top:-9999px;left:-9999px;opacity:0;pointer-events:none;width:0;height:0;z-index:-1;overflow:hidden;';
 
@@ -111,10 +112,12 @@ export function getOrInitIOSSwitch(): HTMLLabelElement | null {
     input.type = 'checkbox';
     input.id = 'flouss-ios-switch-hack';
     input.setAttribute('switch', '');
+    input.setAttribute('data-haptic', 'none');
 
     const label = document.createElement('label');
     label.htmlFor = 'flouss-ios-switch-hack';
     label.id = 'flouss-ios-switch-label';
+    label.setAttribute('data-haptic', 'none');
 
     container.appendChild(input);
     container.appendChild(label);
@@ -237,7 +240,7 @@ export function playHapticFeedback(type: HapticType = 'light'): void {
   if (prefersReducedMotion()) return;
 
   const now = Date.now();
-  if (now - lastHapticTimestamp < HAPTIC_THROTTLE_MS) {
+  if (now >= lastHapticTimestamp && now - lastHapticTimestamp < HAPTIC_THROTTLE_MS) {
     return;
   }
   lastHapticTimestamp = now;
@@ -311,7 +314,23 @@ export function playHapticFeedback(type: HapticType = 'light'): void {
  * Capture-phase global event delegation installer
  * Automatically activates 0ms physical sensory feedback on all interactive elements.
  */
+/**
+ * Trigger strategy for global sensory feedback:
+ * On touch devices, 'pointerup' validates genuine taps (< 8px displacement, < 500ms duration)
+ * to avoid firing haptics during page scroll gestures.
+ */
+export const HAPTIC_TRIGGER: 'pointerdown' | 'pointerup' = 'pointerup';
+
 let isGlobalHapticsInstalled = false;
+
+interface ActiveTouchRecord {
+  startX: number;
+  startY: number;
+  startTime: number;
+  target: HTMLElement;
+}
+
+let activeTouch: ActiveTouchRecord | null = null;
 
 export function initGlobalHaptics(): () => void {
   if (typeof window === 'undefined' || typeof document === 'undefined') {
@@ -329,8 +348,8 @@ export function initGlobalHaptics(): () => void {
     'button, a[href], [role="button"], [role="tab"], [role="switch"], [role="menuitem"], [role="option"], summary, [data-haptic]';
 
   const handlePointerDown = (e: PointerEvent) => {
-    // Primary touch/mouse button only
-    if (e.button !== 0 && e.pointerType === 'mouse') return;
+    // Only respond to primary mouse button (button 0)
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
 
     const target = (e.target as HTMLElement | null)?.closest(INTERACTIVE_SELECTOR) as HTMLElement | null;
     if (!target) return;
@@ -346,8 +365,52 @@ export function initGlobalHaptics(): () => void {
     const hapticAttr = target.getAttribute('data-haptic') as HapticType | null;
     if (hapticAttr === 'none') return;
 
-    const type: HapticType = hapticAttr || 'light';
-    playHapticFeedback(type);
+    const isTouch = e.pointerType === 'touch' || e.pointerType === 'pen';
+
+    if (isTouch && HAPTIC_TRIGGER === 'pointerup') {
+      // Record touch start coordinates and timestamp for tap validation
+      activeTouch = {
+        startX: e.clientX,
+        startY: e.clientY,
+        startTime: Date.now(),
+        target,
+      };
+      return;
+    }
+
+    // Immediate trigger for mouse clicks or if HAPTIC_TRIGGER is 'pointerdown'
+    playHapticFeedback(hapticAttr || 'light');
+  };
+
+  const handlePointerUp = (e: PointerEvent) => {
+    if (!activeTouch) return;
+
+    const currentRecord = activeTouch;
+    activeTouch = null;
+
+    // Displacement check (< 8px) and tap duration check (< 500ms)
+    const dx = e.clientX - currentRecord.startX;
+    const dy = e.clientY - currentRecord.startY;
+    const distance = Math.hypot(dx, dy);
+    const duration = Date.now() - currentRecord.startTime;
+
+    if (distance < 8 && duration < 500) {
+      const target = currentRecord.target;
+      if (
+        (target as HTMLButtonElement).disabled ||
+        target.getAttribute('aria-disabled') === 'true'
+      ) {
+        return;
+      }
+      const hapticAttr = target.getAttribute('data-haptic') as HapticType | null;
+      if (hapticAttr === 'none') return;
+
+      playHapticFeedback(hapticAttr || 'light');
+    }
+  };
+
+  const handlePointerCancel = () => {
+    activeTouch = null;
   };
 
   const handleChange = (e: Event) => {
@@ -368,11 +431,26 @@ export function initGlobalHaptics(): () => void {
   };
 
   document.addEventListener('pointerdown', handlePointerDown, { capture: true, passive: true });
+  document.addEventListener('pointerup', handlePointerUp, { capture: true, passive: true });
+  document.addEventListener('pointercancel', handlePointerCancel, { capture: true, passive: true });
   document.addEventListener('change', handleChange, { capture: true, passive: true });
 
   return () => {
     document.removeEventListener('pointerdown', handlePointerDown, { capture: true });
+    document.removeEventListener('pointerup', handlePointerUp, { capture: true });
+    document.removeEventListener('pointercancel', handlePointerCancel, { capture: true });
     document.removeEventListener('change', handleChange, { capture: true });
     isGlobalHapticsInstalled = false;
+    activeTouch = null;
   };
+}
+
+/**
+ * Test utility to reset internal singleton states
+ */
+export function _resetHapticsStateForTesting(): void {
+  lastHapticTimestamp = 0;
+  isGlobalHapticsInstalled = false;
+  activeTouch = null;
+  iosSwitchLabel = null;
 }

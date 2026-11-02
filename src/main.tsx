@@ -1,5 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import ReactDOM from 'react-dom/client';
+import { MotionConfig } from 'framer-motion';
 import App from './App';
 import './index.css';
 import { initGlobalHaptics } from './utils/haptics';
@@ -110,7 +111,9 @@ VITE_FIREBASE_MEASUREMENT_ID=G-2H34FEDTL1`}
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <RootErrorBoundary>
-      <App />
+      <MotionConfig reducedMotion="user">
+        <App />
+      </MotionConfig>
     </RootErrorBoundary>
   </React.StrictMode>
 );
