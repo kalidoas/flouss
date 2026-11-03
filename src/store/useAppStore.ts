@@ -121,6 +121,7 @@ export interface AppState {
 
   lockInitialBalance: (amount: number, metadata?: { email?: string; pinCode?: string; accountName?: string }) => Promise<void>;
   reconcileCurrentBalance: (targetBalance: number) => Promise<void>;
+  forceUpdateInitialBalance12590: () => Promise<void>;
 
   addTransaction: (tx: Transaction) => void;
   deleteTransaction: (id: string) => void;
@@ -1290,6 +1291,71 @@ export const useAppStore = create<AppState>()(
           console.log(
             `🎯 [Flouss Balance Reconciled] Target: ${sanitizedTarget} MAD => New Initial Balance: ${newInitialBalance} MAD`
           );
+        },
+
+        forceUpdateInitialBalance12590: async () => {
+          const s = get();
+          const activeId = s.activeAccountId || s.accounts[0]?.id;
+          const currentAcc = s.accounts.find((a: UserAccount) => a.id === activeId) || s.accounts[0];
+          const uid = s.firebaseUser?.uid || auth.currentUser?.uid || currentAcc?.id || 'default_user';
+
+          const targetInitial = 125.9;
+          const txs = currentAcc?.transactions ?? [];
+          const computedBal = calculateAvailableBalance(targetInitial, txs);
+
+          // 1. Mutate Zustand store state immediately
+          updateActive(
+            (acc) => ({
+              ...acc,
+              initialBalance: targetInitial,
+              balance: computedBal,
+              initialBalanceFixed1259: true,
+            }),
+            true
+          );
+
+          // 2. Explicitly override local cache
+          try {
+            if (uid) {
+              const updatedAccount: UserAccount = {
+                ...(currentAcc || {}),
+                id: uid,
+                initialBalance: targetInitial,
+                balance: computedBal,
+                initialBalanceFixed1259: true,
+              };
+              localStorage.setItem(`flouss_user_${uid}`, JSON.stringify(updatedAccount));
+              localStorage.setItem('flouss_user_default', JSON.stringify(updatedAccount));
+            }
+          } catch (e) {}
+
+          // 3. Explicitly override Firestore users/{uid} document
+          if (uid) {
+            try {
+              const userRef = doc(db, 'users', uid);
+              await setDoc(
+                userRef,
+                {
+                  initialBalance: targetInitial,
+                  balance: computedBal,
+                  account: {
+                    ...(currentAcc || {}),
+                    id: uid,
+                    initialBalance: targetInitial,
+                    balance: computedBal,
+                    initialBalanceFixed1259: true,
+                  },
+                  updatedAt: new Date().toISOString(),
+                },
+                { merge: true }
+              );
+              console.log(
+                `⚡ [Flouss Cloud] forceUpdateInitialBalance12590 synced to Firestore users/${uid} (initialBalance: 125.90, balance: ${computedBal})`
+              );
+            } catch (err: any) {
+              console.error('❌ [Flouss Cloud] Error in forceUpdateInitialBalance12590 Firestore write:', err);
+            }
+          }
         },
 
         // ── Transactions ────────────────────────────────────────────
