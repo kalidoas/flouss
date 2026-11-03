@@ -147,6 +147,7 @@ export interface UserAccount {
   gymLogs?: GymWorkoutLog[];
   programTracks?: ProgramTrack[];
   incomeBalanceFixedV1?: boolean;
+  initialBalanceFixed1259?: boolean;
   createdAt: string;
 }
 
