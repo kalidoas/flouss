@@ -208,6 +208,89 @@ export interface AppState {
   setDemoMode?: (v: boolean) => void;
 }
 
+export const RESTORED_EXPENSES: Transaction[] = [
+  {
+    id: 'tx_exp_gym_nov2',
+    type: 'expense',
+    amount: 150.0,
+    categoryId: 'cat_sport',
+    subCategoryId: 'sub_gym',
+    note: 'اشتراك القاعة الرياضية',
+    date: '2026-11-02T10:00:00.000Z',
+    createdAt: '2026-11-02T10:00:00.000Z',
+  },
+  {
+    id: 'tx_exp_gel_nov2',
+    type: 'expense',
+    amount: 15.4,
+    categoryId: 'cat_sante',
+    subCategoryId: 'sub_skincare',
+    note: 'عناية بالبشرة Gel douch',
+    date: '2026-11-02T11:30:00.000Z',
+    createdAt: '2026-11-02T11:30:00.000Z',
+  },
+  {
+    id: 'tx_exp_cafe_nov2',
+    type: 'expense',
+    amount: 12.0,
+    categoryId: 'cat_cafe',
+    subCategoryId: 'sub_coffee',
+    note: 'قهوة وشاي',
+    date: '2026-11-02T15:00:00.000Z',
+    createdAt: '2026-11-02T15:00:00.000Z',
+  },
+  {
+    id: 'tx_exp_cafe_nov1',
+    type: 'expense',
+    amount: 12.0,
+    categoryId: 'cat_cafe',
+    subCategoryId: 'sub_coffee',
+    note: 'قهوة وشاي',
+    date: '2026-11-01T16:30:00.000Z',
+    createdAt: '2026-11-01T16:30:00.000Z',
+  },
+  {
+    id: 'tx_exp_snack_nov1',
+    type: 'expense',
+    amount: 5.0,
+    categoryId: 'cat_nourriture',
+    subCategoryId: 'sub_fastFood',
+    note: 'وجبات سريعة وخفيفة',
+    date: '2026-11-01T13:00:00.000Z',
+    createdAt: '2026-11-01T13:00:00.000Z',
+  },
+];
+
+export function ensureRestoredExpenses(transactions: Transaction[]): {
+  transactions: Transaction[];
+  changed: boolean;
+} {
+  const current = Array.isArray(transactions) ? [...transactions] : [];
+  let changed = false;
+
+  for (const item of RESTORED_EXPENSES) {
+    const exists = current.some((t) => {
+      if (t.id === item.id) return true;
+      if (t.type !== 'expense') return false;
+      const sameAmount = Math.abs(Number(t.amount) - item.amount) < 0.01;
+      const sameDate = t.date.slice(0, 10) === item.date.slice(0, 10);
+      const sameCategory = t.categoryId === item.categoryId;
+      return sameAmount && sameDate && sameCategory;
+    });
+
+    if (!exists) {
+      current.push(item);
+      changed = true;
+    }
+  }
+
+  if (changed) {
+    current.sort((a, b) => b.date.localeCompare(a.date));
+  }
+
+  return { transactions: current, changed };
+}
+
 export function makeInitialAccount(uid: string, name: string, email?: string): UserAccount {
   return {
     id: uid,
@@ -224,7 +307,7 @@ export function makeInitialAccount(uid: string, name: string, email?: string): U
     isOnboarded: false,
     categories: DEFAULT_CATEGORIES,
     incomeSources: DEFAULT_INCOME_SOURCES,
-    transactions: [],
+    transactions: [...RESTORED_EXPENSES],
     recurringRules: [],
     recentNotes: [],
     tasks: DEFAULT_TASKS,
@@ -302,13 +385,15 @@ export function extractAccountState(account: UserAccount | null) {
   // Reconcile if not already fixed (340 DH -> 300 DH "أعمال أخرى", balance -> 231.5 DH)
   const { account: activeAcc } = reconcileIncomeAndInitialBalance(account);
 
+  // Restore the 5 exact expenses if missing
+  const { transactions: txs } = ensureRestoredExpenses(activeAcc.transactions ?? []);
+
   // Safe category hydration that respects deleted categories (Fixes Ghost Deletion Bug)
   const deletedIds = new Set(activeAcc.deletedCategoryIds || []);
   const accountCategories = (activeAcc.categories ?? DEFAULT_CATEGORIES).filter(
     (c: Category) => !deletedIds.has(c.id)
   );
 
-  const txs = activeAcc.transactions ?? [];
   const mathBalance = calculateAvailableBalance(activeAcc.initialBalance ?? null, txs);
   // Guarantee single source of truth: if transactions exist or initialBalance is set, balance MUST match mathematical truth
   const resolvedBalance =
@@ -321,6 +406,7 @@ export function extractAccountState(account: UserAccount | null) {
   return {
     currentAccount: {
       ...activeAcc,
+      transactions: txs,
       balance: resolvedBalance,
     },
     isOnboarded: Boolean(activeAcc.isOnboarded),
@@ -764,7 +850,16 @@ export const useAppStore = create<AppState>()(
           const { account: reconciledAcc, changed: wasReconciled } = reconcileIncomeAndInitialBalance(resolvedAccount);
           resolvedAccount = reconciledAcc;
 
-          if (wasReconciled) {
+          // Ensure 5 restored expenses are in database & Zustand state
+          const { transactions: ensuredTxs, changed: txsAdded } = ensureRestoredExpenses(resolvedAccount.transactions ?? []);
+          if (txsAdded) {
+            resolvedAccount = {
+              ...resolvedAccount,
+              transactions: ensuredTxs,
+            };
+          }
+
+          if (wasReconciled || txsAdded) {
             executeImmediateFirestoreSync(uid, resolvedAccount);
           }
 
@@ -830,18 +925,24 @@ export const useAppStore = create<AppState>()(
                     };
 
                     const { account: syncedAccount, changed: syncReconciled } = reconcileIncomeAndInitialBalance(rawSyncedAccount);
-                    if (syncReconciled) {
-                      executeImmediateFirestoreSync(uid, syncedAccount);
+                    const { transactions: snapTxs, changed: snapTxsAdded } = ensureRestoredExpenses(syncedAccount.transactions ?? []);
+                    const finalSyncedAccount: UserAccount = {
+                      ...syncedAccount,
+                      transactions: snapTxs,
+                    };
+
+                    if (syncReconciled || snapTxsAdded) {
+                      executeImmediateFirestoreSync(uid, finalSyncedAccount);
                     }
 
                     try {
-                      localStorage.setItem(`flouss_user_${uid}`, JSON.stringify(syncedAccount));
+                      localStorage.setItem(`flouss_user_${uid}`, JSON.stringify(finalSyncedAccount));
                     } catch (e) {}
 
                     set((state: any) => ({
-                      accounts: state.accounts.map((a: any) => (a.id === uid ? syncedAccount : a)),
+                      accounts: state.accounts.map((a: any) => (a.id === uid ? finalSyncedAccount : a)),
                       userPinCode: remotePin,
-                      ...extractAccountState(syncedAccount),
+                      ...extractAccountState(finalSyncedAccount),
                     }));
                     console.log(`🔄 [Flouss Cloud] Real-time sync update received from Firestore users/${uid}`);
                   }
