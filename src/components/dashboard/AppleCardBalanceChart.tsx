@@ -70,6 +70,7 @@ export const AppleCardBalanceChart: React.FC<AppleCardBalanceChartProps> = ({
         else if (tx.type === 'expense') runningBalance -= amt;
         else if (tx.type === 'contribution') runningBalance -= amt;
         else if (tx.type === 'goal_withdraw') runningBalance += amt;
+        else if (tx.type === 'adjustment') runningBalance += amt;
       }
 
       points.push({

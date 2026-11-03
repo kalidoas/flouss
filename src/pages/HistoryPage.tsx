@@ -32,7 +32,7 @@ export const HistoryPage: React.FC = () => {
   };
 
   const [search, setSearch] = useState('');
-  const [typeFilter, setTypeFilter] = useState<'all' | 'expense' | 'income' | 'contribution'>('all');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'expense' | 'income' | 'contribution' | 'adjustment'>('all');
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
@@ -79,7 +79,7 @@ export const HistoryPage: React.FC = () => {
     return true;
   });
 
-  // Calculate filtered totals
+  // Calculate filtered totals (adjustments excluded from income and expense aggregates)
   const totalIn = filteredTransactions
     .filter((tx: Transaction) => tx.type === 'income' || tx.type === 'goal_withdraw')
     .reduce((sum: number, tx: Transaction) => sum + tx.amount, 0);
@@ -88,7 +88,11 @@ export const HistoryPage: React.FC = () => {
     .filter((tx: Transaction) => tx.type === 'expense' || tx.type === 'contribution')
     .reduce((sum: number, tx: Transaction) => sum + tx.amount, 0);
 
-  const netTotal = totalIn - totalOut;
+  const totalAdj = filteredTransactions
+    .filter((tx: Transaction) => tx.type === 'adjustment')
+    .reduce((sum: number, tx: Transaction) => sum + tx.amount, 0);
+
+  const netTotal = totalIn - totalOut + totalAdj;
 
   // Group by date (day string YYYY-MM-DD)
   const groupedTransactions: { [dateStr: string]: Transaction[] } = {};
@@ -222,6 +226,16 @@ export const HistoryPage: React.FC = () => {
               }`}
             >
               {t.filterSavings}
+            </button>
+            <button
+              onClick={() => setTypeFilter('adjustment')}
+              className={`px-2.5 py-1 rounded text-xs transition-colors ${
+                typeFilter === 'adjustment'
+                  ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 font-medium'
+                  : 'text-[#787774] dark:text-[#9b9a97]'
+              }`}
+            >
+              {t.filterAdjustments}
             </button>
           </div>
 

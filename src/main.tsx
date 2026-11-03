@@ -5,43 +5,6 @@ import App from './App';
 import './index.css';
 import { initGlobalHaptics } from './utils/haptics';
 
-// Immediate local storage sanity fix for initial balance (125.90 DH) & available balance (231.50 DH)
-if (typeof window !== 'undefined' && window.localStorage) {
-  try {
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && (key.startsWith('flouss_user_') || key === 'flouss_app_storage_v2')) {
-        const raw = localStorage.getItem(key);
-        if (raw && (raw.includes('-66.25') || raw.includes('39.35'))) {
-          const parsed = JSON.parse(raw);
-          let modified = false;
-          if (parsed.initialBalance === -66.25) {
-            parsed.initialBalance = 125.9;
-            modified = true;
-          }
-          if (parsed.balance === 39.35) {
-            parsed.balance = 231.5;
-            modified = true;
-          }
-          if (parsed.account) {
-            if (parsed.account.initialBalance === -66.25) {
-              parsed.account.initialBalance = 125.9;
-              modified = true;
-            }
-            if (parsed.account.balance === 39.35) {
-              parsed.account.balance = 231.5;
-              modified = true;
-            }
-          }
-          if (modified) {
-            localStorage.setItem(key, JSON.stringify(parsed));
-          }
-        }
-      }
-    }
-  } catch (e) {}
-}
-
 // Initialize global capture-phase haptics delegation (0ms sensory latency)
 initGlobalHaptics();
 

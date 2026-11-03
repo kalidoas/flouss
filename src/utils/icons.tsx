@@ -29,6 +29,7 @@ import {
   Wallet,
   PiggyBank,
   Target,
+  SlidersHorizontal,
   LucideProps,
 } from 'lucide-react';
 
@@ -67,6 +68,7 @@ export const ICON_OPTIONS: IconOption[] = [
   { name: 'PiggyBank', label: 'Tirelire', icon: PiggyBank },
   { name: 'Target', label: 'Objectif', icon: Target },
   { name: 'Sparkles', label: 'Luxe / Spécial', icon: Sparkles },
+  { name: 'SlidersHorizontal', label: 'Ajustement', icon: SlidersHorizontal },
 ];
 
 export const COLOR_OPTIONS: { hex: string; label: string }[] = [

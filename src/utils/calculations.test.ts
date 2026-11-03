@@ -362,3 +362,159 @@ describe('reconcileIncomeAndInitialBalance (Critical Balance & Income Fix)', () 
     expect(secondRunChanged).toBe(false);
   });
 });
+
+describe('Phase R0 Balance Cleanup & Adjustment Transactions', () => {
+  it('adding any transaction changes the balance by exactly its amount', () => {
+    const baseInitial = 100;
+    const baseTxs: Transaction[] = [];
+    const initialBal = calculateAvailableBalance(baseInitial, baseTxs);
+    expect(initialBal).toBe(100);
+
+    // 1. Income: strictly increases balance by exact amount
+    const incomeTx: Transaction = {
+      id: 'tx_inc',
+      type: 'income',
+      amount: 45.25,
+      date: '2026-11-01',
+      createdAt: '2026-11-01',
+    };
+    const afterIncome = calculateAvailableBalance(baseInitial, [incomeTx]);
+    expect(afterIncome).toBe(145.25);
+    expect(afterIncome - initialBal).toBe(45.25);
+
+    // 2. Expense: strictly decreases balance by exact amount
+    const expenseTx: Transaction = {
+      id: 'tx_exp',
+      type: 'expense',
+      amount: 32.10,
+      date: '2026-11-01',
+      createdAt: '2026-11-01',
+    };
+    const afterExpense = calculateAvailableBalance(baseInitial, [incomeTx, expenseTx]);
+    expect(afterExpense).toBe(113.15);
+    expect(Math.round((afterIncome - afterExpense) * 100) / 100).toBe(32.10);
+
+    // 3. Contribution: strictly decreases available balance by exact amount
+    const contribTx: Transaction = {
+      id: 'tx_contrib',
+      type: 'contribution',
+      amount: 20.00,
+      date: '2026-11-01',
+      createdAt: '2026-11-01',
+    };
+    const afterContrib = calculateAvailableBalance(baseInitial, [incomeTx, expenseTx, contribTx]);
+    expect(afterContrib).toBe(93.15);
+
+    // 4. Goal Withdraw: strictly increases available balance by exact amount
+    const withdrawTx: Transaction = {
+      id: 'tx_with',
+      type: 'goal_withdraw',
+      amount: 10.00,
+      date: '2026-11-01',
+      createdAt: '2026-11-01',
+    };
+    const afterWithdraw = calculateAvailableBalance(baseInitial, [incomeTx, expenseTx, contribTx, withdrawTx]);
+    expect(afterWithdraw).toBe(103.15);
+
+    // 5. Positive adjustment: increases balance by exact diff
+    const posAdjTx: Transaction = {
+      id: 'tx_adj_pos',
+      type: 'adjustment',
+      amount: 15.50,
+      date: '2026-11-01',
+      createdAt: '2026-11-01',
+    };
+    const afterPosAdj = calculateAvailableBalance(baseInitial, [incomeTx, expenseTx, contribTx, withdrawTx, posAdjTx]);
+    expect(afterPosAdj).toBe(118.65);
+    expect(afterPosAdj - afterWithdraw).toBe(15.50);
+
+    // 6. Negative adjustment: decreases balance by exact diff
+    const negAdjTx: Transaction = {
+      id: 'tx_adj_neg',
+      type: 'adjustment',
+      amount: -25.00,
+      date: '2026-11-01',
+      createdAt: '2026-11-01',
+    };
+    const afterNegAdj = calculateAvailableBalance(baseInitial, [incomeTx, expenseTx, contribTx, withdrawTx, posAdjTx, negAdjTx]);
+    expect(afterNegAdj).toBe(93.65);
+    expect(afterNegAdj - afterPosAdj).toBe(-25.00);
+  });
+
+  it('reconciling to target balance (e.g. 231.50 DH) creates an exact adjustment transaction', () => {
+    // Current state: initialBalance 0, income 300, expenses 194.40 => current balance = 105.60
+    const initial = 0;
+    const existingTxs: Transaction[] = [
+      { id: '1', type: 'income', amount: 300, date: '2026-11-01', createdAt: '2026-11-01' },
+      { id: '2', type: 'expense', amount: 194.40, date: '2026-11-01', createdAt: '2026-11-01' },
+    ];
+    const currentBal = calculateAvailableBalance(initial, existingTxs);
+    expect(currentBal).toBe(105.60);
+
+    // Target balance: 231.50 DH
+    const targetBalance = 231.50;
+    const diff = Math.round((targetBalance - currentBal) * 100) / 100;
+    expect(diff).toBe(125.90);
+
+    const adjustmentTx: Transaction = {
+      id: 'adj_1',
+      type: 'adjustment',
+      amount: diff,
+      date: '2026-11-02',
+      createdAt: '2026-11-02',
+      note: 'تعديل الرصيد',
+    };
+
+    const newTxs = [adjustmentTx, ...existingTxs];
+    const newBal = calculateAvailableBalance(initial, newTxs);
+    expect(newBal).toBe(231.50);
+
+    // Undo: removing the adjustment transaction strictly restores previous balance
+    const afterUndoTxs = newTxs.filter((t) => t.id !== adjustmentTx.id);
+    expect(calculateAvailableBalance(initial, afterUndoTxs)).toBe(105.60);
+  });
+
+  it('excludes adjustment transactions from income and expense statistics', () => {
+    const transactions: Transaction[] = [
+      { id: '1', type: 'income', amount: 300, date: '2026-11-01', createdAt: '2026-11-01' },
+      { id: '2', type: 'expense', amount: 150, date: '2026-11-01', createdAt: '2026-11-01' },
+      { id: '3', type: 'adjustment', amount: 125.90, date: '2026-11-02', createdAt: '2026-11-02' },
+      { id: '4', type: 'adjustment', amount: -50.00, date: '2026-11-02', createdAt: '2026-11-02' },
+    ];
+
+    const totalIncome = transactions
+      .filter((t) => t.type === 'income')
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    const totalExpense = transactions
+      .filter((t) => t.type === 'expense')
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    expect(totalIncome).toBe(300);
+    expect(totalExpense).toBe(150);
+  });
+
+  it('does NOT special-case any specific value (e.g. 39.35, -66.25, 125.90, 231.50)', () => {
+    // 39.35 is never magically turned into 231.50
+    expect(calculateAvailableBalance(0, [
+      { id: '1', type: 'income', amount: 39.35, date: '2026-11-01', createdAt: '2026-11-01' },
+    ])).toBe(39.35);
+
+    expect(selectAvailableBalance({
+      initialBalance: 0,
+      transactions: [{ id: '1', type: 'income', amount: 39.35, date: '2026-11-01', createdAt: '2026-11-01' }],
+    })).toBe(39.35);
+
+    // -66.25 is never magically turned into 125.90
+    expect(calculateAvailableBalance(-66.25, [])).toBe(-66.25);
+
+    expect(selectAvailableBalance({
+      initialBalance: -66.25,
+      transactions: [],
+    })).toBe(-66.25);
+
+    // 0 balance stays 0
+    expect(calculateAvailableBalance(0, [])).toBe(0);
+  });
+});
+

@@ -118,6 +118,27 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
           badgeBg: 'bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300',
         };
       }
+      case 'adjustment': {
+        const isPositive = (Number(transaction.amount) || 0) >= 0;
+        const adjTitle =
+          transaction.note ||
+          (language === 'ar'
+            ? 'تعديل الرصيد'
+            : language === 'en'
+            ? 'Balance Adjustment'
+            : 'Ajustement du solde');
+        return {
+          title: adjTitle,
+          icon: 'SlidersHorizontal',
+          color: '#6366f1',
+          amountPrefix: isPositive ? '+ ' : '- ',
+          amountClass: isPositive
+            ? 'text-indigo-600 dark:text-indigo-400 font-bold'
+            : 'text-zinc-600 dark:text-zinc-400 font-bold',
+          badgeText: language === 'ar' ? 'تسوية' : language === 'en' ? 'Adjustment' : 'Ajustement',
+          badgeBg: 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300',
+        };
+      }
     }
   };
 
@@ -125,8 +146,21 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
   const IconComp = getCategoryIcon(details.icon);
 
   const handleDelete = () => {
+    const deletedTx = transaction;
     deleteTransaction(transaction.id);
     setShowDeleteConfirm(false);
+    showToast({
+      message:
+        language === 'ar'
+          ? 'تم حذف المعاملة'
+          : language === 'en'
+          ? 'Transaction deleted'
+          : 'Transaction supprimée',
+      actionText: language === 'ar' ? 'تراجع' : language === 'en' ? 'Undo' : 'Annuler',
+      onAction: () => {
+        addTransaction(deletedTx);
+      },
+    });
   };
 
   return (
@@ -171,7 +205,7 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
           {/* Right: Amount & Delete action */}
           <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-2">
             <PrivacyCurrency
-              amount={transaction.amount}
+              amount={transaction.type === 'adjustment' ? Math.abs(transaction.amount) : transaction.amount}
               prefix={details.amountPrefix}
               className={`text-xs sm:text-sm font-semibold ${details.amountClass}`}
             />

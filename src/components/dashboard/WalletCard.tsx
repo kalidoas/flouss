@@ -57,17 +57,16 @@ export const WalletCard: React.FC<WalletCardProps> = ({
   const isCurrentMonth = selectedMonth === currentMonth;
 
   // Single source of truth: strictly consume calculateAvailableBalance
-  const rawActiveBalance =
+  const activeBalance =
     typeof propBalance === 'number' && !isNaN(propBalance)
       ? propBalance
       : calculateAvailableBalance(initialBalance, transactions);
-  const activeBalance = Math.abs(rawActiveBalance - 39.35) < 0.01 ? 231.5 : rawActiveBalance;
 
   // Calculate historical balance and cashflow if viewing past months
   const { displayBalance, displayIncome, displayExpense } = useMemo(() => {
     if (isCurrentMonth) {
       return {
-        displayBalance: Math.abs(activeBalance - 39.35) < 0.01 ? 231.5 : activeBalance,
+        displayBalance: activeBalance,
         displayIncome: currentLiveIncome,
         displayExpense: currentLiveExpense,
       };
@@ -77,8 +76,7 @@ export const WalletCard: React.FC<WalletCardProps> = ({
     const txUpToSelectedMonth = (transactions || []).filter(
       (tx) => tx.date.slice(0, 7) <= selectedMonth
     );
-    const rawHistBalance = calculateAvailableBalance(initialBalance, txUpToSelectedMonth);
-    const historicalBalance = Math.abs(rawHistBalance - 39.35) < 0.01 ? 231.5 : rawHistBalance;
+    const historicalBalance = calculateAvailableBalance(initialBalance, txUpToSelectedMonth);
 
     // Selected month's cashflow
     const monthTx = (transactions || []).filter((tx) => tx.date.slice(0, 7) === selectedMonth);

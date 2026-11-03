@@ -1,4 +1,4 @@
-export type TransactionType = 'income' | 'expense' | 'contribution' | 'goal_withdraw';
+export type TransactionType = 'income' | 'expense' | 'contribution' | 'goal_withdraw' | 'adjustment';
 
 export type CategoryGroupId =
   | 'essentials_housing'

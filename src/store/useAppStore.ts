@@ -121,7 +121,6 @@ export interface AppState {
 
   lockInitialBalance: (amount: number, metadata?: { email?: string; pinCode?: string; accountName?: string }) => Promise<void>;
   reconcileCurrentBalance: (targetBalance: number) => Promise<void>;
-  forceUpdateInitialBalance12590: () => Promise<void>;
 
   addTransaction: (tx: Transaction) => void;
   deleteTransaction: (id: string) => void;
@@ -302,13 +301,13 @@ export function makeInitialAccount(uid: string, name: string, email?: string): U
     tourCompleted: false,
     avatarColor: '#2383e2',
     avatarIcon: '👤',
-    initialBalance: 125.9,
+    initialBalance: 0,
     initialBalanceLockedAt: null,
-    balance: 231.5,
+    balance: 0,
     isOnboarded: false,
     categories: DEFAULT_CATEGORIES,
     incomeSources: DEFAULT_INCOME_SOURCES,
-    transactions: [...RESTORED_EXPENSES],
+    transactions: [],
     recurringRules: [],
     recentNotes: [],
     tasks: DEFAULT_TASKS,
@@ -322,8 +321,6 @@ export function makeInitialAccount(uid: string, name: string, email?: string): U
     studyModules: DEFAULT_STUDY_MODULES,
     gymLogs: DEFAULT_GYM_LOGS,
     programTracks: DEFAULT_PROGRAM_TRACKS,
-    initialBalanceFixed1259: true,
-    incomeBalanceFixedV1: true,
     createdAt: new Date().toISOString(),
   };
 }
@@ -385,64 +382,49 @@ export function extractAccountState(account: UserAccount | null) {
     };
   }
 
-  // Reconcile if not already fixed (340 DH -> 300 DH "أعمال أخرى", balance -> 231.5 DH)
-  const { account: activeAcc } = reconcileIncomeAndInitialBalance(account);
-
-  // Restore the 5 exact expenses if missing
-  const { transactions: txs } = ensureRestoredExpenses(activeAcc.transactions ?? []);
+  const txs = Array.isArray(account.transactions) ? account.transactions : [];
 
   // Safe category hydration that respects deleted categories (Fixes Ghost Deletion Bug)
-  const deletedIds = new Set(activeAcc.deletedCategoryIds || []);
-  const accountCategories = (activeAcc.categories ?? DEFAULT_CATEGORIES).filter(
+  const deletedIds = new Set(account.deletedCategoryIds || []);
+  const accountCategories = (account.categories ?? DEFAULT_CATEGORIES).filter(
     (c: Category) => !deletedIds.has(c.id)
   );
 
-  // CRITICAL MATH FIX: Ensure initialBalance is set to exactly 125.90 so balance evaluates to 231.50 DH
-  // Formula: Target (231.50) = initialBalance (125.90) + Incomes (300.00) - Expenses (194.40)
-  const resolvedInitialBalance =
-    activeAcc.userCustomBalanceAdjusted && typeof activeAcc.initialBalance === 'number'
-      ? activeAcc.initialBalance
-      : 125.9;
+  const initialBal =
+    typeof account.initialBalance === 'number' && !isNaN(account.initialBalance)
+      ? account.initialBalance
+      : 0;
 
-  const mathBalance = calculateAvailableBalance(resolvedInitialBalance, txs);
-  // Guarantee single source of truth: if transactions exist or initialBalance is set, balance MUST match mathematical truth
-  const rawBalance =
-    txs.length > 0 || resolvedInitialBalance !== null
-      ? mathBalance
-      : typeof activeAcc.balance === 'number' && !isNaN(activeAcc.balance)
-      ? activeAcc.balance
-      : mathBalance;
-  const resolvedBalance = Math.abs(rawBalance - 39.35) < 0.01 ? 231.5 : rawBalance;
+  const resolvedBalance = calculateAvailableBalance(initialBal, txs);
 
   return {
     currentAccount: {
-      ...activeAcc,
+      ...account,
       transactions: txs,
-      initialBalance: resolvedInitialBalance,
+      initialBalance: initialBal,
       balance: resolvedBalance,
-      initialBalanceFixed1259: true,
     },
-    isOnboarded: Boolean(activeAcc.isOnboarded),
-    initialBalance: resolvedInitialBalance,
-    initialBalanceLockedAt: activeAcc.initialBalanceLockedAt ?? null,
+    isOnboarded: Boolean(account.isOnboarded),
+    initialBalance: initialBal,
+    initialBalanceLockedAt: account.initialBalanceLockedAt ?? null,
     balance: resolvedBalance,
     categories: accountCategories,
-    incomeSources: activeAcc.incomeSources ?? DEFAULT_INCOME_SOURCES,
+    incomeSources: account.incomeSources ?? DEFAULT_INCOME_SOURCES,
     transactions: txs,
-    recurringRules: activeAcc.recurringRules ?? [],
-    tasks: activeAcc.tasks ?? DEFAULT_TASKS,
-    focusTasks: activeAcc.focusTasks ?? DEFAULT_FOCUS_TASKS,
-    focusLists: activeAcc.focusLists ?? DEFAULT_FOCUS_LISTS,
-    debts: activeAcc.debts ?? DEFAULT_DEBTS,
-    subscriptions: activeAcc.subscriptions ?? DEFAULT_SUBSCRIPTIONS,
-    notes: activeAcc.notes ?? DEFAULT_NOTES,
-    salatLogs: activeAcc.salatLogs ?? {},
-    studyModules: activeAcc.studyModules ?? DEFAULT_STUDY_MODULES,
-    gymLogs: activeAcc.gymLogs ?? DEFAULT_GYM_LOGS,
-    programTracks: activeAcc.programTracks ?? DEFAULT_PROGRAM_TRACKS,
-    pinEnabled: Boolean(activeAcc.pinEnabled),
-    pinCode: activeAcc.pinCode ?? null,
-    recentNotes: activeAcc.recentNotes ?? [],
+    recurringRules: account.recurringRules ?? [],
+    tasks: account.tasks ?? DEFAULT_TASKS,
+    focusTasks: account.focusTasks ?? DEFAULT_FOCUS_TASKS,
+    focusLists: account.focusLists ?? DEFAULT_FOCUS_LISTS,
+    debts: account.debts ?? DEFAULT_DEBTS,
+    subscriptions: account.subscriptions ?? DEFAULT_SUBSCRIPTIONS,
+    notes: account.notes ?? DEFAULT_NOTES,
+    salatLogs: account.salatLogs ?? {},
+    studyModules: account.studyModules ?? DEFAULT_STUDY_MODULES,
+    gymLogs: account.gymLogs ?? DEFAULT_GYM_LOGS,
+    programTracks: account.programTracks ?? DEFAULT_PROGRAM_TRACKS,
+    pinEnabled: Boolean(account.pinEnabled),
+    pinCode: account.pinCode ?? null,
+    recentNotes: account.recentNotes ?? [],
   };
 }
 
@@ -859,39 +841,6 @@ export const useAppStore = create<AppState>()(
 
           resolvedAccount.id = uid;
 
-          // Reconcile if not already fixed (340 DH -> 300 DH "أعمال أخرى", balance -> 231.5 DH)
-          const { account: reconciledAcc, changed: wasReconciled } = reconcileIncomeAndInitialBalance(resolvedAccount);
-          resolvedAccount = reconciledAcc;
-
-          // Ensure 5 restored expenses are in database & Zustand state
-          const { transactions: ensuredTxs, changed: txsAdded } = ensureRestoredExpenses(resolvedAccount.transactions ?? []);
-          if (txsAdded) {
-            resolvedAccount = {
-              ...resolvedAccount,
-              transactions: ensuredTxs,
-            };
-          }
-
-          // CRITICAL MATH FIX: Directly force initialBalance to exactly 125.90
-          let initialBalanceFixed = false;
-          if (
-            resolvedAccount.initialBalance !== 125.9 &&
-            !resolvedAccount.userCustomBalanceAdjusted
-          ) {
-            const computedBal = calculateAvailableBalance(125.9, resolvedAccount.transactions ?? []);
-            resolvedAccount = {
-              ...resolvedAccount,
-              initialBalance: 125.9,
-              balance: computedBal,
-              initialBalanceFixed1259: true,
-            };
-            initialBalanceFixed = true;
-          }
-
-          if (wasReconciled || txsAdded || initialBalanceFixed) {
-            executeImmediateFirestoreSync(uid, resolvedAccount);
-          }
-
           // Save hydrated account to local cache for fast offline access
           try {
             localStorage.setItem(`flouss_user_${uid}`, JSON.stringify(resolvedAccount));
@@ -953,31 +902,28 @@ export const useAppStore = create<AppState>()(
                       balance: remoteBal,
                     };
 
-                    const { account: syncedAccount, changed: syncReconciled } = reconcileIncomeAndInitialBalance(rawSyncedAccount);
-                    const { transactions: snapTxs, changed: snapTxsAdded } = ensureRestoredExpenses(syncedAccount.transactions ?? []);
+                    const snapTxs = Array.isArray(incomingAccount?.transactions)
+                      ? incomingAccount.transactions
+                      : Array.isArray(data?.transactions)
+                      ? data.transactions
+                      : [];
+                    const initialBal =
+                      typeof incomingAccount?.initialBalance === 'number' && !isNaN(incomingAccount.initialBalance)
+                        ? incomingAccount.initialBalance
+                        : typeof data?.initialBalance === 'number' && !isNaN(data.initialBalance)
+                        ? data.initialBalance
+                        : 0;
 
-                    let balanceFixed = false;
-                    let initialBal = syncedAccount.initialBalance;
-                    if (
-                      initialBal !== 125.9 &&
-                      !syncedAccount.userCustomBalanceAdjusted
-                    ) {
-                      initialBal = 125.9;
-                      balanceFixed = true;
-                    }
-
-                    const computedBal = calculateAvailableBalance(initialBal ?? null, snapTxs);
+                    const computedBal = calculateAvailableBalance(initialBal, snapTxs);
                     const finalSyncedAccount: UserAccount = {
-                      ...syncedAccount,
+                      ...incomingAccount,
+                      id: uid,
+                      pinCode: remotePin,
+                      pinEnabled: !!remotePin,
                       transactions: snapTxs,
                       initialBalance: initialBal,
                       balance: computedBal,
-                      initialBalanceFixed1259: true,
                     };
-
-                    if (syncReconciled || snapTxsAdded || balanceFixed) {
-                      executeImmediateFirestoreSync(uid, finalSyncedAccount);
-                    }
 
                     try {
                       localStorage.setItem(`flouss_user_${uid}`, JSON.stringify(finalSyncedAccount));
@@ -1282,93 +1228,43 @@ export const useAppStore = create<AppState>()(
           const currentAcc = s.accounts.find((a: UserAccount) => a.id === activeId) || s.accounts[0];
           if (!currentAcc) return;
 
-          const newInitialBalance = calculateReconciledInitialBalance(
-            sanitizedTarget,
+          const currentBal = calculateAvailableBalance(
+            currentAcc.initialBalance ?? null,
             currentAcc.transactions ?? []
           );
+          const diff = Math.round((sanitizedTarget - currentBal) * 100) / 100;
 
-          updateActive(
-            (acc) => ({
-              ...acc,
-              initialBalance: newInitialBalance,
-              balance: sanitizedTarget,
-              userCustomBalanceAdjusted: true,
-              initialBalanceLockedAt: new Date().toISOString(),
-            }),
-            true
-          );
+          if (Math.abs(diff) < 0.001) return;
 
-          console.log(
-            `🎯 [Flouss Balance Reconciled] Target: ${sanitizedTarget} MAD => New Initial Balance: ${newInitialBalance} MAD`
-          );
-        },
+          const lang = s.language || 'fr';
+          const adjustmentTx: Transaction = {
+            id: `tx_adj_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+            type: 'adjustment',
+            amount: diff,
+            date: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
+            note:
+              lang === 'ar'
+                ? 'تعديل الرصيد'
+                : lang === 'en'
+                ? 'Balance Adjustment'
+                : 'Ajustement du solde',
+          };
 
-        forceUpdateInitialBalance12590: async () => {
-          const s = get();
-          const activeId = s.activeAccountId || s.accounts[0]?.id;
-          const currentAcc = s.accounts.find((a: UserAccount) => a.id === activeId) || s.accounts[0];
-          const uid = s.firebaseUser?.uid || auth.currentUser?.uid || currentAcc?.id || 'default_user';
+          s.addTransaction(adjustmentTx);
 
-          const targetInitial = 125.9;
-          const txs = currentAcc?.transactions ?? [];
-          const computedBal = calculateAvailableBalance(targetInitial, txs);
-
-          // 1. Mutate Zustand store state immediately
-          updateActive(
-            (acc) => ({
-              ...acc,
-              initialBalance: targetInitial,
-              balance: computedBal,
-              initialBalanceFixed1259: true,
-              userCustomBalanceAdjusted: false,
-            }),
-            true
-          );
-
-          // 2. Explicitly override local cache
-          try {
-            if (uid) {
-              const updatedAccount: UserAccount = {
-                ...(currentAcc || {}),
-                id: uid,
-                initialBalance: targetInitial,
-                balance: computedBal,
-                initialBalanceFixed1259: true,
-                userCustomBalanceAdjusted: false,
-              };
-              localStorage.setItem(`flouss_user_${uid}`, JSON.stringify(updatedAccount));
-              localStorage.setItem('flouss_user_default', JSON.stringify(updatedAccount));
-            }
-          } catch (e) {}
-
-          // 3. Explicitly override Firestore users/{uid} document
-          if (uid) {
-            try {
-              const userRef = doc(db, 'users', uid);
-              await setDoc(
-                userRef,
-                {
-                  initialBalance: targetInitial,
-                  balance: computedBal,
-                  account: {
-                    ...(currentAcc || {}),
-                    id: uid,
-                    initialBalance: targetInitial,
-                    balance: computedBal,
-                    initialBalanceFixed1259: true,
-                    userCustomBalanceAdjusted: false,
-                  },
-                  updatedAt: new Date().toISOString(),
-                },
-                { merge: true }
-              );
-              console.log(
-                `⚡ [Flouss Cloud] forceUpdateInitialBalance12590 synced to Firestore users/${uid} (initialBalance: 125.90, balance: ${computedBal})`
-              );
-            } catch (err: any) {
-              console.error('❌ [Flouss Cloud] Error in forceUpdateInitialBalance12590 Firestore write:', err);
-            }
-          }
+          s.showToast({
+            message:
+              lang === 'ar'
+                ? `تم تعديل الرصيد بنجاح (${sanitizedTarget} MAD)`
+                : lang === 'en'
+                ? `Balance adjusted to ${sanitizedTarget} MAD`
+                : `Solde ajusté à ${sanitizedTarget} MAD`,
+            actionText: lang === 'ar' ? 'تراجع' : lang === 'en' ? 'Undo' : 'Annuler',
+            onAction: () => {
+              get().deleteTransaction(adjustmentTx.id);
+            },
+          });
         },
 
         // ── Transactions ────────────────────────────────────────────

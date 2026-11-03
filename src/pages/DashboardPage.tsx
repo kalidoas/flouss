@@ -57,19 +57,7 @@ export const DashboardPage: React.FC = () => {
     hideBalance,
     setActiveScreen,
     language,
-    forceUpdateInitialBalance12590,
   } = useAppStore();
-
-  // Direct force-update on dashboard load to explicitly override persisted Firestore & Zustand initialBalance to 125.90
-  useEffect(() => {
-    forceUpdateInitialBalance12590();
-  }, [forceUpdateInitialBalance12590]);
-
-  useEffect(() => {
-    if (initialBalance !== 125.9) {
-      forceUpdateInitialBalance12590();
-    }
-  }, [initialBalance, forceUpdateInitialBalance12590]);
 
   const tDash = translations[language].dashboard;
   const tCommon = translations[language].common;
@@ -85,8 +73,7 @@ export const DashboardPage: React.FC = () => {
   const currentDayOfMonth = today.getDate();
 
   // Ground truth mathematical balance
-  const rawBalance = calculateAvailableBalance(initialBalance, transactions);
-  const balance = Math.abs(rawBalance - 39.35) < 0.01 ? 231.5 : rawBalance;
+  const balance = calculateAvailableBalance(initialBalance, transactions);
   const totalInGoals = calculateTotalSavingsInGoals(categories, transactions);
   const netWorth = balance + totalInGoals;
 
