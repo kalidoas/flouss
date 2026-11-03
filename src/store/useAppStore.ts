@@ -22,6 +22,8 @@ import {
   PrayerKey,
   ProgramTrack,
   ProgramSubTask,
+  CalendarMeeting,
+  NotificationSettings,
 } from '../types';
 import {
   DEFAULT_CATEGORIES,
@@ -81,6 +83,8 @@ export interface AppState {
   pinEnabled: boolean;
   pinCode: string | null;
   recentNotes: string[];
+  meetings: CalendarMeeting[];
+  notificationSettings: NotificationSettings;
 
   // ── UI Preferences ──────────────────────────────────────────
   theme: ThemeMode;
@@ -187,6 +191,10 @@ export interface AppState {
   deleteNote: (id: string) => void;
   deleteNoteItem: (id: string) => void;
   togglePinNote: (id: string) => void;
+
+  addMeeting: (meeting: CalendarMeeting) => void;
+  deleteMeeting: (id: string) => void;
+  updateNotificationSettings: (patch: Partial<NotificationSettings>) => void;
 
   startTour: () => void;
   nextTourStep: () => void;
@@ -321,6 +329,15 @@ export function makeInitialAccount(uid: string, name: string, email?: string): U
     studyModules: DEFAULT_STUDY_MODULES,
     gymLogs: DEFAULT_GYM_LOGS,
     programTracks: DEFAULT_PROGRAM_TRACKS,
+    meetings: [],
+    notificationSettings: {
+      soundEnabled: true,
+      soundTone: 'chime',
+      defaultBillLeadDays: 1,
+      defaultTaskLeadMinutes: [10, 0],
+      googleCalendarConnected: false,
+      googleCalendarEmail: null,
+    },
     createdAt: new Date().toISOString(),
   };
 }
@@ -425,6 +442,15 @@ export function extractAccountState(account: UserAccount | null) {
     pinEnabled: Boolean(account.pinEnabled),
     pinCode: account.pinCode ?? null,
     recentNotes: account.recentNotes ?? [],
+    meetings: account.meetings ?? [],
+    notificationSettings: account.notificationSettings ?? {
+      soundEnabled: true,
+      soundTone: 'chime',
+      defaultBillLeadDays: 1,
+      defaultTaskLeadMinutes: [10, 0],
+      googleCalendarConnected: false,
+      googleCalendarEmail: null,
+    },
   };
 }
 
@@ -1854,6 +1880,38 @@ export const useAppStore = create<AppState>()(
             notes: (a.notes ?? []).map((n: NoteItem) =>
               n.id === id ? { ...n, isPinned: !n.isPinned, updatedAt: new Date().toISOString() } : n
             ),
+          }));
+        },
+
+        // ── Meetings ────────────────────────────────────────────────
+        addMeeting: (meeting: CalendarMeeting) => {
+          updateActive((a) => ({
+            ...a,
+            meetings: [...(a.meetings ?? []), meeting],
+          }));
+        },
+        deleteMeeting: (id: string) => {
+          updateActive((a) => ({
+            ...a,
+            meetings: (a.meetings ?? []).filter((m: CalendarMeeting) => m.id !== id),
+          }));
+        },
+
+        // ── Notification Settings ───────────────────────────────────
+        updateNotificationSettings: (patch: Partial<NotificationSettings>) => {
+          updateActive((a) => ({
+            ...a,
+            notificationSettings: {
+              ...(a.notificationSettings ?? {
+                soundEnabled: true,
+                soundTone: 'chime',
+                defaultBillLeadDays: 1,
+                defaultTaskLeadMinutes: [10, 0],
+                googleCalendarConnected: false,
+                googleCalendarEmail: null,
+              }),
+              ...patch,
+            },
           }));
         },
 

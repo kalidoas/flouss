@@ -23,6 +23,8 @@ import {
   HandCoins,
 } from 'lucide-react';
 import { NoteItem, SubscriptionItem, TaskItem, DebtItem } from '../../types';
+import { UpcomingScheduleWidget } from '../meetings/UpcomingScheduleWidget';
+import { handleBillPaidCalendarInstance } from '../../services/googleCalendar';
 
 export const PriorityHub: React.FC = () => {
   const {
@@ -89,6 +91,7 @@ export const PriorityHub: React.FC = () => {
 
   const handlePayBill = (sub: SubscriptionItem) => {
     toggleSubscriptionPaid(sub.id, currentMonth);
+    handleBillPaidCalendarInstance(sub.id, currentMonth).catch(() => {});
 
     // Confetti burst
     confetti({
@@ -412,6 +415,11 @@ export const PriorityHub: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* 7-Day Google Calendar Schedule & Meetings Widget */}
+      <div className="pt-3 border-t border-black/[0.04] dark:border-white/[0.05]">
+        <UpcomingScheduleWidget />
+      </div>
     </AppleGlassCard>
   );
 };

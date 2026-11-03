@@ -146,6 +146,8 @@ export interface UserAccount {
   studyModules?: StudyModuleItem[];
   gymLogs?: GymWorkoutLog[];
   programTracks?: ProgramTrack[];
+  meetings?: CalendarMeeting[];
+  notificationSettings?: NotificationSettings;
   incomeBalanceFixedV1?: boolean;
   initialBalanceFixed1259?: boolean;
   userCustomBalanceAdjusted?: boolean;
@@ -229,6 +231,8 @@ export interface TaskItem {
   scheduledDateTime?: string; // ISO string or YYYY-MM-DDTHH:mm
   addToGoogleCalendar?: boolean;
   googleCalendarEventId?: string;
+  reminderEnabled?: boolean;
+  reminderLeadMinutes?: number[]; // e.g. [10, 0]
   createdAt: string;
   isArchived?: boolean;
   completedDates: string[]; // List of YYYY-MM-DD
@@ -256,7 +260,34 @@ export interface SubscriptionItem {
   category: string;
   notes?: string;
   paidMonths: string[]; // ['2026-10']
+  reminderEnabled?: boolean;
+  reminderDaysBefore?: number; // default: 1 day before
+  reminderTime?: string; // default: "09:00"
+  googleCalendarEventId?: string;
   createdAt: string;
+}
+
+export interface CalendarMeeting {
+  id: string;
+  title: string;
+  description?: string;
+  date: string; // YYYY-MM-DD
+  time: string; // HH:mm
+  durationMinutes: number; // e.g. 30, 60
+  attendees: string[]; // email addresses
+  remindersMinutes?: number[]; // e.g. [10, 0]
+  htmlLink?: string;
+  googleCalendarEventId?: string;
+  createdAt: string;
+}
+
+export interface NotificationSettings {
+  soundEnabled: boolean;
+  soundTone: 'chime' | 'radar' | 'gentle';
+  defaultBillLeadDays: number;
+  defaultTaskLeadMinutes: number[];
+  googleCalendarConnected?: boolean;
+  googleCalendarEmail?: string | null;
 }
 
 export interface NoteItem {

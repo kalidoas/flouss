@@ -37,8 +37,21 @@ import {
   CheckCircle2,
   Bell,
   BellRing,
+  Volume2,
+  VolumeX,
+  HelpCircle,
+  Play,
+  LogOut,
 } from 'lucide-react';
 import { NotificationService } from '../services/notificationService';
+import {
+  disconnectGoogleCalendar,
+  requestGoogleCalendarAuth,
+  getStoredGoogleAccessToken,
+  getStoredGoogleCalendarEmail,
+} from '../services/googleCalendar';
+import { previewAlarmTone, AlarmToneType } from '../services/audioAlarmService';
+import { PhoneNotificationGuideModal } from '../components/common/PhoneNotificationGuideModal';
 
 export const SettingsPage: React.FC = () => {
   const {
@@ -66,6 +79,8 @@ export const SettingsPage: React.FC = () => {
     hideBalance,
     startTour,
     showToast,
+    notificationSettings,
+    updateNotificationSettings,
   } = useAppStore();
 
   const activeAccount =
@@ -88,6 +103,52 @@ export const SettingsPage: React.FC = () => {
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>(() =>
     NotificationService.getPermission()
   );
+
+  const [isPhoneGuideOpen, setIsPhoneGuideOpen] = useState(false);
+  const [googleAuthLoading, setGoogleAuthLoading] = useState(false);
+
+  const googleConnected = Boolean(
+    getStoredGoogleAccessToken() || notificationSettings?.googleCalendarConnected
+  );
+  const googleEmail =
+    notificationSettings?.googleCalendarEmail || getStoredGoogleCalendarEmail();
+
+  const handleConnectGoogle = async () => {
+    setGoogleAuthLoading(true);
+    playHapticFeedback('selection');
+    try {
+      await requestGoogleCalendarAuth(true);
+      playHapticFeedback('success');
+      showToast({
+        message:
+          language === 'ar'
+            ? '✓ تم ربط تقويم جوجل بنجاح!'
+            : language === 'en'
+            ? '✓ Google Calendar connected successfully!'
+            : '✓ Google Calendar connecté avec succès !',
+      });
+    } catch (err: any) {
+      playHapticFeedback('error');
+      showToast({
+        message: err?.message || 'Erreur de connexion',
+      });
+    } finally {
+      setGoogleAuthLoading(false);
+    }
+  };
+
+  const handleDisconnectGoogle = () => {
+    playHapticFeedback('medium');
+    disconnectGoogleCalendar();
+    showToast({
+      message:
+        language === 'ar'
+          ? 'تم فصل حساب تقويم جوجل'
+          : language === 'en'
+          ? 'Google Calendar disconnected'
+          : 'Google Calendar déconnecté',
+    });
+  };
 
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
 
@@ -473,7 +534,7 @@ export const SettingsPage: React.FC = () => {
         </div>
       </Card>
 
-      {/* OS-Level System Notifications (PWA) */}
+      {/* OS-Level System Notifications & Google Calendar Alarm Engine */}
       <Card padding="lg">
         <div className="flex items-start justify-between gap-4 mb-4">
           <div className="flex items-center gap-3">
@@ -522,7 +583,7 @@ export const SettingsPage: React.FC = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="pt-2 flex flex-wrap gap-2.5">
+        <div className="pt-1 pb-4 flex flex-wrap gap-2.5">
           {notificationPermission !== 'granted' ? (
             <Button
               variant="primary"
@@ -542,6 +603,152 @@ export const SettingsPage: React.FC = () => {
               {tNotif.testBtn}
             </Button>
           )}
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsPhoneGuideOpen(true)}
+            icon={<HelpCircle className="w-4 h-4 text-blue-500" />}
+          >
+            {tNotif.phoneGuideBtn}
+          </Button>
+        </div>
+
+        {/* Google Calendar Section (Offline Native Alarms) */}
+        <div className="pt-4 border-t border-black/[0.06] dark:border-white/[0.08] space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-blue-500" />
+                <h3 className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-white">
+                  {tNotif.googleCalendarTitle}
+                </h3>
+                {googleConnected ? (
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold border border-emerald-500/30">
+                    {tNotif.googleConnected} ✓
+                  </span>
+                ) : (
+                  <span className="px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 text-[10px] font-bold">
+                    {tNotif.googleNotConnected}
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] text-zinc-400 mt-0.5">
+                {tNotif.googleCalendarSubtitle}
+              </p>
+              {googleConnected && googleEmail && (
+                <p className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400 mt-1">
+                  {googleEmail}
+                </p>
+              )}
+            </div>
+
+            <div>
+              {googleConnected ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDisconnectGoogle}
+                  icon={<LogOut className="w-3.5 h-3.5 text-rose-500" />}
+                >
+                  {tNotif.disconnectGoogleBtn}
+                </Button>
+              ) : (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  disabled={googleAuthLoading}
+                  onClick={handleConnectGoogle}
+                  icon={<Calendar className="w-3.5 h-3.5" />}
+                >
+                  {googleAuthLoading ? '...' : tNotif.connectGoogleBtn}
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* In-App Synthesized Tone Selector */}
+        <div className="pt-4 border-t border-black/[0.06] dark:border-white/[0.08] space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Volume2 className="w-4 h-4 text-indigo-500" />
+              <h3 className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-white">
+                {tNotif.inAppSoundTitle}
+              </h3>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                const current = notificationSettings?.soundEnabled !== false;
+                updateNotificationSettings({ soundEnabled: !current });
+                playHapticFeedback('selection');
+              }}
+              className={`w-11 h-6 rounded-full transition-colors relative flex items-center p-0.5 ${
+                notificationSettings?.soundEnabled !== false ? 'bg-indigo-600' : 'bg-zinc-300 dark:bg-zinc-700'
+              }`}
+            >
+              <div
+                className={`w-5 h-5 rounded-full bg-white shadow-md transition-transform ${
+                  notificationSettings?.soundEnabled !== false
+                    ? language === 'ar'
+                      ? '-translate-x-5'
+                      : 'translate-x-5'
+                    : 'translate-x-0'
+                }`}
+              />
+            </button>
+          </div>
+
+          {notificationSettings?.soundEnabled !== false && (
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              {(['chime', 'radar', 'gentle'] as AlarmToneType[]).map((toneKey) => {
+                const isSelected = (notificationSettings?.soundTone || 'chime') === toneKey;
+                const toneLabel =
+                  toneKey === 'chime'
+                    ? tNotif.toneChime
+                    : toneKey === 'radar'
+                    ? tNotif.toneRadar
+                    : tNotif.toneGentle;
+
+                return (
+                  <button
+                    key={toneKey}
+                    type="button"
+                    onClick={() => {
+                      updateNotificationSettings({ soundTone: toneKey });
+                      previewAlarmTone(toneKey);
+                      playHapticFeedback('selection');
+                    }}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
+                      isSelected
+                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
+                        : 'bg-zinc-50 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700'
+                    }`}
+                  >
+                    <span>{toneLabel}</span>
+                    <Play className="w-3 h-3 opacity-70" />
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Default Lead Times Summary */}
+        <div className="pt-4 border-t border-black/[0.06] dark:border-white/[0.08] space-y-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+          <span className="font-bold text-zinc-700 dark:text-zinc-300 block">
+            {tNotif.leadTimesTitle} :
+          </span>
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+            <span>{tNotif.billLeadTime}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+            <span>{tNotif.taskLeadTime}</span>
+          </div>
         </div>
       </Card>
 
@@ -1085,6 +1292,12 @@ export const SettingsPage: React.FC = () => {
       <UserProfileModal
         isOpen={isAccountModalOpen}
         onClose={() => setIsAccountModalOpen(false)}
+      />
+
+      {/* Phone Notification & Audio Priority Guide Sheet */}
+      <PhoneNotificationGuideModal
+        isOpen={isPhoneGuideOpen}
+        onClose={() => setIsPhoneGuideOpen(false)}
       />
     </div>
   );

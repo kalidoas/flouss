@@ -9,8 +9,14 @@ import { translations } from '../i18n/translations';
 import { getProgramTrackTitle } from '../utils/i18nHelpers';
 import { playHapticFeedback } from '../utils/haptics';
 import { GoogleCalendarAlarmModal } from '../components/common/GoogleCalendarAlarmModal';
+import { UpcomingScheduleWidget } from '../components/meetings/UpcomingScheduleWidget';
 import confetti from 'canvas-confetti';
-import { createGoogleCalendarEvent } from '../services/googleCalendar';
+import {
+  createGoogleCalendarEvent,
+  syncEntityToGoogleCalendar,
+  deleteCalendarEventByFloussId,
+  formatRFC3339WithOffset,
+} from '../services/googleCalendar';
 import {
   CheckCircle2,
   Circle,
@@ -568,17 +574,27 @@ export const TasksPage: React.FC = () => {
     e.preventDefault();
     if (!taskTitle.trim()) return;
 
+    const taskId = editingTask ? editingTask.id : ('task_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6));
     let calendarEventId: string | undefined = editingTask?.googleCalendarEventId;
 
     if (syncToCalendar) {
       setIsCalendarSaving(true);
       try {
-        const calRes = await createGoogleCalendarEvent({
+        const datePart = taskScheduledDate || selectedDate || todayStr;
+        const timePart = taskScheduledTime || '10:00';
+        const [hours, minutes] = timePart.split(':').map((n) => parseInt(n, 10) || 0);
+        const [year, month, day] = datePart.split('-').map((n) => parseInt(n, 10) || 1);
+        const startDate = new Date(year, month - 1, day, hours, minutes, 0);
+        const endDate = new Date(startDate.getTime() + 30 * 60 * 1000);
+
+        const calRes = await syncEntityToGoogleCalendar({
+          floussId: taskId,
           title: taskTitle.trim(),
           description: taskNotes.trim() || undefined,
-          scheduledDate: taskScheduledDate || selectedDate || todayStr,
-          scheduledTime: taskScheduledTime || '10:00',
-          durationMinutes: 30,
+          startDateTime: formatRFC3339WithOffset(startDate),
+          endDateTime: formatRFC3339WithOffset(endDate),
+          entityType: 'task',
+          remindersMinutes: [10, 0],
         });
 
         if (calRes.success && calRes.eventId) {
@@ -598,6 +614,9 @@ export const TasksPage: React.FC = () => {
       } finally {
         setIsCalendarSaving(false);
       }
+    } else if (editingTask?.googleCalendarEventId || editingTask?.addToGoogleCalendar) {
+      deleteCalendarEventByFloussId(taskId).catch(() => {});
+      calendarEventId = undefined;
     }
 
     const scheduledDateTime = taskScheduledDate && taskScheduledTime
@@ -618,7 +637,7 @@ export const TasksPage: React.FC = () => {
       });
     } else {
       addTask({
-        id: 'task_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+        id: taskId,
         title: taskTitle.trim(),
         category: taskCategory,
         frequency: taskFrequency,
@@ -1192,7 +1211,10 @@ export const TasksPage: React.FC = () => {
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => deleteTask(task.id)}
+                        onClick={() => {
+                          deleteTask(task.id);
+                          deleteCalendarEventByFloussId(task.id).catch(() => {});
+                        }}
                         className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
                         title={tCommon.delete}
                       >
@@ -1203,6 +1225,11 @@ export const TasksPage: React.FC = () => {
                 );
               })
             )}
+          </div>
+
+          {/* 7-Day Google Calendar & Meetings Integration */}
+          <div className="pt-2">
+            <UpcomingScheduleWidget />
           </div>
         </div>
       )}

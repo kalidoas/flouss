@@ -4,6 +4,8 @@ import { Sidebar } from './Sidebar';
 import { Navbar } from './Navbar';
 import { QuickAddButton } from './QuickAddButton';
 import { DynamicIsland } from './DynamicIsland';
+import { InAppAlarmSheet } from '../common/InAppAlarmSheet';
+import { ReconnectGoogleCalendarModal } from '../common/ReconnectGoogleCalendarModal';
 import { useAppStore } from '../../store/useAppStore';
 
 interface LayoutProps {
@@ -77,6 +79,12 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
         {/* Mobile Navigation Bar */}
         <Navbar />
+
+        {/* Global In-App High Priority Alarm Sheet */}
+        <InAppAlarmSheet />
+
+        {/* Global Google Calendar Reconnect Sheet */}
+        <ReconnectGoogleCalendarModal />
       </div>
     </div>
   );

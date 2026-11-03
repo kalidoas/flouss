@@ -21,7 +21,16 @@ import {
   TrendingUp,
   Receipt,
   Check,
+  Bell,
 } from 'lucide-react';
+import {
+  buildMonthlyBillRRule,
+  deleteCalendarEventByFloussId,
+  handleBillPaidCalendarInstance,
+  syncEntityToGoogleCalendar,
+  formatRFC3339WithOffset,
+  getStoredGoogleAccessToken,
+} from '../services/googleCalendar';
 
 export const SubscriptionsPage: React.FC = () => {
   const {
@@ -51,6 +60,7 @@ export const SubscriptionsPage: React.FC = () => {
   const [subDay, setSubDay] = useState('5');
   const [subCategory, setSubCategory] = useState('Télécom');
   const [subNotes, setSubNotes] = useState('');
+  const [subReminderEnabled, setSubReminderEnabled] = useState(false);
 
   // Comprehensive Analytics Calculations
   const stats = useMemo(() => {
@@ -121,6 +131,7 @@ export const SubscriptionsPage: React.FC = () => {
     setSubDay('5');
     setSubCategory('Télécom');
     setSubNotes('');
+    setSubReminderEnabled(Boolean(getStoredGoogleAccessToken()));
     setIsModalOpen(true);
   };
 
@@ -131,32 +142,69 @@ export const SubscriptionsPage: React.FC = () => {
     setSubDay(sub.billingDay.toString());
     setSubCategory(sub.category || 'Général');
     setSubNotes(sub.notes || '');
+    setSubReminderEnabled(Boolean(sub.reminderEnabled || sub.googleCalendarEventId));
     setIsModalOpen(true);
   };
 
-  const handleSaveSub = (e: React.FormEvent) => {
+  const handleSaveSub = async (e: React.FormEvent) => {
     e.preventDefault();
     const amount = parseFloat(subAmount);
     const day = parseInt(subDay, 10);
     if (!subName.trim() || isNaN(amount) || amount <= 0) return;
 
+    const validatedDay = isNaN(day) ? 1 : Math.min(31, Math.max(1, day));
+    const subId = editingSub?.id || 'sub_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
+
+    let gCalEventId = editingSub?.googleCalendarEventId;
+
+    if (subReminderEnabled) {
+      const now = new Date();
+      const startDay = Math.min(validatedDay, 28);
+      const startDate = new Date(now.getFullYear(), now.getMonth(), startDay, 9, 0, 0);
+      const endDate = new Date(startDate.getTime() + 30 * 60 * 1000);
+      const rrule = buildMonthlyBillRRule(validatedDay);
+
+      try {
+        const res = await syncEntityToGoogleCalendar({
+          floussId: subId,
+          title: `Facture : ${subName.trim()} (${amount} MAD)`,
+          description: `Rappel de charge récurrente Flouss. Montant : ${amount} MAD`,
+          startDateTime: formatRFC3339WithOffset(startDate),
+          endDateTime: formatRFC3339WithOffset(endDate),
+          entityType: 'bill',
+          rrule,
+          remindersMinutes: [1440, 0], // 1 day before + on due date at 09:00
+        });
+        if (res.success && res.eventId) {
+          gCalEventId = res.eventId;
+        }
+      } catch {}
+    } else if (editingSub?.googleCalendarEventId) {
+      deleteCalendarEventByFloussId(subId).catch(() => {});
+      gCalEventId = undefined;
+    }
+
     if (editingSub) {
       updateSubscription(editingSub.id, {
         name: subName.trim(),
         amount,
-        billingDay: isNaN(day) ? 1 : Math.min(31, Math.max(1, day)),
+        billingDay: validatedDay,
         category: subCategory.trim(),
         notes: subNotes.trim() || undefined,
+        reminderEnabled: subReminderEnabled,
+        googleCalendarEventId: gCalEventId,
       });
     } else {
       addSubscription({
-        id: 'sub_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+        id: subId,
         name: subName.trim(),
         amount,
-        billingDay: isNaN(day) ? 1 : Math.min(31, Math.max(1, day)),
+        billingDay: validatedDay,
         category: subCategory.trim(),
         notes: subNotes.trim() || undefined,
         paidMonths: [],
+        reminderEnabled: subReminderEnabled,
+        googleCalendarEventId: gCalEventId,
         createdAt: new Date().toISOString(),
       });
     }
@@ -513,7 +561,10 @@ export const SubscriptionsPage: React.FC = () => {
 
                     {/* Quick Paid Toggle Button */}
                     <button
-                      onClick={() => toggleSubscriptionPaid(sub.id, currentMonth)}
+                      onClick={() => {
+                        toggleSubscriptionPaid(sub.id, currentMonth);
+                        handleBillPaidCalendarInstance(sub.id, currentMonth).catch(() => {});
+                      }}
                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                         isPaid
                           ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25 shadow-xs'
@@ -534,7 +585,10 @@ export const SubscriptionsPage: React.FC = () => {
                         <Edit2 className="w-3.5 h-3.5" />
                       </button>
                       <button
-                        onClick={() => deleteSubscription(sub.id)}
+                        onClick={() => {
+                          deleteSubscription(sub.id);
+                          deleteCalendarEventByFloussId(sub.id).catch(() => {});
+                        }}
                         className="p-1.5 rounded-xl text-zinc-400 hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
                         title={tCommon.delete}
                       >

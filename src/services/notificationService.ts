@@ -2,11 +2,12 @@
  * Flouss OS-Level Notification Service (PWA & Service Worker)
  * Handles:
  * 1. Immediate negative balance notifications
- * 2. Due bills & subscriptions reminders on due date
+ * 2. Due bills & subscriptions reminders (1 day before + on due date at 09:00)
  * 3. Precision event warnings: 10-minute early warning & exact-time alerts
+ * 4. In-app alarm bottom sheet trigger with audio alarm loop & haptics
  */
 
-import { Language, TaskItem, SubscriptionItem, DebtItem } from '../types';
+import { Language, TaskItem, SubscriptionItem, DebtItem, CalendarMeeting } from '../types';
 import { formatMAD, getCurrentMonthStr, getTodayDateStr } from '../utils/formatters';
 
 const NOTIFIED_CACHE_KEY = 'flouss_notified_events';
@@ -21,7 +22,7 @@ function getNotifiedSet(): Set<string> {
   }
 }
 
-function markNotified(key: string): void {
+export function markNotified(key: string): void {
   if (typeof window === 'undefined') return;
   try {
     const set = getNotifiedSet();
@@ -30,8 +31,24 @@ function markNotified(key: string): void {
   } catch {}
 }
 
-function isAlreadyNotified(key: string): boolean {
+export function isAlreadyNotified(key: string): boolean {
   return getNotifiedSet().has(key);
+}
+
+export interface InAppAlarmEventDetail {
+  id: string;
+  title: string;
+  subtitle?: string;
+  type: 'task' | 'bill' | 'meeting';
+  scheduledTime?: string;
+}
+
+export function triggerInAppAlarm(detail: InAppAlarmEventDetail): void {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(
+      new CustomEvent('flouss:in-app-alarm', { detail })
+    );
+  }
 }
 
 export class NotificationService {
@@ -58,7 +75,6 @@ export class NotificationService {
 
     try {
       const permission = await Notification.requestPermission();
-      // Also register Service Worker if not registered
       if (permission === 'granted' && 'serviceWorker' in navigator) {
         try {
           await navigator.serviceWorker.register('/sw.js');
@@ -101,7 +117,6 @@ export class NotificationService {
       vibrate: options.vibrate || [200, 100, 200],
     };
 
-    // Try Service Worker registration first (standard for Android & iOS PWAs)
     if ('serviceWorker' in navigator) {
       try {
         const registration = await navigator.serviceWorker.ready;
@@ -114,7 +129,6 @@ export class NotificationService {
       }
     }
 
-    // Direct Notification fallback
     try {
       new Notification(title, notificationOptions);
       return true;
@@ -126,7 +140,6 @@ export class NotificationService {
 
   /**
    * Trigger 1: Negative Balance Alert
-   * Triggers immediately when available balance drops below zero
    */
   static checkNegativeBalance(
     currentBalance: number,
@@ -134,7 +147,6 @@ export class NotificationService {
     language: Language
   ): void {
     if (currentBalance >= 0) return;
-    // Only alert when crossing from >= 0 to < 0, or on initial load if negative
     if (previousBalance !== null && previousBalance < 0) return;
 
     const todayStr = getTodayDateStr();
@@ -161,7 +173,10 @@ export class NotificationService {
   }
 
   /**
-   * Trigger 2: Due Bills & Invoices (Subscriptions & Debts due today)
+   * Trigger 2: Due Bills & Invoices
+   * Covers:
+   * - 1 day before due date
+   * - On due date (from 09:00 onwards)
    */
   static checkDueBills(
     subscriptions: SubscriptionItem[],
@@ -172,38 +187,77 @@ export class NotificationService {
     const currentDay = today.getDate();
     const currentMonth = getCurrentMonthStr();
     const todayStr = getTodayDateStr();
+    const currentHours = today.getHours();
 
-    // Check Subscriptions due today
+    // Check Subscriptions
     (subscriptions || []).forEach((sub) => {
-      if (sub.billingDay === currentDay) {
-        const isPaidThisMonth = (sub.paidMonths || []).includes(currentMonth);
-        if (!isPaidThisMonth) {
-          const dedupKey = `bill_sub_${sub.id}_${todayStr}`;
-          if (!isAlreadyNotified(dedupKey)) {
-            markNotified(dedupKey);
+      const isPaidThisMonth = (sub.paidMonths || []).includes(currentMonth);
+      if (isPaidThisMonth) return;
 
-            const titles: Record<Language, string> = {
-              ar: `تذكير فاتورة مستحقة اليوم: ${sub.name}`,
-              fr: `Facture à régler aujourd'hui : ${sub.name}`,
-              en: `Bill due today: ${sub.name}`,
-            };
+      const billingDay = sub.billingDay;
+      const daysBefore = sub.reminderDaysBefore ?? 1;
 
-            const bodies: Record<Language, string> = {
-              ar: `فاتورة ${sub.name} بمبلغ ${formatMAD(sub.amount, false, language)} مستحقة الأداء اليوم.`,
-              fr: `La charge ${sub.name} d'un montant de ${formatMAD(sub.amount, false, language)} est à régler aujourd'hui.`,
-              en: `The bill for ${sub.name} (${formatMAD(sub.amount, false, language)}) is scheduled for today.`,
-            };
+      // 1. One day before alert (or custom daysBefore)
+      const daysUntilDue = billingDay - currentDay;
+      if (daysUntilDue === daysBefore) {
+        const dedupKey = `bill_sub_before_${sub.id}_${currentMonth}`;
+        if (!isAlreadyNotified(dedupKey)) {
+          markNotified(dedupKey);
 
-            this.showNotification(titles[language] || titles.fr, {
-              body: bodies[language] || bodies.fr,
-              tag: `bill-${sub.id}`,
-            });
-          }
+          const titles: Record<Language, string> = {
+            ar: `تذكير: فاتورة مستحقة قريباً (${sub.name})`,
+            fr: `Rappel : facture à échéance demain (${sub.name})`,
+            en: `Reminder: Bill due soon (${sub.name})`,
+          };
+
+          const bodies: Record<Language, string> = {
+            ar: `فاتورة ${sub.name} بمبلغ ${formatMAD(sub.amount, false, language)} تستحق غداً.`,
+            fr: `La charge ${sub.name} d'un montant de ${formatMAD(sub.amount, false, language)} arrive à échéance demain.`,
+            en: `The bill for ${sub.name} (${formatMAD(sub.amount, false, language)}) is due tomorrow.`,
+          };
+
+          this.showNotification(titles[language] || titles.fr, {
+            body: bodies[language] || bodies.fr,
+            tag: `bill-before-${sub.id}`,
+          });
+        }
+      }
+
+      // 2. On due date alert (at or after 09:00)
+      if (billingDay === currentDay && currentHours >= 9) {
+        const dedupKey = `bill_sub_due_${sub.id}_${todayStr}`;
+        if (!isAlreadyNotified(dedupKey)) {
+          markNotified(dedupKey);
+
+          const titles: Record<Language, string> = {
+            ar: `تذكير فاتورة مستحقة اليوم: ${sub.name}`,
+            fr: `Facture à régler aujourd'hui : ${sub.name}`,
+            en: `Bill due today: ${sub.name}`,
+          };
+
+          const bodies: Record<Language, string> = {
+            ar: `فاتورة ${sub.name} بمبلغ ${formatMAD(sub.amount, false, language)} مستحقة الأداء اليوم.`,
+            fr: `La charge ${sub.name} d'un montant de ${formatMAD(sub.amount, false, language)} est à régler aujourd'hui.`,
+            en: `The bill for ${sub.name} (${formatMAD(sub.amount, false, language)}) is scheduled for today.`,
+          };
+
+          this.showNotification(titles[language] || titles.fr, {
+            body: bodies[language] || bodies.fr,
+            tag: `bill-${sub.id}`,
+          });
+
+          // In-app alert if open
+          triggerInAppAlarm({
+            id: sub.id,
+            title: sub.name,
+            subtitle: formatMAD(sub.amount, false, language),
+            type: 'bill',
+          });
         }
       }
     });
 
-    // Check Debts due today
+    // Check Debts
     (debts || []).forEach((debt) => {
       if (debt.dueDate === todayStr && !debt.isSettled) {
         const dedupKey = `debt_${debt.id}_${todayStr}`;
@@ -243,19 +297,23 @@ export class NotificationService {
   /**
    * Trigger 3: Precision Event Reminders (Tasks & Meetings)
    * 1. 10-minute early warning
-   * 2. Exact-time alert
+   * 2. Exact-time alert (triggers full-screen in-app alarm with sound & haptics)
    */
-  static checkUpcomingEventReminders(tasks: TaskItem[], language: Language): void {
+  static checkUpcomingEventReminders(
+    tasks: TaskItem[],
+    meetings: CalendarMeeting[] = [],
+    language: Language
+  ): void {
     const now = new Date();
     const todayStr = getTodayDateStr();
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
+    // Check Tasks
     (tasks || []).forEach((task) => {
       if (task.isArchived) return;
       const isCompletedToday = (task.completedDates || []).includes(todayStr);
       if (isCompletedToday) return;
 
-      // Extract scheduled date
       let scheduledDate = task.scheduledDate;
       let scheduledTime = task.scheduledTime;
 
@@ -267,7 +325,6 @@ export class NotificationService {
         }
       }
 
-      // Check if task is scheduled for today and has a specific time
       if (scheduledDate === todayStr && scheduledTime) {
         const timeParts = scheduledTime.split(':');
         if (timeParts.length >= 2) {
@@ -277,7 +334,7 @@ export class NotificationService {
             const taskTotalMinutes = taskHours * 60 + taskMins;
             const diffMinutes = taskTotalMinutes - currentMinutes;
 
-            // 1. 10-minute early warning: 9 to 11 minutes prior
+            // 1. 10-minute early warning
             if (diffMinutes >= 9 && diffMinutes <= 11) {
               const dedupKey = `task_10m_${task.id}_${todayStr}`;
               if (!isAlreadyNotified(dedupKey)) {
@@ -302,7 +359,7 @@ export class NotificationService {
               }
             }
 
-            // 2. Exact-time alert: 0 to 1 minutes
+            // 2. Exact-time alert: diff 0 to 1 minutes
             if (diffMinutes >= 0 && diffMinutes <= 1) {
               const dedupKey = `task_exact_${task.id}_${todayStr}`;
               if (!isAlreadyNotified(dedupKey)) {
@@ -314,17 +371,67 @@ export class NotificationService {
                   en: 'It is time for your appointment',
                 };
 
-                const bodies: Record<Language, string> = {
-                  ar: task.title,
-                  fr: task.title,
-                  en: task.title,
-                };
-
                 this.showNotification(titles[language] || titles.fr, {
-                  body: bodies[language] || bodies.fr,
+                  body: task.title,
                   tag: `task-exact-${task.id}`,
                 });
+
+                // Trigger in-app high priority alarm bottom sheet
+                triggerInAppAlarm({
+                  id: task.id,
+                  title: task.title,
+                  scheduledTime,
+                  type: 'task',
+                });
               }
+            }
+          }
+        }
+      }
+    });
+
+    // Check Meetings
+    (meetings || []).forEach((meeting) => {
+      if (meeting.date === todayStr && meeting.time) {
+        const [mHours, mMins] = meeting.time.split(':').map((n) => parseInt(n, 10));
+        if (!isNaN(mHours) && !isNaN(mMins)) {
+          const meetingMinutes = mHours * 60 + mMins;
+          const diffMinutes = meetingMinutes - currentMinutes;
+
+          // 10-minute warning
+          if (diffMinutes >= 9 && diffMinutes <= 11) {
+            const dedupKey = `meeting_10m_${meeting.id}_${todayStr}`;
+            if (!isAlreadyNotified(dedupKey)) {
+              markNotified(dedupKey);
+              this.showNotification(
+                language === 'ar' ? `تذكير باجتماع: ${meeting.title}` : `Rappel réunion : ${meeting.title}`,
+                {
+                  body: `${meeting.time} (${meeting.durationMinutes} min)`,
+                  tag: `meeting-10m-${meeting.id}`,
+                }
+              );
+            }
+          }
+
+          // Exact time
+          if (diffMinutes >= 0 && diffMinutes <= 1) {
+            const dedupKey = `meeting_exact_${meeting.id}_${todayStr}`;
+            if (!isAlreadyNotified(dedupKey)) {
+              markNotified(dedupKey);
+              this.showNotification(
+                language === 'ar' ? 'بدأ الاجتماع الآن' : "La réunion commence maintenant",
+                {
+                  body: meeting.title,
+                  tag: `meeting-exact-${meeting.id}`,
+                }
+              );
+
+              triggerInAppAlarm({
+                id: meeting.id,
+                title: meeting.title,
+                scheduledTime: meeting.time,
+                type: 'meeting',
+              });
             }
           }
         }
@@ -340,17 +447,15 @@ export class NotificationService {
       try {
         const state = getState();
         if (!state) return;
-        const { subscriptions, debts, tasks, language } = state;
+        const { subscriptions, debts, tasks, meetings, language } = state;
         this.checkDueBills(subscriptions || [], debts || [], language || 'fr');
-        this.checkUpcomingEventReminders(tasks || [], language || 'fr');
+        this.checkUpcomingEventReminders(tasks || [], meetings || [], language || 'fr');
       } catch (err) {
         console.warn('Error during notification scheduler check:', err);
       }
     };
 
-    // Run first check immediately after 2 seconds
     const initialTimer = setTimeout(runCheck, 2000);
-    // Recurring 30-second interval
     const intervalTimer = setInterval(runCheck, 30000);
 
     return () => {
