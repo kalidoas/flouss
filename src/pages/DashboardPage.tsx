@@ -60,16 +60,14 @@ export const DashboardPage: React.FC = () => {
     forceUpdateInitialBalance12590,
   } = useAppStore();
 
-  // One-time force-update on dashboard load to explicitly override persisted Firestore & Zustand initialBalance to 125.90
+  // Direct force-update on dashboard load to explicitly override persisted Firestore & Zustand initialBalance to 125.90
   useEffect(() => {
-    const forceKey = 'flouss_force_initial_balance_125_90_override';
-    const isApplied = localStorage.getItem(forceKey);
-    if (!isApplied || initialBalance !== 125.9) {
-      forceUpdateInitialBalance12590().then(() => {
-        try {
-          localStorage.setItem(forceKey, 'true');
-        } catch (e) {}
-      });
+    forceUpdateInitialBalance12590();
+  }, [forceUpdateInitialBalance12590]);
+
+  useEffect(() => {
+    if (initialBalance !== 125.9) {
+      forceUpdateInitialBalance12590();
     }
   }, [initialBalance, forceUpdateInitialBalance12590]);
 

@@ -148,6 +148,7 @@ export interface UserAccount {
   programTracks?: ProgramTrack[];
   incomeBalanceFixedV1?: boolean;
   initialBalanceFixed1259?: boolean;
+  userCustomBalanceAdjusted?: boolean;
   createdAt: string;
 }
 

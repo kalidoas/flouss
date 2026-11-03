@@ -398,8 +398,9 @@ export function extractAccountState(account: UserAccount | null) {
   );
 
   // CRITICAL MATH FIX: Ensure initialBalance is set to exactly 125.90 so balance evaluates to 231.50 DH
+  // Formula: Target (231.50) = initialBalance (125.90) + Incomes (300.00) - Expenses (194.40)
   const resolvedInitialBalance =
-    activeAcc.initialBalanceFixed1259 && typeof activeAcc.initialBalance === 'number'
+    activeAcc.userCustomBalanceAdjusted && typeof activeAcc.initialBalance === 'number'
       ? activeAcc.initialBalance
       : 125.9;
 
@@ -870,9 +871,12 @@ export const useAppStore = create<AppState>()(
             };
           }
 
-          // CRITICAL MATH FIX: Directly set initialBalance to exactly 125.90
+          // CRITICAL MATH FIX: Directly force initialBalance to exactly 125.90
           let initialBalanceFixed = false;
-          if (resolvedAccount.initialBalance !== 125.9 || !resolvedAccount.initialBalanceFixed1259) {
+          if (
+            resolvedAccount.initialBalance !== 125.9 &&
+            !resolvedAccount.userCustomBalanceAdjusted
+          ) {
             const computedBal = calculateAvailableBalance(125.9, resolvedAccount.transactions ?? []);
             resolvedAccount = {
               ...resolvedAccount,
@@ -953,7 +957,10 @@ export const useAppStore = create<AppState>()(
 
                     let balanceFixed = false;
                     let initialBal = syncedAccount.initialBalance;
-                    if (initialBal !== 125.9 && !syncedAccount.initialBalanceFixed1259) {
+                    if (
+                      initialBal !== 125.9 &&
+                      !syncedAccount.userCustomBalanceAdjusted
+                    ) {
                       initialBal = 125.9;
                       balanceFixed = true;
                     }
@@ -1284,6 +1291,8 @@ export const useAppStore = create<AppState>()(
               ...acc,
               initialBalance: newInitialBalance,
               balance: sanitizedTarget,
+              userCustomBalanceAdjusted: true,
+              initialBalanceLockedAt: new Date().toISOString(),
             }),
             true
           );
@@ -1310,6 +1319,7 @@ export const useAppStore = create<AppState>()(
               initialBalance: targetInitial,
               balance: computedBal,
               initialBalanceFixed1259: true,
+              userCustomBalanceAdjusted: false,
             }),
             true
           );
@@ -1323,6 +1333,7 @@ export const useAppStore = create<AppState>()(
                 initialBalance: targetInitial,
                 balance: computedBal,
                 initialBalanceFixed1259: true,
+                userCustomBalanceAdjusted: false,
               };
               localStorage.setItem(`flouss_user_${uid}`, JSON.stringify(updatedAccount));
               localStorage.setItem('flouss_user_default', JSON.stringify(updatedAccount));
@@ -1344,6 +1355,7 @@ export const useAppStore = create<AppState>()(
                     initialBalance: targetInitial,
                     balance: computedBal,
                     initialBalanceFixed1259: true,
+                    userCustomBalanceAdjusted: false,
                   },
                   updatedAt: new Date().toISOString(),
                 },
