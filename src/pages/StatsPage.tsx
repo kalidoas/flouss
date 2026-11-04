@@ -6,7 +6,7 @@ import {
   getMonthlyStats,
   getCategorySpendingBreakdown,
 } from '../utils/calculations';
-import { formatMAD, formatDate, getCurrentMonthStr } from '../utils/formatters';
+import { formatMAD, formatDate, getCurrentMonthStr, isTransactionInMonth } from '../utils/formatters';
 import { getCategoryIcon } from '../utils/icons';
 import { getCategoryName, getSubCategoryName } from '../utils/i18nHelpers';
 import { translations } from '../i18n/translations';
@@ -48,7 +48,7 @@ export const StatsPage: React.FC = () => {
 
   // Current month transactions
   const currentMonthTx = useMemo(() => {
-    return (transactions || []).filter((tx: Transaction) => tx.date.startsWith(currentMonth));
+    return (transactions || []).filter((tx: Transaction) => isTransactionInMonth(tx.date, currentMonth));
   }, [transactions, currentMonth]);
 
   const currentIncome = useMemo(() => {
@@ -164,7 +164,10 @@ export const StatsPage: React.FC = () => {
           {topCategory ? (
             <>
               <div className="text-xl sm:text-2xl font-extrabold text-zinc-900 dark:text-white truncate">
-                {topCategory.name}
+                {(() => {
+                  const cat = categories.find((c) => c.id === topCategory.id);
+                  return cat ? getCategoryName(cat, language) : topCategory.name;
+                })()}
               </div>
               <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 flex items-center gap-1.5">
                 <PrivacyCurrency
@@ -478,44 +481,48 @@ export const StatsPage: React.FC = () => {
 
             {/* Right: Detailed Ranked Category List with Progress Bars */}
             <div className="lg:col-span-7 space-y-3.5">
-              {breakdownToDisplay.map((item) => (
-                <div key={item.id} className="space-y-1.5">
-                  <div className="flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="w-2.5 h-2.5 rounded-full shrink-0 shadow-2xs"
-                        style={{ backgroundColor: item.color }}
-                      />
-                      <span className="font-bold text-zinc-800 dark:text-zinc-200">
-                        {item.name}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <span className="text-zinc-400 text-[11px] font-semibold tabular-nums">
-                        {item.percentage}%
-                      </span>
-                      <span className="font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">
-                        <PrivacyCurrency
-                          amount={item.amount}
-                          className="font-bold text-zinc-900 dark:text-zinc-100"
+              {breakdownToDisplay.map((item) => {
+                const cat = categories.find((c) => c.id === item.id);
+                const displayName = cat ? getCategoryName(cat, language) : item.name;
+                return (
+                  <div key={item.id} className="space-y-1.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="w-2.5 h-2.5 rounded-full shrink-0 shadow-2xs"
+                          style={{ backgroundColor: item.color }}
                         />
-                      </span>
+                        <span className="font-bold text-zinc-800 dark:text-zinc-200">
+                          {displayName}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span className="text-zinc-400 text-[11px] font-semibold tabular-nums">
+                          {item.percentage}%
+                        </span>
+                        <span className="font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">
+                          <PrivacyCurrency
+                            amount={item.amount}
+                            className="font-bold text-zinc-900 dark:text-zinc-100"
+                          />
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* High contrast sleek progress bar */}
+                    <div className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-full h-2 overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-500 ease-out"
+                        style={{
+                          width: item.percentage === 0 ? '0%' : `${item.percentage}%`,
+                          backgroundColor: item.color,
+                        }}
+                      />
                     </div>
                   </div>
-
-                  {/* High contrast sleek progress bar */}
-                  <div className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-full h-2 overflow-hidden">
-                    <div
-                      className="h-full rounded-full transition-all duration-500 ease-out"
-                      style={{
-                        width: item.percentage === 0 ? '0%' : `${item.percentage}%`,
-                        backgroundColor: item.color,
-                      }}
-                    />
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}

@@ -16,8 +16,6 @@ import { Mail, ArrowRight, ShieldCheck, CheckCircle2, RotateCcw, Lock, Smartphon
 
 const POPUP_BLOCKED_CODES = new Set([
   'auth/popup-blocked',
-  'auth/cancelled-popup-request',
-  'auth/popup-closed-by-user',
 ]);
 
 const ERROR_MESSAGES: Record<string, { ar: string; fr: string }> = {
@@ -194,6 +192,28 @@ export const Login: React.FC = () => {
         }
       } catch (e) {}
     } catch (err: any) {
+      const code = err?.code || '';
+      const msg = err?.message || '';
+      const isPopupClosed =
+        code === 'auth/popup-closed-by-user' ||
+        code === 'auth/cancelled-popup-request' ||
+        msg.includes('popup-closed-by-user') ||
+        msg.toLowerCase().includes('closed by user');
+
+      if (isPopupClosed) {
+        // Suppress/Catch the auth/popup-closed-by-user error gracefully with a local toast instead of breaking the sync flow.
+        const showToast = useAppStore.getState().showToast;
+        showToast({
+          message: isAr
+            ? 'تم إغلاق نافذة تسجيل الدخول'
+            : language === 'en'
+            ? 'Sign-in window closed'
+            : 'Fenêtre de connexion fermée',
+        });
+        setError(null);
+        return;
+      }
+
       if (POPUP_BLOCKED_CODES.has(err.code)) {
         try {
           await signInWithRedirect(auth, googleProvider);

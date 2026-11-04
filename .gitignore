@@ -4,6 +4,7 @@ node_modules/
 # Local session files & artifacts
 .claw/
 index.chunk-*.js
+ubuntu-calculator/
 
 # Production build
 dist/

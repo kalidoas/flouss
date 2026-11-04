@@ -10,7 +10,7 @@ import {
 import { useAppStore } from '../../store/useAppStore';
 import { AppleGlassCard } from '../common/AppleGlassCard';
 import { PrivacyCurrency } from '../common/PrivacyCurrency';
-import { formatMAD, getCurrentMonthStr } from '../../utils/formatters';
+import { formatMAD, getCurrentMonthStr, isTransactionInMonth, getTransactionMonth } from '../../utils/formatters';
 import { calculateAvailableBalance, selectAvailableBalance } from '../../utils/calculations';
 import { TrendingUp, TrendingDown, Activity } from 'lucide-react';
 
@@ -43,12 +43,12 @@ export const AppleCardBalanceChart: React.FC<AppleCardBalanceChartProps> = ({
     const todayDay = today.getDate();
 
     // Prior transactions determine the month-opening balance
-    const priorTransactions = (transactions || []).filter((tx) => !tx.date || tx.date.slice(0, 7) < currentMonth);
+    const priorTransactions = (transactions || []).filter((tx) => !tx.date || getTransactionMonth(tx.date) < currentMonth);
     const startingBalance = calculateAvailableBalance(initialBalance, priorTransactions);
 
     // Current month transactions sorted ascending by date
     const monthTx = (transactions || [])
-      .filter((tx) => tx.date && tx.date.slice(0, 7) === currentMonth)
+      .filter((tx) => tx.date && isTransactionInMonth(tx.date, currentMonth))
       .sort((a, b) => a.date.localeCompare(b.date));
 
     const txDays = monthTx.map((t) => parseInt(t.date.slice(8, 10), 10)).filter((d) => !isNaN(d));

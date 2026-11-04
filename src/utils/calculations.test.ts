@@ -10,7 +10,10 @@ import {
   calculateTotalSavingsInGoals,
   calculateNetWorth,
   calculateGoalProgress,
+  getCategorySpendingBreakdown,
 } from './calculations';
+import { isTransactionInMonth, getTransactionMonth, toIsoDateTime } from './formatters';
+import { getCategoryName, getSubCategoryName } from './i18nHelpers';
 import { Category, Transaction, UserAccount } from '../types';
 
 describe('calculateAvailableBalance', () => {
@@ -518,3 +521,108 @@ describe('Phase R0 Balance Cleanup & Adjustment Transactions', () => {
   });
 });
 
+describe('isTransactionInMonth & Date Filtering (Analytics Bug Fix)', () => {
+  it('correctly matches local dates, ISO strings, and timezone boundary timestamps', () => {
+    // Exact month string match
+    expect(isTransactionInMonth('2026-11-04', '2026-11')).toBe(true);
+    expect(isTransactionInMonth('2026-11-04T12:00:00+01:00', '2026-11')).toBe(true);
+
+    // Midnight UTC boundary: Nov 1st 00:30 in UTC+1 is Oct 31st 23:30Z
+    // In local time, this is November
+    expect(isTransactionInMonth('2026-10-31T23:30:00.000Z', '2026-11')).toBe(true);
+
+    // Different month
+    expect(isTransactionInMonth('2026-09-15', '2026-11')).toBe(false);
+    expect(isTransactionInMonth(null, '2026-11')).toBe(false);
+    expect(isTransactionInMonth('', '2026-11')).toBe(false);
+  });
+
+  it('getTransactionMonth extracts the year-month accurately', () => {
+    expect(getTransactionMonth('2026-11-04')).toBe('2026-11');
+    expect(getTransactionMonth('2026-11-04T15:30:00Z')).toBe('2026-11');
+    expect(getTransactionMonth(null)).toBe('');
+  });
+
+  it('includes a recent 100 MAD Bus expense in current month category breakdown without timezone exclusion', () => {
+    const categories: Category[] = [
+      {
+        id: 'cat_transport',
+        key: 'transport',
+        name: 'Transport & Déplacements',
+        icon: 'Car',
+        color: '#06b6d4',
+        isGoal: false,
+        isArchived: false,
+        createdAt: '2026-01-01',
+      },
+    ];
+
+    // Bus expense of 100 MAD added on month boundary
+    const txs: Transaction[] = [
+      {
+        id: 'tx_bus_100',
+        type: 'expense',
+        amount: 100,
+        categoryId: 'cat_transport',
+        subCategoryId: 'sub_tramBus',
+        note: 'Bus',
+        date: '2026-11-04T10:00:00+01:00',
+        createdAt: '2026-11-04T10:00:00.000Z',
+      },
+    ];
+
+    const breakdown = getCategorySpendingBreakdown(categories, txs, '2026-11', 'fr');
+    expect(breakdown.totalExpense).toBe(100);
+    expect(breakdown.breakdown).toHaveLength(1);
+    expect(breakdown.breakdown[0].id).toBe('cat_transport');
+    expect(breakdown.breakdown[0].amount).toBe(100);
+  });
+});
+
+describe('Category i18n Localization (Arabic Database Values)', () => {
+  it('translates Arabic category names and keys to French and English', () => {
+    const arabicSportCategory: Category = {
+      id: 'cat_sport_db',
+      name: 'الرياضية',
+      translationKey: 'sport',
+      icon: 'Dumbbell',
+      color: '#e11d48',
+      isGoal: false,
+      isArchived: false,
+      createdAt: '2026-01-01',
+    };
+
+    // English should be Sport & Fitness
+    expect(getCategoryName(arabicSportCategory, 'en')).toBe('Sport & Fitness');
+    // French should be Sport & Bien-être
+    expect(getCategoryName(arabicSportCategory, 'fr')).toBe('Sport & Bien-être');
+    // Arabic should be الرياضة والنشاط
+    expect(getCategoryName(arabicSportCategory, 'ar')).toBe('الرياضة والنشاط');
+  });
+
+  it('translates Arabic category name when translationKey is omitted but name is in Arabic', () => {
+    const hardcodedArabicCategory: Category = {
+      id: 'custom_cat_1',
+      name: 'الرياضية',
+      icon: 'Dumbbell',
+      color: '#e11d48',
+      isGoal: false,
+      isArchived: false,
+      createdAt: '2026-01-01',
+    };
+
+    expect(getCategoryName(hardcodedArabicCategory, 'en')).toBe('Sport & Fitness');
+    expect(getCategoryName(hardcodedArabicCategory, 'fr')).toBe('Sport & Bien-être');
+  });
+
+  it('translates subcategories like Bus (الحافلة والترامواي) to English and French', () => {
+    const subBus = {
+      id: 'sub_tramBus',
+      name: 'الحافلة والترامواي',
+      translationKey: 'tramBus',
+    };
+
+    expect(getSubCategoryName(subBus, 'en')).toBe('Tram & Bus');
+    expect(getSubCategoryName(subBus, 'fr')).toBe('Tramway & Bus');
+  });
+});

@@ -1,6 +1,6 @@
 import { Category, GoalCalculation, Language, Transaction, UserAccount } from '../types';
 import { getCategoryName } from './i18nHelpers';
-import { getIntlLocale } from './formatters';
+import { getIntlLocale, isTransactionInMonth } from './formatters';
 
 /**
  * Calculate available cash balance.
@@ -213,7 +213,7 @@ export function calculateCategorySpentAmount(
   return transactions
     .filter((tx) => {
       if (tx.type !== 'expense' || tx.categoryId !== categoryId) return false;
-      if (month && !tx.date.startsWith(month)) return false;
+      if (month && !isTransactionInMonth(tx.date, month)) return false;
       return true;
     })
     .reduce((acc, tx) => acc + tx.amount, 0);
@@ -385,7 +385,7 @@ export function getMonthlyStats(
       month: 'short',
     }).format(d);
 
-    const monthTx = transactions.filter((tx) => tx.date.startsWith(monthKey));
+    const monthTx = transactions.filter((tx) => isTransactionInMonth(tx.date, monthKey));
 
     const income = monthTx
       .filter((t) => t.type === 'income')
@@ -425,7 +425,7 @@ export function getCategorySpendingBreakdown(
   transactions
     .filter((tx) => {
       if (tx.type !== 'expense' || !tx.categoryId) return false;
-      if (month && !tx.date.startsWith(month)) return false;
+      if (month && !isTransactionInMonth(tx.date, month)) return false;
       return true;
     })
     .forEach((tx) => {
@@ -441,6 +441,8 @@ export function getCategorySpendingBreakdown(
       const percentage = totalExpense > 0 ? Math.round((amount / totalExpense) * 100) : 0;
       return {
         id: cat.id,
+        key: cat.key || cat.translationKey,
+        translationKey: cat.translationKey || cat.key,
         name: getCategoryName(cat, language),
         color: cat.color,
         icon: cat.icon,

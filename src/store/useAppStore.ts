@@ -476,11 +476,29 @@ export function applyRemoteAccount(
   const incomingAccount = data.account || data;
   const remotePin = data.pinCode ?? incomingAccount?.pinCode ?? null;
 
-  const snapTxs = Array.isArray(incomingAccount?.transactions)
+  const snapTxs: Transaction[] = Array.isArray(incomingAccount?.transactions)
     ? incomingAccount.transactions
     : Array.isArray(data?.transactions)
     ? data.transactions
     : [];
+
+  // Local transactions from cache to guarantee local offline state wins on conflict
+  let localTxs: Transaction[] = [];
+  try {
+    const cached = localStorage.getItem(`flouss_user_${uid}`) || localStorage.getItem('flouss_user_default');
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (Array.isArray(parsed?.transactions)) {
+        localTxs = parsed.transactions;
+      }
+    }
+  } catch (e) {}
+
+  const txMap = new Map<string, Transaction>();
+  snapTxs.forEach((t) => { if (t && t.id) txMap.set(t.id, t); });
+  localTxs.forEach((t) => { if (t && t.id) txMap.set(t.id, t); });
+  const mergedTxs = Array.from(txMap.values());
+  mergedTxs.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
   const initialBal =
     typeof incomingAccount?.initialBalance === 'number' && !isNaN(incomingAccount.initialBalance)
@@ -489,7 +507,7 @@ export function applyRemoteAccount(
       ? data.initialBalance
       : 0;
 
-  const computedBal = calculateAvailableBalance(initialBal, snapTxs);
+  const computedBal = calculateAvailableBalance(initialBal, mergedTxs);
   const incomingSubs = incomingAccount?.subscriptions || data?.subscriptions;
   const migratedSubs = migrateSubscriptions(incomingSubs ?? DEFAULT_SUBSCRIPTIONS);
 
@@ -503,7 +521,7 @@ export function applyRemoteAccount(
     id: uid,
     pinCode: remotePin,
     pinEnabled: !!remotePin,
-    transactions: snapTxs,
+    transactions: mergedTxs,
     initialBalance: initialBal,
     balance: computedBal,
     subscriptions: migratedSubs,
@@ -630,15 +648,21 @@ export const useAppStore = create<AppState>()(
 
         // Always save to localStorage immediately for instant offline safety
         const uid = s.firebaseUser?.uid || auth.currentUser?.uid;
-        if (uid && extracted.currentAccount) {
+        if (extracted.currentAccount) {
           try {
-            localStorage.setItem(`flouss_user_${uid}`, JSON.stringify(extracted.currentAccount));
+            if (uid) {
+              localStorage.setItem(`flouss_user_${uid}`, JSON.stringify(extracted.currentAccount));
+            }
+            // Always maintain flouss_user_default as an offline safety backup
+            localStorage.setItem('flouss_user_default', JSON.stringify(extracted.currentAccount));
           } catch (e) {}
 
-          if (immediateSync) {
-            executeImmediateFirestoreSync(uid, extracted.currentAccount);
-          } else {
-            debouncedFirestoreSync(uid, extracted.currentAccount);
+          if (uid) {
+            if (immediateSync) {
+              executeImmediateFirestoreSync(uid, extracted.currentAccount);
+            } else {
+              debouncedFirestoreSync(uid, extracted.currentAccount);
+            }
           }
         }
       };
@@ -687,14 +711,35 @@ export const useAppStore = create<AppState>()(
           }
 
           if (!user) {
+            // NEVER wipe local state if auth drops, is unauthenticated, or sync fails
+            let fallbackAccount: UserAccount | null = null;
+            try {
+              const rawDefault = localStorage.getItem('flouss_user_default');
+              if (rawDefault) fallbackAccount = JSON.parse(rawDefault);
+            } catch (e) {}
+
+            const s = get();
+            const currentAcc =
+              s.accounts.find(
+                (a: UserAccount) =>
+                  (a.transactions && a.transactions.length > 0) ||
+                  a.initialBalance !== null ||
+                  Boolean(a.isOnboarded)
+              ) ||
+              s.accounts[0] ||
+              fallbackAccount ||
+              makeInitialAccount('default', 'Khalid');
+
+            const extracted = extractAccountState(currentAcc);
+
             set({
               firebaseUser: null,
               loadingAuth: false,
               isPinVerified: false,
               userPinCode: null,
-              accounts: [],
-              activeAccountId: null,
-              ...extractAccountState(null),
+              accounts: s.accounts.length > 0 ? s.accounts : [currentAcc],
+              activeAccountId: s.activeAccountId || currentAcc.id,
+              ...extracted,
             });
             return;
           }

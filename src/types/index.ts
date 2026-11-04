@@ -13,6 +13,7 @@ export interface SubCategory {
   id: string;
   name: string; // fallback or custom name
   key?: string; // stable translation key e.g. "groceries"
+  translationKey?: string; // stable translation key alias
   icon?: string;
 }
 
@@ -20,6 +21,7 @@ export interface Category {
   id: string;
   name: string; // fallback or user-created name
   key?: string; // stable translation key e.g. "food"
+  translationKey?: string; // stable translation key alias
   group?: CategoryGroupId; // curated Apple HIG financial taxonomy group
   icon: string; // Lucide icon key
   color: string; // Hex color code

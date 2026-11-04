@@ -12,7 +12,7 @@ import { translations } from '../i18n/translations';
 import { getCategoryName, getSubCategoryName, getCategoryGroupName } from '../utils/i18nHelpers';
 import { CATEGORY_GROUPS_META, resolveCategoryGroup } from '../utils/categoryTheme';
 import { getCategoryIcon } from '../utils/icons';
-import { formatMAD, getCurrentMonthStr } from '../utils/formatters';
+import { formatMAD, getCurrentMonthStr, isTransactionInMonth } from '../utils/formatters';
 import {
   calculateCategorySpentAmount,
   calculateGoalProgress,
@@ -73,7 +73,7 @@ export const CategoriesPage: React.FC = () => {
     const catSpentMap: Record<string, number> = {};
 
     (transactions || []).forEach((tx) => {
-      if (tx.type === 'expense' && tx.categoryId && tx.date.startsWith(currentMonth)) {
+      if (tx.type === 'expense' && tx.categoryId && isTransactionInMonth(tx.date, currentMonth)) {
         totalSpent += tx.amount;
         catSpentMap[tx.categoryId] = (catSpentMap[tx.categoryId] || 0) + tx.amount;
       }
