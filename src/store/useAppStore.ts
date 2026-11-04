@@ -495,8 +495,9 @@ export function applyRemoteAccount(
   } catch (e) {}
 
   const txMap = new Map<string, Transaction>();
-  snapTxs.forEach((t) => { if (t && t.id) txMap.set(t.id, t); });
+  // Priority order: Remote Firestore wins on ID conflict — local-only additions are appended
   localTxs.forEach((t) => { if (t && t.id) txMap.set(t.id, t); });
+  snapTxs.forEach((t) => { if (t && t.id) txMap.set(t.id, t); }); // Remote always wins on conflict
   const mergedTxs = Array.from(txMap.values());
   mergedTxs.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 

@@ -201,6 +201,7 @@ export const translations = {
       depositsLogged: "{count} versement(s) comptabilisé(s)",
       cashIn: "+ Encaisser",
       allMonths: "Tous les mois",
+      allSources: "Toutes les sources",
     },
 
     history: {
@@ -1064,6 +1065,7 @@ export const translations = {
       depositsLogged: "{count} دفعة مسجلة",
       cashIn: "+ تحصيل",
       allMonths: "جميع الأشهر",
+      allSources: "جميع المصادر",
     },
 
     history: {
@@ -1925,6 +1927,7 @@ export const translations = {
       depositsLogged: "{count} recorded deposit(s)",
       cashIn: "+ Receive",
       allMonths: "All months",
+      allSources: "All sources",
     },
 
     history: {

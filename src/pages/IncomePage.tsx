@@ -126,7 +126,7 @@ export const IncomePage: React.FC = () => {
         <Card padding="md">
           <div className="flex items-center justify-between text-xs text-[#787774] dark:text-[#9b9a97] mb-1">
             <span className="font-medium text-[11px]">
-              {t.totalEarned} ({selectedMonth === 'all' ? 'Toutes périodes' : formatMonthYear(selectedMonth, language)})
+              {t.totalEarned} ({selectedMonth === 'all' ? t.allPeriods : formatMonthYear(selectedMonth, language)})
             </span>
             <TrendingUp className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
           </div>
@@ -134,7 +134,7 @@ export const IncomePage: React.FC = () => {
             {formatMAD(totalFilteredIncome, false, language)}
           </div>
           <p className="text-[11px] text-[#787774] dark:text-[#9b9a97] mt-0.5">
-            {filteredIncomeTransactions.length} versement(s) comptabilisé(s)
+            {t.depositsLogged.replace('{count}', String(filteredIncomeTransactions.length))}
           </p>
         </Card>
 
@@ -149,7 +149,7 @@ export const IncomePage: React.FC = () => {
             {formatMAD(totalAllTimeIncome, false, language)}
           </div>
           <p className="text-[11px] text-[#787774] dark:text-[#9b9a97] mt-0.5">
-            Depuis le début
+            {t.sinceStart}
           </p>
         </Card>
       </div>
@@ -161,7 +161,7 @@ export const IncomePage: React.FC = () => {
             {t.sources}
           </h2>
           <span className="text-xs text-[#787774]">
-            {incomeSources.length} sources actives
+            {t.activeSources.replace('{count}', String(incomeSources.length))}
           </span>
         </div>
 
@@ -185,7 +185,7 @@ export const IncomePage: React.FC = () => {
                       {getIncomeSourceName(source, language)}
                     </h3>
                     <p className="text-[11px] text-[#787774]">
-                      {count} versement(s)
+                      {t.depositsLogged.replace('{count}', String(count))}
                     </p>
                   </div>
                 </div>
@@ -199,7 +199,7 @@ export const IncomePage: React.FC = () => {
                     onClick={() => handleOpenAddForSource(source.id)}
                     className="mt-0.5 text-[10px] text-[#2383e2] hover:underline"
                   >
-                    + Encaisser
+                    {t.cashIn}
                   </button>
                 </div>
               </div>
@@ -221,7 +221,7 @@ export const IncomePage: React.FC = () => {
             onChange={(e) => setSelectedMonth(e.target.value)}
             className="text-xs py-1.5 px-2.5 rounded-md border border-[#e3e2de] dark:border-[#2f2f2f] bg-white dark:bg-[#202020] text-[#37352f] dark:text-[#ecebed] outline-none"
           >
-            <option value="all">Tous les mois</option>
+            <option value="all">{t.allMonths}</option>
             {availableMonths.map((m: string) => (
               <option key={m} value={m}>
                 {formatMonthYear(m, language)}
@@ -235,7 +235,7 @@ export const IncomePage: React.FC = () => {
             onChange={(e) => setSelectedSourceFilter(e.target.value)}
             className="text-xs py-1.5 px-2.5 rounded-md border border-[#e3e2de] dark:border-[#2f2f2f] bg-white dark:bg-[#202020] text-[#37352f] dark:text-[#ecebed] outline-none"
           >
-            <option value="all">Toutes les sources</option>
+            <option value="all">{t.allSources}</option>
             {incomeSources.map((s: IncomeSource) => (
               <option key={s.id} value={s.id}>
                 {getIncomeSourceName(s, language)}
@@ -260,7 +260,7 @@ export const IncomePage: React.FC = () => {
               }}
               icon={<Plus className="w-3.5 h-3.5" />}
             >
-              Encaisser un revenu
+              {t.cashIn}
             </Button>
           }
         />

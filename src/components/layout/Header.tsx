@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useAppStore } from '../../store/useAppStore';
-import { Eye, EyeOff, Moon, Sun } from 'lucide-react';
+import { Eye, EyeOff, Moon, Sun, ChevronLeft } from 'lucide-react';
 import { Logo } from '../common/Logo';
 import { Language } from '../../types';
 import { islandManager } from '../../utils/islandManager';
@@ -18,6 +18,7 @@ export const Header: React.FC = () => {
     language,
     setLanguage,
     activeScreen,
+    navigateBack,
   } = useAppStore();
 
   const isDark =
@@ -40,9 +41,21 @@ export const Header: React.FC = () => {
   const brandName = language === 'ar' ? 'فلوس' : 'Flouss';
 
   return (
-    <header className="sticky top-0 z-30 bg-white/80 dark:bg-zinc-900/75 backdrop-blur-xl border-b border-black/[0.06] dark:border-white/[0.08] shadow-[0_1px_3px_rgba(0,0,0,0.03)] px-3 sm:px-6 py-2.5 flex items-center justify-between transition-colors duration-200">
-      {/* Brand logo on mobile */}
-      <div className="flex md:hidden items-center">
+    <header className="sticky top-0 z-30 bg-white/80 dark:bg-zinc-900/75 backdrop-blur-xl border-b border-black/[0.06] dark:border-white/[0.08] shadow-[0_1px_3px_rgba(0,0,0,0.03)] px-3.5 py-2.5 flex items-center justify-between transition-colors duration-200">
+      {/* Brand logo + optional Back button */}
+      <div className="flex items-center gap-1">
+        {activeScreen !== 'dashboard' && (
+          <button
+            onClick={() => {
+              playHapticFeedback('light');
+              navigateBack();
+            }}
+            aria-label="Go back"
+            className="p-1.5 -ml-1 rounded-xl text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 transition-colors"
+          >
+            <ChevronLeft className={`w-4 h-4 ${language === 'ar' ? 'rotate-180' : ''}`} />
+          </button>
+        )}
         <Logo size="sm" showWordmark={true} />
       </div>
 
