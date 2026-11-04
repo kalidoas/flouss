@@ -216,6 +216,8 @@ export const DashboardPage: React.FC = () => {
             onOpenIncome={() => setIsIncomeOpen(true)}
             onOpenExpense={() => setIsExpenseOpen(true)}
             onOpenGoal={() => handleOpenGoalContribution()}
+            onNavigateIncome={() => setActiveScreen('income')}
+            onNavigateExpense={() => setActiveScreen('expenses')}
           />
         </div>
       </div>

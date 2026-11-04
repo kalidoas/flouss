@@ -8,6 +8,7 @@ import { translations } from '../../i18n/translations';
 import { formatMAD, getCurrentMonthStr, formatMonthYear } from '../../utils/formatters';
 import { calculateAvailableBalance, selectAvailableBalance } from '../../utils/calculations';
 import { AdjustBalanceModal } from './AdjustBalanceModal';
+import { playHapticFeedback } from '../../utils/haptics';
 import {
   Wallet,
   ArrowUpRight,
@@ -29,6 +30,8 @@ interface WalletCardProps {
   onOpenIncome: () => void;
   onOpenExpense: () => void;
   onOpenGoal: () => void;
+  onNavigateIncome?: () => void;
+  onNavigateExpense?: () => void;
 }
 
 function getShiftedMonth(baseMonth: string, delta: number): string {
@@ -46,10 +49,32 @@ export const WalletCard: React.FC<WalletCardProps> = ({
   onOpenIncome,
   onOpenExpense,
   onOpenGoal,
+  onNavigateIncome,
+  onNavigateExpense,
 }) => {
-  const { balance: storeBalance, initialBalance, transactions, language, hideBalance, toggleHideBalance } = useAppStore();
+  const {
+    balance: storeBalance,
+    initialBalance,
+    transactions,
+    language,
+    hideBalance,
+    toggleHideBalance,
+    setActiveScreen,
+  } = useAppStore();
   const tWallet = translations[language].walletCard;
   const currentMonth = getCurrentMonthStr();
+
+  const handleNavigateIncome = () => {
+    playHapticFeedback('light');
+    if (onNavigateIncome) onNavigateIncome();
+    else setActiveScreen('income');
+  };
+
+  const handleNavigateExpense = () => {
+    playHapticFeedback('light');
+    if (onNavigateExpense) onNavigateExpense();
+    else setActiveScreen('expenses');
+  };
 
   // Historical Month Navigation State
   const [selectedMonth, setSelectedMonth] = useState<string>(currentMonth);
@@ -297,8 +322,26 @@ export const WalletCard: React.FC<WalletCardProps> = ({
 
       {/* Compact Monthly Cashflow Summary */}
       <div className="pt-3 border-t border-black/[0.05] dark:border-white/[0.06] flex items-center justify-between text-xs relative z-10">
-        <div>
-          <span className="text-[10px] text-zinc-400 uppercase tracking-wider block font-medium">
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={handleNavigateIncome}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleNavigateIncome();
+            }
+          }}
+          className="cursor-pointer hover:opacity-80 transition select-none group/inc"
+          title={
+            language === 'ar'
+              ? 'عرض تفاصيل المداخيل'
+              : language === 'en'
+              ? 'View income details'
+              : 'Voir les détails des revenus'
+          }
+        >
+          <span className="text-[10px] text-zinc-400 group-hover/inc:text-zinc-600 dark:group-hover/inc:text-zinc-300 uppercase tracking-wider block font-medium transition-colors">
             {tWallet.income}
           </span>
           <PrivacyCurrency
@@ -310,8 +353,26 @@ export const WalletCard: React.FC<WalletCardProps> = ({
 
         <div className="w-px h-6 bg-zinc-200 dark:bg-zinc-800" />
 
-        <div className="text-right">
-          <span className="text-[10px] text-zinc-400 uppercase tracking-wider block font-medium">
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={handleNavigateExpense}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleNavigateExpense();
+            }
+          }}
+          className="text-right cursor-pointer hover:opacity-80 transition select-none group/exp"
+          title={
+            language === 'ar'
+              ? 'عرض تفاصيل المصاريف'
+              : language === 'en'
+              ? 'View expense details'
+              : 'Voir les détails des dépenses'
+          }
+        >
+          <span className="text-[10px] text-zinc-400 group-hover/exp:text-zinc-600 dark:group-hover/exp:text-zinc-300 uppercase tracking-wider block font-medium transition-colors">
             {tWallet.expenses}
           </span>
           <PrivacyCurrency

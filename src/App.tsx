@@ -109,6 +109,28 @@ export const App: React.FC = () => {
     };
   }, []);
 
+  // Cross-device sync: refresh state on app resumption, unlock, focus, or reconnect
+  useEffect(() => {
+    const handleResume = () => {
+      if (document.visibilityState === 'visible') {
+        useAppStore.getState().refreshFromFirestore();
+      }
+    };
+    const handleOnline = () => {
+      useAppStore.getState().refreshFromFirestore();
+    };
+
+    document.addEventListener('visibilitychange', handleResume);
+    window.addEventListener('focus', handleResume);
+    window.addEventListener('online', handleOnline);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleResume);
+      window.removeEventListener('focus', handleResume);
+      window.removeEventListener('online', handleOnline);
+    };
+  }, []);
+
   // 1. Loading Authentication & Firestore Profile (Apple Shimmer Skeleton)
   if (loadingAuth) {
     return <AppleShimmerSkeleton />;

@@ -108,6 +108,7 @@ export interface AppState {
   setPinVerified: (verified: boolean) => void;
   logout: () => Promise<void>;
   syncToFirestore: () => Promise<void>;
+  refreshFromFirestore: () => Promise<void>;
   forceSyncToCloud: () => Promise<{ success: boolean; message: string }>;
 
   setActiveScreen: (screen: ScreenId) => void;
@@ -454,6 +455,61 @@ export function extractAccountState(account: UserAccount | null) {
   };
 }
 
+/**
+ * Normalizes remote Firestore payload into ground-truth UserAccount state
+ * and forcefully synchronizes to local persistence cache (overwriting stale local storage).
+ */
+export function applyRemoteAccount(
+  uid: string,
+  data: any,
+  fallbackUser?: any
+): {
+  finalSyncedAccount: UserAccount;
+  remotePin: string | null;
+} | null {
+  if (!data) return null;
+  const incomingAccount = data.account || data;
+  const remotePin = data.pinCode ?? incomingAccount?.pinCode ?? null;
+
+  const snapTxs = Array.isArray(incomingAccount?.transactions)
+    ? incomingAccount.transactions
+    : Array.isArray(data?.transactions)
+    ? data.transactions
+    : [];
+
+  const initialBal =
+    typeof incomingAccount?.initialBalance === 'number' && !isNaN(incomingAccount.initialBalance)
+      ? incomingAccount.initialBalance
+      : typeof data?.initialBalance === 'number' && !isNaN(data.initialBalance)
+      ? data.initialBalance
+      : 0;
+
+  const computedBal = calculateAvailableBalance(initialBal, snapTxs);
+
+  const finalSyncedAccount: UserAccount = {
+    ...makeInitialAccount(
+      uid,
+      incomingAccount.name || fallbackUser?.displayName || 'Utilisateur',
+      incomingAccount.email || fallbackUser?.email || ''
+    ),
+    ...incomingAccount,
+    id: uid,
+    pinCode: remotePin,
+    pinEnabled: !!remotePin,
+    transactions: snapTxs,
+    initialBalance: initialBal,
+    balance: computedBal,
+    isOnboarded: Boolean(incomingAccount.isOnboarded ?? data.isOnboarded ?? true),
+  };
+
+  try {
+    localStorage.setItem(`flouss_user_${uid}`, JSON.stringify(finalSyncedAccount));
+    localStorage.setItem('flouss_user_default', JSON.stringify(finalSyncedAccount));
+  } catch (e) {}
+
+  return { finalSyncedAccount, remotePin };
+}
+
 let syncTimer: any = null;
 let activeSnapshotUnsubscribe: Unsubscribe | null = null;
 
@@ -708,21 +764,18 @@ export const useAppStore = create<AppState>()(
 
           const cloudDocExists = Boolean(snap && snap.exists());
           const cloudData = cloudDocExists ? snap.data() : null;
-          const cloudAccount = cloudData?.account || cloudData;
 
-          const hasCloudData = Boolean(
-            cloudDocExists &&
-              (cloudData.initialBalance !== undefined ||
-                cloudData.account?.initialBalance !== undefined ||
-                (Array.isArray(cloudData.account?.transactions) && cloudData.account.transactions.length > 0) ||
-                (Array.isArray(cloudData.transactions) && cloudData.transactions.length > 0) ||
-                Boolean(cloudData.account?.isOnboarded) ||
-                Boolean(cloudData.isOnboarded))
-          );
-
-          if (!hasCloudData && hasLocalData && localAccount) {
-            // Case A: Cloud Firestore is empty, but this device has local data -> AUTO-MIGRATE IMMEDIATELY!
-            console.log(`🚀 [Flouss Cloud] Empty Firestore detected with existing local data. Auto-migrating to users/${uid}...`);
+          if (cloudDocExists && cloudData) {
+            // Case B: Cloud Firestore has existing user document -> REMOTE FIRESTORE IS GROUND TRUTH (WINS OVER LOCAL CACHE)
+            console.log(`☁️ [Flouss Cloud] Hydrating store from existing Firestore document users/${uid}...`);
+            const applied = applyRemoteAccount(uid, cloudData, user);
+            if (applied) {
+              resolvedAccount = applied.finalSyncedAccount;
+              firestorePin = applied.remotePin;
+            }
+          } else if (snap !== null && !snap.exists() && hasLocalData && localAccount) {
+            // Case A: Cloud Firestore document is verified missing AND this client has offline data -> AUTO-MIGRATE ONCE
+            console.log(`🚀 [Flouss Cloud] Verified empty Firestore with existing local data. Auto-migrating to users/${uid}...`);
             const computedBal =
               localAccount.balance !== undefined && localAccount.balance !== null && !isNaN(localAccount.balance)
                 ? localAccount.balance
@@ -758,59 +811,8 @@ export const useAppStore = create<AppState>()(
             } catch (err) {
               console.error(`❌ [Flouss Cloud] Auto-migration write error:`, err);
             }
-          } else if (hasCloudData) {
-            // Case B: Cloud Firestore has existing user document -> HYDRATE LOCAL STORE
-            console.log(`☁️ [Flouss Cloud] Hydrating store from existing Firestore document users/${uid}...`);
-            firestorePin = cloudData.pinCode ?? cloudAccount?.pinCode ?? null;
-
-            const cloudFT = cloudAccount?.focusTasks ?? cloudData?.focusTasks;
-            const resolvedFT =
-              Array.isArray(cloudFT) && cloudFT.length > 0
-                ? cloudFT
-                : legacyFocusTasks.length > 0
-                ? legacyFocusTasks
-                : DEFAULT_FOCUS_TASKS;
-
-            const cloudFL = cloudAccount?.focusLists ?? cloudData?.focusLists;
-            const resolvedFL =
-              Array.isArray(cloudFL) && cloudFL.length > 0
-                ? cloudFL
-                : DEFAULT_FOCUS_LISTS;
-
-            const computedBal = calculateAvailableBalance(
-              cloudAccount?.initialBalance ?? cloudData?.initialBalance ?? null,
-              cloudAccount?.transactions ?? cloudData?.transactions ?? []
-            );
-            const remoteBal =
-              (cloudAccount?.transactions && cloudAccount.transactions.length > 0) ||
-              (cloudData?.transactions && cloudData.transactions.length > 0) ||
-              cloudAccount?.initialBalance !== null ||
-              cloudData?.initialBalance !== null
-                ? computedBal
-                : typeof cloudAccount?.balance === 'number' && !isNaN(cloudAccount.balance)
-                ? cloudAccount.balance
-                : typeof cloudData?.balance === 'number' && !isNaN(cloudData.balance)
-                ? cloudData.balance
-                : computedBal;
-
-            resolvedAccount = {
-              ...makeInitialAccount(uid, user.displayName || 'Utilisateur', user.email || ''),
-              ...cloudAccount,
-              id: uid,
-              balance: remoteBal,
-              isOnboarded: true,
-              pinCode: firestorePin,
-              pinEnabled: !!firestorePin,
-              focusTasks: resolvedFT,
-              focusLists: resolvedFL,
-            };
-
-            // If cloud didn't have focusTasks yet but we had legacy local tasks, sync them up immediately!
-            if (!cloudFT && legacyFocusTasks.length > 0 && resolvedAccount) {
-              debouncedFirestoreSync(uid, resolvedAccount);
-            }
           } else if (localAccount) {
-            // Case C: Fallback to localAccount
+            // Case C: Offline fallback (e.g. network failure during getDoc) - read local cache without overwriting cloud
             const localBal =
               localAccount.balance !== undefined && localAccount.balance !== null && !isNaN(localAccount.balance)
                 ? localAccount.balance
@@ -870,6 +872,7 @@ export const useAppStore = create<AppState>()(
           // Save hydrated account to local cache for fast offline access
           try {
             localStorage.setItem(`flouss_user_${uid}`, JSON.stringify(resolvedAccount));
+            localStorage.setItem('flouss_user_default', JSON.stringify(resolvedAccount));
           } catch (e) {}
 
           const hasPin = Boolean(firestorePin && firestorePin.trim().length > 0);
@@ -896,72 +899,23 @@ export const useAppStore = create<AppState>()(
                 if (!snap.exists()) return;
 
                 const data = snap.data();
-                const incomingAccount = data?.account || data;
-                if (incomingAccount) {
-                  const currentLocal = get().currentAccount;
-                  const incomingStr = JSON.stringify(incomingAccount);
-                  const currentStr = JSON.stringify(currentLocal);
+                if (!data) return;
 
-                  if (incomingStr !== currentStr) {
-                    const remotePin = data.pinCode ?? incomingAccount?.pinCode ?? null;
-                    const computedRemoteBal = calculateAvailableBalance(
-                      incomingAccount?.initialBalance ?? data?.initialBalance ?? null,
-                      incomingAccount?.transactions ?? data?.transactions ?? []
-                    );
-                    const remoteBal =
-                      (incomingAccount?.transactions && incomingAccount.transactions.length > 0) ||
-                      (data?.transactions && data.transactions.length > 0) ||
-                      incomingAccount?.initialBalance !== null ||
-                      data?.initialBalance !== null
-                        ? computedRemoteBal
-                        : typeof incomingAccount?.balance === 'number' && !isNaN(incomingAccount.balance)
-                        ? incomingAccount.balance
-                        : typeof data?.balance === 'number' && !isNaN(data.balance)
-                        ? data.balance
-                        : computedRemoteBal;
+                const applied = applyRemoteAccount(uid, data, user);
+                if (applied) {
+                  const { finalSyncedAccount, remotePin } = applied;
 
-                    const rawSyncedAccount: UserAccount = {
-                      ...incomingAccount,
-                      id: uid,
-                      pinCode: remotePin,
-                      pinEnabled: !!remotePin,
-                      balance: remoteBal,
-                    };
-
-                    const snapTxs = Array.isArray(incomingAccount?.transactions)
-                      ? incomingAccount.transactions
-                      : Array.isArray(data?.transactions)
-                      ? data.transactions
-                      : [];
-                    const initialBal =
-                      typeof incomingAccount?.initialBalance === 'number' && !isNaN(incomingAccount.initialBalance)
-                        ? incomingAccount.initialBalance
-                        : typeof data?.initialBalance === 'number' && !isNaN(data.initialBalance)
-                        ? data.initialBalance
-                        : 0;
-
-                    const computedBal = calculateAvailableBalance(initialBal, snapTxs);
-                    const finalSyncedAccount: UserAccount = {
-                      ...incomingAccount,
-                      id: uid,
-                      pinCode: remotePin,
-                      pinEnabled: !!remotePin,
-                      transactions: snapTxs,
-                      initialBalance: initialBal,
-                      balance: computedBal,
-                    };
-
-                    try {
-                      localStorage.setItem(`flouss_user_${uid}`, JSON.stringify(finalSyncedAccount));
-                    } catch (e) {}
-
-                    set((state: any) => ({
-                      accounts: state.accounts.map((a: any) => (a.id === uid ? finalSyncedAccount : a)),
+                  set((state: any) => {
+                    const existingAccounts = Array.isArray(state.accounts) ? state.accounts : [];
+                    const otherAccounts = existingAccounts.filter((a: any) => a && a.id !== uid && a.id !== 'default');
+                    return {
+                      accounts: [finalSyncedAccount, ...otherAccounts],
+                      activeAccountId: uid,
                       userPinCode: remotePin,
                       ...extractAccountState(finalSyncedAccount),
-                    }));
-                    console.log(`🔄 [Flouss Cloud] Real-time sync update received from Firestore users/${uid}`);
-                  }
+                    };
+                  });
+                  console.log(`🔄 [Flouss Cloud] Real-time sync update received and applied from Firestore users/${uid}`);
                 }
               },
               (err: any) => {
@@ -1065,6 +1019,38 @@ export const useAppStore = create<AppState>()(
           } catch (err: any) {
             console.error(`❌ [Flouss Cloud] Manual force cloud sync failed for users/${uid}:`, err);
             return { success: false, message: err?.message || 'Firestore write error' };
+          }
+        },
+
+        refreshFromFirestore: async () => {
+          const s = get();
+          const uid = s.firebaseUser?.uid || auth.currentUser?.uid;
+          if (!uid) return;
+          try {
+            const userDocRef = doc(db, 'users', uid);
+            const snap = await getDoc(userDocRef);
+            if (snap && snap.exists()) {
+              const data = snap.data();
+              if (data) {
+                const applied = applyRemoteAccount(uid, data, s.firebaseUser);
+                if (applied) {
+                  const { finalSyncedAccount, remotePin } = applied;
+                  set((state: any) => {
+                    const existingAccounts = Array.isArray(state.accounts) ? state.accounts : [];
+                    const otherAccounts = existingAccounts.filter((a: any) => a && a.id !== uid && a.id !== 'default');
+                    return {
+                      accounts: [finalSyncedAccount, ...otherAccounts],
+                      activeAccountId: uid,
+                      userPinCode: remotePin,
+                      ...extractAccountState(finalSyncedAccount),
+                    };
+                  });
+                  console.log(`⚡ [Flouss Cloud] refreshFromFirestore updated state from Firestore users/${uid}`);
+                }
+              }
+            }
+          } catch (err: any) {
+            console.warn('[Flouss Cloud] refreshFromFirestore notice:', err?.message || err);
           }
         },
 
