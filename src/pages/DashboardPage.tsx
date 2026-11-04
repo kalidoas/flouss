@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../store/useAppStore';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
@@ -16,6 +17,7 @@ import { PriorityHub } from '../components/dashboard/PriorityHub';
 import { WalletCard } from '../components/dashboard/WalletCard';
 import { AppleCardBalanceChart } from '../components/dashboard/AppleCardBalanceChart';
 import { PrivacyCurrency } from '../components/common/PrivacyCurrency';
+import { Pressable } from '../components/common/Pressable';
 import {
   calculateAvailableBalance,
   calculateNetWorth,
@@ -58,6 +60,8 @@ export const DashboardPage: React.FC = () => {
     setActiveScreen,
     language,
   } = useAppStore();
+
+  const navigate = useNavigate();
 
   const tDash = translations[language].dashboard;
   const tCommon = translations[language].common;
@@ -200,33 +204,29 @@ export const DashboardPage: React.FC = () => {
         </motion.div>
       )}
 
-      {/* Apple Bento Centerpiece: 2/3 Priority & Pinned Hub + 1/3 Compact Apple Wallet Card */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-        {/* Priority & Pinned Hub Centerpiece (2/3 width) */}
-        <div className="lg:col-span-8 order-2 lg:order-1">
-          <PriorityHub />
-        </div>
+      {/* Apple Bento Centerpiece: Priority & Pinned Hub + My Focus List + Compact Apple Wallet Card */}
+      <div className="space-y-5">
+        {/* Priority & Pinned Hub Centerpiece */}
+        <PriorityHub />
 
-        {/* Compact Apple Wallet Card (1/3 width) */}
-        <div className="lg:col-span-4 order-1 lg:order-2">
-          <WalletCard
-            balance={balance}
-            incomeThisMonth={incomeThisMonth}
-            expenseThisMonth={expenseThisMonth}
-            onOpenIncome={() => setIsIncomeOpen(true)}
-            onOpenExpense={() => setIsExpenseOpen(true)}
-            onOpenGoal={() => handleOpenGoalContribution()}
-            onNavigateIncome={() => setActiveScreen('income')}
-            onNavigateExpense={() => setActiveScreen('expenses')}
-          />
-        </div>
+        {/* My Focus List: "Ma liste" Section (Placed immediately below Priority Hub at the top) */}
+        <FocusTaskList />
+
+        {/* Compact Apple Wallet Card */}
+        <WalletCard
+          balance={balance}
+          incomeThisMonth={incomeThisMonth}
+          expenseThisMonth={expenseThisMonth}
+          onOpenIncome={() => setIsIncomeOpen(true)}
+          onOpenExpense={() => setIsExpenseOpen(true)}
+          onOpenGoal={() => handleOpenGoalContribution()}
+          onNavigateIncome={() => setActiveScreen('income')}
+          onNavigateExpense={() => setActiveScreen('expenses')}
+        />
       </div>
 
       {/* Apple HIG Financial Balance Chart */}
       <AppleCardBalanceChart balance={balance} />
-
-      {/* Notion Focus View: "Ma liste" Section */}
-      <FocusTaskList />
 
       {/* Monthly Savings Reminder Card */}
       {totalMonthlyGoalTarget > 0 && (
@@ -273,9 +273,13 @@ export const DashboardPage: React.FC = () => {
         </div>
       )}
 
-      {/* Month Flow Overview: Income vs Expense Cards */}
+      {/* Month Flow Overview: Income vs Expense Cards (Clickable navigation to /income & /expenses) */}
       <div className="grid grid-cols-2 gap-3 sm:gap-4">
-        <div className="rounded-2xl p-4 sm:p-5 bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs">
+        <Pressable
+          variant="card"
+          onClick={() => navigate('/income')}
+          className="text-start rounded-2xl p-4 sm:p-5 bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs cursor-pointer block w-full hover:border-emerald-500/30 transition-colors"
+        >
           <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 mb-1">
             <span className="font-medium">{tDash.incomeThisMonth}</span>
             <span className="w-2 h-2 rounded-full bg-emerald-500" />
@@ -291,9 +295,13 @@ export const DashboardPage: React.FC = () => {
               String(currentMonthTx.filter((t: Transaction) => t.type === 'income').length)
             )}
           </span>
-        </div>
+        </Pressable>
 
-        <div className="rounded-2xl p-4 sm:p-5 bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs">
+        <Pressable
+          variant="card"
+          onClick={() => navigate('/expenses')}
+          className="text-start rounded-2xl p-4 sm:p-5 bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs cursor-pointer block w-full hover:border-rose-500/30 transition-colors"
+        >
           <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 mb-1">
             <span className="font-medium">{tDash.expensesThisMonth}</span>
             <span className="w-2 h-2 rounded-full bg-rose-500" />
@@ -309,7 +317,7 @@ export const DashboardPage: React.FC = () => {
               String(currentMonthTx.filter((t: Transaction) => t.type === 'expense').length)
             )}
           </span>
-        </div>
+        </Pressable>
       </div>
 
       {/* Two Column Grid: Spending Donut + Top Goals */}

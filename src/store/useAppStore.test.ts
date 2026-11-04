@@ -90,4 +90,40 @@ describe('useAppStore - Cross-Device Remote Account Hydration', () => {
     expect(applyRemoteAccount(uid, null)).toBeNull();
     expect(applyRemoteAccount(uid, undefined)).toBeNull();
   });
+
+  it('migrates legacy subscriptions on account hydration', () => {
+    const remoteData = {
+      uid,
+      initialBalance: 100,
+      account: {
+        name: 'Khalid',
+        subscriptions: [
+          {
+            id: 'sub_test',
+            name: 'Orange Fiber',
+            amount: 240,
+            billingDay: 5,
+            category: 'Telecom',
+            paidMonths: ['2026-10'],
+            createdAt: '2026-10-01',
+          },
+        ],
+      },
+    };
+
+    const result = applyRemoteAccount(uid, remoteData);
+    expect(result).not.toBeNull();
+    const subs = result?.finalSyncedAccount.subscriptions;
+    expect(subs).toBeDefined();
+    expect(subs).toHaveLength(1);
+
+    const sub = subs![0];
+    expect(sub.billingDay).toBe(5);
+    expect(sub.paidMonths).toEqual(['2026-10']);
+    expect(sub.nextDueDate).toBeDefined();
+    expect(sub.nextDueDate).toMatch(/^\d{4}-\d{2}-05$/);
+    expect(sub.payments).toEqual([
+      { cycleDate: '2026-10-05', paidOn: '2026-10-05', amount: 240 },
+    ]);
+  });
 });

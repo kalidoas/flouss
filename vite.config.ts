@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { execSync } from 'child_process';
+import path from 'path';
 
 const getBuildSha = () => {
   if (process.env.VERCEL_GIT_COMMIT_SHA) {
@@ -16,6 +17,11 @@ const getBuildSha = () => {
 export default defineConfig({
   base: '/',
   plugins: [react()],
+  resolve: {
+    alias: {
+      'react-router-dom': path.resolve(__dirname, 'src/lib/react-router-dom.ts'),
+    },
+  },
   define: {
     __BUILD_SHA__: JSON.stringify(getBuildSha()),
   },

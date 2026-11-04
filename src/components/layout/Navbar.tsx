@@ -119,7 +119,7 @@ export const Navbar: React.FC = () => {
   return (
     <>
       {/* Native Apple iOS Frosted Glass Dock */}
-      <nav className="md:hidden fixed bottom-0 inset-x-0 pb-safe pt-2 px-3 sm:px-6 flex justify-between items-center backdrop-blur-3xl bg-white/70 dark:bg-zinc-900/70 border-t border-white/20 shadow-[0_-8px_30px_rgba(0,0,0,0.12)] z-[100]">
+      <nav className="fixed bottom-0 inset-x-0 max-w-md mx-auto pb-safe pt-2 px-3 sm:px-6 flex justify-between items-center backdrop-blur-3xl bg-white/70 dark:bg-zinc-900/70 border-t border-white/20 shadow-[0_-8px_30px_rgba(0,0,0,0.12)] z-[100]">
         {/* Tab 1: Dashboard */}
         <button
           role="tab"
@@ -262,7 +262,7 @@ export const Navbar: React.FC = () => {
       {/* Sleek iOS Bottom-Sheet Action Menu (Center + Triggered) */}
       <AnimatePresence>
         {isActionSheetOpen && (
-          <div className="fixed inset-0 z-[150] flex items-end justify-center md:hidden">
+          <div className="fixed inset-0 z-[150] flex items-end justify-center">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -276,7 +276,7 @@ export const Navbar: React.FC = () => {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 350 }}
-              className="relative w-full max-h-[85vh] bg-white/95 dark:bg-zinc-900/95 text-zinc-900 dark:text-white backdrop-blur-2xl rounded-t-3xl p-6 shadow-2xl border-t border-black/10 dark:border-white/15 z-10 space-y-4 pb-12 safe-area-bottom pb-safe"
+              className="relative w-full max-w-md mx-auto max-h-[85vh] bg-white/95 dark:bg-zinc-900/95 text-zinc-900 dark:text-white backdrop-blur-2xl rounded-t-3xl p-6 shadow-2xl border-t border-black/10 dark:border-white/15 z-10 space-y-4 pb-12 safe-area-bottom pb-safe"
             >
               <div className="w-12 h-1.5 bg-zinc-300 dark:bg-zinc-700 rounded-full mx-auto -mt-2 mb-2" />
 

@@ -45,6 +45,9 @@ import {
   reconcileIncomeAndInitialBalance,
 } from '../utils/calculations';
 import { playHapticFeedback } from '../utils/haptics';
+import { migrateSubscription, migrateSubscriptions } from '../utils/subscriptions';
+
+export { migrateSubscription, migrateSubscriptions };
 
 export interface AppState {
   // ── Auth & Session ──────────────────────────────────────────
@@ -323,7 +326,7 @@ export function makeInitialAccount(uid: string, name: string, email?: string): U
     focusTasks: DEFAULT_FOCUS_TASKS,
     focusLists: DEFAULT_FOCUS_LISTS,
     debts: DEFAULT_DEBTS,
-    subscriptions: DEFAULT_SUBSCRIPTIONS,
+    subscriptions: migrateSubscriptions(DEFAULT_SUBSCRIPTIONS),
     notes: DEFAULT_NOTES,
     deletedCategoryIds: [],
     salatLogs: {},
@@ -414,6 +417,7 @@ export function extractAccountState(account: UserAccount | null) {
       : 0;
 
   const resolvedBalance = calculateAvailableBalance(initialBal, txs);
+  const migratedSubs = migrateSubscriptions(account.subscriptions ?? DEFAULT_SUBSCRIPTIONS);
 
   return {
     currentAccount: {
@@ -421,6 +425,7 @@ export function extractAccountState(account: UserAccount | null) {
       transactions: txs,
       initialBalance: initialBal,
       balance: resolvedBalance,
+      subscriptions: migratedSubs,
     },
     isOnboarded: Boolean(account.isOnboarded),
     initialBalance: initialBal,
@@ -434,7 +439,7 @@ export function extractAccountState(account: UserAccount | null) {
     focusTasks: account.focusTasks ?? DEFAULT_FOCUS_TASKS,
     focusLists: account.focusLists ?? DEFAULT_FOCUS_LISTS,
     debts: account.debts ?? DEFAULT_DEBTS,
-    subscriptions: account.subscriptions ?? DEFAULT_SUBSCRIPTIONS,
+    subscriptions: migratedSubs,
     notes: account.notes ?? DEFAULT_NOTES,
     salatLogs: account.salatLogs ?? {},
     studyModules: account.studyModules ?? DEFAULT_STUDY_MODULES,
@@ -485,6 +490,8 @@ export function applyRemoteAccount(
       : 0;
 
   const computedBal = calculateAvailableBalance(initialBal, snapTxs);
+  const incomingSubs = incomingAccount?.subscriptions || data?.subscriptions;
+  const migratedSubs = migrateSubscriptions(incomingSubs ?? DEFAULT_SUBSCRIPTIONS);
 
   const finalSyncedAccount: UserAccount = {
     ...makeInitialAccount(
@@ -499,6 +506,7 @@ export function applyRemoteAccount(
     transactions: snapTxs,
     initialBalance: initialBal,
     balance: computedBal,
+    subscriptions: migratedSubs,
     isOnboarded: Boolean(incomingAccount.isOnboarded ?? data.isOnboarded ?? true),
   };
 
@@ -729,6 +737,10 @@ export const useAppStore = create<AppState>()(
             } catch (e) {}
           }
 
+          if (localAccount) {
+            localAccount.subscriptions = migrateSubscriptions(localAccount.subscriptions ?? DEFAULT_SUBSCRIPTIONS);
+          }
+
           if (localAccount && legacyFocusTasks.length > 0 && (!localAccount.focusTasks || localAccount.focusTasks.length === 0)) {
             localAccount.focusTasks = legacyFocusTasks;
           }
@@ -868,6 +880,7 @@ export const useAppStore = create<AppState>()(
           }
 
           resolvedAccount.id = uid;
+          resolvedAccount.subscriptions = migrateSubscriptions(resolvedAccount.subscriptions ?? DEFAULT_SUBSCRIPTIONS);
 
           // Save hydrated account to local cache for fast offline access
           try {
@@ -1797,9 +1810,10 @@ export const useAppStore = create<AppState>()(
 
         // ── Subscriptions ───────────────────────────────────────────
         addSubscription: (sub: SubscriptionItem) => {
+          const migratedSub = migrateSubscription(sub);
           updateActive((a) => ({
             ...a,
-            subscriptions: [...(a.subscriptions ?? []), sub],
+            subscriptions: [...(a.subscriptions ?? []), migratedSub],
           }));
         },
         updateSubscription: (id: string, patch: Partial<SubscriptionItem>) => {
@@ -1821,10 +1835,10 @@ export const useAppStore = create<AppState>()(
             ...a,
             subscriptions: (a.subscriptions ?? []).map((s: SubscriptionItem) => {
               if (s.id !== id) return s;
-              const paid = s.paidMonths.includes(month);
+              const paid = (s.paidMonths ?? []).includes(month);
               return {
                 ...s,
-                paidMonths: paid ? s.paidMonths.filter((m: string) => m !== month) : [...s.paidMonths, month],
+                paidMonths: paid ? (s.paidMonths ?? []).filter((m: string) => m !== month) : [...(s.paidMonths ?? []), month],
               };
             }),
           }));
@@ -1979,9 +1993,13 @@ export const useAppStore = create<AppState>()(
           try {
             const data = JSON.parse(json);
             if (data.accounts && Array.isArray(data.accounts)) {
-              const active = data.accounts[0];
+              const migratedAccounts = data.accounts.map((acc: UserAccount) => ({
+                ...acc,
+                subscriptions: migrateSubscriptions(acc.subscriptions ?? DEFAULT_SUBSCRIPTIONS),
+              }));
+              const active = migratedAccounts[0];
               set({
-                accounts: data.accounts,
+                accounts: migratedAccounts,
                 activeAccountId: active?.id || null,
                 theme: data.theme ?? 'system',
                 language: data.language ?? 'ar',
@@ -2015,6 +2033,21 @@ export const useAppStore = create<AppState>()(
     },
     {
       name: 'flouss_app_storage_v2',
+      version: 1,
+      migrate: (persistedState: any, version: number) => {
+        if (version < 1) {
+          if (persistedState && Array.isArray(persistedState.accounts)) {
+            persistedState.accounts = persistedState.accounts.map((acc: any) => ({
+              ...acc,
+              subscriptions: migrateSubscriptions(acc.subscriptions),
+            }));
+          }
+          if (persistedState && Array.isArray(persistedState.subscriptions)) {
+            persistedState.subscriptions = migrateSubscriptions(persistedState.subscriptions);
+          }
+        }
+        return persistedState;
+      },
       partialize: (state: any) => ({
         theme: state.theme,
         isDarkMode: state.isDarkMode,
@@ -2033,6 +2066,16 @@ export const useAppStore = create<AppState>()(
               : typeof window !== 'undefined' &&
                 Boolean(window.matchMedia?.('(prefers-color-scheme: dark)').matches);
           applyThemeToDOM(isDark);
+
+          if (Array.isArray(state.subscriptions)) {
+            state.subscriptions = migrateSubscriptions(state.subscriptions);
+          }
+          if (Array.isArray(state.accounts)) {
+            state.accounts = state.accounts.map((acc: UserAccount) => ({
+              ...acc,
+              subscriptions: migrateSubscriptions(acc.subscriptions),
+            }));
+          }
         }
       },
     }

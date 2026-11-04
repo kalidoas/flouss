@@ -100,7 +100,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             dragElastic={{ top: 0, bottom: 0.6 }}
             onDragEnd={handleDragEnd}
             transition={springs.sheet}
-            className={`relative w-full max-w-xl ${maxHeight} overflow-hidden bg-white/95 dark:bg-zinc-900/95 backdrop-blur-2xl text-zinc-900 dark:text-white rounded-t-[2.25rem] shadow-2xl border-t border-black/10 dark:border-white/15 flex flex-col z-10 safe-area-bottom pb-safe pb-8 ${className}`}
+            className={`relative w-full max-w-md ${maxHeight} overflow-hidden bg-white/95 dark:bg-zinc-900/95 backdrop-blur-2xl text-zinc-900 dark:text-white rounded-t-[2.25rem] shadow-2xl border-t border-black/10 dark:border-white/15 flex flex-col z-10 safe-area-bottom pb-safe pb-8 ${className}`}
           >
             {/* Grabber Bar */}
             {showGrabber && (

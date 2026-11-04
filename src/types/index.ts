@@ -252,20 +252,33 @@ export interface DebtItem {
   isSettled: boolean;
 }
 
+export interface SubscriptionPayment {
+  cycleDate: string; // YYYY-MM-DD
+  paidOn: string; // ISO datetime or YYYY-MM-DD
+  amount: number;
+}
+
+export type SubscriptionStatus = 'paid-up' | 'due-soon' | 'due-today' | 'overdue';
+
 export interface SubscriptionItem {
   id: string;
   name: string;
   amount: number;
-  billingDay: number; // 1 to 31
+  billingDay: number; // 1 to 31 (kept for backward compatibility during migration)
   category: string;
   notes?: string;
-  paidMonths: string[]; // ['2026-10']
+  paidMonths: string[]; // ['2026-10'] (kept for backward compatibility during migration)
+  nextDueDate?: string; // YYYY-MM-DD
+  payments?: SubscriptionPayment[];
+  endDate?: string; // YYYY-MM-DD
   reminderEnabled?: boolean;
   reminderDaysBefore?: number; // default: 1 day before
   reminderTime?: string; // default: "09:00"
   googleCalendarEventId?: string;
   createdAt: string;
 }
+
+export type Subscription = SubscriptionItem;
 
 export interface CalendarMeeting {
   id: string;
