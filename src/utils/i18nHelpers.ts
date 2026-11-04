@@ -36,7 +36,7 @@ const CATEGORY_ID_KEY_MAP: Record<string, string> = {
 };
 
 // Map known Arabic category names to stable translation keys
-const ARABIC_CATEGORY_KEY_MAP: Record<string, string> = {
+export const ARABIC_CATEGORY_KEY_MAP: Record<string, string> = {
   'الرياضية': 'sport',
   'الرياضة': 'sport',
   'الرياضة والنشاط': 'sport',
@@ -90,7 +90,7 @@ const ARABIC_CATEGORY_KEY_MAP: Record<string, string> = {
   'أخرى': 'other',
 };
 
-const SUBCATEGORY_ID_KEY_MAP: Record<string, string> = {
+export const SUBCATEGORY_ID_KEY_MAP: Record<string, string> = {
   sub_groceries: 'groceries',
   sub_restaurant: 'restaurant',
   sub_fastFood: 'fastFood',
@@ -106,9 +106,11 @@ const SUBCATEGORY_ID_KEY_MAP: Record<string, string> = {
   sub_train: 'train',
   sub_fuel: 'fuel',
   sub_carMaintenance: 'carMaintenance',
+  sub_gym: 'gym',
+  sub_skincare: 'skincare',
 };
 
-const ARABIC_SUBCATEGORY_KEY_MAP: Record<string, string> = {
+export const ARABIC_SUBCATEGORY_KEY_MAP: Record<string, string> = {
   'الحافلة والترامواي': 'tramBus',
   'حافلة': 'tramBus',
   'باص': 'tramBus',
@@ -128,11 +130,163 @@ const ARABIC_SUBCATEGORY_KEY_MAP: Record<string, string> = {
   'المخبزة والحلويات': 'bakery',
   'وجبات خفيفة ومسليات': 'snacks',
   'قهوة وشاي': 'coffee',
+  'قهوة': 'coffee',
+  'شاي': 'coffee',
   'سينما وعروض': 'cinema',
   'لقاءات الأصدقاء': 'friendsOuting',
   'ألعاب وترفيه': 'games',
   'سهرات ومناسبات': 'events',
+  'الأحذية': 'shoes',
+  'صنادل': 'sandals',
+  'سراويل وجينز': 'pants',
+  'قمصان وأقمصة': 'tshirts',
+  'سترات ومعاطف': 'jackets',
+  'ملابس داخلية وجوارب': 'underwearSocks',
+  'إكسسوارات (ساعة، حزام، حقيبة)': 'accessories',
+  'إكسسوارات': 'accessories',
+  'حاسوب محمول / PC': 'pc',
+  'حاسوب': 'pc',
+  'هاتف ذكي': 'smartphone',
+  'هاتف': 'smartphone',
+  'ملحقات (فأرة، لوحة مفاتيح، شاحن)': 'pcAccessories',
+  'سماعات رأس': 'headphones',
+  'ألعاب فيديو': 'gaming',
+  'إصلاحات وتصليح': 'repairs',
+  'واجبات مدرسية / دراسية': 'schoolFees',
+  'كتب ومراجع': 'books',
+  'أدوات مدرسية ومكتبية': 'supplies',
+  'دورات عبر الإنترنت': 'onlineCourses',
+  'طباعة ونسخ الوثائق': 'printing',
+  'امتحانات ومباريات': 'exams',
+  'صيدلية وأدوية': 'pharmacy',
+  'طبيب وفحوصات': 'doctor',
+  'حلاق وتجميل': 'barber',
+  'عطور ومستحضرات': 'perfume',
+  'عناية بالبشرة': 'skincare',
+  'اشتراك القاعة الرياضية': 'gym',
+  'معدات وملابس رياضية': 'equipment',
+  'مكملات غذائية': 'supplements',
+  'نوادي وأنشطة': 'club',
+  'كراء البيت / السكن': 'rent',
+  'كهرباء (أمانديس / ليديك)': 'electricity',
+  'ماء صالح للشرب': 'water',
+  'إنترنت وألياف بصرية': 'internet',
+  'أثاث وديكور': 'furniture',
+  'مواد ولوازم التنظيف': 'cleaning',
+  'تعبئة الهاتف وجواز': 'topup',
+  'اشتراك شهري للهاتف': 'internetPlan',
+  'منصات البث (Netflix...)': 'streaming',
+  'موسيقى وصوتيات': 'music',
+  'برامج وتطبيقات سحابية': 'cloudSoftware',
+  'هدايا': 'gifts',
+  'تزيين وديكور': 'decoration',
+  'طلبيات الإنترنت': 'onlineOrders',
+  'بر الوالدين ومساعدتهم': 'parents',
+  'مصاريف العائلة': 'familySupport',
+  'مصاريف الأبناء': 'children',
+  'صدقة وتبرعات': 'charitySadaqa',
+  'زكاة المال': 'zakat',
+  'مساعدة المحتاجين': 'helpNeedy',
+  'أسهم وصناديق': 'stocks',
+  'عملات رقمية': 'crypto',
+  'ذهب ومعادن': 'gold',
+  'عقارات': 'realEstate',
+  'صندوق الطوارئ': 'emergencyFund',
+  'مصاريف طارئة': 'unforeseen',
+  'أوراق وإداريات': 'paperwork',
+  'عمولات ورسوم بنكية': 'bankFees',
 };
+
+/**
+ * Maps any raw database string (Arabic category, subcategory, ID, or legacy name)
+ * to its stable translation key (e.g. 'قهوة وشاي' -> 'coffee', 'cat_cafe' -> 'cafe').
+ */
+export function getCategoryTranslationKey(rawText: string | null | undefined): string | null {
+  if (!rawText) return null;
+  const trimmed = rawText.trim();
+  if (!trimmed) return null;
+
+  // 1. Check direct key in translations
+  const frDict = translations.fr?.categoriesData as Record<string, string> | undefined;
+  if (frDict && trimmed in frDict) {
+    return trimmed;
+  }
+
+  // 2. Direct ID mappings
+  if (CATEGORY_ID_KEY_MAP[trimmed]) return CATEGORY_ID_KEY_MAP[trimmed];
+  if (SUBCATEGORY_ID_KEY_MAP[trimmed]) return SUBCATEGORY_ID_KEY_MAP[trimmed];
+
+  // 3. Known Arabic category & subcategory tables
+  if (ARABIC_CATEGORY_KEY_MAP[trimmed]) return ARABIC_CATEGORY_KEY_MAP[trimmed];
+  if (ARABIC_SUBCATEGORY_KEY_MAP[trimmed]) return ARABIC_SUBCATEGORY_KEY_MAP[trimmed];
+
+  // 4. Exact match against Arabic dictionary
+  const arDict = translations.ar?.categoriesData as Record<string, string> | undefined;
+  if (arDict) {
+    for (const [key, val] of Object.entries(arDict)) {
+      if (val === trimmed) return key;
+    }
+  }
+
+  // 5. Exact match against French / English dictionaries
+  if (frDict) {
+    for (const [key, val] of Object.entries(frDict)) {
+      if (val.toLowerCase() === trimmed.toLowerCase()) return key;
+    }
+  }
+  const enDict = translations.en?.categoriesData as Record<string, string> | undefined;
+  if (enDict) {
+    for (const [key, val] of Object.entries(enDict)) {
+      if (val.toLowerCase() === trimmed.toLowerCase()) return key;
+    }
+  }
+
+  // 6. Substring match against Arabic values
+  if (arDict) {
+    for (const [key, val] of Object.entries(arDict)) {
+      if (trimmed.includes(val) || val.includes(trimmed)) return key;
+    }
+  }
+  for (const [arText, key] of Object.entries(ARABIC_SUBCATEGORY_KEY_MAP)) {
+    if (trimmed.includes(arText)) return key;
+  }
+  for (const [arText, key] of Object.entries(ARABIC_CATEGORY_KEY_MAP)) {
+    if (trimmed.includes(arText)) return key;
+  }
+
+  return null;
+}
+
+/**
+ * Translates any raw category name, subcategory name, or note text from the database
+ * to the currently selected language.
+ * E.g., 'قهوة وشاي' -> 'Coffee & Tea' in English, 'Café & Thé' in French, 'قهوة وشاي' in Arabic.
+ */
+export function translateCategoryText(
+  rawText: string | null | undefined,
+  language: Language = 'fr'
+): string {
+  if (!rawText) return '';
+  const trimmed = rawText.trim();
+  if (!trimmed) return '';
+
+  const key = getCategoryTranslationKey(trimmed);
+  if (key) {
+    const dict = translations[language]?.categoriesData as Record<string, string> | undefined;
+    if (dict && dict[key]) {
+      const arVal = (translations.ar?.categoriesData as Record<string, string> | undefined)?.[key];
+      if (arVal && trimmed !== arVal && trimmed.startsWith(arVal)) {
+        const extra = trimmed.slice(arVal.length).trim().replace(/^[-–—:]\s*/, '');
+        if (extra) {
+          return `${dict[key]} (${extra})`;
+        }
+      }
+      return dict[key];
+    }
+  }
+
+  return trimmed;
+}
 
 /**
  * Returns translated category name if stable `key` or `translationKey` exists,
@@ -151,46 +305,22 @@ export function getCategoryName(
     (category.id ? CATEGORY_ID_KEY_MAP[category.id] : undefined);
 
   if (key) {
-    const dict = translations[language]?.categoriesData;
+    const dict = translations[language]?.categoriesData as Record<string, string> | undefined;
     if (dict && key in dict) {
-      return (dict as Record<string, string>)[key];
+      return dict[key];
     }
   }
 
-  // 2. If viewing in English/French and the category name is hardcoded in Arabic:
-  if (language !== 'ar' && category.name) {
-    const trimmed = category.name.trim();
-    const mappedKey = ARABIC_CATEGORY_KEY_MAP[trimmed];
-    if (mappedKey) {
-      const dict = translations[language]?.categoriesData;
-      if (dict && mappedKey in dict) {
-        return (dict as Record<string, string>)[mappedKey];
-      }
-    }
-
-    // Fuzzy check against Arabic dictionary keys
-    const arDict = translations.ar?.categoriesData as Record<string, string> | undefined;
-    if (arDict) {
-      for (const [dictKey, arVal] of Object.entries(arDict)) {
-        if (arVal === trimmed || trimmed.includes(arVal) || arVal.includes(trimmed)) {
-          const targetDict = translations[language]?.categoriesData as Record<string, string> | undefined;
-          if (targetDict && targetDict[dictKey]) {
-            return targetDict[dictKey];
-          }
-        }
-      }
+  // 2. Derive key from category.name or category.id
+  const derivedKey = getCategoryTranslationKey(category.name) || getCategoryTranslationKey(category.id);
+  if (derivedKey) {
+    const dict = translations[language]?.categoriesData as Record<string, string> | undefined;
+    if (dict && derivedKey in dict) {
+      return dict[derivedKey];
     }
   }
 
-  // 3. Fallback to Arabic translation if language is Arabic and key is known
-  if (language === 'ar' && key) {
-    const arDict = translations.ar?.categoriesData as Record<string, string> | undefined;
-    if (arDict && arDict[key]) {
-      return arDict[key];
-    }
-  }
-
-  return category.name;
+  return category.name || '';
 }
 
 /**
@@ -209,36 +339,21 @@ export function getSubCategoryName(
     (subCategory.id ? SUBCATEGORY_ID_KEY_MAP[subCategory.id] : undefined);
 
   if (key) {
-    const dict = translations[language]?.categoriesData;
+    const dict = translations[language]?.categoriesData as Record<string, string> | undefined;
     if (dict && key in dict) {
-      return (dict as Record<string, string>)[key];
+      return dict[key];
     }
   }
 
-  if (language !== 'ar' && subCategory.name) {
-    const trimmed = subCategory.name.trim();
-    const mappedKey = ARABIC_SUBCATEGORY_KEY_MAP[trimmed];
-    if (mappedKey) {
-      const dict = translations[language]?.categoriesData;
-      if (dict && mappedKey in dict) {
-        return (dict as Record<string, string>)[mappedKey];
-      }
-    }
-
-    const arDict = translations.ar?.categoriesData as Record<string, string> | undefined;
-    if (arDict) {
-      for (const [dictKey, arVal] of Object.entries(arDict)) {
-        if (arVal === trimmed || trimmed.includes(arVal) || arVal.includes(trimmed)) {
-          const targetDict = translations[language]?.categoriesData as Record<string, string> | undefined;
-          if (targetDict && targetDict[dictKey]) {
-            return targetDict[dictKey];
-          }
-        }
-      }
+  const derivedKey = getCategoryTranslationKey(subCategory.name) || getCategoryTranslationKey(subCategory.id);
+  if (derivedKey) {
+    const dict = translations[language]?.categoriesData as Record<string, string> | undefined;
+    if (dict && derivedKey in dict) {
+      return dict[derivedKey];
     }
   }
 
-  return subCategory.name;
+  return subCategory.name || '';
 }
 
 /**

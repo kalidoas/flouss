@@ -9,7 +9,7 @@ import { AddExpenseModal } from '../components/transactions/AddExpenseModal';
 import { translations } from '../i18n/translations';
 import { formatMAD, formatDate, getCurrentMonthStr } from '../utils/formatters';
 import { getCategoryIcon } from '../utils/icons';
-import { getCategoryName, getSubCategoryName } from '../utils/i18nHelpers';
+import { getCategoryName, getSubCategoryName, translateCategoryText } from '../utils/i18nHelpers';
 import { Transaction } from '../types';
 import {
   TrendingDown,
@@ -318,10 +318,24 @@ export const ExpensesPage: React.FC = () => {
                     const cat = categories.find((c) => c.id === tx.categoryId);
                     const subCat = cat?.subcategories?.find((s) => s.id === tx.subCategoryId);
                     const IconComp = cat ? getCategoryIcon(cat.icon) : ShoppingBag;
-                    const catName = cat ? getCategoryName(cat, language) : tNav.expenseDesc;
-                    const subCatName = subCat ? getSubCategoryName(subCat, language) : null;
+                    let catName = cat ? getCategoryName(cat, language) : '';
+                    if (!catName) {
+                      const rawCat = (tx as any).categoryName || (tx as any).category || tx.categoryId;
+                      if (rawCat) catName = translateCategoryText(rawCat, language);
+                    }
+                    if (!catName) catName = tNav.expenseDesc;
+
+                    let subCatName = subCat ? getSubCategoryName(subCat, language) : null;
+                    if (!subCatName && tx.subCategoryId) {
+                      const translatedSub = translateCategoryText(tx.subCategoryId, language);
+                      if (translatedSub && translatedSub !== tx.subCategoryId) {
+                        subCatName = translatedSub;
+                      }
+                    }
+
                     const exactTime = getExactTime(tx.date, tx.createdAt);
-                    const itemName = tx.note || catName;
+                    const translatedNote = tx.note ? translateCategoryText(tx.note, language) : '';
+                    const itemName = translatedNote || (subCatName ? `${catName} › ${subCatName}` : catName);
 
                     return (
                       <motion.div

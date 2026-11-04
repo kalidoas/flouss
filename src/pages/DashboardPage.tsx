@@ -28,7 +28,7 @@ import {
 import { formatMAD, getCurrentMonthStr, formatMonthYear, isTransactionInMonth } from '../utils/formatters';
 import { Category, RecurringIncomeRule, Transaction } from '../types';
 import { translations } from '../i18n/translations';
-import { getIncomeSourceName, getCategoryName } from '../utils/i18nHelpers';
+import { getIncomeSourceName, getCategoryName, translateCategoryText } from '../utils/i18nHelpers';
 import {
   ArrowUpRight,
   ArrowDownRight,
@@ -204,25 +204,27 @@ export const DashboardPage: React.FC = () => {
         </motion.div>
       )}
 
-      {/* Apple Bento Centerpiece: Priority & Pinned Hub + My Focus List + Compact Apple Wallet Card */}
-      <div className="space-y-5">
-        {/* Priority & Pinned Hub Centerpiece */}
-        <PriorityHub />
+      {/* Apple Bento Centerpiece: 2/3 (Priority & Pinned Hub + My Focus List) + 1/3 Compact Apple Wallet Card */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        {/* Priority & Pinned Hub + Focus List (2/3 width on desktop) */}
+        <div className="lg:col-span-8 order-2 lg:order-1 space-y-5">
+          <PriorityHub />
+          <FocusTaskList />
+        </div>
 
-        {/* My Focus List: "Ma liste" Section (Placed immediately below Priority Hub at the top) */}
-        <FocusTaskList />
-
-        {/* Compact Apple Wallet Card */}
-        <WalletCard
-          balance={balance}
-          incomeThisMonth={incomeThisMonth}
-          expenseThisMonth={expenseThisMonth}
-          onOpenIncome={() => setIsIncomeOpen(true)}
-          onOpenExpense={() => setIsExpenseOpen(true)}
-          onOpenGoal={() => handleOpenGoalContribution()}
-          onNavigateIncome={() => setActiveScreen('income')}
-          onNavigateExpense={() => setActiveScreen('expenses')}
-        />
+        {/* Compact Apple Wallet Card (1/3 width on desktop) */}
+        <div className="lg:col-span-4 order-1 lg:order-2">
+          <WalletCard
+            balance={balance}
+            incomeThisMonth={incomeThisMonth}
+            expenseThisMonth={expenseThisMonth}
+            onOpenIncome={() => setIsIncomeOpen(true)}
+            onOpenExpense={() => setIsExpenseOpen(true)}
+            onOpenGoal={() => handleOpenGoalContribution()}
+            onNavigateIncome={() => setActiveScreen('income')}
+            onNavigateExpense={() => setActiveScreen('expenses')}
+          />
+        </div>
       </div>
 
       {/* Apple HIG Financial Balance Chart */}
@@ -402,7 +404,7 @@ export const DashboardPage: React.FC = () => {
                   <div className="space-y-1.5 mt-2">
                     {spendingBreakdown.slice(0, 4).map((item) => {
                       const cat = categories.find((c) => c.id === item.id);
-                      const displayName = cat ? getCategoryName(cat, language) : item.name;
+                      const displayName = cat ? getCategoryName(cat, language) : (translateCategoryText(item.name, language) || item.name);
                       return (
                         <div
                           key={item.id}

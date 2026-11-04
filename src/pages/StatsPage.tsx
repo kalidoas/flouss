@@ -8,7 +8,7 @@ import {
 } from '../utils/calculations';
 import { formatMAD, formatDate, getCurrentMonthStr, isTransactionInMonth } from '../utils/formatters';
 import { getCategoryIcon } from '../utils/icons';
-import { getCategoryName, getSubCategoryName } from '../utils/i18nHelpers';
+import { getCategoryName, getSubCategoryName, translateCategoryText } from '../utils/i18nHelpers';
 import { translations } from '../i18n/translations';
 import { Transaction } from '../types';
 import {
@@ -249,8 +249,25 @@ export const StatsPage: React.FC = () => {
               const cat = categories.find((c) => c.id === tx.categoryId);
               const subCat = cat?.subcategories?.find((s) => s.id === tx.subCategoryId);
               const IconComp = cat ? getCategoryIcon(cat.icon) : ShoppingBag;
-              const catName = cat ? getCategoryName(cat, language) : 'Autre';
-              const subCatName = subCat ? getSubCategoryName(subCat, language) : null;
+              let catName = cat ? getCategoryName(cat, language) : '';
+              if (!catName) {
+                const rawCat = (tx as any).categoryName || (tx as any).category || tx.categoryId;
+                if (rawCat) {
+                  catName = translateCategoryText(rawCat, language);
+                }
+              }
+              if (!catName) {
+                catName = translations[language].dashboard.addExpense;
+              }
+
+              let subCatName = subCat ? getSubCategoryName(subCat, language) : null;
+              if (!subCatName && tx.subCategoryId) {
+                const translatedSub = translateCategoryText(tx.subCategoryId, language);
+                if (translatedSub && translatedSub !== tx.subCategoryId) {
+                  subCatName = translatedSub;
+                }
+              }
+
               const exactTime = getExactTime(tx.date, tx.createdAt);
               const rankColor =
                 idx === 0
@@ -258,6 +275,9 @@ export const StatsPage: React.FC = () => {
                   : idx === 1
                   ? 'bg-zinc-400 dark:bg-zinc-600 text-white shadow-zinc-500/20'
                   : 'bg-amber-700/80 text-white shadow-amber-700/20';
+
+              const translatedNote = tx.note ? translateCategoryText(tx.note, language) : '';
+              const title = translatedNote || (subCatName ? `${catName} › ${subCatName}` : catName);
 
               return (
                 <div
@@ -282,10 +302,16 @@ export const StatsPage: React.FC = () => {
 
                     <div className="min-w-0">
                       <h4 className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-white truncate">
-                        {tx.note || catName}
+                        {title}
                       </h4>
                       <div className="flex items-center gap-1.5 text-[10px] text-zinc-400 mt-0.5">
                         <span className="truncate">{catName}</span>
+                        {subCatName && subCatName !== title && (
+                          <>
+                            <span>›</span>
+                            <span className="truncate">{subCatName}</span>
+                          </>
+                        )}
                         <span>•</span>
                         <span className="tabular-nums">{formatDate(tx.date, language)}</span>
                       </div>

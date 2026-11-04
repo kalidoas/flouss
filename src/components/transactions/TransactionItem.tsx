@@ -9,6 +9,7 @@ import {
   getSubCategoryName,
   getIncomeSourceName,
   getIncomeSubSourceName,
+  translateCategoryText,
 } from '../../utils/i18nHelpers';
 import { Trash2, AlertTriangle } from 'lucide-react';
 import { Modal } from '../common/Modal';
@@ -82,8 +83,28 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
         };
       }
       case 'expense': {
-        const catName = category ? getCategoryName(category, language) : translations[language].dashboard.addExpense;
-        const subName = subCategory ? getSubCategoryName(subCategory, language) : null;
+        let catName = category ? getCategoryName(category, language) : '';
+        if (!catName || catName === translations[language].dashboard.addExpense) {
+          const rawCat =
+            (transaction as any).categoryName ||
+            (transaction as any).category ||
+            transaction.categoryId;
+          if (rawCat) {
+            catName = translateCategoryText(rawCat, language);
+          }
+        }
+        if (!catName) {
+          catName = translations[language].dashboard.addExpense;
+        }
+
+        let subName = subCategory ? getSubCategoryName(subCategory, language) : null;
+        if (!subName && transaction.subCategoryId) {
+          const translatedSub = translateCategoryText(transaction.subCategoryId, language);
+          if (translatedSub && translatedSub !== transaction.subCategoryId) {
+            subName = translatedSub;
+          }
+        }
+
         return {
           title: subName ? `${catName} › ${subName}` : catName,
           icon: category?.icon || 'Utensils',
@@ -194,7 +215,7 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
                   <>
                     <span>•</span>
                     <span className="truncate max-w-[140px] sm:max-w-xs text-[#787774] dark:text-[#9b9a97]">
-                      {transaction.note}
+                      {translateCategoryText(transaction.note, language) || transaction.note}
                     </span>
                   </>
                 )}
