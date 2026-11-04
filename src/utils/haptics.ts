@@ -311,6 +311,52 @@ export function playHapticFeedback(type: HapticType = 'light'): void {
 }
 
 /**
+ * Detect whether physical haptic feedback is supported on the current device.
+ * Checks Capacitor plugin, iOS Safari Taptic Engine (switch hack / iOS touch), or Android navigator.vibrate.
+ */
+export function isHapticsSupported(): boolean {
+  if (typeof window === 'undefined') return false;
+
+  // 1. Capacitor native shell
+  try {
+    if ((window as any)?.Capacitor?.Plugins?.Haptics) {
+      return true;
+    }
+  } catch {}
+
+  // 2. iOS devices (iPhones have hardware Taptic Engine, actuated via iOS 18 switch hack or WebKit)
+  const isIOS =
+    typeof navigator !== 'undefined' &&
+    (/iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
+
+  if (isIOS) {
+    return true;
+  }
+
+  // 3. Android / Mobile with navigator.vibrate
+  if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
+    const isMobile = /Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (isMobile) return true;
+    try {
+      return navigator.vibrate(0);
+    } catch {
+      return false;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Triggers a test haptic pulse and returns whether haptics are supported.
+ */
+export function testHapticSupport(): boolean {
+  playHapticFeedback('rigid');
+  return isHapticsSupported();
+}
+
+/**
  * Capture-phase global event delegation installer
  * Automatically activates 0ms physical sensory feedback on all interactive elements.
  */

@@ -140,31 +140,38 @@ export const PhoneNotificationGuideModal: React.FC<PhoneNotificationGuideModalPr
             <ol className="list-decimal list-inside space-y-2 text-xs leading-relaxed">
               <li>
                 {isAr
-                  ? 'افتح الإعدادات (Settings) ⟵ الإشعارات (Notifications) ⟵ Google Calendar أو التقويم.'
+                  ? 'اربط حساب Google بتقويم Apple: الإعدادات ⟵ التقويم ⟵ الحسابات ⟵ إضافة حساب ⟵ Google.'
                   : isEn
-                  ? 'Open Settings ⟶ Notifications ⟶ Google Calendar (or Calendar).'
-                  : 'Ouvrez Réglages ⟶ Notifications ⟶ Google Calendar.'}
+                  ? 'Add Google account to Apple Calendar: Settings ⟶ Calendar ⟶ Accounts ⟶ Add Account ⟶ Google.'
+                  : 'Ajoutez votre compte Google à Apple Calendrier : Réglages ⟶ Calendrier ⟶ Comptes ⟶ Ajouter ⟶ Google.'}
               </li>
               <li>
                 {isAr
-                  ? 'تأكد من تفعيل "السماح بالإشعارات" (Allow Notifications) واختيار نمط الشعار "دائم" (Banner Style: Persistent).'
+                  ? 'الإعدادات ⟵ الإشعارات ⟵ التقويم ⟵ تفعيل "السماح بالإشعارات" واختيار نمط الشعار "دائم".'
                   : isEn
-                  ? 'Ensure "Allow Notifications" is on and set Banner Style to "Persistent".'
-                  : 'Activez "Autoriser les notifications" et réglez le style de bannière sur "Persistante".'}
+                  ? 'Settings ⟶ Notifications ⟶ Calendar ⟶ enable "Allow Notifications" & set Banner Style to "Persistent".'
+                  : 'Réglages ⟶ Notifications ⟶ Calendrier ⟶ activez "Autoriser les notifications" et "Bannière persistante".'}
               </li>
               <li>
                 {isAr
-                  ? 'تفعيل خيار "الأصوات" (Sounds) و"الشارات" (Badges).'
+                  ? 'الإعدادات ⟵ الأصوات والحس اللمسي ⟵ تنبيهات التقويم (لاختيار نغمة رنين مسموعة).'
                   : isEn
-                  ? 'Enable "Sounds" and "Badges".'
-                  : 'Activez "Sons" et "Pastilles".'}
+                  ? 'Settings ⟶ Sounds & Haptics ⟶ Calendar Alerts (choose a loud, clear ringtone).'
+                  : 'Réglages ⟶ Sons et vibrations ⟶ Alertes de calendrier (choisissez une sonnerie bien audible).'}
               </li>
               <li>
                 {isAr
-                  ? 'تفعيل خيار "تنبيهات مهمة" (Time-Sensitive Notifications) لكي يرن المنبه حتى في وضع التركيز (Focus Mode).'
+                  ? 'الإعدادات ⟵ التركيز ⟵ استثناء تطبيق التقويم ليرن المنبه حتى في وضع عدم الإزعاج.'
                   : isEn
-                  ? 'Turn on "Time-Sensitive Notifications" to bypass Focus / Do Not Disturb modes.'
-                  : 'Activez "Notifications urgentes" pour sonner même en mode Concentration.'}
+                  ? 'Settings ⟶ Focus ⟶ add Calendar to Allowed Apps so alarms sound during Do Not Disturb.'
+                  : 'Réglages ⟶ Concentration ⟶ autorisez l’application Calendrier pour sonner en mode Ne pas déranger.'}
+              </li>
+              <li>
+                {isAr
+                  ? 'ملاحظة: زر الصامت الجانبي على iPhone يكتم أصوات التنبيهات (اهتزاز فقط). تأكد من إيقاف الوضع الصامت لسماع الرنين.'
+                  : isEn
+                  ? 'Note: The physical silent switch on iPhone mutes alert sounds (vibrations only). Turn off silent mode to hear chimes.'
+                  : 'Remarque : Le bouton silencieux physique coupe le son des alertes (vibration seule). Désactivez le mode silencieux pour entendre le son.'}
               </li>
             </ol>
           </div>

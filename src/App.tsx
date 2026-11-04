@@ -84,17 +84,12 @@ export const App: React.FC = () => {
     return () => media.removeEventListener?.('change', handleMediaChange);
   }, []);
 
-  // Initialize Notification Service, Scheduler, and Reactive Negative Balance monitoring
+  // Initialize Notification Service scheduler and reactive negative balance monitoring
   useEffect(() => {
-    // 1. Gracefully request notification permission if not yet decided
-    if (NotificationService.isSupported() && NotificationService.getPermission() === 'default') {
-      NotificationService.requestPermission().catch(() => {});
-    }
-
-    // 2. Start recurring background scheduler for due bills and precise 10m/exact event reminders
+    // 1. Start scheduler for due bills and in-app alerts (foreground layer)
     const stopScheduler = NotificationService.startScheduler(() => useAppStore.getState());
 
-    // 3. Reactively monitor available balance for negative transitions
+    // 2. Reactively monitor available balance for negative transitions
     let previousBalance = calculateAvailableBalance(
       useAppStore.getState().initialBalance,
       useAppStore.getState().transactions

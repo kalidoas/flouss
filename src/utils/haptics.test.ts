@@ -11,6 +11,8 @@ import {
   getOrInitIOSSwitch,
   initGlobalHaptics,
   HAPTIC_TRIGGER,
+  isHapticsSupported,
+  testHapticSupport,
   _resetHapticsStateForTesting,
 } from './haptics';
 
@@ -211,5 +213,66 @@ describe('Haptics v2 Module (jsdom)', () => {
 
   it('exports HAPTIC_TRIGGER constant', () => {
     expect(['pointerdown', 'pointerup']).toContain(HAPTIC_TRIGGER);
+  });
+
+  describe('isHapticsSupported & testHapticSupport', () => {
+    it('returns true on iOS devices', () => {
+      expect(isHapticsSupported()).toBe(true);
+    });
+
+    it('returns true when Capacitor Haptics plugin exists', () => {
+      Object.defineProperty(window.navigator, 'userAgent', {
+        value: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+        configurable: true,
+      });
+      Object.defineProperty(window.navigator, 'platform', {
+        value: 'Win32',
+        configurable: true,
+      });
+      (window as any).Capacitor = {
+        Plugins: {
+          Haptics: {
+            impact: vi.fn(),
+          },
+        },
+      };
+
+      expect(isHapticsSupported()).toBe(true);
+      delete (window as any).Capacitor;
+    });
+
+    it('returns true on Android devices supporting navigator.vibrate', () => {
+      Object.defineProperty(window.navigator, 'userAgent', {
+        value: 'Mozilla/5.0 (Linux; Android 14; Pixel 8)',
+        configurable: true,
+      });
+      Object.defineProperty(window.navigator, 'platform', {
+        value: 'Linux armv8l',
+        configurable: true,
+      });
+      (window.navigator as any).vibrate = vi.fn().mockReturnValue(true);
+
+      expect(isHapticsSupported()).toBe(true);
+      delete (window.navigator as any).vibrate;
+    });
+
+    it('returns false on desktop browser with no vibrate and no iOS', () => {
+      Object.defineProperty(window.navigator, 'userAgent', {
+        value: 'Mozilla/5.0 (X11; Linux x86_64)',
+        configurable: true,
+      });
+      Object.defineProperty(window.navigator, 'platform', {
+        value: 'Linux x86_64',
+        configurable: true,
+      });
+      delete (window.navigator as any).vibrate;
+
+      expect(isHapticsSupported()).toBe(false);
+    });
+
+    it('testHapticSupport fires a rigid haptic and returns boolean support', () => {
+      const supported = testHapticSupport();
+      expect(typeof supported).toBe('boolean');
+    });
   });
 });

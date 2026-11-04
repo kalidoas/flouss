@@ -6,6 +6,7 @@ import { QuickAddButton } from './QuickAddButton';
 import { DynamicIsland } from './DynamicIsland';
 import { InAppAlarmSheet } from '../common/InAppAlarmSheet';
 import { ReconnectGoogleCalendarModal } from '../common/ReconnectGoogleCalendarModal';
+import { AddToHomeScreenModal } from '../common/AddToHomeScreenModal';
 import { useAppStore } from '../../store/useAppStore';
 
 interface LayoutProps {
@@ -85,6 +86,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
         {/* Global Google Calendar Reconnect Sheet */}
         <ReconnectGoogleCalendarModal />
+
+        {/* Global Add to Home Screen Sheet (iOS PWA) */}
+        <AddToHomeScreenModal />
       </div>
     </div>
   );

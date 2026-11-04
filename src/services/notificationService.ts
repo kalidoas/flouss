@@ -9,6 +9,7 @@
 
 import { Language, TaskItem, SubscriptionItem, DebtItem, CalendarMeeting } from '../types';
 import { formatMAD, getCurrentMonthStr, getTodayDateStr } from '../utils/formatters';
+import { isIOS, isStandalonePWA, triggerAddToHomeScreenPrompt } from '../utils/device';
 
 const NOTIFIED_CACHE_KEY = 'flouss_notified_events';
 
@@ -68,10 +69,17 @@ export class NotificationService {
   }
 
   /**
-   * Request user permission for OS-level notifications
+   * Request user permission for OS-level notifications.
+   * On iOS: web push permission requires the app to be installed as a Home Screen PWA.
+   * If invoked on iOS outside standalone mode, surfaces the Add to Home Screen guide.
    */
   static async requestPermission(): Promise<NotificationPermission> {
     if (!this.isSupported()) return 'denied';
+
+    if (isIOS() && !isStandalonePWA()) {
+      triggerAddToHomeScreenPrompt();
+      return 'denied';
+    }
 
     try {
       const permission = await Notification.requestPermission();
