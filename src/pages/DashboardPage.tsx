@@ -24,7 +24,7 @@ import {
   getCategorySpendingBreakdown,
   calculateTotalSavingsInGoals,
 } from '../utils/calculations';
-import { formatMAD, getCurrentMonthStr, formatMonthYear } from '../utils/formatters';
+import { formatMAD, getCurrentMonthStr, formatMonthYear, isTransactionInMonth } from '../utils/formatters';
 import { Category, RecurringIncomeRule, Transaction } from '../types';
 import { translations } from '../i18n/translations';
 import { getIncomeSourceName, getCategoryName } from '../utils/i18nHelpers';
@@ -79,7 +79,7 @@ export const DashboardPage: React.FC = () => {
   const netWorth = balance + totalInGoals;
 
   // Month-to-date metrics
-  const currentMonthTx = transactions.filter((t: Transaction) => t.date.startsWith(currentMonth));
+  const currentMonthTx = transactions.filter((t: Transaction) => isTransactionInMonth(t.date, currentMonth));
   const incomeThisMonth = currentMonthTx
     .filter((t: Transaction) => t.type === 'income')
     .reduce((sum: number, t: Transaction) => sum + t.amount, 0);
@@ -394,34 +394,38 @@ export const DashboardPage: React.FC = () => {
 
                   {/* Top Spending Items list */}
                   <div className="space-y-1.5 mt-2">
-                    {spendingBreakdown.slice(0, 4).map((item) => (
-                      <div
-                        key={item.id}
-                        className="flex items-center justify-between text-xs py-1"
-                      >
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span
-                            className="w-2.5 h-2.5 rounded-full shrink-0"
-                            style={{ backgroundColor: item.color }}
-                          />
-                          <span className="text-zinc-700 dark:text-zinc-300 truncate max-w-[140px]">
-                            {item.name}
-                          </span>
+                    {spendingBreakdown.slice(0, 4).map((item) => {
+                      const cat = categories.find((c) => c.id === item.id);
+                      const displayName = cat ? getCategoryName(cat, language) : item.name;
+                      return (
+                        <div
+                          key={item.id}
+                          className="flex items-center justify-between text-xs py-1"
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span
+                              className="w-2.5 h-2.5 rounded-full shrink-0"
+                              style={{ backgroundColor: item.color }}
+                            />
+                            <span className="text-zinc-700 dark:text-zinc-300 truncate max-w-[140px]">
+                              {displayName}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-zinc-400 text-[11px] tabular-nums">
+                              {item.percentage}%
+                            </span>
+                            <span
+                              className={`font-semibold text-zinc-900 dark:text-white tabular-nums tracking-tight transition-[filter] duration-200 ${
+                                hideBalance ? 'privacy-blur' : ''
+                              }`}
+                            >
+                              {formatMAD(item.amount, false, language)}
+                            </span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-zinc-400 text-[11px] tabular-nums">
-                            {item.percentage}%
-                          </span>
-                          <span
-                            className={`font-semibold text-zinc-900 dark:text-white tabular-nums tracking-tight transition-[filter] duration-200 ${
-                              hideBalance ? 'privacy-blur' : ''
-                            }`}
-                          >
-                            {formatMAD(item.amount, false, language)}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </>
               )}

@@ -5,7 +5,7 @@ import { Card } from '../components/common/Card';
 import { AddIncomeModal } from '../components/transactions/AddIncomeModal';
 import { IncomeSourceModal } from '../components/income/IncomeSourceModal';
 import { TransactionItem } from '../components/transactions/TransactionItem';
-import { formatMAD, getCurrentMonthStr, formatMonthYear } from '../utils/formatters';
+import { formatMAD, getCurrentMonthStr, formatMonthYear, isTransactionInMonth, getTransactionMonth } from '../utils/formatters';
 import { getCategoryIcon } from '../utils/icons';
 import { translations } from '../i18n/translations';
 import { IncomeSource, Transaction } from '../types';
@@ -34,7 +34,7 @@ export const IncomePage: React.FC = () => {
 
   // Income transactions filtered by month and source
   const filteredIncomeTransactions = allIncomeTransactions.filter((tx: Transaction) => {
-    if (selectedMonth !== 'all' && !tx.date.startsWith(selectedMonth)) {
+    if (selectedMonth !== 'all' && !isTransactionInMonth(tx.date, selectedMonth)) {
       return false;
     }
     if (selectedSourceFilter !== 'all' && tx.sourceId !== selectedSourceFilter) {
@@ -47,7 +47,7 @@ export const IncomePage: React.FC = () => {
   const sourceStats = incomeSources.map((source: IncomeSource) => {
     const txForSource = allIncomeTransactions.filter((tx: Transaction) => {
       if (tx.sourceId !== source.id) return false;
-      if (selectedMonth !== 'all' && !tx.date.startsWith(selectedMonth)) return false;
+      if (selectedMonth !== 'all' && !isTransactionInMonth(tx.date, selectedMonth)) return false;
       return true;
     });
 
@@ -75,8 +75,8 @@ export const IncomePage: React.FC = () => {
 
   // Month list available in transactions
   const availableMonths: string[] = Array.from(
-    new Set(allIncomeTransactions.map((tx: Transaction) => tx.date.substring(0, 7)))
-  ).sort((a: string, b: string) => b.localeCompare(a));
+    new Set(allIncomeTransactions.map((tx: Transaction) => getTransactionMonth(tx.date)))
+  ).filter(Boolean).sort((a: string, b: string) => b.localeCompare(a));
 
   if (!availableMonths.includes(getCurrentMonthStr())) {
     availableMonths.unshift(getCurrentMonthStr());

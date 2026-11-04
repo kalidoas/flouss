@@ -140,26 +140,123 @@ export function getCurrentTimeStr(): string {
 }
 
 /**
- * Combines date string "YYYY-MM-DD" and time "HH:mm" to ISO string.
- * If date already includes 'T', parses as is.
+ * Formats a local Date object into RFC 3339 / ISO 8601 with exact local timezone offset (+HH:MM / -HH:MM)
+ * Prevents UTC midnight drift across month boundaries.
  */
-export function toIsoDateTime(dateStr: string, timeStr?: string): string {
-  if (!dateStr) return new Date().toISOString();
-  if (dateStr.includes('T')) {
-    const d = new Date(dateStr);
-    return isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
-  }
-  const time = timeStr || getCurrentTimeStr();
-  const fullStr = `${dateStr}T${time}:00`;
-  const d = new Date(fullStr);
-  return isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
+export function formatLocalIsoWithOffset(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const year = date.getFullYear();
+  const month = pad(date.getMonth() + 1);
+  const day = pad(date.getDate());
+  const hours = pad(date.getHours());
+  const minutes = pad(date.getMinutes());
+  const seconds = pad(date.getSeconds());
+
+  const offsetMinutes = -date.getTimezoneOffset();
+  const sign = offsetMinutes >= 0 ? '+' : '-';
+  const absOffset = Math.abs(offsetMinutes);
+  const offsetHours = pad(Math.floor(absOffset / 60));
+  const offsetMins = pad(absOffset % 60);
+
+  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}${sign}${offsetHours}:${offsetMins}`;
 }
 
 /**
- * Extract "YYYY-MM-DD" from an ISO timestamp or date string
+ * Combines date string "YYYY-MM-DD" and time "HH:mm" to ISO string with local timezone offset.
+ * If date already includes 'T', parses and formats with offset.
+ */
+export function toIsoDateTime(dateStr: string, timeStr?: string): string {
+  if (!dateStr) dateStr = getTodayDateStr();
+  const time = timeStr || getCurrentTimeStr();
+  if (dateStr.includes('T')) {
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? new Date().toISOString() : formatLocalIsoWithOffset(d);
+  }
+  const fullStr = `${dateStr}T${time}:00`;
+  const d = new Date(fullStr);
+  return isNaN(d.getTime()) ? new Date().toISOString() : formatLocalIsoWithOffset(d);
+}
+
+/**
+ * Accurately determines if a transaction date string belongs to the target month ("YYYY-MM").
+ * Checks:
+ * 1. Fast direct prefix match
+ * 2. Local date parsing (handling UTC vs local midnight/timezone shifts)
+ * 3. UTC date parsing (for legacy ISO UTC strings)
+ * 4. Boundary grace window (+/- 24h) for timestamps affected by UTC vs local timezone offsets
+ */
+export function isTransactionInMonth(dateStr: string | undefined | null, targetMonth: string): boolean {
+  if (!dateStr || !targetMonth) return false;
+  if (dateStr.startsWith(targetMonth)) return true;
+
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return false;
+
+    // Local timezone match (the user's browser local time)
+    const localYear = d.getFullYear();
+    const localMonth = String(d.getMonth() + 1).padStart(2, '0');
+    if (`${localYear}-${localMonth}` === targetMonth) return true;
+
+    // UTC match fallback
+    const utcYear = d.getUTCFullYear();
+    const utcMonth = String(d.getUTCMonth() + 1).padStart(2, '0');
+    if (`${utcYear}-${utcMonth}` === targetMonth) return true;
+
+    // Boundary grace window (+/- 24h) for timestamps recorded near UTC midnight:
+    // e.g. Oct 31 23:30 UTC is Nov 1 00:30 in UTC+1 (Morocco/France).
+    const [tYear, tMonth] = targetMonth.split('-').map(Number);
+    if (tYear && tMonth) {
+      const startOfMonthUtc = Date.UTC(tYear, tMonth - 1, 1, 0, 0, 0);
+      const endOfMonthUtc = Date.UTC(tYear, tMonth, 0, 23, 59, 59, 999);
+      const time = d.getTime();
+      const dayMs = 24 * 60 * 60 * 1000;
+
+      // Within 24h before month start (local time was already the 1st in UTC+ offset zones)
+      if (time >= startOfMonthUtc - dayMs && time < startOfMonthUtc) {
+        return true;
+      }
+      // Within 24h after month end (local time was still the last day in UTC- offset zones)
+      if (time > endOfMonthUtc && time <= endOfMonthUtc + dayMs) {
+        return true;
+      }
+    }
+  } catch {
+    return false;
+  }
+  return false;
+}
+
+/**
+ * Get the local "YYYY-MM" month string from any valid date or ISO string
+ */
+export function getTransactionMonth(dateStr: string | undefined | null): string {
+  if (!dateStr) return '';
+  try {
+    const d = new Date(dateStr);
+    if (!isNaN(d.getTime())) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      return `${year}-${month}`;
+    }
+  } catch {}
+  return dateStr.slice(0, 7);
+}
+
+/**
+ * Extract "YYYY-MM-DD" from an ISO timestamp or date string in local time
  */
 export function isoToDateInput(isoString: string): string {
   if (!isoString) return getTodayDateStr();
+  try {
+    const d = new Date(isoString);
+    if (!isNaN(d.getTime())) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+  } catch {}
   if (isoString.includes('T')) {
     return isoString.split('T')[0];
   }
@@ -167,13 +264,17 @@ export function isoToDateInput(isoString: string): string {
 }
 
 /**
- * Extract "HH:mm" from an ISO timestamp
+ * Extract "HH:mm" from an ISO timestamp in local time
  */
 export function isoToTimeInput(isoString: string): string {
-  if (!isoString || !isoString.includes('T')) return '12:00';
-  const d = new Date(isoString);
-  if (isNaN(d.getTime())) return '12:00';
-  const hours = String(d.getHours()).padStart(2, '0');
-  const minutes = String(d.getMinutes()).padStart(2, '0');
-  return `${hours}:${minutes}`;
+  if (!isoString) return '12:00';
+  try {
+    const d = new Date(isoString);
+    if (!isNaN(d.getTime())) {
+      const hours = String(d.getHours()).padStart(2, '0');
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+      return `${hours}:${minutes}`;
+    }
+  } catch {}
+  return '12:00';
 }

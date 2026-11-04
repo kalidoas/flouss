@@ -447,15 +447,21 @@ export const useAppStore = create<AppState>()(
 
         // Always save to localStorage immediately for instant offline safety
         const uid = s.firebaseUser?.uid || auth.currentUser?.uid;
-        if (uid && extracted.currentAccount) {
+        if (extracted.currentAccount) {
           try {
-            localStorage.setItem(`flouss_user_${uid}`, JSON.stringify(extracted.currentAccount));
+            if (uid) {
+              localStorage.setItem(`flouss_user_${uid}`, JSON.stringify(extracted.currentAccount));
+            }
+            // Always maintain flouss_user_default as an offline safety backup
+            localStorage.setItem('flouss_user_default', JSON.stringify(extracted.currentAccount));
           } catch (e) {}
 
-          if (immediateSync) {
-            executeImmediateFirestoreSync(uid, extracted.currentAccount);
-          } else {
-            debouncedFirestoreSync(uid, extracted.currentAccount);
+          if (uid) {
+            if (immediateSync) {
+              executeImmediateFirestoreSync(uid, extracted.currentAccount);
+            } else {
+              debouncedFirestoreSync(uid, extracted.currentAccount);
+            }
           }
         }
       };
@@ -502,14 +508,35 @@ export const useAppStore = create<AppState>()(
           }
 
           if (!user) {
+            // NEVER wipe local state if auth drops, is unauthenticated, or sync fails
+            let fallbackAccount: UserAccount | null = null;
+            try {
+              const rawDefault = localStorage.getItem('flouss_user_default');
+              if (rawDefault) fallbackAccount = JSON.parse(rawDefault);
+            } catch (e) {}
+
+            const s = get();
+            const currentAcc =
+              s.accounts.find(
+                (a: UserAccount) =>
+                  (a.transactions && a.transactions.length > 0) ||
+                  a.initialBalance !== null ||
+                  Boolean(a.isOnboarded)
+              ) ||
+              s.accounts[0] ||
+              fallbackAccount ||
+              makeInitialAccount('default', 'Khalid');
+
+            const extracted = extractAccountState(currentAcc);
+
             set({
               firebaseUser: null,
               loadingAuth: false,
               isPinVerified: false,
               userPinCode: null,
-              accounts: [],
-              activeAccountId: null,
-              ...extractAccountState(null),
+              accounts: s.accounts.length > 0 ? s.accounts : [currentAcc],
+              activeAccountId: s.activeAccountId || currentAcc.id,
+              ...extracted,
             });
             return;
           }
@@ -656,36 +683,57 @@ export const useAppStore = create<AppState>()(
                 ? cloudFL
                 : DEFAULT_FOCUS_LISTS;
 
+            // Extract transactions from cloud and local
+            const cloudTxs: Transaction[] = Array.isArray(cloudAccount?.transactions)
+              ? cloudAccount.transactions
+              : Array.isArray(cloudData?.transactions)
+              ? cloudData.transactions
+              : [];
+            const localTxs: Transaction[] = Array.isArray(localAccount?.transactions)
+              ? localAccount.transactions
+              : Array.isArray(get().transactions)
+              ? get().transactions
+              : [];
+
+            // Merge transactions: LOCAL TRANSACTIONS ALWAYS WIN AND ARE NEVER WIPED!
+            const txMap = new Map<string, Transaction>();
+            cloudTxs.forEach((tx) => {
+              if (tx && tx.id) txMap.set(tx.id, tx);
+            });
+            // Local state overwrites cloud and preserves any locally added expenses
+            localTxs.forEach((tx) => {
+              if (tx && tx.id) txMap.set(tx.id, tx);
+            });
+            const mergedTxs = Array.from(txMap.values());
+            mergedTxs.sort((a, b) => b.date.localeCompare(a.date));
+
+            const resolvedInitialBal =
+              localAccount?.initialBalance !== undefined && localAccount?.initialBalance !== null
+                ? localAccount.initialBalance
+                : cloudAccount?.initialBalance ?? cloudData?.initialBalance ?? null;
+
             const computedBal = calculateAvailableBalance(
-              cloudAccount?.initialBalance ?? cloudData?.initialBalance ?? null,
-              cloudAccount?.transactions ?? cloudData?.transactions ?? []
+              resolvedInitialBal,
+              mergedTxs
             );
-            const remoteBal =
-              (cloudAccount?.transactions && cloudAccount.transactions.length > 0) ||
-              (cloudData?.transactions && cloudData.transactions.length > 0) ||
-              cloudAccount?.initialBalance !== null ||
-              cloudData?.initialBalance !== null
-                ? computedBal
-                : typeof cloudAccount?.balance === 'number' && !isNaN(cloudAccount.balance)
-                ? cloudAccount.balance
-                : typeof cloudData?.balance === 'number' && !isNaN(cloudData.balance)
-                ? cloudData.balance
-                : computedBal;
 
             resolvedAccount = {
               ...makeInitialAccount(uid, user.displayName || 'Utilisateur', user.email || ''),
               ...cloudAccount,
+              ...localAccount,
               id: uid,
-              balance: remoteBal,
-              isOnboarded: true,
-              pinCode: firestorePin,
-              pinEnabled: !!firestorePin,
+              initialBalance: resolvedInitialBal,
+              transactions: mergedTxs,
+              balance: computedBal,
+              isOnboarded: Boolean(cloudAccount?.isOnboarded || localAccount?.isOnboarded || cloudData?.isOnboarded),
+              pinCode: firestorePin || localAccount?.pinCode || null,
+              pinEnabled: Boolean(firestorePin || localAccount?.pinCode),
               focusTasks: resolvedFT,
               focusLists: resolvedFL,
             };
 
-            // If cloud didn't have focusTasks yet but we had legacy local tasks, sync them up immediately!
-            if (!cloudFT && legacyFocusTasks.length > 0 && resolvedAccount) {
+            // If local had transactions not yet stored in cloud, sync up immediately!
+            if ((mergedTxs.length > cloudTxs.length || !cloudFT) && resolvedAccount) {
               debouncedFirestoreSync(uid, resolvedAccount);
             }
           } else if (localAccount) {
@@ -783,32 +831,36 @@ export const useAppStore = create<AppState>()(
 
                   if (incomingStr !== currentStr) {
                     const remotePin = data.pinCode ?? incomingAccount?.pinCode ?? null;
+
+                    // Preserve any local uncommitted transactions: Local state wins!
+                    const incomingTxs: Transaction[] = Array.isArray(incomingAccount?.transactions)
+                      ? incomingAccount.transactions
+                      : Array.isArray(data?.transactions)
+                      ? data.transactions
+                      : [];
+                    const currentTxs: Transaction[] = get().transactions || [];
+                    const incomingIds = new Set(incomingTxs.map((t) => t.id));
+                    const uncommittedLocalTxs = currentTxs.filter((t) => !incomingIds.has(t.id));
+
+                    const safeTxs = [...uncommittedLocalTxs, ...incomingTxs];
+                    safeTxs.sort((a, b) => b.date.localeCompare(a.date));
+
                     const computedRemoteBal = calculateAvailableBalance(
                       incomingAccount?.initialBalance ?? data?.initialBalance ?? null,
-                      incomingAccount?.transactions ?? data?.transactions ?? []
+                      safeTxs
                     );
-                    const remoteBal =
-                      (incomingAccount?.transactions && incomingAccount.transactions.length > 0) ||
-                      (data?.transactions && data.transactions.length > 0) ||
-                      incomingAccount?.initialBalance !== null ||
-                      data?.initialBalance !== null
-                        ? computedRemoteBal
-                        : typeof incomingAccount?.balance === 'number' && !isNaN(incomingAccount.balance)
-                        ? incomingAccount.balance
-                        : typeof data?.balance === 'number' && !isNaN(data.balance)
-                        ? data.balance
-                        : computedRemoteBal;
 
                     const syncedAccount: UserAccount = {
                       ...incomingAccount,
                       id: uid,
+                      transactions: safeTxs,
                       pinCode: remotePin,
                       pinEnabled: !!remotePin,
-                      balance: remoteBal,
+                      balance: computedRemoteBal,
                     };
 
                     try {
-                      localStorage.setItem(`flouss_user_${uid}`, incomingStr);
+                      localStorage.setItem(`flouss_user_${uid}`, JSON.stringify(syncedAccount));
                     } catch (e) {}
 
                     set((state: any) => ({
@@ -817,6 +869,10 @@ export const useAppStore = create<AppState>()(
                       ...extractAccountState(syncedAccount),
                     }));
                     console.log(`🔄 [Flouss Cloud] Real-time sync update received from Firestore users/${uid}`);
+
+                    if (uncommittedLocalTxs.length > 0) {
+                      debouncedFirestoreSync(uid, syncedAccount);
+                    }
                   }
                 }
               },

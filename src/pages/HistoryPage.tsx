@@ -3,7 +3,7 @@ import { useAppStore } from '../store/useAppStore';
 import { TransactionItem } from '../components/transactions/TransactionItem';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
-import { formatMAD, formatDate, formatMonthYear } from '../utils/formatters';
+import { formatMAD, formatDate, formatMonthYear, isTransactionInMonth, getTransactionMonth } from '../utils/formatters';
 import { translations } from '../i18n/translations';
 import { Category, IncomeSource, Transaction } from '../types';
 import {
@@ -38,8 +38,8 @@ export const HistoryPage: React.FC = () => {
 
   // Month list
   const availableMonths: string[] = Array.from(
-    new Set(transactions.map((tx: Transaction) => tx.date.substring(0, 7)))
-  ).sort((a: string, b: string) => b.localeCompare(a));
+    new Set(transactions.map((tx: Transaction) => getTransactionMonth(tx.date)))
+  ).filter(Boolean).sort((a: string, b: string) => b.localeCompare(a));
 
   // Filter transactions
   const filteredTransactions = transactions.filter((tx: Transaction) => {
@@ -47,7 +47,7 @@ export const HistoryPage: React.FC = () => {
     if (typeFilter !== 'all' && tx.type !== typeFilter) return false;
 
     // Month filter
-    if (selectedMonth !== 'all' && !tx.date.startsWith(selectedMonth)) return false;
+    if (selectedMonth !== 'all' && !isTransactionInMonth(tx.date, selectedMonth)) return false;
 
     // Category / Source filter
     if (selectedCategory !== 'all') {

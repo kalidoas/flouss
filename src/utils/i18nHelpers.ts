@@ -16,37 +16,228 @@ export function getCategoryGroupName(
   return groupId;
 }
 
+// Map known default category IDs to stable translation keys
+const CATEGORY_ID_KEY_MAP: Record<string, string> = {
+  cat_nourriture: 'food',
+  cat_cafe: 'cafe',
+  cat_transport: 'transport',
+  cat_vetements: 'clothing',
+  cat_electronics: 'electronics',
+  cat_education: 'education',
+  cat_sante: 'health',
+  cat_sport: 'sport',
+  cat_logement: 'home',
+  cat_telecom: 'phone',
+  cat_shopping: 'shopping',
+  cat_famille: 'family',
+  cat_charite: 'charity',
+  cat_investissement: 'investment',
+  cat_autre: 'other',
+};
+
+// Map known Arabic category names to stable translation keys
+const ARABIC_CATEGORY_KEY_MAP: Record<string, string> = {
+  'الرياضية': 'sport',
+  'الرياضة': 'sport',
+  'الرياضة والنشاط': 'sport',
+  'رياضة': 'sport',
+  'المأكولات والمشتريات': 'food',
+  'المأكولات': 'food',
+  'طعام': 'food',
+  'أكل': 'food',
+  'تغذية': 'food',
+  'المقهى والخرجات': 'cafe',
+  'المقهى': 'cafe',
+  'مقهى': 'cafe',
+  'خرجات': 'cafe',
+  'المواصلات والتنقل': 'transport',
+  'المواصلات': 'transport',
+  'التنقل': 'transport',
+  'مواصلات': 'transport',
+  'نقل': 'transport',
+  'الملابس والمظهر': 'clothing',
+  'الملابس': 'clothing',
+  'ملابس': 'clothing',
+  'الإلكترونيات والتقنية': 'electronics',
+  'الإلكترونيات': 'electronics',
+  'تقنية': 'electronics',
+  'التعليم والتكوين': 'education',
+  'التعليم': 'education',
+  'تعليم': 'education',
+  'الصحة والنظافة': 'health',
+  'الصحة': 'health',
+  'صحة': 'health',
+  'السكن والبيت': 'home',
+  'السكن': 'home',
+  'البيت': 'home',
+  'سكن': 'home',
+  'الاتصالات والاشتراكات': 'phone',
+  'الاتصالات': 'phone',
+  'اشتراكات': 'phone',
+  'التسوق والمشتريات': 'shopping',
+  'التسوق': 'shopping',
+  'تسوق': 'shopping',
+  'العائلة والأقارب': 'family',
+  'العائلة': 'family',
+  'عائلة': 'family',
+  'الصدقة والخير': 'charity',
+  'الصدقة': 'charity',
+  'صدقة': 'charity',
+  'الاستثمار والمستقبل': 'investment',
+  'الاستثمار': 'investment',
+  'استثمار': 'investment',
+  'مصاريف أخرى': 'other',
+  'أخرى': 'other',
+};
+
+const SUBCATEGORY_ID_KEY_MAP: Record<string, string> = {
+  sub_groceries: 'groceries',
+  sub_restaurant: 'restaurant',
+  sub_fastFood: 'fastFood',
+  sub_bakery: 'bakery',
+  sub_snacks: 'snacks',
+  sub_coffee: 'coffee',
+  sub_cinema: 'cinema',
+  sub_friendsOuting: 'friendsOuting',
+  sub_games: 'games',
+  sub_events: 'events',
+  sub_taxi: 'taxi',
+  sub_tramBus: 'tramBus',
+  sub_train: 'train',
+  sub_fuel: 'fuel',
+  sub_carMaintenance: 'carMaintenance',
+};
+
+const ARABIC_SUBCATEGORY_KEY_MAP: Record<string, string> = {
+  'الحافلة والترامواي': 'tramBus',
+  'حافلة': 'tramBus',
+  'باص': 'tramBus',
+  'ترامواي': 'tramBus',
+  'طاكسي / VTC': 'taxi',
+  'طاكسي': 'taxi',
+  'تاكسي': 'taxi',
+  'قطار / ONCF': 'train',
+  'قطار': 'train',
+  'وقود وبنزين': 'fuel',
+  'وقود': 'fuel',
+  'بنزين': 'fuel',
+  'صيانة وميكانيك': 'carMaintenance',
+  'مشتريات البيت والسوق': 'groceries',
+  'المطعم': 'restaurant',
+  'وجبات سريعة وخفيفة': 'fastFood',
+  'المخبزة والحلويات': 'bakery',
+  'وجبات خفيفة ومسليات': 'snacks',
+  'قهوة وشاي': 'coffee',
+  'سينما وعروض': 'cinema',
+  'لقاءات الأصدقاء': 'friendsOuting',
+  'ألعاب وترفيه': 'games',
+  'سهرات ومناسبات': 'events',
+};
+
 /**
- * Returns translated category name if stable `key` exists, otherwise fallback to custom user name.
+ * Returns translated category name if stable `key` or `translationKey` exists,
+ * or maps hardcoded Arabic categories to the active language if viewing in English/French.
  */
 export function getCategoryName(
   category: Category | null | undefined,
   language: Language = 'fr'
 ): string {
   if (!category) return '';
-  if (category.key) {
+
+  // 1. Check explicit translationKey or key or ID mapping
+  const key =
+    category.translationKey ||
+    category.key ||
+    (category.id ? CATEGORY_ID_KEY_MAP[category.id] : undefined);
+
+  if (key) {
     const dict = translations[language]?.categoriesData;
-    if (dict && (category.key in dict)) {
-      return (dict as Record<string, string>)[category.key];
+    if (dict && key in dict) {
+      return (dict as Record<string, string>)[key];
     }
   }
+
+  // 2. If viewing in English/French and the category name is hardcoded in Arabic:
+  if (language !== 'ar' && category.name) {
+    const trimmed = category.name.trim();
+    const mappedKey = ARABIC_CATEGORY_KEY_MAP[trimmed];
+    if (mappedKey) {
+      const dict = translations[language]?.categoriesData;
+      if (dict && mappedKey in dict) {
+        return (dict as Record<string, string>)[mappedKey];
+      }
+    }
+
+    // Fuzzy check against Arabic dictionary keys
+    const arDict = translations.ar?.categoriesData as Record<string, string> | undefined;
+    if (arDict) {
+      for (const [dictKey, arVal] of Object.entries(arDict)) {
+        if (arVal === trimmed || trimmed.includes(arVal) || arVal.includes(trimmed)) {
+          const targetDict = translations[language]?.categoriesData as Record<string, string> | undefined;
+          if (targetDict && targetDict[dictKey]) {
+            return targetDict[dictKey];
+          }
+        }
+      }
+    }
+  }
+
+  // 3. Fallback to Arabic translation if language is Arabic and key is known
+  if (language === 'ar' && key) {
+    const arDict = translations.ar?.categoriesData as Record<string, string> | undefined;
+    if (arDict && arDict[key]) {
+      return arDict[key];
+    }
+  }
+
   return category.name;
 }
 
 /**
- * Returns translated sub-category name if stable `key` exists, otherwise fallback to custom user name.
+ * Returns translated sub-category name if stable `key` or `translationKey` exists,
+ * or maps hardcoded Arabic subcategories to the active language if viewing in English/French.
  */
 export function getSubCategoryName(
   subCategory: SubCategory | null | undefined,
   language: Language = 'fr'
 ): string {
   if (!subCategory) return '';
-  if (subCategory.key) {
+
+  const key =
+    subCategory.translationKey ||
+    subCategory.key ||
+    (subCategory.id ? SUBCATEGORY_ID_KEY_MAP[subCategory.id] : undefined);
+
+  if (key) {
     const dict = translations[language]?.categoriesData;
-    if (dict && (subCategory.key in dict)) {
-      return (dict as Record<string, string>)[subCategory.key];
+    if (dict && key in dict) {
+      return (dict as Record<string, string>)[key];
     }
   }
+
+  if (language !== 'ar' && subCategory.name) {
+    const trimmed = subCategory.name.trim();
+    const mappedKey = ARABIC_SUBCATEGORY_KEY_MAP[trimmed];
+    if (mappedKey) {
+      const dict = translations[language]?.categoriesData;
+      if (dict && mappedKey in dict) {
+        return (dict as Record<string, string>)[mappedKey];
+      }
+    }
+
+    const arDict = translations.ar?.categoriesData as Record<string, string> | undefined;
+    if (arDict) {
+      for (const [dictKey, arVal] of Object.entries(arDict)) {
+        if (arVal === trimmed || trimmed.includes(arVal) || arVal.includes(trimmed)) {
+          const targetDict = translations[language]?.categoriesData as Record<string, string> | undefined;
+          if (targetDict && targetDict[dictKey]) {
+            return targetDict[dictKey];
+          }
+        }
+      }
+    }
+  }
+
   return subCategory.name;
 }
 
