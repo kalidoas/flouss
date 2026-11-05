@@ -5,7 +5,6 @@ import { Eye, EyeOff, Moon, Sun, ChevronLeft } from 'lucide-react';
 import { Logo } from '../common/Logo';
 import { Language } from '../../types';
 import { islandManager } from '../../utils/islandManager';
-import { translations } from '../../i18n/translations';
 import { playHapticFeedback } from '../../utils/haptics';
 
 export const Header: React.FC = () => {
@@ -29,21 +28,16 @@ export const Header: React.FC = () => {
       : typeof window !== 'undefined' &&
         Boolean(window.matchMedia?.('(prefers-color-scheme: dark)').matches);
 
-  const tNav = translations[language].nav;
-
   const languages: { code: Language; label: string }[] = [
     { code: 'fr', label: 'FR' },
     { code: 'ar', label: 'عربي' },
     { code: 'en', label: 'EN' },
   ];
 
-  const screenName = (tNav as any)[activeScreen] || activeScreen;
-  const brandName = language === 'ar' ? 'فلوس' : 'Flouss';
-
   return (
-    <header className="sticky top-0 z-30 bg-white/80 dark:bg-zinc-900/75 backdrop-blur-xl border-b border-black/[0.06] dark:border-white/[0.08] shadow-[0_1px_3px_rgba(0,0,0,0.03)] px-3.5 py-2.5 flex items-center justify-between transition-colors duration-200">
+    <header className="sticky top-0 z-30 bg-white/80 dark:bg-zinc-900/75 backdrop-blur-xl border-b border-black/[0.06] dark:border-white/[0.08] shadow-[0_1px_3px_rgba(0,0,0,0.03)] px-3.5 py-2.5 flex items-center justify-between gap-2 transition-colors duration-200">
       {/* Brand logo + optional Back button */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 shrink-0 min-w-0">
         {activeScreen !== 'dashboard' && (
           <button
             onClick={() => {
@@ -59,17 +53,8 @@ export const Header: React.FC = () => {
         <Logo size="sm" showWordmark={true} />
       </div>
 
-      {/* Desktop breadcrumb showing Workspace context (Clean, no duplicate user pill) */}
-      <div className="hidden md:flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
-        <span className="font-bold text-zinc-900 dark:text-white tracking-tight">{brandName}</span>
-        <span className="text-zinc-300 dark:text-zinc-700">/</span>
-        <span className="font-medium text-zinc-700 dark:text-zinc-300 capitalize">
-          {screenName}
-        </span>
-      </div>
-
       {/* Header Controls: Language Selector, Privacy mode toggle & Theme toggle */}
-      <div className="flex items-center gap-1.5 sm:gap-2">
+      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
         {/* Apple Sliding Segmented Language Switcher with layoutId */}
         <div className="relative flex items-center p-0.5 rounded-xl bg-zinc-100 dark:bg-zinc-800/80 border border-black/[0.04] dark:border-white/[0.06] text-xs">
           {languages.map((item) => {

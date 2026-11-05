@@ -64,12 +64,12 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden relative">
-        {/* iOS Dynamic Island Activity Pill (Top-Center) */}
+        {/* iOS Dynamic Island Activity Pill (in-flow, never overlays the Header) */}
         <DynamicIsland />
 
         <Header />
 
-        <main className="flex-1 overflow-y-auto pt-16 sm:pt-6 pb-32 md:pb-8 px-3.5 sm:px-8 max-w-5xl w-full mx-auto select-text">
+        <main className="flex-1 overflow-y-auto pb-32 md:pb-8 px-3.5 sm:px-8 max-w-5xl w-full mx-auto select-text">
           {children}
         </main>
 

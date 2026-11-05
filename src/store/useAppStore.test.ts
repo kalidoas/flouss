@@ -86,6 +86,50 @@ describe('useAppStore - Cross-Device Remote Account Hydration', () => {
     expect(cached.balance).toBeCloseTo(231.5, 2);
   });
 
+  it('remote payload fully replaces a divergent local cache (195.50 -> 231.50)', () => {
+    // Local device drifted to 195.50 because of a stale/extra local row.
+    localStorage.setItem(
+      `flouss_user_${uid}`,
+      JSON.stringify({
+        id: uid,
+        initialBalance: 125.9,
+        transactions: [
+          { id: 'tx_inc_1', type: 'income', amount: 300, date: '2026-11-01T10:00:00.000Z' },
+          { id: 'tx_exp_1', type: 'expense', amount: 194.4, date: '2026-11-02T10:00:00.000Z' },
+          { id: 'tx_local_only', type: 'expense', amount: 36, date: '2026-11-03T10:00:00.000Z' },
+        ],
+      })
+    );
+
+    const remoteData = {
+      uid,
+      updatedAt: '2026-11-05T08:00:00.000Z',
+      initialBalance: 125.9,
+      account: {
+        name: 'Khalid',
+        initialBalance: 125.9,
+        transactions: [
+          { id: 'tx_inc_1', type: 'income', amount: 300, date: '2026-11-01T10:00:00.000Z' },
+          { id: 'tx_exp_1', type: 'expense', amount: 194.4, date: '2026-11-02T10:00:00.000Z' },
+        ],
+      },
+    };
+
+    const result = applyRemoteAccount(uid, remoteData);
+    expect(result).not.toBeNull();
+    if (!result) return;
+
+    const { finalSyncedAccount } = result;
+    // The local-only row must be dropped, not unioned back in.
+    expect(finalSyncedAccount.transactions.map((t) => t.id)).toEqual(['tx_exp_1', 'tx_inc_1']);
+    expect(finalSyncedAccount.balance).toBeCloseTo(231.5, 2);
+    expect(finalSyncedAccount.initialBalance).toBe(125.9);
+
+    const cached = JSON.parse(localStorage.getItem(`flouss_user_${uid}`) || '{}');
+    expect(cached.balance).toBeCloseTo(231.5, 2);
+    expect(cached.transactions).toHaveLength(2);
+  });
+
   it('handles remote payload where transactions are at root level', () => {
     const remoteData = {
       uid,
@@ -210,24 +254,24 @@ describe('useAppStore - Persistence & Cloud Sync Safety', () => {
     expect(stateAfter.transactions.some((t) => t.id === 'tx_local_saved')).toBe(true);
   });
 
-  it('initAuthSession(user) merges local transactions with cloud and LOCAL STATE WINS', async () => {
+  it('initAuthSession(user) treats Firestore as ground truth and never resurrects stale local transactions', async () => {
     const store = useAppStore.getState();
 
-    // 1. User has an expense added today locally
-    const todayBusTx: Transaction = {
-      id: 'tx_today_bus_100',
+    // 1. Stale local-only transaction left over from an old unsynced session
+    const staleLocalTx: Transaction = {
+      id: 'tx_stale_local_100',
       type: 'expense',
-      amount: 100,
+      amount: 36,
       categoryId: 'cat_transport',
-      note: 'Bus',
+      note: 'Stale local row',
       date: '2026-11-04T09:00:00+01:00',
       createdAt: '2026-11-04T09:00:00.000Z',
     };
-    store.addTransaction(todayBusTx);
+    store.addTransaction(staleLocalTx);
 
-    // 2. Cloud has an older transaction from yesterday
-    const cloudOlderTx: Transaction = {
-      id: 'tx_yesterday_food_50',
+    // 2. Cloud has the authoritative transaction set
+    const cloudTx: Transaction = {
+      id: 'tx_cloud_food_50',
       type: 'expense',
       amount: 50,
       categoryId: 'cat_nourriture',
@@ -238,11 +282,12 @@ describe('useAppStore - Persistence & Cloud Sync Safety', () => {
     (getDoc as any).mockResolvedValueOnce({
       exists: () => true,
       data: () => ({
+        updatedAt: '2026-11-05T08:00:00.000Z',
         account: {
           id: 'test_uid',
           isOnboarded: true,
           initialBalance: 1000,
-          transactions: [cloudOlderTx],
+          transactions: [cloudTx],
         },
       }),
     });
@@ -251,10 +296,13 @@ describe('useAppStore - Persistence & Cloud Sync Safety', () => {
     await store.initAuthSession({ uid: 'test_uid', email: 'user@example.com' });
 
     const stateAfter = useAppStore.getState();
-    // BOTH transactions must be present: today's bus expense must NOT be wiped!
     const txIds = stateAfter.transactions.map((t) => t.id);
-    expect(txIds).toContain('tx_today_bus_100');
-    expect(txIds).toContain('tx_yesterday_food_50');
+
+    // Strict parity: the cloud set replaces the local set outright.
+    expect(txIds).toEqual(['tx_cloud_food_50']);
+    expect(txIds).not.toContain('tx_stale_local_100');
+    // 1000 - 50 = 950 on every device
+    expect(stateAfter.currentAccount?.balance ?? stateAfter.balance).toBeCloseTo(950, 2);
   });
 
   it('local state wins if cloud sync fails or getDoc throws error', async () => {

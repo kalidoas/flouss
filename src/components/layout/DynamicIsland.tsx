@@ -105,7 +105,7 @@ export const DynamicIsland: React.FC = () => {
       : 'Cloud Firestore synchronisé';
 
   return (
-    <div className="fixed top-2.5 left-1/2 -translate-x-1/2 z-50 pointer-events-none select-none">
+    <div className="w-full flex justify-center pt-2 px-3 shrink-0 pointer-events-none select-none">
       <motion.div
         layout
         onClick={handleForceSync}
@@ -119,8 +119,8 @@ export const DynamicIsland: React.FC = () => {
           damping: 32,
           mass: 0.8,
         }}
-        className={`pointer-events-auto cursor-pointer relative bg-black/95 text-white backdrop-blur-2xl border border-white/20 shadow-[0_12px_40px_0_rgba(0,0,0,0.6),inset_0_1px_0_0_rgba(255,255,255,0.2)] rounded-full flex items-center justify-between overflow-hidden px-3.5 py-1.5 transition-all ${
-          isExpanded ? 'min-w-[280px] sm:min-w-[340px] px-4 py-2.5' : 'min-w-[140px]'
+        className={`pointer-events-auto cursor-pointer relative max-w-full bg-black/95 text-white backdrop-blur-2xl border border-white/20 shadow-[0_12px_40px_0_rgba(0,0,0,0.6),inset_0_1px_0_0_rgba(255,255,255,0.2)] rounded-full flex items-center justify-between overflow-hidden px-3.5 py-1.5 transition-all ${
+          isExpanded ? 'w-[280px] px-4 py-2.5' : 'w-[150px]'
         }`}
       >
         <AnimatePresence mode="wait">
