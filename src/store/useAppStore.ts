@@ -63,7 +63,7 @@ export interface AppState {
   // ── Active Account Reactive Fields ──────────────────────────
   currentAccount: UserAccount | null;
   isOnboarded: boolean;
-  initialBalance: 231.50;
+  initialBalance: number | null;
   initialBalanceLockedAt: string | null;
   balance: number;
   categories: Category[];
@@ -570,6 +570,7 @@ const applyRemotePayload = (uid: string, data: any, fallbackUser?: any) => {
       activeAccountId: uid,
       userPinCode: remotePin,
       ...extractAccountState(finalSyncedAccount),
+      
     };
   });
 };
