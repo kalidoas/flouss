@@ -18,7 +18,7 @@ export const DynamicIsland: React.FC = () => {
   const [notification, setNotification] = useState<IslandNotification | null>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
-  const { language, firebaseUser, firestoreDisabled, forceSyncToCloud, showToast } = useAppStore();
+  const { language, firebaseUser, firestoreDisabled, syncStatus, forceSyncToCloud, showToast } = useAppStore();
   const tHub = translations[language].priorityHub;
 
   useEffect(() => {
@@ -92,17 +92,22 @@ export const DynamicIsland: React.FC = () => {
   const isExpanded = Boolean(notification) || isHovered;
 
   const idleSyncText =
-    language === 'ar'
-      ? firestoreDisabled
-        ? 'حفظ محلي'
-        : 'مزامنة السحابة نشطة'
-      : language === 'en'
-      ? firestoreDisabled
-        ? 'Local Storage'
-        : 'Cloud Firestore Synced'
-      : firestoreDisabled
-      ? 'Stockage local'
-      : 'Cloud Firestore synchronisé';
+    !firebaseUser || firestoreDisabled
+      ? language === 'ar' ? 'حفظ محلي' : language === 'en' ? 'Local storage' : 'Stockage local'
+      : syncStatus === 'error'
+      ? language === 'ar' ? 'فشلت المزامنة' : language === 'en' ? 'Sync failed' : 'Échec de synchronisation'
+      : syncStatus === 'syncing'
+      ? language === 'ar' ? 'جارٍ حفظ التغييرات' : language === 'en' ? 'Saving changes' : 'Enregistrement en cours'
+      : syncStatus === 'synced'
+      ? language === 'ar' ? 'متزامن مع السحابة' : language === 'en' ? 'Synced with cloud' : 'Synchronisé au cloud'
+      : language === 'ar' ? 'جارٍ الاتصال بالسحابة' : language === 'en' ? 'Connecting to cloud' : 'Connexion au cloud';
+  const syncDotClass = !firebaseUser || firestoreDisabled
+    ? 'bg-zinc-500'
+    : syncStatus === 'synced'
+    ? 'bg-emerald-400 shadow-[0_0_6px_#34d399]'
+    : syncStatus === 'error'
+    ? 'bg-rose-500 shadow-[0_0_6px_#f43f5e]'
+    : 'bg-amber-400 shadow-[0_0_6px_#fbbf24]';
 
   return (
     <div className="w-full flex justify-center pt-2 px-3 shrink-0 pointer-events-none select-none">
@@ -150,7 +155,7 @@ export const DynamicIsland: React.FC = () => {
                 </div>
               </div>
 
-              <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0 shadow-[0_0_8px_#34d399] animate-pulse" />
+              <span className={`w-2 h-2 rounded-full shrink-0 ${syncDotClass} ${syncStatus === 'syncing' ? 'animate-pulse' : ''}`} />
             </motion.div>
           ) : isHovered ? (
             /* HOVER DETAILS STATE */
@@ -165,7 +170,7 @@ export const DynamicIsland: React.FC = () => {
                 <Cloud className="w-3.5 h-3.5 text-sky-400" />
                 <span className="text-[11px] font-medium text-zinc-200">{idleSyncText}</span>
               </div>
-              <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0 shadow-[0_0_8px_#34d399]" />
+              <span className={`w-2 h-2 rounded-full shrink-0 ${syncDotClass}`} />
             </motion.div>
           ) : (
             /* COMPACT IDLE STATE */
@@ -185,7 +190,7 @@ export const DynamicIsland: React.FC = () => {
                 <span className="text-[10px] font-mono text-zinc-400">
                   {firebaseUser ? (language === 'ar' ? 'متصل' : 'Sync') : 'Local'}
                 </span>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0 shadow-[0_0_6px_#34d399] animate-pulse" />
+                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${syncDotClass} ${syncStatus === 'syncing' ? 'animate-pulse' : ''}`} />
               </div>
             </motion.div>
           )}

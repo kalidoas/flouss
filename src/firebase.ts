@@ -83,6 +83,7 @@ try {
   if (appInstance) {
     dbInstance = initializeFirestore(appInstance, {
       experimentalForceLongPolling: true,
+      ignoreUndefinedProperties: true,
     });
   }
 } catch (e) {

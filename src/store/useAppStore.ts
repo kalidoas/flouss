@@ -55,6 +55,7 @@ export interface AppState {
   userPinCode: string | null;
   isDemoMode: boolean;
   firestoreDisabled: boolean;
+  syncStatus: 'connecting' | 'syncing' | 'synced' | 'error';
 
   // ── Multi-Account State ─────────────────────────────────────
   accounts: UserAccount[];
@@ -625,8 +626,9 @@ const writeAccountToFirestore = async (
 ): Promise<boolean> => {
   const userRef = doc(db, 'users', uid);
   let computedBalance = 0;
-
-  await runTransaction(db, async (firestoreTransaction: any) => {
+  useAppStore.setState({ syncStatus: 'syncing' });
+  try {
+    await runTransaction(db, async (firestoreTransaction: any) => {
     const snapshot = await firestoreTransaction.get(userRef);
     let accountToWrite = localAccount;
     if (snapshot.exists()) {
@@ -641,7 +643,7 @@ const writeAccountToFirestore = async (
     }
 
     computedBalance = calculateAvailableBalance(accountToWrite.initialBalance ?? null, accountToWrite.transactions ?? []);
-    firestoreTransaction.set(userRef, {
+      firestoreTransaction.set(userRef, {
       uid,
       email: accountToWrite.email || null,
       displayName: accountToWrite.name || null,
@@ -652,8 +654,13 @@ const writeAccountToFirestore = async (
       isOnboarded: Boolean(accountToWrite.isOnboarded),
       account: { ...accountToWrite, balance: computedBalance },
       updatedAt: serverTimestamp(),
-    }, { merge: true });
-  });
+      }, { merge: true });
+    });
+    useAppStore.setState({ syncStatus: 'synced' });
+  } catch (error) {
+    useAppStore.setState({ syncStatus: 'error' });
+    throw error;
+  }
 
   console.log(`✅ [Flouss Cloud] ${label} sync completed (balance: ${computedBalance}) for users/${uid}`);
   return true;
@@ -763,6 +770,7 @@ export const useAppStore = create<AppState>()(
         userPinCode: null,
         isDemoMode: false,
         firestoreDisabled: false,
+        syncStatus: 'connecting',
 
         // ── Multi-Account State ─────────────────────────────────────
         accounts: [initialAccount],
@@ -1069,6 +1077,7 @@ export const useAppStore = create<AppState>()(
             activeSnapshotUnsubscribe = onSnapshot(
               userDocRef,
               (snap: any) => {
+                if (!snap.metadata?.fromCache) useAppStore.setState({ syncStatus: 'synced' });
                 if (snap.metadata?.hasPendingWrites) return;
                 if (!snap.exists()) return;
 
@@ -1100,6 +1109,7 @@ export const useAppStore = create<AppState>()(
                 }
               },
               (err: any) => {
+                useAppStore.setState({ syncStatus: 'error' });
                 console.warn('[Flouss Cloud] onSnapshot listener warning:', err?.message || err);
               }
             );
