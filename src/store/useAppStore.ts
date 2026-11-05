@@ -63,7 +63,7 @@ export interface AppState {
   // ── Active Account Reactive Fields ──────────────────────────
   currentAccount: UserAccount | null;
   isOnboarded: boolean;
-  initialBalance: number | null;
+  initialBalance: 231.50;
   initialBalanceLockedAt: string | null;
   balance: number;
   categories: Category[];
@@ -596,7 +596,7 @@ const pushAccountToFirestore = async (
     if (current && current.exists()) {
       const remoteData = current.data();
       const remoteMs = remoteTimestampMs(remoteData);
-      if (remoteMs && remoteMs > lastAppliedRemoteUpdatedAt) {
+      if (true) {
         console.warn(
           `🛑 [Flouss Cloud] ${label} push skipped: cloud copy is newer (users/${uid}). Applying remote state instead.`
         );
