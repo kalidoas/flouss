@@ -396,7 +396,7 @@ export const SettingsPage: React.FC = () => {
                 {t.lockedBalanceTitle}
               </h2>
               <span className="text-[10px] font-medium bg-[#f1f0ee] dark:bg-[#282828] text-[#787774] dark:text-[#9b9a97] px-1.5 py-0.2 rounded border border-[#e3e2de] dark:border-[#2f2f2f]">
-                {t('locked')}
+                {('locked')}
               </span>
             </div>
             <div className={`text-xl sm:text-2xl font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums mt-1 transition-[filter] duration-200 ${hideBalance ? 'privacy-blur' : ''}`}>
@@ -486,7 +486,7 @@ export const SettingsPage: React.FC = () => {
             </div>
             <div>
               <h3 className="text-xs font-semibold text-[#37352f] dark:text-[#ecebed]">
-                t('guidedTour')}
+                t('guidedTour')
               </h3>
               <p className="text-xs text-[#787774] dark:text-[#9b9a97]">
                 {language === 'ar'
@@ -515,7 +515,7 @@ export const SettingsPage: React.FC = () => {
           <div className="space-y-2 text-xs">
             <div>
               <h3 className="font-semibold text-[#37352f] dark:text-[#ecebed]">
-                t('iphoneAppPWAOfflineMode')}
+                t('iphoneAppPWAOfflineMode')
               </h3>
               <p className="text-[#787774] dark:text-[#9b9a97] mt-0.5 leading-normal">
                 {language === 'ar'
