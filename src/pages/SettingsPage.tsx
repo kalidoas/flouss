@@ -486,7 +486,7 @@ export const SettingsPage: React.FC = () => {
             </div>
             <div>
               <h3 className="text-xs font-semibold text-[#37352f] dark:text-[#ecebed]">
-                {language === 'ar' ? 'جولة توضيحية في التطبيق' : t('guidedTour')} Interactive}
+                t('guidedTour')}
               </h3>
               <p className="text-xs text-[#787774] dark:text-[#9b9a97]">
                 {language === 'ar'
@@ -515,7 +515,7 @@ export const SettingsPage: React.FC = () => {
           <div className="space-y-2 text-xs">
             <div>
               <h3 className="font-semibold text-[#37352f] dark:text-[#ecebed]">
-                {language === 'ar' ? 'تثبيت التطبيق على iPhone والعمل بدون نت (Offline)' : '{t('iphoneAppPWAOfflineMode')}}
+                t('iphoneAppPWAOfflineMode')}
               </h3>
               <p className="text-[#787774] dark:text-[#9b9a97] mt-0.5 leading-normal">
                 {language === 'ar'
