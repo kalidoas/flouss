@@ -48,6 +48,20 @@ export const App: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
+  // Keep browser URLs and the selected page in sync, including direct links and Back/Forward.
+  useEffect(() => {
+    const routeFromPath = () => {
+      const slug = window.location.pathname.replace(/^\/+|\/+$/g, '').toLowerCase();
+      const aliases: Record<string, any> = { '': 'dashboard', analytics: 'stats', statistics: 'stats' };
+      const valid = ['dashboard', 'tasks', 'debts', 'subscriptions', 'notes', 'categories', 'income', 'expenses', 'history', 'stats', 'settings', 'accounts'];
+      const screen = aliases[slug] || (valid.includes(slug) ? slug : 'dashboard');
+      useAppStore.getState().setActiveScreen(screen);
+    };
+    routeFromPath();
+    window.addEventListener('popstate', routeFromPath);
+    return () => window.removeEventListener('popstate', routeFromPath);
+  }, []);
+
   // Apply dark theme and language direction to <html> and <body>
   useEffect(() => {
     const isDark =

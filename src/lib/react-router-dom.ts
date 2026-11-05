@@ -46,17 +46,8 @@ export function useNavigate() {
         settings: 'settings',
       };
 
-      const targetScreen = screenMap[cleanPath] || (cleanPath as ScreenId);
+      const targetScreen = cleanPath === 'analytics' ? 'stats' : screenMap[cleanPath] || (cleanPath as ScreenId);
       setActiveScreen(targetScreen);
-
-      if (typeof window !== 'undefined') {
-        const url = to.startsWith('/') ? to : `/${to}`;
-        try {
-          window.history.pushState(null, '', url);
-        } catch {
-          // Ignore history state errors in restricted sandbox or test environments
-        }
-      }
     },
     [setActiveScreen]
   );

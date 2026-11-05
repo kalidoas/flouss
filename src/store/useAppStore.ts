@@ -493,12 +493,11 @@ export function applyRemoteAccount(
   }
   mergedTxs.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
-  const initialBal =
-    typeof incomingAccount?.initialBalance === 'number' && !isNaN(incomingAccount.initialBalance)
-      ? incomingAccount.initialBalance
-      : typeof data?.initialBalance === 'number' && !isNaN(data.initialBalance)
-      ? data.initialBalance
-      : 0;
+  const rawInitialBalance = incomingAccount?.initialBalance ?? data?.initialBalance;
+  const initialBal = typeof rawInitialBalance === 'number' && Number.isFinite(rawInitialBalance)
+    ? rawInitialBalance
+    : 0;
+
 
   const computedBal = calculateAvailableBalance(initialBal, mergedTxs);
   const incomingSubs = incomingAccount?.subscriptions || data?.subscriptions;
@@ -597,7 +596,7 @@ const pushAccountToFirestore = async (
     if (current && current.exists()) {
       const remoteData = current.data();
       const remoteMs = remoteTimestampMs(remoteData);
-      if (true) {
+      if (remoteMs > lastAppliedRemoteUpdatedAt) {
         console.warn(
           `🛑 [Flouss Cloud] ${label} push skipped: cloud copy is newer (users/${uid}). Applying remote state instead.`
         );
@@ -1150,7 +1149,7 @@ export const useAppStore = create<AppState>()(
         },
 
         // ── UI Setters ──────────────────────────────────────────────
-        setActiveScreen: (screen: ScreenId) =>
+        setActiveScreen: (screen: ScreenId) => {
           set((state: any) => {
             if (state.activeScreen === screen) return state;
             const history = [...(state.screenHistory || []), state.activeScreen];
@@ -1159,7 +1158,12 @@ export const useAppStore = create<AppState>()(
               screenHistory: history.slice(-20),
               navigationDirection: 'forward',
             };
-          }),
+          });
+          if (typeof window !== 'undefined') {
+            const path = screen === 'dashboard' ? '/' : screen === 'stats' ? '/analytics' : `/${screen}`;
+            if (window.location.pathname !== path) window.history.pushState({ screen }, '', path);
+          }
+        },
 
         navigateBack: () =>
           set((state: any) => {

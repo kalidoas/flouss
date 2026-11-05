@@ -105,7 +105,7 @@ export const StatsPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto space-y-6 sm:space-y-8 animate-page select-text pb-12">
+    <div className="max-w-[1200px] mx-auto space-y-4 sm:space-y-5 animate-page select-text pb-8">
       {/* Page Header */}
       <div>
         <div className="flex items-center gap-2">
@@ -122,7 +122,7 @@ export const StatsPage: React.FC = () => {
       </div>
 
       {/* KPI Highlight Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {/* Savings Rate Card */}
         <div className="p-4 sm:p-5 rounded-2xl bg-white/80 dark:bg-zinc-900/60 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs">
           <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 mb-1">
