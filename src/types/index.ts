@@ -135,6 +135,7 @@ export interface UserAccount {
   categories: Category[];
   incomeSources: IncomeSource[];
   transactions: Transaction[];
+  deletedTransactionIds?: string[];
   recurringRules: RecurringIncomeRule[];
   recentNotes: string[];
   tasks?: TaskItem[];

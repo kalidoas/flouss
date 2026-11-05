@@ -50,6 +50,17 @@ export const ExpensesPage: React.FC = () => {
   const allExpenses = useMemo(() => {
     return (transactions || []).filter((tx) => tx.type === 'expense');
   }, [transactions]);
+  const monthOptions = useMemo(() => {
+    const months = new Set(allExpenses.map((tx) => tx.date.slice(0, 7)).filter((month) => /^\d{4}-\d{2}$/.test(month)));
+    months.add(currentMonth);
+    const locale = language === 'ar' ? 'ar-MA' : language === 'fr' ? 'fr-FR' : 'en-US';
+    return Array.from(months).sort((a, b) => b.localeCompare(a)).map((month) => ({
+      value: month,
+      label: new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(
+        new Date(Number(month.slice(0, 4)), Number(month.slice(5, 7)) - 1, 1)
+      ),
+    }));
+  }, [allExpenses, currentMonth, language]);
 
   // Apply search, category, and month filters
   const filteredExpenses = useMemo(() => {
@@ -129,7 +140,7 @@ export const ExpensesPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-page select-text pb-12">
+    <div className="max-w-7xl mx-auto space-y-4 sm:space-y-5 animate-page select-text pb-8">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -195,9 +206,10 @@ export const ExpensesPage: React.FC = () => {
 
       {/* Filter and Search Bar */}
       <div className="p-4 rounded-2xl bg-white/80 dark:bg-zinc-900/60 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs space-y-3">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
           {/* Scope Toggle: This Month vs All Time */}
-          <div className="inline-flex rounded-xl p-1 bg-zinc-100 dark:bg-zinc-800/80 border border-black/[0.04] dark:border-white/[0.06] shrink-0 self-start sm:self-auto">
+          <div className="flex flex-wrap items-center gap-2 self-start">
+          <div className="inline-flex rounded-xl p-1 bg-zinc-100 dark:bg-zinc-800/80 border border-black/[0.04] dark:border-white/[0.06] shrink-0">
             <button
               onClick={() => setViewScope('month')}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
@@ -218,6 +230,20 @@ export const ExpensesPage: React.FC = () => {
             >
               {t.filterAll}
             </button>
+          </div>
+          {viewScope === 'month' && (
+            <label className="relative">
+              <Calendar className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
+              <select
+                aria-label={language === 'ar' ? 'اختر الشهر' : language === 'fr' ? 'Choisir le mois' : 'Choose month'}
+                value={selectedMonth}
+                onChange={(event) => setSelectedMonth(event.target.value)}
+                className="appearance-none pl-8 pr-3 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-100 border border-black/[0.07] dark:border-white/[0.08] outline-none focus:ring-2 focus:ring-rose-500/20"
+              >
+                {monthOptions.map((month) => <option key={month.value} value={month.value}>{month.label}</option>)}
+              </select>
+            </label>
+          )}
           </div>
 
           {/* Search Input */}

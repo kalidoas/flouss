@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { doc, getDoc, setDoc, onSnapshot, Unsubscribe } from '@firebase/firestore';
+import { doc, getDoc, setDoc, onSnapshot, runTransaction, serverTimestamp, Unsubscribe } from '@firebase/firestore';
 import { auth, db } from '../lib/firebase';
 import {
   Category,
@@ -318,6 +318,7 @@ export function makeInitialAccount(uid: string, name: string, email?: string): U
     categories: DEFAULT_CATEGORIES,
     incomeSources: DEFAULT_INCOME_SOURCES,
     transactions: [],
+    deletedTransactionIds: [],
     recurringRules: [],
     recentNotes: [],
     tasks: DEFAULT_TASKS,
@@ -462,6 +463,34 @@ export function extractAccountState(account: UserAccount | null) {
  * Normalizes remote Firestore payload into ground-truth UserAccount state
  * and forcefully synchronizes to local persistence cache (overwriting stale local storage).
  */
+const lastKnownTransactionsByUid = new Map<string, Transaction[]>();
+
+const mergeTransactionsFromLocalChanges = (
+  uid: string,
+  localAccount: UserAccount,
+  remoteAccount: UserAccount
+): Pick<UserAccount, 'transactions' | 'deletedTransactionIds'> => {
+  const remoteTransactions = Array.isArray(remoteAccount.transactions) ? remoteAccount.transactions : [];
+  const knownTransactions = lastKnownTransactionsByUid.get(uid) || remoteTransactions;
+  const knownById = new Map(knownTransactions.map((tx) => [tx.id, tx]));
+  const localById = new Map((localAccount.transactions || []).map((tx) => [tx.id, tx]));
+  const deletedIds = new Set([
+    ...(remoteAccount.deletedTransactionIds || []),
+    ...(localAccount.deletedTransactionIds || []),
+    ...knownTransactions.filter((tx) => !localById.has(tx.id)).map((tx) => tx.id),
+  ]);
+  const changedLocally = (localAccount.transactions || []).filter((tx) => {
+    const previous = knownById.get(tx.id);
+    return !deletedIds.has(tx.id) && (!previous || JSON.stringify(previous) !== JSON.stringify(tx));
+  });
+  const merged = new Map(remoteTransactions.filter((tx) => !deletedIds.has(tx.id)).map((tx) => [tx.id, tx]));
+  for (const tx of changedLocally) merged.set(tx.id, tx);
+  return {
+    deletedTransactionIds: Array.from(deletedIds),
+    transactions: Array.from(merged.values()).sort((a, b) => (b.date || '').localeCompare(a.date || '')),
+  };
+};
+
 export function applyRemoteAccount(
   uid: string,
   data: any,
@@ -474,10 +503,12 @@ export function applyRemoteAccount(
   const incomingAccount = data.account || data;
   const remotePin = data.pinCode ?? incomingAccount?.pinCode ?? null;
 
-  // STRICT PARITY: Firestore is the single source of truth.
-  // The remote document fully replaces the local transaction list — we never union the
-  // local cache back in. Unioning resurrected local-only transactions and never propagated
-  // deletions, which is what made one device read 195.50 while the other read 231.50.
+  // Remote snapshots replace local state after pending local changes have been reconciled.
+  // Deletion markers keep older snapshots from bringing deleted transactions back.
+  const deletedTransactionIds: string[] = Array.isArray(incomingAccount?.deletedTransactionIds)
+    ? incomingAccount.deletedTransactionIds
+    : [];
+  const deletedIds = new Set(deletedTransactionIds);
   const remoteTxs: Transaction[] = Array.isArray(incomingAccount?.transactions)
     ? incomingAccount.transactions
     : Array.isArray(data?.transactions)
@@ -487,7 +518,7 @@ export function applyRemoteAccount(
   const seenTxIds = new Set<string>();
   const mergedTxs: Transaction[] = [];
   for (const t of remoteTxs) {
-    if (!t || !t.id || seenTxIds.has(t.id)) continue;
+    if (!t || !t.id || seenTxIds.has(t.id) || deletedIds.has(t.id)) continue;
     seenTxIds.add(t.id);
     mergedTxs.push(t);
   }
@@ -514,11 +545,14 @@ export function applyRemoteAccount(
     pinCode: remotePin,
     pinEnabled: !!remotePin,
     transactions: mergedTxs,
+    deletedTransactionIds,
     initialBalance: initialBal,
     balance: computedBal,
     subscriptions: migratedSubs,
     isOnboarded: Boolean(incomingAccount.isOnboarded ?? data.isOnboarded ?? true),
   };
+
+  lastKnownTransactionsByUid.set(uid, mergedTxs);
 
   try {
     localStorage.setItem(`flouss_user_${uid}`, JSON.stringify(finalSyncedAccount));
@@ -540,6 +574,8 @@ let lastAppliedRemoteUpdatedAt = 0;
 const remoteTimestampMs = (data: any): number => {
   const raw = data?.updatedAt;
   if (!raw) return 0;
+  if (typeof raw.toMillis === 'function') return raw.toMillis();
+  if (typeof raw.seconds === 'number') return raw.seconds * 1000 + Math.floor((raw.nanoseconds || 0) / 1e6);
   const ms = typeof raw === 'number' ? raw : Date.parse(String(raw));
   return Number.isFinite(ms) ? ms : 0;
 };
@@ -554,8 +590,7 @@ const isStaleRemotePayload = (data: any): boolean => {
 };
 
 /**
- * Pushes the store's copy of a remote Firestore payload into the Zustand state.
- * Used when a push is rejected because the cloud copy is newer.
+ * Pushes an accepted remote Firestore payload into the Zustand state.
  */
 const applyRemotePayload = (uid: string, data: any, fallbackUser?: any) => {
   const applied = applyRemoteAccount(uid, data, fallbackUser);
@@ -577,65 +612,63 @@ const applyRemotePayload = (uid: string, data: any, fallbackUser?: any) => {
 /**
  * Single write path to Firestore for account state.
  *
- * Strict parity rule: PULL BEFORE PUSH. If the cloud document has an `updatedAt`
- * newer than the last remote version we applied, the cloud wins — we apply it
- * locally and drop the local write. This is what prevents a device holding stale
- * data (e.g. 195.50) from overwriting the other device's correct state (231.50).
+ * Writes are serialized per account, and transaction changes are merged against the
+ * latest cloud document inside a Firestore transaction. Server timestamps order devices
+ * without relying on their local clocks.
  *
  * Returns true when the local state was written to the cloud.
  */
-const pushAccountToFirestore = async (
+const writeAccountToFirestore = async (
   uid: string,
-  account: UserAccount,
+  localAccount: UserAccount,
   label: string
 ): Promise<boolean> => {
   const userRef = doc(db, 'users', uid);
+  let computedBalance = 0;
 
-  try {
-    const current = await getDoc(userRef);
-    if (current && current.exists()) {
-      const remoteData = current.data();
-      const remoteMs = remoteTimestampMs(remoteData);
-      if (remoteMs > lastAppliedRemoteUpdatedAt) {
-        console.warn(
-          `🛑 [Flouss Cloud] ${label} push skipped: cloud copy is newer (users/${uid}). Applying remote state instead.`
-        );
-        lastAppliedRemoteUpdatedAt = remoteMs;
-        applyRemotePayload(uid, remoteData);
-        return false;
-      }
+  await runTransaction(db, async (firestoreTransaction: any) => {
+    const snapshot = await firestoreTransaction.get(userRef);
+    let accountToWrite = localAccount;
+    if (snapshot.exists()) {
+      const remoteData = snapshot.data();
+      const remoteAccount = (remoteData.account || remoteData) as UserAccount;
+      accountToWrite = {
+        ...remoteAccount,
+        ...localAccount,
+        ...mergeTransactionsFromLocalChanges(uid, localAccount, remoteAccount),
+      };
+      lastAppliedRemoteUpdatedAt = Math.max(lastAppliedRemoteUpdatedAt, remoteTimestampMs(remoteData));
     }
-  } catch (err: any) {
-    // Offline or read denied — fall through and keep the local write attempt.
-    console.warn(`[Flouss Cloud] ${label} pre-write read failed, writing anyway:`, err?.message || err);
-  }
 
-  const computedBal = calculateAvailableBalance(
-    account.initialBalance ?? null,
-    account.transactions ?? []
-  );
-  const nowIso = new Date().toISOString();
+    computedBalance = calculateAvailableBalance(accountToWrite.initialBalance ?? null, accountToWrite.transactions ?? []);
+    firestoreTransaction.set(userRef, {
+      uid,
+      email: accountToWrite.email || null,
+      displayName: accountToWrite.name || null,
+      pinCode: accountToWrite.pinCode ?? null,
+      pinEnabled: !!accountToWrite.pinCode,
+      initialBalance: accountToWrite.initialBalance ?? null,
+      balance: computedBalance,
+      isOnboarded: Boolean(accountToWrite.isOnboarded),
+      account: { ...accountToWrite, balance: computedBalance },
+      updatedAt: serverTimestamp(),
+    }, { merge: true });
+  });
 
-  const payload = {
-    uid,
-    email: account.email || null,
-    displayName: account.name || null,
-    pinCode: account.pinCode ?? null,
-    pinEnabled: !!account.pinCode,
-    initialBalance: account.initialBalance ?? null,
-    balance: computedBal,
-    isOnboarded: Boolean(account.isOnboarded),
-    account: {
-      ...account,
-      balance: computedBal,
-    },
-    updatedAt: nowIso,
-  };
-
-  await setDoc(userRef, payload, { merge: true });
-  lastAppliedRemoteUpdatedAt = Math.max(lastAppliedRemoteUpdatedAt, Date.parse(nowIso) || 0);
-  console.log(`✅ [Flouss Cloud] ${label} sync completed (balance: ${computedBal}) for users/${uid}`);
+  console.log(`✅ [Flouss Cloud] ${label} sync completed (balance: ${computedBalance}) for users/${uid}`);
   return true;
+};
+
+const firestoreWriteQueues = new Map<string, Promise<boolean>>();
+const pushAccountToFirestore = (uid: string, account: UserAccount, label: string): Promise<boolean> => {
+  const previous = firestoreWriteQueues.get(uid) || Promise.resolve(true);
+  const queued = previous.catch(() => false).then(() => writeAccountToFirestore(uid, account, label));
+  firestoreWriteQueues.set(uid, queued);
+  void queued.then(
+    () => { if (firestoreWriteQueues.get(uid) === queued) firestoreWriteQueues.delete(uid); },
+    () => { if (firestoreWriteQueues.get(uid) === queued) firestoreWriteQueues.delete(uid); }
+  );
+  return queued;
 };
 
 const debouncedFirestoreSync = (uid: string, account: UserAccount) => {
@@ -876,9 +909,10 @@ export const useAppStore = create<AppState>()(
 
           const cloudDocExists = Boolean(snap && snap.exists());
           const cloudData = cloudDocExists ? snap.data() : null;
+          let shouldSyncRecoveredTransactions = false;
 
           if (cloudDocExists && cloudData) {
-            // Case B: Cloud Firestore has existing user document -> REMOTE FIRESTORE IS GROUND TRUTH (WINS OVER LOCAL CACHE)
+            // Start with cloud state, then recover local-only transactions left by an offline session.
             console.log(`☁️ [Flouss Cloud] Hydrating store from existing Firestore document users/${uid}...`);
             // Seed the monotonic guard with the remote version we are about to apply.
             lastAppliedRemoteUpdatedAt = remoteTimestampMs(cloudData);
@@ -886,6 +920,24 @@ export const useAppStore = create<AppState>()(
             if (applied) {
               resolvedAccount = applied.finalSyncedAccount;
               firestorePin = applied.remotePin;
+              if (localAccount) {
+                const deletedIds = new Set([
+                  ...(resolvedAccount.deletedTransactionIds || []),
+                  ...(localAccount.deletedTransactionIds || []),
+                ]);
+                const remoteIds = new Set((resolvedAccount.transactions || []).map((tx) => tx.id));
+                const recovered = (localAccount.transactions || []).filter((tx) => !remoteIds.has(tx.id) && !deletedIds.has(tx.id));
+                const mergedTransactions = [...recovered, ...(resolvedAccount.transactions || [])]
+                  .filter((tx) => !deletedIds.has(tx.id))
+                  .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+                shouldSyncRecoveredTransactions = recovered.length > 0 || deletedIds.size > (resolvedAccount.deletedTransactionIds || []).length;
+                resolvedAccount = {
+                  ...resolvedAccount,
+                  deletedTransactionIds: Array.from(deletedIds),
+                  transactions: mergedTransactions,
+                  balance: calculateAvailableBalance(resolvedAccount.initialBalance, mergedTransactions),
+                };
+              }
             }
           } else if (snap !== null && !snap.exists() && hasLocalData && localAccount) {
             // Case A: Cloud Firestore document is verified missing AND this client has offline data -> AUTO-MIGRATE ONCE
@@ -916,7 +968,7 @@ export const useAppStore = create<AppState>()(
               isOnboarded: true,
               account: migratedAccount,
               createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
+              updatedAt: serverTimestamp(),
             };
 
             try {
@@ -969,7 +1021,7 @@ export const useAppStore = create<AppState>()(
                   balance: 0,
                   account: freshAccount,
                   createdAt: new Date().toISOString(),
-                  updatedAt: new Date().toISOString(),
+                  updatedAt: serverTimestamp(),
                 },
                 { merge: true }
               );
@@ -983,6 +1035,9 @@ export const useAppStore = create<AppState>()(
 
           resolvedAccount.id = uid;
           resolvedAccount.subscriptions = migrateSubscriptions(resolvedAccount.subscriptions ?? DEFAULT_SUBSCRIPTIONS);
+          if (!lastKnownTransactionsByUid.has(uid)) {
+            lastKnownTransactionsByUid.set(uid, Array.isArray(resolvedAccount.transactions) ? resolvedAccount.transactions : []);
+          }
 
           // Save hydrated account to local cache for fast offline access
           try {
@@ -1004,6 +1059,10 @@ export const useAppStore = create<AppState>()(
             loadingAuth: false,
             ...extractAccountState(resolvedAccount),
           });
+
+          if (shouldSyncRecoveredTransactions) {
+            executeImmediateFirestoreSync(uid, resolvedAccount);
+          }
 
           // 3. Attach Real-Time Cross-Device Synchronization (onSnapshot)
           try {
@@ -1139,6 +1198,18 @@ export const useAppStore = create<AppState>()(
             if (snap && snap.exists()) {
               const data = snap.data();
               if (data && !isStaleRemotePayload(data)) {
+                const remoteAccount = (data.account || data) as UserAccount;
+                const localAccount = s.currentAccount;
+                if (localAccount) {
+                  const merged = mergeTransactionsFromLocalChanges(uid, localAccount, remoteAccount);
+                  const localChangesPending =
+                    JSON.stringify(merged.transactions) !== JSON.stringify(remoteAccount.transactions || []) ||
+                    JSON.stringify(merged.deletedTransactionIds) !== JSON.stringify(remoteAccount.deletedTransactionIds || []);
+                  if (localChangesPending) {
+                    await pushAccountToFirestore(uid, localAccount, 'Reconnect recovery');
+                    return;
+                  }
+                }
                 applyRemotePayload(uid, data, s.firebaseUser);
                 console.log(`⚡ [Flouss Cloud] refreshFromFirestore updated state from Firestore users/${uid}`);
               }
@@ -1393,6 +1464,7 @@ export const useAppStore = create<AppState>()(
             return {
               ...a,
               balance: newBalance,
+              deletedTransactionIds: (a.deletedTransactionIds || []).filter((deletedId) => deletedId !== sanitizedTx.id),
               transactions: updatedTransactions,
             };
           }, true);
@@ -1406,6 +1478,7 @@ export const useAppStore = create<AppState>()(
             return {
               ...a,
               balance: newBalance,
+              deletedTransactionIds: Array.from(new Set([...(a.deletedTransactionIds || []), id])),
               transactions: updatedTransactions,
             };
           }, true);

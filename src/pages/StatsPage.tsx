@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useAppStore } from '../store/useAppStore';
 import { Card } from '../components/common/Card';
 import { PrivacyCurrency } from '../components/common/PrivacyCurrency';
@@ -42,14 +42,26 @@ export const StatsPage: React.FC = () => {
   const isAr = language === 'ar';
 
   const currentMonth = getCurrentMonthStr();
+  const [selectedMonth, setSelectedMonth] = useState(currentMonth);
+  const monthOptions = useMemo(() => {
+    const months = new Set((transactions || []).map((tx) => tx.date.slice(0, 7)).filter((month) => /^\d{4}-\d{2}$/.test(month)));
+    months.add(currentMonth);
+    const locale = language === 'ar' ? 'ar-MA' : language === 'fr' ? 'fr-FR' : 'en-US';
+    return Array.from(months).sort((a, b) => b.localeCompare(a)).map((month) => ({
+      value: month,
+      label: new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(
+        new Date(Number(month.slice(0, 4)), Number(month.slice(5, 7)) - 1, 1)
+      ),
+    }));
+  }, [transactions, currentMonth, language]);
   const monthlyStats = useMemo(() => {
     return getMonthlyStats(transactions, 6, language);
   }, [transactions, language]);
 
-  // Current month transactions
+  // Transactions for the selected analytics month
   const currentMonthTx = useMemo(() => {
-    return (transactions || []).filter((tx: Transaction) => isTransactionInMonth(tx.date, currentMonth));
-  }, [transactions, currentMonth]);
+    return (transactions || []).filter((tx: Transaction) => isTransactionInMonth(tx.date, selectedMonth));
+  }, [transactions, selectedMonth]);
 
   const currentIncome = useMemo(() => {
     return currentMonthTx
@@ -75,12 +87,10 @@ export const StatsPage: React.FC = () => {
       ? Math.max(0, Math.min(100, Math.round((currentSavings / currentIncome) * 100)))
       : 0;
 
-  // Category breakdown for current month (or all-time if no expenses this month)
+  // Keep the category breakdown tied to the selected month, including its empty state.
   const categoryBreakdownData = useMemo(() => {
-    const monthData = getCategorySpendingBreakdown(categories, transactions, currentMonth, language);
-    if (monthData.breakdown.length > 0) return monthData;
-    return getCategorySpendingBreakdown(categories, transactions, undefined, language);
-  }, [categories, transactions, currentMonth, language]);
+    return getCategorySpendingBreakdown(categories, transactions, selectedMonth, language);
+  }, [categories, transactions, selectedMonth, language]);
 
   const breakdownToDisplay = categoryBreakdownData.breakdown;
   const totalCategorySpent = categoryBreakdownData.totalExpense;
@@ -105,9 +115,10 @@ export const StatsPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto space-y-4 sm:space-y-5 animate-page select-text pb-8">
+    <div className="max-w-[1400px] mx-auto space-y-4 sm:space-y-5 animate-page select-text pb-8">
       {/* Page Header */}
-      <div>
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div>
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 flex items-center justify-center font-bold">
             <PieChartIcon className="w-4 h-4 stroke-[2.4]" />
@@ -119,6 +130,17 @@ export const StatsPage: React.FC = () => {
         <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1">
           {t.subtitle}
         </p>
+        </div>
+        <label className="relative self-start sm:self-auto">
+          <span className="sr-only">{language === 'ar' ? 'اختر الشهر' : language === 'fr' ? 'Choisir le mois' : 'Choose month'}</span>
+          <select
+            value={selectedMonth}
+            onChange={(event) => setSelectedMonth(event.target.value)}
+            className="min-w-48 rounded-xl border border-black/[0.07] dark:border-white/[0.08] bg-white/80 dark:bg-zinc-900/80 px-3 py-2 text-xs font-semibold text-zinc-800 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-indigo-500/20"
+          >
+            {monthOptions.map((month) => <option key={month.value} value={month.value}>{month.label}</option>)}
+          </select>
+        </label>
       </div>
 
       {/* KPI Highlight Cards */}
@@ -334,8 +356,9 @@ export const StatsPage: React.FC = () => {
         )}
       </div>
 
-      {/* Monthly Apple Fitness Style Bar Chart (Last 6 Months) */}
-      <div className="p-5 sm:p-6 rounded-3xl bg-white/80 dark:bg-zinc-900/60 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs space-y-4">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 items-stretch">
+      {/* Monthly income and expense trend */}
+      <div className="p-5 sm:p-6 h-full rounded-3xl bg-white/80 dark:bg-zinc-900/60 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <h2 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white">
@@ -363,7 +386,7 @@ export const StatsPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="h-64 sm:h-80 w-full pt-2">
+        <div className="h-64 sm:h-72 w-full pt-2">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={monthlyStats}
@@ -431,8 +454,8 @@ export const StatsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Category Breakdown Overhaul: Donut Chart + Ranked List */}
-      <div className="p-5 sm:p-6 rounded-3xl bg-white/80 dark:bg-zinc-900/60 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs space-y-6">
+      {/* Category breakdown */}
+      <div className="p-5 sm:p-6 h-full rounded-3xl bg-white/80 dark:bg-zinc-900/60 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs space-y-4">
         <div>
           <h2 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white">
             {t.categoryBreakdown}
@@ -552,6 +575,7 @@ export const StatsPage: React.FC = () => {
             </div>
           </div>
         )}
+      </div>
       </div>
     </div>
   );

@@ -69,7 +69,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
         <Header />
 
-        <main className="flex-1 overflow-y-auto pb-32 md:pb-8 px-3.5 sm:px-8 max-w-7xl w-full mx-auto select-text">
+        <main className="flex-1 overflow-y-auto pb-32 md:pb-8 px-3.5 sm:px-8 max-w-screen-2xl w-full mx-auto select-text">
           {children}
         </main>
 

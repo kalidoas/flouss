@@ -28,4 +28,6 @@ declare module '@firebase/firestore' {
   export const getDoc: any;
   export const setDoc: any;
   export const onSnapshot: any;
+  export const runTransaction: any;
+  export const serverTimestamp: any;
 }
