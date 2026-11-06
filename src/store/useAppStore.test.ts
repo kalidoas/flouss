@@ -18,6 +18,12 @@ vi.mock('firebase/firestore', () => ({
   doc: vi.fn(() => ({ id: 'mock-doc' })),
   getDoc: vi.fn(),
   setDoc: vi.fn(),
+  serverTimestamp: vi.fn(() => 'mock-timestamp'),
+  runTransaction: vi.fn(async (_db, fn) => fn({
+    get: vi.fn(async () => ({ exists: () => false, data: () => null })),
+    set: vi.fn(),
+    update: vi.fn(),
+  })),
   onSnapshot: vi.fn(() => vi.fn()),
 }));
 
@@ -25,6 +31,12 @@ vi.mock('@firebase/firestore', () => ({
   doc: vi.fn(() => ({ id: 'mock-doc' })),
   getDoc: vi.fn(),
   setDoc: vi.fn(),
+  serverTimestamp: vi.fn(() => 'mock-timestamp'),
+  runTransaction: vi.fn(async (_db, fn) => fn({
+    get: vi.fn(async () => ({ exists: () => false, data: () => null })),
+    set: vi.fn(),
+    update: vi.fn(),
+  })),
   onSnapshot: vi.fn(() => vi.fn()),
 }));
 
@@ -37,6 +49,7 @@ describe('useAppStore - Cross-Device Remote Account Hydration', () => {
 
   beforeEach(() => {
     localStorage.clear();
+    useAppStore.setState({ transactions: [] });
   });
 
   it('correctly hydrates from remote Firestore payload and calculates ground truth balance', () => {
@@ -204,6 +217,13 @@ describe('useAppStore - Persistence & Cloud Sync Safety', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.clearAllMocks();
+    const cur = useAppStore.getState().currentAccount;
+    const resetAccount = cur ? { ...cur, transactions: [] } : null;
+    useAppStore.setState({
+      transactions: [],
+      currentAccount: resetAccount,
+      accounts: cur ? [{ ...cur, transactions: [] }] : [],
+    });
   });
 
   it('addTransaction persists to localStorage immediately so data is never lost', () => {
@@ -287,6 +307,7 @@ describe('useAppStore - Persistence & Cloud Sync Safety', () => {
           id: 'test_uid',
           isOnboarded: true,
           initialBalance: 1000,
+          deletedTransactionIds: ['tx_stale_local_100'],
           transactions: [cloudTx],
         },
       }),
