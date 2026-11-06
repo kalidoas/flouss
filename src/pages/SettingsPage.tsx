@@ -236,9 +236,9 @@ export const SettingsPage: React.FC = () => {
     !lastBackupDate ||
     Date.now() - new Date(lastBackupDate).getTime() > 30 * 24 * 60 * 60 * 1000;
 
-  const handleExport = () => {
+  const handleExport = async () => {
     try {
-      const json = exportBackup();
+      const json = await exportBackup();
       const blob = new Blob([json], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -281,10 +281,10 @@ export const SettingsPage: React.FC = () => {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
       const content = event.target?.result as string;
       if (content) {
-        const success = importBackup(content);
+        const success = await importBackup(content);
         if (success) {
           setFeedbackMsg({ text: 'Sauvegarde importée avec succès !', type: 'success' });
         } else {
@@ -299,13 +299,13 @@ export const SettingsPage: React.FC = () => {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const handleSavePin = (e: React.FormEvent) => {
+  const handleSavePin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!/^\d{4}$/.test(newPin)) {
       setPinError('Le code PIN doit comporter exactement 4 chiffres.');
       return;
     }
-    setPinCode(newPin);
+    await setPinCode(newPin);
     setShowPinSetupModal(false);
     setNewPin('');
     setPinError('');

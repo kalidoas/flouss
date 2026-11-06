@@ -44,8 +44,9 @@ import {
 } from '../utils/calculations';
 import { playHapticFeedback } from '../utils/haptics';
 import { migrateSubscription, migrateSubscriptions } from '../utils/subscriptions';
+import { hashPin, verifyPin, encryptBackup, decryptBackup } from '../utils/crypto';
 
-export { migrateSubscription, migrateSubscriptions };
+export { migrateSubscription, migrateSubscriptions, hashPin };
 
 export interface AppState {
   // ── Auth & Session ──────────────────────────────────────────
@@ -106,7 +107,7 @@ export interface AppState {
 
   // ── Actions ─────────────────────────────────────────────────
   initAuthSession: (user: any) => Promise<void>;
-  verify2FAPin: (pin: string) => boolean;
+  verify2FAPin: (pin: string) => Promise<boolean> | boolean;
   setPinVerified: (verified: boolean) => void;
   logout: () => Promise<void>;
   syncToFirestore: () => Promise<void>;
@@ -212,8 +213,8 @@ export interface AppState {
   updateAccount: (id: string, patch: Partial<UserAccount>) => void;
   deleteAccount: (id: string) => void;
 
-  exportBackup: () => string;
-  importBackup: (json: string) => boolean;
+  exportBackup: () => Promise<string> | string;
+  importBackup: (json: string) => Promise<boolean> | boolean;
   loadDemoData: () => void;
   resetAllData: () => void;
   setDemoMode?: (v: boolean) => void;
@@ -1118,14 +1119,25 @@ export const useAppStore = create<AppState>()(
           }
         },
 
-        verify2FAPin: (enteredPin: string) => {
+        verify2FAPin: async (enteredPin: string): Promise<boolean> => {
           const s = get();
           const correctPin = s.userPinCode || s.pinCode;
           if (!correctPin) return true;
-          if (enteredPin === correctPin) {
+
+          const { isValid, needsUpgrade } = await verifyPin(enteredPin, correctPin);
+          if (isValid) {
             set({ isPinVerified: true, isPinUnlocked: true });
             if (s.firebaseUser?.uid) {
               sessionStorage.setItem(`flouss_2fa_${s.firebaseUser.uid}`, 'verified');
+            }
+            if (needsUpgrade) {
+              // Backward compatibility: automatically upgrade legacy plain text PIN to SHA-256 hash
+              try {
+                const hashed = await hashPin(enteredPin);
+                await get().setPinCode(hashed);
+              } catch (e) {
+                console.warn('[Flouss Security] Failed to auto-upgrade legacy PIN:', e);
+              }
             }
             return true;
           }
@@ -1322,12 +1334,17 @@ export const useAppStore = create<AppState>()(
         setPinUnlocked: (v: boolean) => set({ isPinUnlocked: v }),
 
         setPinCode: async (code: string | null) => {
+          let finalPin = code;
+          if (code && code.length === 4) {
+            finalPin = await hashPin(code);
+          }
           updateActive((a) => ({
             ...a,
-            pinCode: code,
-            pinEnabled: !!code,
+            pinCode: finalPin,
+            pinEnabled: !!finalPin,
           }));
-          set({ userPinCode: code, isPinUnlocked: true, isPinVerified: true });
+          set({ userPinCode: finalPin, isPinUnlocked: true, isPinVerified: true });
+          get().syncToFirestore();
         },
 
         // ── Onboarding / Initial Balance ───────────────────────────
@@ -1340,10 +1357,11 @@ export const useAppStore = create<AppState>()(
           const currentAcc = s.accounts.find((a: UserAccount) => a.id === activeId) || s.accounts[0];
           const uid = s.firebaseUser?.uid || currentAcc?.id || 'default_user';
 
-          const pin =
+          const rawPin =
             metadata?.pinCode && metadata.pinCode.length === 4
               ? metadata.pinCode
               : currentAcc?.pinCode ?? null;
+          const pin = rawPin && rawPin.length === 4 ? await hashPin(rawPin) : rawPin;
 
           const updatedAccount: UserAccount = {
             ...(currentAcc ||
@@ -2149,19 +2167,20 @@ export const useAppStore = create<AppState>()(
         },
 
         // ── Backup / Export / Import ────────────────────────────────
-        exportBackup: () => {
+        exportBackup: async () => {
           const s = get();
-          return JSON.stringify({
+          const backupData = {
             accounts: s.accounts,
             theme: s.theme,
             language: s.language,
             exportedAt: new Date().toISOString(),
-          });
+          };
+          return await encryptBackup(backupData);
         },
-        importBackup: (json: string) => {
+        importBackup: async (rawContent: string): Promise<boolean> => {
           try {
-            const data = JSON.parse(json);
-            if (data.accounts && Array.isArray(data.accounts)) {
+            const data = await decryptBackup(rawContent);
+            if (data && data.accounts && Array.isArray(data.accounts)) {
               const migratedAccounts = data.accounts.map((acc: UserAccount) => ({
                 ...acc,
                 subscriptions: migrateSubscriptions(acc.subscriptions ?? DEFAULT_SUBSCRIPTIONS),

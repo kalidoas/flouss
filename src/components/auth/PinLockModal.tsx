@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import { Logo } from '../common/Logo';
 import { UserAccount } from '../../types';
+import { verifyPin, hashPin } from '../../utils/crypto';
 import {
   Lock,
   Users,
@@ -28,6 +29,7 @@ export const PinLockModal: React.FC = () => {
   const {
     isPinUnlocked,
     setPinUnlocked,
+    setPinCode,
     accounts,
     activeAccountId,
     switchAccount,
@@ -111,18 +113,34 @@ export const PinLockModal: React.FC = () => {
 
     if (newDigits.length === 4) {
       const enteredCode = newDigits.join('');
-      if (enteredCode === selectedAccount.pinCode) {
-        // Correct PIN entered!
-        switchAccount(selectedAccount.id);
-        setPinUnlocked(true);
-        setDigits([]);
-      } else {
-        setError(true);
-        setTimeout(() => {
-          setDigits([]);
-          setError(false);
-        }, 500);
-      }
+      verifyPin(enteredCode, selectedAccount.pinCode)
+        .then(({ isValid, needsUpgrade }) => {
+          if (isValid) {
+            if (needsUpgrade) {
+              hashPin(enteredCode)
+                .then((hashed) => {
+                  setPinCode(hashed);
+                })
+                .catch(() => {});
+            }
+            switchAccount(selectedAccount.id);
+            setPinUnlocked(true);
+            setDigits([]);
+          } else {
+            setError(true);
+            setTimeout(() => {
+              setDigits([]);
+              setError(false);
+            }, 500);
+          }
+        })
+        .catch(() => {
+          setError(true);
+          setTimeout(() => {
+            setDigits([]);
+            setError(false);
+          }, 500);
+        });
     }
   };
 

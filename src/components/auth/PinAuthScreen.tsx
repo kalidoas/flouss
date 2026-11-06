@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Logo } from '../common/Logo';
 import { ShieldCheck, Lock, LogOut } from 'lucide-react';
+import { hashPin } from '../../utils/crypto';
+
+export { hashPin };
 
 interface PinAuthScreenProps {
   user: {
@@ -10,7 +13,7 @@ interface PinAuthScreenProps {
     uid: string;
   };
   language?: 'ar' | 'fr' | 'en';
-  onVerify: (pin: string) => boolean;
+  onVerify: (pin: string) => boolean | Promise<boolean>;
   onLogout: () => void;
 }
 
@@ -41,7 +44,7 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [digits]);
 
-  const handleDigit = (digit: string) => {
+  const handleDigit = async (digit: string) => {
     if (digits.length >= 4) return;
     const nextDigits = [...digits, digit];
     setDigits(nextDigits);
@@ -50,7 +53,7 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
 
     if (nextDigits.length === 4) {
       const pin = nextDigits.join('');
-      const isValid = onVerify(pin);
+      const isValid = await onVerify(pin);
       if (!isValid) {
         setError(true);
         setErrorMessage(

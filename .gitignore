@@ -16,6 +16,7 @@ dist-ssr/
 .env.local
 .env.*.local
 !.env.example
+.mcp.json
 
 # Logs
 npm-debug.log*
@@ -30,3 +31,8 @@ pnpm-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
+# Internal audit reports & design artifacts
+security-audit-report.html
+Flouss_Dashboard_Design.md
+
