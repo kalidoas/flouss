@@ -5,7 +5,9 @@ import { PrivacyCurrency } from '../components/common/PrivacyCurrency';
 import {
   getMonthlyStats,
   getCategorySpendingBreakdown,
+  getKpiData,
 } from '../utils/calculations';
+import { KpiCard } from '../components/common/KpiCard';
 import { formatMAD, formatDate, getCurrentMonthStr, isTransactionInMonth } from '../utils/formatters';
 import { getCategoryIcon } from '../utils/icons';
 import { getCategoryName, getSubCategoryName, translateCategoryText } from '../utils/i18nHelpers';
@@ -32,15 +34,24 @@ import {
   Flame,
   Clock,
   Sparkles,
+  TrendingUp,
+  TrendingDown,
+  Activity,
+  CreditCard,
+  Repeat,
 } from 'lucide-react';
 
 export const StatsPage: React.FC = () => {
-  const { transactions, categories, hideBalance, language } = useAppStore();
+  const { transactions, categories, hideBalance, language, tasks, debts, subscriptions } = useAppStore();
   const t = translations[language].stats;
   const isAr = language === 'ar';
 
   const currentMonth = getCurrentMonthStr();
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
+
+  const kpiData = useMemo(() => {
+    return getKpiData(transactions || [], tasks || [], debts || [], subscriptions || [], selectedMonth, language);
+  }, [transactions, tasks, debts, subscriptions, selectedMonth, language]);
   const monthOptions = useMemo(() => {
     const months = new Set((transactions || []).map((tx) => tx.date.slice(0, 7)).filter((month) => /^\d{4}-\d{2}$/.test(month)));
     months.add(currentMonth);
@@ -115,79 +126,34 @@ export const StatsPage: React.FC = () => {
   return (
     <div className="max-w-[1400px] mx-auto space-y-4 sm:space-y-5 animate-page select-text pb-8">
       {/* Page Header */}
-
-      {/* EXECUTIVE KPI SUMMARY BAR */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-        {/* Total Income (Inflow) */}
-        <KpiCard
-          title="Revenus (Entrées)"
-          value={0}
-          change={0}
-          icon={TrendingUp}
-          color="emerald"
-          unit="MAD"
-          count={0}
-          countLabel="versements"
-        />
-        {/* Total Expenses (Outflow) */}
-        <KpiCard
-          title="Dépenses (Sorties)"
-          value={0}
-          change={0}
-          icon={TrendingDown}
-          color="rose"
-          unit="MAD"
-          extraLine="Dépense moyenne / jour: 0 MAD"
-        />
-        {/* Net Cash Flow (Balance) */}
-        <KpiCard
-          title="Flux Net"
-          value={0}
-          change={0}
-          icon={Activity}
-          color="emerald"
-          unit="MAD"
-          changeSuffix="%"
-          changeLabel="Taux d'épargne"
-        />
-        {/* Task Completion Rate (Program) */}
-        <KpiCard
-          title="Tâches (Programme)"
-          value={0}
-          change={0}
-          icon={Percent}
-          color="indigo"
-          unit="%"
-          changeLabel="Série active"
-        />
-        {/* Net Debt Position */}
-        <KpiCard
-          title="Dettes"
-          value={0}
-          change={0}
-          icon={CreditCard}
-          color="amber"
-          unit="MAD"
-          changeLabel="Non règlés"
-        />
-        {/* Recurring Burn (Subscriptions) */}
-        <KpiCard
-          title="Abonnements"
-          value={0}
-          change={0}
-          icon={Repeat}
-          color="blue"
-          unit="MAD"
-          changeSuffix="%"
-          changeLabel="% des dépenses"
-        />
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 flex items-center justify-center font-bold">
+              <PieChartIcon className="w-4 h-4 stroke-[2.4]" />
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
+              {t.title}
+            </h1>
+          </div>
+          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+            {t.subtitle}
+          </p>
+        </div>
+        <label className="relative self-start sm:self-auto">
+          <span className="sr-only">{language === 'ar' ? 'اختر الشهر' : language === 'fr' ? 'Choisir le mois' : 'Choose month'}</span>
+          <select
+            value={selectedMonth}
+            onChange={(event) => setSelectedMonth(event.target.value)}
+            className="min-w-48 rounded-xl border border-black/[0.07] dark:border-white/[0.08] bg-white/80 dark:bg-zinc-900/80 px-3 py-2 text-xs font-semibold text-zinc-800 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-indigo-500/20"
+          >
+            {monthOptions.map((month) => <option key={month.value} value={month.value}>{month.label}</option>)}
+          </select>
+        </label>
       </div>
 
-      {/* Existing content... */}
-
-
       {/* EXECUTIVE KPI SUMMARY BAR */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 mb-2">
         {/* Total Income */}
         <KpiCard
           title={t.kpiIncome}
@@ -251,34 +217,6 @@ export const StatsPage: React.FC = () => {
           changeSuffix="%"
           changeLabel={t.kpiSubsBurn}
         />
-      </div>
-
-      {/* Existing content... */}
-
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
-        <div>
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 flex items-center justify-center font-bold">
-            <PieChartIcon className="w-4 h-4 stroke-[2.4]" />
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
-            {t.title}
-          </h1>
-        </div>
-        <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-          {t.subtitle}
-        </p>
-        </div>
-        <label className="relative self-start sm:self-auto">
-          <span className="sr-only">{language === 'ar' ? 'اختر الشهر' : language === 'fr' ? 'Choisir le mois' : 'Choose month'}</span>
-          <select
-            value={selectedMonth}
-            onChange={(event) => setSelectedMonth(event.target.value)}
-            className="min-w-48 rounded-xl border border-black/[0.07] dark:border-white/[0.08] bg-white/80 dark:bg-zinc-900/80 px-3 py-2 text-xs font-semibold text-zinc-800 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-indigo-500/20"
-          >
-            {monthOptions.map((month) => <option key={month.value} value={month.value}>{month.label}</option>)}
-          </select>
-        </label>
       </div>
 
       {/* KPI Highlight Cards */}
