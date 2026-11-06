@@ -142,6 +142,76 @@ export function calculateCategoryBudgetStatus(
       percent: 0,
       status: 'normal',
       barColor: '#10b981',
+  }
+}
+
+// NEW: Calculate KPI metrics for Master Analytics
+export function getKpiData(
+  transactions: Transaction[],
+  tasks: TaskItem[],
+  debts: DebtItem[],
+  subscriptions: SubscriptionItem[],
+  selectedMonth: string,
+  language: Language = 'fr'
+) {
+  const currentMonth = selectedMonth;
+  const lastMonth = new Date(selectedMonth.slice(0, 4), parseInt(selectedMonth.slice(5, 7)) - 1, 1).toISOString().slice(0, 7);
+
+  // Helper to get metric for a month
+  const getMonthMetric = (monthKey: string, type: 'income' | 'expense' | 'savings') => {
+    const monthTx = transactions.filter(tx =>
+      tx.type === type && isTransactionInMonth(tx.date, monthKey)
+    );
+    return monthTx.reduce((sum, tx) => sum + Number(tx.amount), 0);
+  };
+
+  const currentIncome = getMonthMetric(currentMonth, 'income');
+  const lastIncome = getMonthMetric(lastMonth, 'income');
+  const incomeChange = lastIncome !== 0 ? Math.round(((currentIncome - lastIncome) / lastIncome) * 100) : 0;
+  const incomeCount = transactions.filter(
+    tx => tx.type === 'income' && isTransactionInMonth(tx.date, currentMonth)
+  ).length;
+
+  const currentExpense = getMonthMetric(currentMonth, 'expense');
+  const lastExpense = getMonthMetric(lastMonth, 'expense');
+  const expenseChange = lastExpense !== 0 ? Math.round(((currentExpense - lastExpense) / lastExpense) * 100) : 0;
+  const daysInMonth = new Date(parseInt(currentMonth.slice(0, 4)), parseInt(currentMonth.slice(5, 7)), 0).getDate();
+  const avgDailySpend = daysInMonth > 0 ? Math.round(currentExpense / daysInMonth) : 0;
+
+  const currentSavings = getMonthMetric(currentMonth, 'savings');
+  const savingsRate = currentIncome > 0 ? Math.round((currentSavings / currentIncome) * 100) : 0;
+  const netFlow = currentIncome - currentExpense;
+  const netFlowColor = netFlow >= 0 ? 'emerald' : 'rose';
+
+  // Tasks
+  const totalTasks = tasks.length;
+  const completedTasks = tasks.filter(task =>
+    task.completedDates.some(date => date.slice(0, 7) === currentMonth)
+  ).length;
+  const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+  const activeStreak = 0; // TODO: Implement streak logic
+
+  // Debts
+  const owedToMe = debts.filter(d => d.type === 'lend' && !d.isSettled).reduce((sum, d) => sum + (d.totalAmount - (d.paidAmount || 0)), 0);
+  const iOwe = debts.filter(d => d.type === 'borrow' && !d.isSettled).reduce((sum, d) => sum + (d.totalAmount - (d.paidAmount || 0)), 0);
+  const netDebtPosition = owedToMe - iOwe;
+  const unsettledDebtsCount = debts.filter(d => !d.isSettled).length;
+
+  // Subscriptions
+  const subscriptionTotal = subscriptions.reduce((sum, sub) => sum + sub.amount, 0);
+  const subscriptionBurnPercent = currentExpense > 0 ? Math.round((subscriptionTotal / currentExpense) * 100) : 0;
+
+  return {
+    income: { value: currentIncome, change: incomeChange, count: incomeCount },
+    expense: { value: currentExpense, change: expenseChange, avgDaily: avgDailySpend },
+    netFlow: { value: netFlow, savingsRate, color: netFlowColor },
+    tasks: { completionRate, activeStreak },
+    debts: { netPosition: netDebtPosition, unsettledCount: unsettledDebtsCount },
+    subscriptions: { total: subscriptionTotal, expensePercent: subscriptionBurnPercent },
+  };
+}
+
+
     };
   }
 
