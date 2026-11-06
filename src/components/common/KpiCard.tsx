@@ -1,5 +1,5 @@
 import React from 'react';
-import { IconType } from 'lucide-react';
+import { Activity, CreditCard, Repeat, Percent, TrendingUp, TrendingDown } from 'lucide-react';
 import { formatMAD } from '../../utils/formatters';
 import { translations } from '../../i18n/translations';
 import { useAppStore } from '../../store/useAppStore';
@@ -8,7 +8,7 @@ type KpiCardProps = {
   title: string;
   value: number;
   change: number;
-  icon: IconType;
+  icon: React.ComponentType<{ className?: string }>;
   color: string;
   unit: 'MAD' | '%';
   count?: number;

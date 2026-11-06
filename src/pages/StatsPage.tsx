@@ -28,8 +28,6 @@ import {
   Percent,
   ShoppingBag,
   Award,
-  TrendingDown,
-  TrendingUp,
   PieChart as PieChartIcon,
   Flame,
   Clock,
@@ -122,66 +120,66 @@ export const StatsPage: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
         {/* Total Income (Inflow) */}
         <KpiCard
-          title={t.kpiIncome}
-          value={kpiData.income.value}
-          change={kpiData.income.change}
+          title="Revenus (Entrées)"
+          value={0}
+          change={0}
           icon={TrendingUp}
           color="emerald"
           unit="MAD"
-          count={kpiData.income.count}
-          countLabel={t.kpiIncomeCount}
+          count={0}
+          countLabel="versements"
         />
         {/* Total Expenses (Outflow) */}
         <KpiCard
-          title={t.kpiExpenses}
-          value={kpiData.expense.value}
-          change={kpiData.expense.change}
+          title="Dépenses (Sorties)"
+          value={0}
+          change={0}
           icon={TrendingDown}
           color="rose"
           unit="MAD"
-          extraLine={`${t.kpiDailyAvg}: ${formatMAD(kpiData.expense.avgDaily, false, language)} MAD`}
+          extraLine="Dépense moyenne / jour: 0 MAD"
         />
         {/* Net Cash Flow (Balance) */}
         <KpiCard
-          title={t.kpiNetFlow}
-          value={kpiData.netFlow.value}
-          change={kpiData.netFlow.savingsRate}
+          title="Flux Net"
+          value={0}
+          change={0}
           icon={Activity}
-          color={kpiData.netFlow.color}
+          color="emerald"
           unit="MAD"
           changeSuffix="%"
-          changeLabel={t.kpiNetFlowDesc}
+          changeLabel="Taux d'épargne"
         />
         {/* Task Completion Rate (Program) */}
         <KpiCard
-          title={t.kpiTasks}
-          value={kpiData.tasks.completionRate}
-          change={kpiData.tasks.activeStreak}
+          title="Tâches (Programme)"
+          value={0}
+          change={0}
           icon={Percent}
           color="indigo"
           unit="%"
-          changeLabel={t.kpiTasksStreak}
+          changeLabel="Série active"
         />
         {/* Net Debt Position */}
         <KpiCard
-          title={t.kpiDebts}
-          value={kpiData.debts.netPosition}
-          change={kpiData.debts.unsettledCount}
+          title="Dettes"
+          value={0}
+          change={0}
           icon={CreditCard}
           color="amber"
           unit="MAD"
-          changeLabel={t.unsettled}
+          changeLabel="Non règlés"
         />
         {/* Recurring Burn (Subscriptions) */}
         <KpiCard
-          title={t.kpiSubs}
-          value={kpiData.subscriptions.total}
-          change={kpiData.subscriptions.expensePercent}
+          title="Abonnements"
+          value={0}
+          change={0}
           icon={Repeat}
           color="blue"
           unit="MAD"
           changeSuffix="%"
-          changeLabel={t.kpiSubsBurn}
+          changeLabel="% des dépenses"
         />
       </div>
 
