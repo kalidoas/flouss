@@ -49,7 +49,11 @@ import {
   LogOut,
   Apple,
   ChevronRight,
+  History,
+  Archive,
 } from 'lucide-react';
+import { getRollingBackups, RollingBackupEntry } from '../utils/backup';
+import { decryptBackup } from '../utils/crypto';
 import { NotificationService } from '../services/notificationService';
 import {
   disconnectGoogleCalendar,
@@ -276,6 +280,14 @@ export const SettingsPage: React.FC = () => {
     }
   };
 
+  const [importPreview, setImportPreview] = useState<{
+    rawContent: string;
+    transactionCount: number;
+    balance: number;
+    accountName: string;
+  } | null>(null);
+  const [rollingBackups, setRollingBackups] = useState<RollingBackupEntry[]>(() => getRollingBackups());
+
   const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -284,19 +296,75 @@ export const SettingsPage: React.FC = () => {
     reader.onload = async (event) => {
       const content = event.target?.result as string;
       if (content) {
-        const success = await importBackup(content);
-        if (success) {
-          setFeedbackMsg({ text: 'Sauvegarde importée avec succès !', type: 'success' });
-        } else {
-          setFeedbackMsg({
-            text: 'Fichier invalide ou corrompu. Veuillez vérifier le format JSON.',
-            type: 'error',
-          });
-        }
+        try {
+          const data = await decryptBackup(content);
+          if (data) {
+            let txCount = 0;
+            let bal = 0;
+            let name = '';
+            if (Array.isArray(data.accounts) && data.accounts.length > 0) {
+              const acc = data.accounts[0];
+              txCount = (acc.transactions || []).length;
+              bal = acc.balance ?? 0;
+              name = acc.name || 'Compte';
+            } else if (data.transactions) {
+              txCount = data.transactions.length;
+              bal = data.balance ?? 0;
+              name = data.name || 'Compte';
+            }
+            setImportPreview({
+              rawContent: content,
+              transactionCount: txCount,
+              balance: bal,
+              accountName: name,
+            });
+            return;
+          }
+        } catch (e) {}
+        setFeedbackMsg({
+          text: language === 'ar' ? 'الملف غير صالح أو تالف' : language === 'en' ? 'Invalid or corrupted file' : 'Fichier invalide ou corrompu.',
+          type: 'error',
+        });
       }
     };
     reader.readAsText(file);
     if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleConfirmImport = async () => {
+    if (!importPreview) return;
+    const success = await importBackup(importPreview.rawContent);
+    setImportPreview(null);
+    if (success) {
+      setFeedbackMsg({
+        text: language === 'ar' ? 'تم استيراد ومزامنة النسخة الاحتياطية بنجاح!' : language === 'en' ? 'Backup imported and synced successfully!' : 'Sauvegarde importée et synchronisée avec succès !',
+        type: 'success',
+      });
+      setRollingBackups(getRollingBackups());
+    } else {
+      setFeedbackMsg({
+        text: language === 'ar' ? 'حدث خطأ أثناء الاستيراد' : language === 'en' ? 'Error importing backup' : 'Erreur lors de l’import.',
+        type: 'error',
+      });
+    }
+  };
+
+  const handleRestoreRollingSnapshot = async (snapshot: RollingBackupEntry) => {
+    const confirmMsg = language === 'ar'
+      ? `هل تريد استعادة نسخة ${snapshot.date} (${snapshot.transactionCount} معاملة، الرصيد: ${formatMAD(snapshot.balance, false, language)})؟`
+      : language === 'en'
+      ? `Restore snapshot from ${snapshot.date} (${snapshot.transactionCount} transactions, balance: ${formatMAD(snapshot.balance, false, language)})?`
+      : `Restaurer l'instantané du ${snapshot.date} (${snapshot.transactionCount} transactions, solde : ${formatMAD(snapshot.balance, false, language)}) ?`;
+
+    if (window.confirm(confirmMsg)) {
+      const success = await importBackup(JSON.stringify({ accounts: [snapshot.account] }));
+      if (success) {
+        setFeedbackMsg({
+          text: language === 'ar' ? 'تمت استعادة النسخة بنجاح ومزامنتها مع السحابة!' : language === 'en' ? 'Snapshot restored and synced to cloud successfully!' : 'Instantané restauré et synchronisé au cloud avec succès !',
+          type: 'success',
+        });
+      }
+    }
   };
 
   const handleSavePin = async (e: React.FormEvent) => {
@@ -1150,6 +1218,45 @@ export const SettingsPage: React.FC = () => {
           </Button>
         </div>
 
+        {/* Rolling Local Snapshots (7 Days) */}
+        {rollingBackups.length > 0 && (
+          <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
+            <div className="flex items-center gap-2 mb-3">
+              <History className="w-4 h-4 text-sky-500" />
+              <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                {language === 'ar'
+                  ? 'النسخ الاحتياطية التلقائية (آخر 7 أيام)'
+                  : language === 'en'
+                  ? 'Automatic Local Snapshots (Last 7 days)'
+                  : 'Instantanés locaux automatiques (7 derniers jours)'}
+              </h3>
+            </div>
+            <div className="space-y-2">
+              {rollingBackups.map((snap) => (
+                <div
+                  key={snap.date}
+                  className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 text-xs"
+                >
+                  <div>
+                    <span className="font-semibold text-slate-800 dark:text-slate-200">{snap.date}</span>
+                    <span className="text-[11px] text-slate-400 ml-2">
+                      ({snap.transactionCount} {language === 'ar' ? 'معاملة' : 'tx'}, {formatMAD(snap.balance, false, language)})
+                    </span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleRestoreRollingSnapshot(snap)}
+                    icon={<Archive className="w-3.5 h-3.5 text-sky-500" />}
+                  >
+                    {language === 'ar' ? 'استعادة' : language === 'en' ? 'Restore' : 'Restaurer'}
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Demo Data button */}
         <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
@@ -1283,6 +1390,64 @@ export const SettingsPage: React.FC = () => {
             </Button>
           </div>
         </div>
+      </Modal>
+
+      {/* Backup Import Preview & Confirmation Modal */}
+      <Modal
+        isOpen={Boolean(importPreview)}
+        onClose={() => setImportPreview(null)}
+        title={
+          language === 'ar'
+            ? 'معاينة واستعادة النسخة الاحتياطية'
+            : language === 'en'
+            ? 'Backup Preview & Restore'
+            : 'Aperçu et Restauration de Sauvegarde'
+        }
+        maxWidth="sm"
+      >
+        {importPreview && (
+          <div className="space-y-4">
+            <div className="p-3.5 rounded-2xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200/60 dark:border-sky-800/60 space-y-2 text-xs">
+              <div className="flex justify-between">
+                <span className="text-slate-500">{language === 'ar' ? 'الحساب :' : 'Compte :'}</span>
+                <span className="font-bold text-slate-800 dark:text-slate-200">{importPreview.accountName || 'Flouss'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">{language === 'ar' ? 'عدد المعاملات :' : 'Transactions :'}</span>
+                <span className="font-bold text-slate-800 dark:text-slate-200">{importPreview.transactionCount}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">{language === 'ar' ? 'الرصيد :' : 'Solde :'}</span>
+                <span className="font-bold text-emerald-600 dark:text-emerald-400">{formatMAD(importPreview.balance, false, language)}</span>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-500 text-center leading-relaxed">
+              {language === 'ar'
+                ? 'هل تريد بالتأكيد تطبيق هذه النسخة الاحتياطية؟ ستتم مزامنة البيانات تلقائياً مع السحابة.'
+                : language === 'en'
+                ? 'Are you sure you want to restore this backup? Your data will be automatically synced to the cloud.'
+                : 'Voulez-vous vraiment restaurer cette sauvegarde ? Les données seront automatiquement synchronisées avec le cloud.'}
+            </p>
+
+            <div className="flex gap-2.5 pt-2">
+              <Button
+                variant="secondary"
+                fullWidth
+                onClick={() => setImportPreview(null)}
+              >
+                {tCommon.cancel}
+              </Button>
+              <Button
+                variant="primary"
+                fullWidth
+                onClick={handleConfirmImport}
+              >
+                {language === 'ar' ? 'استعادة ومزامنة' : language === 'en' ? 'Restore & Sync' : 'Restaurer & Synchroniser'}
+              </Button>
+            </div>
+          </div>
+        )}
       </Modal>
 
       {/* Dev Mode: Haptics & Sensory Playground */}

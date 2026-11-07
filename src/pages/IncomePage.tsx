@@ -6,6 +6,7 @@ import { AddIncomeModal } from '../components/transactions/AddIncomeModal';
 import { IncomeSourceModal } from '../components/income/IncomeSourceModal';
 import { TransactionItem } from '../components/transactions/TransactionItem';
 import { formatMAD, getCurrentMonthStr, formatMonthYear, isTransactionInMonth, getTransactionMonth } from '../utils/formatters';
+import { money } from '../lib/currency';
 import { getCategoryIcon } from '../utils/icons';
 import { translations } from '../i18n/translations';
 import { IncomeSource, Transaction } from '../types';
@@ -51,7 +52,9 @@ export const IncomePage: React.FC = () => {
       return true;
     });
 
-    const total = txForSource.reduce((sum: number, tx: Transaction) => sum + tx.amount, 0);
+    const total = money.round(
+      txForSource.reduce((sum: number, tx: Transaction) => sum + money.toCents(tx.amount), 0) / 100
+    );
     const count = txForSource.length;
 
     return {
@@ -61,16 +64,20 @@ export const IncomePage: React.FC = () => {
     };
   });
 
-  // Total for the selected period
-  const totalFilteredIncome = filteredIncomeTransactions.reduce(
-    (sum: number, tx: Transaction) => sum + tx.amount,
-    0
+  // Total for the selected period with exact currency arithmetic
+  const totalFilteredIncome = money.round(
+    filteredIncomeTransactions.reduce(
+      (sum: number, tx: Transaction) => sum + money.toCents(tx.amount),
+      0
+    ) / 100
   );
 
   // All-time total
-  const totalAllTimeIncome = allIncomeTransactions.reduce(
-    (sum: number, tx: Transaction) => sum + tx.amount,
-    0
+  const totalAllTimeIncome = money.round(
+    allIncomeTransactions.reduce(
+      (sum: number, tx: Transaction) => sum + money.toCents(tx.amount),
+      0
+    ) / 100
   );
 
   // Month list available in transactions

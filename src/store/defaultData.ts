@@ -574,42 +574,9 @@ export const DEFAULT_TASKS: TaskItem[] = [
   },
 ];
 
-export const DEFAULT_DEBTS: DebtItem[] = [
-  {
-    id: 'debt_demo_1',
-    personName: 'Yassine',
-    type: 'lend',
-    totalAmount: 300,
-    paidAmount: 100,
-    dueDate: '2026-11-05',
-    notes: 'Avance pour achat matériel',
-    createdAt: new Date().toISOString(),
-    isSettled: false,
-  },
-];
+export const DEFAULT_DEBTS: DebtItem[] = [];
 
-export const DEFAULT_SUBSCRIPTIONS: SubscriptionItem[] = [
-  {
-    id: 'sub_inwi',
-    name: 'Fibre Optique / Internet',
-    amount: 249,
-    billingDay: 5,
-    category: 'Télécom',
-    notes: 'Prélèvement mensuel',
-    paidMonths: [],
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'sub_gym',
-    name: 'Salle de Sport',
-    amount: 300,
-    billingDay: 1,
-    category: 'Sport',
-    notes: 'Paiement mensuel',
-    paidMonths: [],
-    createdAt: new Date().toISOString(),
-  },
-];
+export const DEFAULT_SUBSCRIPTIONS: SubscriptionItem[] = [];
 
 export const DEFAULT_NOTES: NoteItem[] = [
   {

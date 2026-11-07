@@ -7,6 +7,7 @@ import { PrivacyCurrency } from '../common/PrivacyCurrency';
 import { translations } from '../../i18n/translations';
 import { formatMAD, getCurrentMonthStr, formatMonthYear, isTransactionInMonth, getTransactionMonth } from '../../utils/formatters';
 import { calculateAvailableBalance, selectAvailableBalance } from '../../utils/calculations';
+import { money } from '../../lib/currency';
 import { AdjustBalanceModal } from './AdjustBalanceModal';
 import { playHapticFeedback } from '../../utils/haptics';
 import {
@@ -103,14 +104,18 @@ export const WalletCard: React.FC<WalletCardProps> = ({
     );
     const historicalBalance = calculateAvailableBalance(initialBalance, txUpToSelectedMonth);
 
-    // Selected month's cashflow
+    // Selected month's cashflow with exact currency arithmetic
     const monthTx = (transactions || []).filter((tx) => isTransactionInMonth(tx.date, selectedMonth));
-    const historicalIncome = monthTx
-      .filter((tx) => tx.type === 'income')
-      .reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
-    const historicalExpense = monthTx
-      .filter((tx) => tx.type === 'expense')
-      .reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
+    const historicalIncome = money.round(
+      monthTx
+        .filter((tx) => tx.type === 'income')
+        .reduce((sum, tx) => sum + money.toCents(tx.amount), 0) / 100
+    );
+    const historicalExpense = money.round(
+      monthTx
+        .filter((tx) => tx.type === 'expense')
+        .reduce((sum, tx) => sum + money.toCents(tx.amount), 0) / 100
+    );
 
     return {
       displayBalance: historicalBalance,

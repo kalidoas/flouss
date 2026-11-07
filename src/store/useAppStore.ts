@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { doc, getDoc, setDoc, onSnapshot, runTransaction, serverTimestamp, Unsubscribe } from '@firebase/firestore';
 import { auth, db } from '../lib/firebase';
+import { money } from '../lib/currency';
+import { saveRollingBackup, savePreSyncSafetyBackup } from '../utils/backup';
 import {
   Category,
   IncomeSource,
@@ -52,6 +54,7 @@ export interface AppState {
   // ── Auth & Session ──────────────────────────────────────────
   firebaseUser: any;
   loadingAuth: boolean;
+  isHydratedFromCloud: boolean; // NEW: strict hydration lock flag
   isPinVerified: boolean;
   userPinCode: string | null;
   isDemoMode: boolean;
@@ -502,6 +505,12 @@ export function applyRemoteAccount(
   remotePin: string | null;
 } | null {
   if (!data) return null;
+  try {
+    const currentAcc = useAppStore.getState().currentAccount;
+    if (currentAcc && Array.isArray(currentAcc.transactions) && currentAcc.transactions.length > 0) {
+      savePreSyncSafetyBackup(currentAcc);
+    }
+  } catch (e) {}
   const incomingAccount = data.account || data;
   const remotePin = data.pinCode ?? incomingAccount?.pinCode ?? null;
 
@@ -642,14 +651,30 @@ const writeAccountToFirestore = async (
   const userRef = doc(db, 'users', uid);
   let computedBalance = 0;
   let skippedUninitializedWrite = false;
+  let accountToWrite = localAccount;
   useAppStore.setState({ syncStatus: 'syncing' });
   try {
     await runTransaction(db, async (firestoreTransaction: any) => {
     const snapshot = await firestoreTransaction.get(userRef);
-    let accountToWrite = localAccount;
     if (snapshot.exists()) {
       const remoteData = snapshot.data();
       const remoteAccount = (remoteData.account || remoteData) as UserAccount;
+      const remoteTxCount = (remoteAccount.transactions || remoteData.transactions || []).length;
+      const localTxCount = (localAccount.transactions || []).length;
+
+      // Anti-Wipe Protection:
+      // Never allow a local state with 0 transactions to overwrite an existing Firestore document
+      // that already has transactions.length > 0 unless explicitly reset
+      if (remoteTxCount > 0 && localTxCount === 0 && !(localAccount as any)._explicitReset) {
+        console.warn(`🛡️ [Flouss Anti-Wipe] Blocked wipe attempt: Cloud has ${remoteTxCount} transactions but local has 0. Preserving cloud data.`);
+        skippedUninitializedWrite = true;
+        computedBalance = calculateAvailableBalance(
+          remoteAccount.initialBalance ?? remoteData.initialBalance ?? null,
+          remoteAccount.transactions ?? remoteData.transactions ?? []
+        );
+        return;
+      }
+
       const localIsUninitialized =
         !localAccount.isOnboarded &&
         (localAccount.initialBalance === null || localAccount.initialBalance === undefined) &&
@@ -697,6 +722,7 @@ const writeAccountToFirestore = async (
     return false;
   }
 
+  saveRollingBackup(accountToWrite);
   console.log(`✅ [Flouss Cloud] ${label} sync completed (balance: ${computedBalance}) for users/${uid}`);
   return true;
 };
@@ -754,6 +780,10 @@ export const useAppStore = create<AppState>()(
     (set, get) => {
       const initialAccount = makeInitialAccount('default', 'Khalid');
 
+      // === ANTI-WIPE & HYDRATION GUARD INIT ===
+      // Track whether initial Firestore hydration has completed
+      let hydrationCompleted = false;
+
       // Helper to update active account and its reactive projections
       const updateActive = (
         updater: (acc: UserAccount) => UserAccount,
@@ -801,6 +831,7 @@ export const useAppStore = create<AppState>()(
         // ── Auth & Session ──────────────────────────────────────────
         firebaseUser: null,
         loadingAuth: true,
+        isHydratedFromCloud: false, // NEW: starts false, set to true after first Firestore fetch completes
         isPinVerified: false,
         userPinCode: null,
         isDemoMode: false,
@@ -866,6 +897,7 @@ export const useAppStore = create<AppState>()(
             set({
               firebaseUser: null,
               loadingAuth: false,
+              isHydratedFromCloud: true,
               isPinVerified: false,
               userPinCode: null,
               accounts: s.accounts.length > 0 ? s.accounts : [currentAcc],
@@ -873,6 +905,21 @@ export const useAppStore = create<AppState>()(
               ...extracted,
             });
             return;
+          }
+
+          // Clean Account Switching Isolation
+          if (get().firebaseUser && get().firebaseUser.uid !== user.uid) {
+            console.log(`🔄 [Flouss] Switching user from ${get().firebaseUser.uid} to ${user.uid}. Resetting in-memory state.`);
+            if (syncTimer) {
+              clearTimeout(syncTimer);
+              syncTimer = null;
+            }
+            set({
+              isHydratedFromCloud: false,
+              accounts: [],
+              activeAccountId: null,
+              ...extractAccountState(null),
+            });
           }
 
           const uid = user.uid;
@@ -883,6 +930,7 @@ export const useAppStore = create<AppState>()(
           set({
             firebaseUser: user,
             loadingAuth: true,
+            isHydratedFromCloud: false,
           });
 
           let firestorePin: string | null = null;
@@ -973,12 +1021,16 @@ export const useAppStore = create<AppState>()(
                 const mergedTransactions = [...recovered, ...(resolvedAccount.transactions || [])]
                   .filter((tx) => !deletedIds.has(tx.id))
                   .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-                shouldSyncRecoveredTransactions = recovered.length > 0 || deletedIds.size > (resolvedAccount.deletedTransactionIds || []).length;
+                const resolvedInitialBal = (resolvedAccount.initialBalance !== null && resolvedAccount.initialBalance !== undefined && resolvedAccount.initialBalance !== 0)
+                  ? resolvedAccount.initialBalance
+                  : (localAccount.initialBalance ?? resolvedAccount.initialBalance);
+                shouldSyncRecoveredTransactions = recovered.length > 0 || deletedIds.size > (resolvedAccount.deletedTransactionIds || []).length || (resolvedAccount.initialBalance === null && localAccount.initialBalance !== null);
                 resolvedAccount = {
                   ...resolvedAccount,
+                  initialBalance: resolvedInitialBal,
                   deletedTransactionIds: Array.from(deletedIds),
                   transactions: mergedTransactions,
-                  balance: calculateAvailableBalance(resolvedAccount.initialBalance, mergedTransactions),
+                  balance: calculateAvailableBalance(resolvedInitialBal, mergedTransactions),
                 };
               }
             }
@@ -1105,6 +1157,7 @@ export const useAppStore = create<AppState>()(
             isPinVerified: isVerified,
             isPinUnlocked: isVerified,
             loadingAuth: false,
+            isHydratedFromCloud: true,
             ...extractAccountState(resolvedAccount),
           });
 
@@ -1211,6 +1264,12 @@ export const useAppStore = create<AppState>()(
           const s = get();
           const uid = s.firebaseUser?.uid || auth.currentUser?.uid;
           if (!uid) return;
+
+          // Strict Hydration Lock: Never write until initial Firestore fetch has resolved
+          if (!s.isHydratedFromCloud) {
+            console.warn('[Flouss Cloud] Blocked syncToFirestore: store is not yet hydrated from cloud.');
+            return;
+          }
 
           const acc = s.currentAccount;
           if (!acc) return;
@@ -2219,20 +2278,30 @@ export const useAppStore = create<AppState>()(
         importBackup: async (rawContent: string): Promise<boolean> => {
           try {
             const data = await decryptBackup(rawContent);
-            if (data && data.accounts && Array.isArray(data.accounts)) {
-              const migratedAccounts = data.accounts.map((acc: UserAccount) => ({
+            if (!data) return false;
+            let accountsToImport: UserAccount[] = [];
+            if (Array.isArray(data.accounts) && data.accounts.length > 0) {
+              accountsToImport = data.accounts;
+            } else if (data.transactions || data.initialBalance !== undefined) {
+              accountsToImport = [data as UserAccount];
+            }
+
+            if (accountsToImport.length > 0) {
+              const currentUid = get().firebaseUser?.uid || auth.currentUser?.uid || 'default';
+              const migratedAccounts = accountsToImport.map((acc: UserAccount, idx: number) => ({
                 ...acc,
+                id: idx === 0 && currentUid !== 'default' ? currentUid : (acc.id || `account_${idx}`),
                 subscriptions: migrateSubscriptions(acc.subscriptions ?? DEFAULT_SUBSCRIPTIONS),
               }));
               const active = migratedAccounts[0];
               set({
                 accounts: migratedAccounts,
-                activeAccountId: active?.id || null,
+                activeAccountId: active?.id || currentUid,
                 theme: data.theme ?? 'system',
                 language: data.language ?? 'ar',
                 ...extractAccountState(active),
               });
-              get().syncToFirestore();
+              await get().forceSyncToCloud();
               return true;
             }
             return false;
@@ -2309,7 +2378,42 @@ export const useAppStore = create<AppState>()(
   )
 );
 
-// Keep the store reachable from DevTools for owner initiated recovery workflows.
-if (typeof window !== 'undefined') {
+// Keep the store reachable from DevTools strictly in development
+if (typeof window !== 'undefined' && import.meta.env.DEV) {
   (window as Window & { useAppStore?: typeof useAppStore }).useAppStore = useAppStore;
+}
+
+// Setup visibility + pagehide listeners to flush debounced sync on tab close or backgrounding
+if (typeof window !== 'undefined') {
+  const onVisibilityChange = () => {
+    if (document.visibilityState === 'hidden') {
+      const s = useAppStore.getState();
+      const uid = s.firebaseUser?.uid || auth.currentUser?.uid;
+      if (uid) {
+        console.log('📱 [Flouss] Tab going offline, flushing pending sync...');
+        useAppStore.getState().forceSyncToCloud().then(() => {}).catch(() => {});
+      }
+    }
+  };
+
+  const onPageHide = async () => {
+    const s = useAppStore.getState();
+    const uid = s.firebaseUser?.uid || auth.currentUser?.uid;
+    if (uid) {
+      console.log('📱 [Flouss] Page hiding, flushing pending sync...');
+      await useAppStore.getState().forceSyncToCloud().catch(() => {});
+    }
+  };
+
+  const onBeforeUnload = async () => {
+    const s = useAppStore.getState();
+    const uid = s.firebaseUser?.uid || auth.currentUser?.uid;
+    if (uid) {
+      await useAppStore.getState().forceSyncToCloud().catch(() => {});
+    }
+  };
+
+  window.addEventListener('visibilitychange', onVisibilityChange);
+  window.addEventListener('pagehide', onPageHide);
+  window.addEventListener('beforeunload', onBeforeUnload);
 }

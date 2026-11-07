@@ -36,3 +36,10 @@ pnpm-debug.log*
 security-audit-report.html
 Flouss_Dashboard_Design.md
 
+# Temporary recovery & restore files - NEVER commit these
+*recovered*.json
+*restore*.js
+*backup*.json
+
+# Firebase performance config
+.googleconfig

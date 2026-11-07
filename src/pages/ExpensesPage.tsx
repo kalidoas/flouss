@@ -8,6 +8,7 @@ import { PrivacyCurrency } from '../components/common/PrivacyCurrency';
 import { AddExpenseModal } from '../components/transactions/AddExpenseModal';
 import { translations } from '../i18n/translations';
 import { formatMAD, formatDate, getCurrentMonthStr } from '../utils/formatters';
+import { money } from '../lib/currency';
 import { getCategoryIcon } from '../utils/icons';
 import { getCategoryName, getSubCategoryName, translateCategoryText } from '../utils/i18nHelpers';
 import { Transaction } from '../types';
@@ -91,9 +92,11 @@ export const ExpensesPage: React.FC = () => {
     });
   }, [allExpenses, viewScope, selectedMonth, selectedCategoryId, searchQuery, categories, language]);
 
-  // Metrics calculations
+  // Metrics calculations with exact currency precision
   const totalExpenseAmount = useMemo(() => {
-    return filteredExpenses.reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
+    return money.round(
+      filteredExpenses.reduce((sum, tx) => sum + money.toCents(tx.amount), 0) / 100
+    );
   }, [filteredExpenses]);
 
   // Group filtered expenses by Date (YYYY-MM-DD)
@@ -316,7 +319,9 @@ export const ExpensesPage: React.FC = () => {
       ) : (
         <div className="space-y-6">
           {groupedByDate.map(([dateKey, items]) => {
-            const dayTotal = items.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+            const dayTotal = money.round(
+              items.reduce((sum, item) => sum + money.toCents(item.amount), 0) / 100
+            );
             const dateLabel = formatDate(dateKey, language);
 
             return (

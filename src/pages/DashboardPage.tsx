@@ -26,6 +26,7 @@ import {
   calculateTotalSavingsInGoals,
 } from '../utils/calculations';
 import { formatMAD, getCurrentMonthStr, formatMonthYear, isTransactionInMonth } from '../utils/formatters';
+import { money } from '../lib/currency';
 import { Category, RecurringIncomeRule, Transaction } from '../types';
 import { translations } from '../i18n/translations';
 import { getIncomeSourceName, getCategoryName, translateCategoryText } from '../utils/i18nHelpers';
@@ -81,17 +82,23 @@ export const DashboardPage: React.FC = () => {
   const totalInGoals = calculateTotalSavingsInGoals(categories, transactions);
   const netWorth = balance + totalInGoals;
 
-  // Month-to-date metrics
+  // Month-to-date metrics with exact currency precision
   const currentMonthTx = transactions.filter((t: Transaction) => isTransactionInMonth(t.date, currentMonth));
-  const incomeThisMonth = currentMonthTx
-    .filter((t: Transaction) => t.type === 'income')
-    .reduce((sum: number, t: Transaction) => sum + t.amount, 0);
-  const expenseThisMonth = currentMonthTx
-    .filter((t: Transaction) => t.type === 'expense')
-    .reduce((sum: number, t: Transaction) => sum + t.amount, 0);
-  const savedThisMonth = currentMonthTx
-    .filter((t: Transaction) => t.type === 'contribution')
-    .reduce((sum: number, t: Transaction) => sum + t.amount, 0);
+  const incomeThisMonth = money.round(
+    currentMonthTx
+      .filter((t: Transaction) => t.type === 'income')
+      .reduce((sum: number, t: Transaction) => sum + money.toCents(t.amount), 0) / 100
+  );
+  const expenseThisMonth = money.round(
+    currentMonthTx
+      .filter((t: Transaction) => t.type === 'expense')
+      .reduce((sum: number, t: Transaction) => sum + money.toCents(t.amount), 0) / 100
+  );
+  const savedThisMonth = money.round(
+    currentMonthTx
+      .filter((t: Transaction) => t.type === 'contribution')
+      .reduce((sum: number, t: Transaction) => sum + money.toCents(t.amount), 0) / 100
+  );
 
   // Donut Spending Breakdown
   const { breakdown: spendingBreakdown, totalExpense: monthlyTotalExpense } =

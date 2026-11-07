@@ -1,26 +1,27 @@
 import { Category, GoalCalculation, Language, Transaction, UserAccount, TaskItem, DebtItem, SubscriptionItem } from '../types';
 import { getCategoryName } from './i18nHelpers';
 import { getIntlLocale, isTransactionInMonth } from './formatters';
+import { money } from '../lib/currency';
 
 export function calculateAvailableBalance(initialBalance: number | null, transactions: Transaction[]): number {
-  const base = typeof initialBalance === 'number' && !isNaN(initialBalance) ? initialBalance : 0;
-  const raw = (transactions || []).reduce((acc, tx) => {
-    const amt = typeof tx.amount === 'number' && !isNaN(tx.amount) ? tx.amount : parseFloat(String(tx.amount || 0)) || 0;
+  const baseCents = typeof initialBalance === 'number' && !isNaN(initialBalance) ? money.toCents(initialBalance) : 0;
+  const netCents = (transactions || []).reduce((acc, tx) => {
+    const amtCents = typeof tx.amount === 'number' && !isNaN(tx.amount) ? money.toCents(tx.amount) : money.toCents(String(tx.amount || 0));
     switch (tx.type) {
-      case 'income': return acc + amt;
-      case 'expense': return acc - amt;
-      case 'contribution': return acc - amt;
-      case 'goal_withdraw': return acc + amt;
-      case 'adjustment': return acc + amt;
+      case 'income': return acc + amtCents;
+      case 'expense': return acc - amtCents;
+      case 'contribution': return acc - amtCents;
+      case 'goal_withdraw': return acc + amtCents;
+      case 'adjustment': return acc + amtCents;
       default: return acc;
     }
-  }, base);
-  return Math.round(raw * 100) / 100;
+  }, baseCents);
+  return money.round(netCents / 100);
 }
 
 export function calculateReconciledInitialBalance(targetBalance: number, transactions: Transaction[]): number {
   const netTxImpact = calculateAvailableBalance(0, transactions);
-  return Math.round((targetBalance - netTxImpact) * 100) / 100;
+  return money.round(targetBalance - netTxImpact);
 }
 
 export function reconcileIncomeAndInitialBalance(account: UserAccount): {

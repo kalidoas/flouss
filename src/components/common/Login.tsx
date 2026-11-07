@@ -16,7 +16,15 @@ import { Mail, ArrowRight, ShieldCheck, CheckCircle2, RotateCcw, Lock, Smartphon
 
 const POPUP_BLOCKED_CODES = new Set([
   'auth/popup-blocked',
+  'auth/cancelled-popup-request',
+  'auth/operation-not-supported-in-this-environment',
 ]);
+
+export const isInAppBrowser = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  const ua = navigator.userAgent || '';
+  return /FBAN|FBAV|Instagram|WhatsApp|Snapchat|Line|Messenger/i.test(ua);
+};
 
 const ERROR_MESSAGES: Record<string, { ar: string; fr: string }> = {
   'auth/unauthorized-domain': {
@@ -196,7 +204,6 @@ export const Login: React.FC = () => {
       const msg = err?.message || '';
       const isPopupClosed =
         code === 'auth/popup-closed-by-user' ||
-        code === 'auth/cancelled-popup-request' ||
         msg.includes('popup-closed-by-user') ||
         msg.toLowerCase().includes('closed by user');
 
@@ -214,15 +221,21 @@ export const Login: React.FC = () => {
         return;
       }
 
-      if (POPUP_BLOCKED_CODES.has(err.code)) {
+      if (POPUP_BLOCKED_CODES.has(code) || isInAppBrowser()) {
         try {
           await signInWithRedirect(auth, googleProvider);
           return;
         } catch (redirectErr: any) {
-          const msg = getFriendlyAuthError(redirectErr, isAr);
+          const inAppMsg = isInAppBrowser()
+            ? isAr
+              ? 'أنت تستخدم متصفحاً مدمجاً (مثل واتساب أو إنستغرام). يرجى النقر على ••• واختيار "فتح في المتصفح (Safari/Chrome)" لتسجيل الدخول بأمان.'
+              : language === 'en'
+              ? 'You are in an in-app browser (e.g. WhatsApp / Instagram). Please tap ••• and select "Open in Safari/Chrome" to sign in.'
+              : 'Vous utilisez un navigateur intégré (ex. WhatsApp / Instagram). Cliquez sur ••• et choisissez "Ouvrir dans Safari/Chrome" pour vous connecter.'
+            : getFriendlyAuthError(redirectErr, isAr);
           setError({
             code: redirectErr?.code ?? 'auth/redirect-error',
-            message: msg,
+            message: inAppMsg,
             raw: redirectErr?.message,
           });
         }
