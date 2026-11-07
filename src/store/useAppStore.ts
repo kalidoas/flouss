@@ -530,6 +530,15 @@ export function applyRemoteAccount(
   const initialBal = typeof rawInitialBalance === 'number' && Number.isFinite(rawInitialBalance)
     ? rawInitialBalance
     : 0;
+  const explicitOnboarding = incomingAccount.isOnboarded ??
+    incomingAccount.hasCompletedOnboarding ??
+    data.isOnboarded ??
+    data.hasCompletedOnboarding;
+  const cloudHasAccountData =
+    (rawInitialBalance !== null && rawInitialBalance !== undefined) ||
+    mergedTxs.length > 0 ||
+    (Array.isArray(incomingAccount.categories) && incomingAccount.categories.length > 0) ||
+    (Array.isArray(data.categories) && data.categories.length > 0);
 
 
   const computedBal = calculateAvailableBalance(initialBal, mergedTxs);
@@ -551,7 +560,12 @@ export function applyRemoteAccount(
     initialBalance: initialBal,
     balance: computedBal,
     subscriptions: migratedSubs,
-    isOnboarded: Boolean(incomingAccount.isOnboarded ?? data.isOnboarded ?? true),
+    // Accept the older onboarding field as well as the current one. Older cloud
+    // documents may only have the legacy field, or may imply completion through data.
+    isOnboarded: explicitOnboarding === true ||
+      (explicitOnboarding == null && cloudHasAccountData) ||
+      (explicitOnboarding === false &&
+        ((rawInitialBalance !== null && rawInitialBalance !== undefined) || mergedTxs.length > 0)),
   };
 
   lastKnownTransactionsByUid.set(uid, mergedTxs);
@@ -627,6 +641,7 @@ const writeAccountToFirestore = async (
 ): Promise<boolean> => {
   const userRef = doc(db, 'users', uid);
   let computedBalance = 0;
+  let skippedUninitializedWrite = false;
   useAppStore.setState({ syncStatus: 'syncing' });
   try {
     await runTransaction(db, async (firestoreTransaction: any) => {
@@ -635,6 +650,20 @@ const writeAccountToFirestore = async (
     if (snapshot.exists()) {
       const remoteData = snapshot.data();
       const remoteAccount = (remoteData.account || remoteData) as UserAccount;
+      const localIsUninitialized =
+        !localAccount.isOnboarded &&
+        (localAccount.initialBalance === null || localAccount.initialBalance === undefined) &&
+        (localAccount.transactions?.length || 0) === 0;
+      if (localIsUninitialized) {
+        // The cloud document is authoritative until this device has completed
+        // onboarding or has a real transaction to contribute.
+        skippedUninitializedWrite = true;
+        computedBalance = calculateAvailableBalance(
+          remoteAccount.initialBalance ?? remoteData.initialBalance ?? null,
+          remoteAccount.transactions ?? remoteData.transactions ?? []
+        );
+        return;
+      }
       accountToWrite = {
         ...remoteAccount,
         ...localAccount,
@@ -661,6 +690,11 @@ const writeAccountToFirestore = async (
   } catch (error) {
     useAppStore.setState({ syncStatus: 'error' });
     throw error;
+  }
+
+  if (skippedUninitializedWrite) {
+    console.warn(`⏭️ [Flouss Cloud] Skipped empty local write; existing Firestore account preserved for users/${uid}`);
+    return false;
   }
 
   console.log(`✅ [Flouss Cloud] ${label} sync completed (balance: ${computedBalance}) for users/${uid}`);
@@ -1009,7 +1043,7 @@ export const useAppStore = create<AppState>()(
                   ? localAccount.focusLists
                   : DEFAULT_FOCUS_LISTS,
             };
-          } else {
+          } else if (snap !== null && !snap.exists()) {
             // Case D: Completely new user registration
             const freshAccount = makeInitialAccount(uid, user.displayName || 'Utilisateur', user.email || '');
             if (legacyFocusTasks.length > 0) {
@@ -1036,6 +1070,11 @@ export const useAppStore = create<AppState>()(
               );
               console.log(`🆕 [Flouss Cloud] Created initial document for users/${uid}`);
             } catch (err) {}
+          } else {
+            // Firestore could not be read. Keep a local/offline view if available,
+            // but never treat a read failure as proof that the account is new.
+            console.warn(`[Flouss Cloud] Preserving existing cloud data: Firestore read failed for users/${uid}; no cloud write attempted.`);
+            resolvedAccount = makeInitialAccount(uid, user.displayName || 'Utilisateur', user.email || '');
           }
 
           if (!resolvedAccount) {
