@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Logo } from '../common/Logo';
-import { ShieldCheck, Lock, LogOut } from 'lucide-react';
-import { hashPin } from '../../utils/crypto';
+import { ShieldCheck, Lock, LogOut, AlertTriangle } from 'lucide-react';
+import { hashPin, getPinLockoutStatus, recordFailedPinAttempt, resetPinLockout } from '../../utils/crypto';
 
 export { hashPin };
 
@@ -27,10 +27,21 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
   const [digits, setDigits] = useState<string[]>([]);
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [lockout, setLockout] = useState(() => getPinLockoutStatus(user.uid));
+
+  useEffect(() => {
+    if (!lockout.isLocked) return;
+    const interval = setInterval(() => {
+      const status = getPinLockoutStatus(user.uid);
+      setLockout(status);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [lockout.isLocked, user.uid]);
 
   // Physical keyboard listener for fast typing
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (lockout.isLocked) return;
       if (e.key >= '0' && e.key <= '9') {
         handleDigit(e.key);
       } else if (e.key === 'Backspace') {
@@ -42,10 +53,10 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [digits]);
+  }, [digits, lockout.isLocked]);
 
   const handleDigit = async (digit: string) => {
-    if (digits.length >= 4) return;
+    if (lockout.isLocked || digits.length >= 4) return;
     const nextDigits = [...digits, digit];
     setDigits(nextDigits);
     setError(false);
@@ -54,13 +65,32 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
     if (nextDigits.length === 4) {
       const pin = nextDigits.join('');
       const isValid = await onVerify(pin);
-      if (!isValid) {
+      if (isValid) {
+        resetPinLockout(user.uid);
+      } else {
+        const updatedLockout = recordFailedPinAttempt(user.uid);
+        setLockout(updatedLockout);
         setError(true);
-        setErrorMessage(
-          isAr
-            ? 'رمز PIN غير صحيح، يرجى المحاولة مرة أخرى'
-            : 'Code PIN incorrect, veuillez réessayer'
-        );
+
+        if (updatedLockout.isLocked) {
+          setErrorMessage(
+            isAr
+              ? `تم قفل الحساب مؤقتاً لحمايتك بعد 5 محاولات خاطئة. يرجى الانتظار ${updatedLockout.remainingSeconds} ثانية.`
+              : language === 'en'
+              ? `Account temporarily locked after 5 failed attempts. Please wait ${updatedLockout.remainingSeconds}s.`
+              : `Compte temporairement verrouillé après 5 tentatives échouées. Veuillez patienter ${updatedLockout.remainingSeconds}s.`
+          );
+        } else {
+          const remainingAttempts = 5 - updatedLockout.attemptsCount;
+          setErrorMessage(
+            isAr
+              ? `رمز PIN غير صحيح. المحاولات المتبقية: ${remainingAttempts}`
+              : language === 'en'
+              ? `Incorrect PIN. Remaining attempts: ${remainingAttempts}`
+              : `Code PIN incorrect. Tentatives restantes : ${remainingAttempts}`
+          );
+        }
+
         setTimeout(() => {
           setDigits([]);
           setError(false);
@@ -144,12 +174,23 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
           })}
         </div>
 
-        {/* Error message */}
-        {errorMessage && (
+        {/* Lockout banner or Error message */}
+        {lockout.isLocked ? (
+          <div className="p-3 my-2 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 text-xs text-rose-600 dark:text-rose-400 flex items-center justify-center gap-2 animate-pulse">
+            <AlertTriangle className="w-4 h-4 shrink-0" />
+            <span>
+              {isAr
+                ? `تم قفل الحساب مؤقتاً (${lockout.remainingSeconds} ثانية متبقية)`
+                : language === 'en'
+                ? `Account locked (${lockout.remainingSeconds}s remaining)`
+                : `Compte verrouillé (${lockout.remainingSeconds}s restantes)`}
+            </span>
+          </div>
+        ) : errorMessage ? (
           <p className="text-xs text-rose-500 font-medium mb-2 animate-shake">
             {errorMessage}
           </p>
-        )}
+        ) : null}
 
         {/* Numeric keypad */}
         <div className="grid grid-cols-3 gap-2.5 max-w-[220px] mx-auto pt-2">
@@ -157,8 +198,11 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
             <button
               key={num}
               type="button"
+              disabled={lockout.isLocked}
               onClick={() => handleDigit(num)}
-              className="h-11 rounded-xl bg-[#fbfbfa] dark:bg-[#1a1a1a] hover:bg-[#f1f0ee] dark:hover:bg-[#282828] active:scale-95 border border-[#e3e2de] dark:border-[#2f2f2f] text-sm font-semibold text-[#37352f] dark:text-[#ecebed] transition-all cursor-pointer shadow-2xs"
+              className={`h-11 rounded-xl bg-[#fbfbfa] dark:bg-[#1a1a1a] hover:bg-[#f1f0ee] dark:hover:bg-[#282828] active:scale-95 border border-[#e3e2de] dark:border-[#2f2f2f] text-sm font-semibold text-[#37352f] dark:text-[#ecebed] transition-all shadow-2xs ${
+                lockout.isLocked ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'
+              }`}
             >
               {num}
             </button>
@@ -166,24 +210,33 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
 
           <button
             type="button"
+            disabled={lockout.isLocked}
             onClick={handleClear}
-            className="h-11 rounded-xl text-xs font-medium text-[#787774] hover:bg-[#f1f0ee] dark:hover:bg-[#282828] active:scale-95 flex items-center justify-center transition-all cursor-pointer"
+            className={`h-11 rounded-xl text-xs font-medium text-[#787774] hover:bg-[#f1f0ee] dark:hover:bg-[#282828] active:scale-95 flex items-center justify-center transition-all ${
+              lockout.isLocked ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'
+            }`}
           >
             {isAr ? 'مسح' : 'C'}
           </button>
 
           <button
             type="button"
+            disabled={lockout.isLocked}
             onClick={() => handleDigit('0')}
-            className="h-11 rounded-xl bg-[#fbfbfa] dark:bg-[#1a1a1a] hover:bg-[#f1f0ee] dark:hover:bg-[#282828] active:scale-95 border border-[#e3e2de] dark:border-[#2f2f2f] text-sm font-semibold text-[#37352f] dark:text-[#ecebed] transition-all cursor-pointer shadow-2xs"
+            className={`h-11 rounded-xl bg-[#fbfbfa] dark:bg-[#1a1a1a] hover:bg-[#f1f0ee] dark:hover:bg-[#282828] active:scale-95 border border-[#e3e2de] dark:border-[#2f2f2f] text-sm font-semibold text-[#37352f] dark:text-[#ecebed] transition-all shadow-2xs ${
+              lockout.isLocked ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'
+            }`}
           >
             0
           </button>
 
           <button
             type="button"
+            disabled={lockout.isLocked}
             onClick={handleDelete}
-            className="h-11 rounded-xl text-xs font-medium text-[#787774] hover:bg-[#f1f0ee] dark:hover:bg-[#282828] active:scale-95 flex items-center justify-center transition-all cursor-pointer"
+            className={`h-11 rounded-xl text-xs font-medium text-[#787774] hover:bg-[#f1f0ee] dark:hover:bg-[#282828] active:scale-95 flex items-center justify-center transition-all ${
+              lockout.isLocked ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'
+            }`}
             aria-label="Supprimer"
           >
             ⌫

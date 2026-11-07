@@ -23,11 +23,27 @@ export function triggerCalendarReconnectModal(reason = 'expired'): void {
   }
 }
 
+const TOKEN_EXPIRY_KEY = 'flouss_google_access_token_expiry';
+
+export function isGoogleAccessTokenExpired(): boolean {
+  try {
+    const rawExpiry = localStorage.getItem(TOKEN_EXPIRY_KEY) || sessionStorage.getItem(TOKEN_EXPIRY_KEY);
+    if (!rawExpiry) return false;
+    return Date.now() >= Number(rawExpiry);
+  } catch {
+    return false;
+  }
+}
+
 /**
- * Get stored Google OAuth access token or return null
+ * Get stored Google OAuth access token or return null (auto-clears if expired)
  */
 export function getStoredGoogleAccessToken(): string | null {
   try {
+    if (isGoogleAccessTokenExpired()) {
+      setStoredGoogleAccessToken(null, false, null);
+      return null;
+    }
     return (
       sessionStorage.getItem(TOKEN_STORAGE_KEY) ||
       localStorage.getItem(TOKEN_STORAGE_KEY) ||
@@ -65,6 +81,10 @@ export function setStoredGoogleAccessToken(
     if (token) {
       sessionStorage.setItem(TOKEN_STORAGE_KEY, token);
       localStorage.setItem(TOKEN_STORAGE_KEY, token);
+      // Google access tokens expire after 3600 seconds; set 3500s safety margin
+      const expiry = String(Date.now() + 3500 * 1000);
+      sessionStorage.setItem(TOKEN_EXPIRY_KEY, expiry);
+      localStorage.setItem(TOKEN_EXPIRY_KEY, expiry);
       if (hasCalendarScope) {
         sessionStorage.setItem(SCOPE_STORAGE_KEY, 'true');
         localStorage.setItem(SCOPE_STORAGE_KEY, 'true');
@@ -76,6 +96,8 @@ export function setStoredGoogleAccessToken(
     } else {
       sessionStorage.removeItem(TOKEN_STORAGE_KEY);
       localStorage.removeItem(TOKEN_STORAGE_KEY);
+      sessionStorage.removeItem(TOKEN_EXPIRY_KEY);
+      localStorage.removeItem(TOKEN_EXPIRY_KEY);
       sessionStorage.removeItem(SCOPE_STORAGE_KEY);
       localStorage.removeItem(SCOPE_STORAGE_KEY);
       sessionStorage.removeItem(USER_EMAIL_KEY);

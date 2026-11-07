@@ -1248,11 +1248,13 @@ export const TasksPage: React.FC = () => {
             </span>
           </div>
 
-          <div className="overflow-x-auto pb-2">
+          <div className="overflow-x-auto pb-2 scrollbar-thin scroll-smooth">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="border-b border-black/[0.05] dark:border-white/[0.06] text-zinc-400 font-semibold">
-                  <th className="py-2.5 px-3 min-w-[140px]">{tTask.taskRoutine}</th>
+                  <th className={`sticky ${language === 'ar' ? 'right-0' : 'left-0'} z-20 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md py-2.5 px-3 min-w-[140px] max-w-[180px] shadow-[1px_0_0_0_rgba(0,0,0,0.06)] dark:shadow-[1px_0_0_0_rgba(255,255,255,0.08)]`}>
+                    {tTask.taskRoutine}
+                  </th>
                   {Array.from({ length: monthDaysCount }, (_, i) => i + 1).map((day) => {
                     const dayStr = `${currentMonthStr}-${String(day).padStart(2, '0')}`;
                     const isToday = dayStr === todayStr;
@@ -1282,7 +1284,7 @@ export const TasksPage: React.FC = () => {
                       key={task.id}
                       className="hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors"
                     >
-                      <td className="py-3 px-3 font-semibold text-zinc-800 dark:text-zinc-200 truncate max-w-[150px]">
+                      <td className={`sticky ${language === 'ar' ? 'right-0' : 'left-0'} z-10 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md py-3 px-3 font-semibold text-zinc-800 dark:text-zinc-200 truncate max-w-[180px] min-w-[140px] shadow-[1px_0_0_0_rgba(0,0,0,0.06)] dark:shadow-[1px_0_0_0_rgba(255,255,255,0.08)]`}>
                         {task.title}
                       </td>
 

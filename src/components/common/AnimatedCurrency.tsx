@@ -62,7 +62,7 @@ export const AnimatedCurrency: React.FC<AnimatedCurrencyProps> = ({
   });
 
   const currencySymbol =
-    language === 'ar' ? 'د.م.' : language === 'en' ? 'MAD' : 'DH';
+    language === 'ar' ? 'د.م.' : 'MAD';
 
   return (
     <motion.span

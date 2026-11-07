@@ -1,0 +1,43 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidUserDoc(userId) {
+      // Document size and basic schema validation
+      return request.resource.data.uid == userId
+        && (!('balance' in request.resource.data) || request.resource.data.balance is number)
+        && (!('email' in request.resource.data) || request.resource.data.email == null || request.resource.data.email is string)
+        && (!('displayName' in request.resource.data) || request.resource.data.displayName == null || request.resource.data.displayName is string);
+    }
+
+    // Explicitly lock down the users collection
+    match /users/{userId} {
+      // Users can only read, create, update, or delete their own document
+      allow get: if isOwner(userId);
+      allow list: if false; // Block listing the entire users collection
+      allow create: if isOwner(userId) && isValidUserDoc(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+
+      // Recursive rules for user subcollections (e.g., backups, logs)
+      match /{allSubcollections=**} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    // Default deny all other collections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -404,8 +404,21 @@ export function getIncomeTransactionTitle(
   language: Language = 'fr'
 ): string {
   const isAr = language === 'ar';
+  const otherIncomeText =
+    translations[language]?.incomeSourcesData?.other ||
+    (isAr ? 'مداخيل أخرى' : language === 'fr' ? 'Autre revenu' : 'Other income');
 
-  // 1. Source lookup by ID or key
+  // 1. If sourceId or categoryId is 'cat_autre' or 'src_autre' or 'other', return other income
+  if (
+    tx.sourceId === 'cat_autre' ||
+    tx.sourceId === 'src_autre' ||
+    tx.sourceId === 'other' ||
+    tx.categoryId === 'cat_autre'
+  ) {
+    return otherIncomeText;
+  }
+
+  // 2. Source lookup by ID or key
   if (tx.sourceId) {
     const src = incomeSources.find((s) => s.id === tx.sourceId || s.key === tx.sourceId);
     if (src) {
@@ -413,9 +426,21 @@ export function getIncomeTransactionTitle(
     }
   }
 
-  // 2. Note lookup against income sources dictionary
+  // 3. Note lookup against income sources dictionary
   if (tx.note) {
     const trimmed = tx.note.trim();
+
+    // Guard against accidental expense label translations appearing on income
+    if (
+      trimmed === 'Other expenses' ||
+      trimmed === 'Autres dépenses' ||
+      trimmed === 'مصاريف أخرى' ||
+      trimmed === 'Autre' ||
+      trimmed === 'Other' ||
+      trimmed === 'أخرى'
+    ) {
+      return otherIncomeText;
+    }
 
     if (trimmed === 'أعمال أخرى' || trimmed.includes('أعمال أخرى')) {
       return (
@@ -440,7 +465,7 @@ export function getIncomeTransactionTitle(
     return trimmed;
   }
 
-  // 3. Fallback generic income label
+  // 4. Fallback generic income label
   return isAr ? 'مدخول' : language === 'fr' ? 'Revenu' : 'Income';
 }
 

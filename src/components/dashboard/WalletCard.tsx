@@ -298,30 +298,30 @@ export const WalletCard: React.FC<WalletCardProps> = ({
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
           onClick={onOpenIncome}
-          className="py-2 px-2 rounded-xl text-xs font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 hover:bg-emerald-500/25 transition-all text-center flex items-center justify-center gap-1 shadow-xs"
+          className="py-2.5 px-2 sm:px-3 rounded-xl text-xs font-bold whitespace-nowrap bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 hover:bg-emerald-500/25 transition-all text-center flex items-center justify-center gap-1.5 shadow-xs"
         >
-          <ArrowUpRight className="w-3.5 h-3.5 stroke-[2.5]" />
-          <span>{tWallet.addIncome}</span>
+          <ArrowUpRight className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
+          <span className="whitespace-nowrap">{tWallet.addIncome}</span>
         </motion.button>
 
         <motion.button
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
           onClick={onOpenExpense}
-          className="py-2 px-2 rounded-xl text-xs font-bold bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/20 hover:bg-rose-500/25 transition-all text-center flex items-center justify-center gap-1 shadow-xs"
+          className="py-2.5 px-2 sm:px-3 rounded-xl text-xs font-bold whitespace-nowrap bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/20 hover:bg-rose-500/25 transition-all text-center flex items-center justify-center gap-1.5 shadow-xs"
         >
-          <ArrowDownRight className="w-3.5 h-3.5 stroke-[2.5]" />
-          <span>{tWallet.addExpense}</span>
+          <ArrowDownRight className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
+          <span className="whitespace-nowrap">{tWallet.addExpense}</span>
         </motion.button>
 
         <motion.button
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
           onClick={onOpenGoal}
-          className="py-2 px-2 rounded-xl text-xs font-bold bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/20 hover:bg-blue-500/25 transition-all text-center flex items-center justify-center gap-1 shadow-xs"
+          className="py-2.5 px-2 sm:px-3 rounded-xl text-xs font-bold whitespace-nowrap bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/20 hover:bg-blue-500/25 transition-all text-center flex items-center justify-center gap-1.5 shadow-xs"
         >
-          <PiggyBank className="w-3.5 h-3.5 stroke-[2.5]" />
-          <span>{tWallet.saveGoal}</span>
+          <PiggyBank className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
+          <span className="whitespace-nowrap">{tWallet.saveGoal}</span>
         </motion.button>
       </div>
 

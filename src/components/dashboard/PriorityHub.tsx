@@ -235,10 +235,10 @@ export const PriorityHub: React.FC = () => {
 
             <button
               onClick={() => setActiveScreen('notes')}
-              className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-0.5"
+              className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 whitespace-nowrap shrink-0"
             >
               <span>{tHub.seeAll}</span>
-              <ChevronRight className="w-3 h-3" />
+              <ChevronRight className="w-3 h-3 shrink-0" />
             </button>
           </div>
 
@@ -301,10 +301,10 @@ export const PriorityHub: React.FC = () => {
 
             <button
               onClick={() => setActiveScreen('subscriptions')}
-              className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-0.5"
+              className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 whitespace-nowrap shrink-0"
             >
               <span>{tHub.manage}</span>
-              <ChevronRight className="w-3 h-3" />
+              <ChevronRight className="w-3 h-3 shrink-0" />
             </button>
           </div>
 
@@ -390,10 +390,10 @@ export const PriorityHub: React.FC = () => {
 
             <button
               onClick={() => setActiveScreen('tasks')}
-              className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-0.5"
+              className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 whitespace-nowrap shrink-0"
             >
               <span>{tHub.program}</span>
-              <ChevronRight className="w-3 h-3" />
+              <ChevronRight className="w-3 h-3 shrink-0" />
             </button>
           </div>
 

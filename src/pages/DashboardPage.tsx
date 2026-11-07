@@ -219,8 +219,8 @@ export const DashboardPage: React.FC = () => {
           <FocusTaskList />
         </div>
 
-        {/* Compact Apple Wallet Card (1/3 width on desktop) */}
-        <div className="lg:col-span-4 order-1 lg:order-2">
+        {/* Compact Apple Wallet Card + Recent Operations (1/3 width on desktop) */}
+        <div className="lg:col-span-4 order-1 lg:order-2 space-y-5">
           <WalletCard
             balance={balance}
             incomeThisMonth={incomeThisMonth}
@@ -231,6 +231,45 @@ export const DashboardPage: React.FC = () => {
             onNavigateIncome={() => setActiveScreen('income')}
             onNavigateExpense={() => setActiveScreen('expenses')}
           />
+
+          {/* Recent Operations Card: perfectly balances the desktop layout beneath WalletCard */}
+          <div className="rounded-2xl p-4 sm:p-5 bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
+                  <Receipt className="w-3.5 h-3.5" />
+                </div>
+                <h3 className="font-bold text-xs text-zinc-900 dark:text-white tracking-tight">
+                  {tDash.recentTransactions}
+                </h3>
+              </div>
+              <button
+                onClick={() => setActiveScreen('history')}
+                className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-0.5"
+              >
+                <span>{tDash.seeAllTransactions}</span>
+                <ChevronRight className="w-3 h-3" />
+              </button>
+            </div>
+
+            {recentTransactions.length === 0 ? (
+              <EmptyState
+                icon={<Receipt className="w-4 h-4" />}
+                title={tDash.noTransactions}
+                description={tDash.allTransactionsDescription}
+              />
+            ) : (
+              <div className="space-y-1.5">
+                {recentTransactions.slice(0, 5).map((tx: Transaction) => (
+                  <TransactionItem
+                    key={tx.id}
+                    transaction={tx}
+                    hideBalance={hideBalance}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -523,40 +562,6 @@ export const DashboardPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Recent Transactions Section */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-xs sm:text-sm text-zinc-900 dark:text-white tracking-tight">
-            {tDash.recentTransactions}
-          </h3>
-          <button
-            onClick={() => setActiveScreen('history')}
-            className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-0.5 font-medium"
-          >
-            <span>{tDash.seeAllTransactions}</span>
-            <ChevronRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-
-        {recentTransactions.length === 0 ? (
-          <EmptyState
-            icon={<Receipt className="w-5 h-5" />}
-            title={tDash.noTransactions}
-            description={tDash.allTransactionsDescription}
-          />
-        ) : (
-          <div className="space-y-1.5">
-            {recentTransactions.map((tx: Transaction) => (
-              <TransactionItem
-                key={tx.id}
-                transaction={tx}
-                hideBalance={hideBalance}
-              />
-            ))}
-          </div>
-        )}
       </div>
 
       {/* Bulk Save Confirmation Modal ("Tout épargner") */}

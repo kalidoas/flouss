@@ -30,7 +30,8 @@ export async function hashPin(pin: string, salt: string = DEFAULT_PIN_SALT): Pro
 
 /**
  * Verify an entered PIN against a stored PIN.
- * Supports backward compatibility for legacy 4-character plain text PINs.
+ * Supports backward compatibility for legacy 4-character plain text PINs
+ * and automatically signals upgrade to UID-salted SHA-256 hash.
  */
 export async function verifyPin(
   enteredPin: string,
@@ -44,15 +45,77 @@ export async function verifyPin(
   const cleanEntered = String(enteredPin).trim();
   const cleanStored = String(storedPin).trim();
 
-  // Legacy plain-text PIN (4 digits)
+  // 1. Legacy plain-text PIN (4 digits)
   if (cleanStored.length === 4) {
     const isMatch = cleanEntered === cleanStored;
     return { isValid: isMatch, needsUpgrade: isMatch };
   }
 
-  // Modern hashed PIN (SHA-256 hex is 64 characters)
+  // 2. Modern hashed PIN with provided salt (e.g. UID + salt)
   const enteredHash = await hashPin(cleanEntered, salt);
-  return { isValid: enteredHash === cleanStored, needsUpgrade: false };
+  if (enteredHash === cleanStored) {
+    return { isValid: true, needsUpgrade: false };
+  }
+
+  // 3. Fallback: Check if stored was hashed with DEFAULT_PIN_SALT without UID
+  if (salt !== DEFAULT_PIN_SALT) {
+    const legacyHash = await hashPin(cleanEntered, DEFAULT_PIN_SALT);
+    if (legacyHash === cleanStored) {
+      return { isValid: true, needsUpgrade: true };
+    }
+  }
+
+  return { isValid: false, needsUpgrade: false };
+}
+
+const LOCKOUT_KEY_PREFIX = 'flouss_pin_lockout_';
+const MAX_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MS = 5 * 60 * 1000; // 5 minutes
+
+export interface LockoutStatus {
+  isLocked: boolean;
+  remainingSeconds: number;
+  attemptsCount: number;
+}
+
+export function getPinLockoutStatus(uid: string = 'default'): LockoutStatus {
+  try {
+    const raw = localStorage.getItem(`${LOCKOUT_KEY_PREFIX}${uid}`);
+    if (!raw) return { isLocked: false, remainingSeconds: 0, attemptsCount: 0 };
+    const data = JSON.parse(raw);
+    const now = Date.now();
+    if (data.lockedUntil && data.lockedUntil > now) {
+      const remaining = Math.ceil((data.lockedUntil - now) / 1000);
+      return { isLocked: true, remainingSeconds: remaining, attemptsCount: data.attempts || MAX_ATTEMPTS };
+    }
+    return { isLocked: false, remainingSeconds: 0, attemptsCount: data.attempts || 0 };
+  } catch {
+    return { isLocked: false, remainingSeconds: 0, attemptsCount: 0 };
+  }
+}
+
+export function recordFailedPinAttempt(uid: string = 'default'): LockoutStatus {
+  try {
+    const current = getPinLockoutStatus(uid);
+    const newCount = current.attemptsCount + 1;
+    let lockedUntil = 0;
+    if (newCount >= MAX_ATTEMPTS) {
+      lockedUntil = Date.now() + LOCKOUT_DURATION_MS;
+    }
+    localStorage.setItem(
+      `${LOCKOUT_KEY_PREFIX}${uid}`,
+      JSON.stringify({ attempts: newCount, lockedUntil })
+    );
+    return getPinLockoutStatus(uid);
+  } catch {
+    return { isLocked: false, remainingSeconds: 0, attemptsCount: 1 };
+  }
+}
+
+export function resetPinLockout(uid: string = 'default'): void {
+  try {
+    localStorage.removeItem(`${LOCKOUT_KEY_PREFIX}${uid}`);
+  } catch {}
 }
 
 export interface EncryptedBackupPayload {
@@ -148,18 +211,49 @@ export async function encryptBackup(
 }
 
 /**
+ * Recursively sanitizes an object against Prototype Pollution.
+ * Strips __proto__, constructor, and prototype properties.
+ */
+export function sanitizeObject<T>(input: T): T {
+  if (input === null || typeof input !== 'object') {
+    return input;
+  }
+
+  if (Array.isArray(input)) {
+    return input.map(sanitizeObject) as unknown as T;
+  }
+
+  const clean: Record<string, any> = {};
+  for (const key of Object.keys(input)) {
+    if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+      continue;
+    }
+    clean[key] = sanitizeObject((input as Record<string, any>)[key]);
+  }
+  return clean as T;
+}
+
+const MAX_BACKUP_SIZE_BYTES = 15 * 1024 * 1024; // 15MB
+
+/**
  * Decrypt a backup file string, or parse if it is an unencrypted legacy JSON backup.
+ * Hardened against Prototype Pollution and oversized payloads.
  */
 export async function decryptBackup<T = any>(
   rawContent: string,
   secret: string = DEFAULT_BACKUP_SECRET
 ): Promise<T | null> {
+  if (typeof rawContent !== 'string' || rawContent.length > MAX_BACKUP_SIZE_BYTES) {
+    console.error('Backup payload exceeds 15MB size limit or is invalid');
+    return null;
+  }
+
   try {
     const parsed = JSON.parse(rawContent);
 
     // If it's a standard unencrypted legacy backup:
     if (!parsed || parsed.encrypted !== true || !parsed.ciphertext) {
-      return parsed as T;
+      return sanitizeObject(parsed) as T;
     }
 
     // It's an encrypted backup
@@ -181,7 +275,8 @@ export async function decryptBackup<T = any>(
     );
 
     const decryptedText = new TextDecoder().decode(decryptedBuffer);
-    return JSON.parse(decryptedText) as T;
+    const decryptedParsed = JSON.parse(decryptedText);
+    return sanitizeObject(decryptedParsed) as T;
   } catch (err) {
     console.error('Failed to parse or decrypt backup:', err);
     return null;

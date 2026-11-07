@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useAppStore } from '../../store/useAppStore';
 import { Eye, EyeOff, Moon, Sun, ChevronLeft } from 'lucide-react';
 import { Logo } from '../common/Logo';
+import { DynamicIsland } from './DynamicIsland';
 import { Language } from '../../types';
 import { islandManager } from '../../utils/islandManager';
 import { playHapticFeedback } from '../../utils/haptics';
@@ -51,6 +52,11 @@ export const Header: React.FC = () => {
           </button>
         )}
         <Logo size="sm" showWordmark={true} />
+      </div>
+
+      {/* Streamlined Center Island Activity & Cloud Sync Status */}
+      <div className="flex-1 flex justify-center items-center px-1 min-w-0">
+        <DynamicIsland />
       </div>
 
       {/* Header Controls: Language Selector, Privacy mode toggle & Theme toggle */}

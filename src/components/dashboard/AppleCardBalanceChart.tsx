@@ -165,9 +165,9 @@ export const AppleCardBalanceChart: React.FC<AppleCardBalanceChartProps> = ({
       </div>
 
       {/* Apple Card Minimalist Smooth Spline Chart */}
-      <div className="w-full h-32 sm:h-36 relative -mb-2">
+      <div className="w-full h-32 sm:h-36 relative pt-2">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 8, right: 0, left: 0, bottom: 0 }}>
+          <AreaChart data={data} margin={{ top: 8, right: 4, left: 4, bottom: 4 }}>
             <defs>
               <linearGradient id="appleCardSplineGrad" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.35} />

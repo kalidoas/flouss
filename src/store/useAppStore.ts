@@ -1216,16 +1216,18 @@ export const useAppStore = create<AppState>()(
           const correctPin = s.userPinCode || s.pinCode;
           if (!correctPin) return true;
 
-          const { isValid, needsUpgrade } = await verifyPin(enteredPin, correctPin);
+          const uid = s.firebaseUser?.uid || auth.currentUser?.uid || 'default';
+          const salt = `${uid}:flouss_pin_salt_v1`;
+          const { isValid, needsUpgrade } = await verifyPin(enteredPin, correctPin, salt);
           if (isValid) {
             set({ isPinVerified: true, isPinUnlocked: true });
             if (s.firebaseUser?.uid) {
               sessionStorage.setItem(`flouss_2fa_${s.firebaseUser.uid}`, 'verified');
             }
             if (needsUpgrade) {
-              // Backward compatibility: automatically upgrade legacy plain text PIN to SHA-256 hash
+              // Backward compatibility: automatically upgrade legacy PIN to UID-salted SHA-256 hash
               try {
-                const hashed = await hashPin(enteredPin);
+                const hashed = await hashPin(enteredPin, salt);
                 await get().setPinCode(hashed);
               } catch (e) {
                 console.warn('[Flouss Security] Failed to auto-upgrade legacy PIN:', e);
@@ -1433,8 +1435,11 @@ export const useAppStore = create<AppState>()(
 
         setPinCode: async (code: string | null) => {
           let finalPin = code;
+          const s = get();
+          const uid = s.firebaseUser?.uid || auth.currentUser?.uid || 'default';
+          const salt = `${uid}:flouss_pin_salt_v1`;
           if (code && code.length === 4) {
-            finalPin = await hashPin(code);
+            finalPin = await hashPin(code, salt);
           }
           updateActive((a) => ({
             ...a,
@@ -1454,12 +1459,13 @@ export const useAppStore = create<AppState>()(
           const activeId = s.activeAccountId || s.accounts[0]?.id;
           const currentAcc = s.accounts.find((a: UserAccount) => a.id === activeId) || s.accounts[0];
           const uid = s.firebaseUser?.uid || currentAcc?.id || 'default_user';
+          const salt = `${uid}:flouss_pin_salt_v1`;
 
           const rawPin =
             metadata?.pinCode && metadata.pinCode.length === 4
               ? metadata.pinCode
               : currentAcc?.pinCode ?? null;
-          const pin = rawPin && rawPin.length === 4 ? await hashPin(rawPin) : rawPin;
+          const pin = rawPin && rawPin.length === 4 ? await hashPin(rawPin, salt) : rawPin;
 
           const updatedAccount: UserAccount = {
             ...(currentAcc ||

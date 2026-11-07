@@ -3,7 +3,6 @@ import { Header } from './Header';
 import { Sidebar } from './Sidebar';
 import { Navbar } from './Navbar';
 import { QuickAddButton } from './QuickAddButton';
-import { DynamicIsland } from './DynamicIsland';
 import { InAppAlarmSheet } from '../common/InAppAlarmSheet';
 import { ReconnectGoogleCalendarModal } from '../common/ReconnectGoogleCalendarModal';
 import { AddToHomeScreenModal } from '../common/AddToHomeScreenModal';
@@ -64,9 +63,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden relative">
-        {/* iOS Dynamic Island Activity Pill (in-flow, never overlays the Header) */}
-        <DynamicIsland />
-
         <Header />
 
         <main className="flex-1 overflow-y-auto pb-32 md:pb-8 px-3.5 sm:px-8 max-w-screen-2xl w-full mx-auto select-text">

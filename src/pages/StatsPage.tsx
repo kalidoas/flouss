@@ -669,7 +669,7 @@ export const StatsPage: React.FC = () => {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={monthlyStats}
-                margin={{ top: 16, right: 12, left: -12, bottom: 4 }}
+                margin={{ top: 16, right: 12, left: 4, bottom: 4 }}
                 barGap={4}
               >
                 <CartesianGrid

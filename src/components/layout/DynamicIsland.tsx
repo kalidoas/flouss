@@ -110,7 +110,7 @@ export const DynamicIsland: React.FC = () => {
     : 'bg-amber-400 shadow-[0_0_6px_#fbbf24]';
 
   return (
-    <div className="w-full flex justify-center pt-2 px-3 shrink-0 pointer-events-none select-none">
+    <div className="flex justify-center shrink-0 pointer-events-none select-none">
       <motion.div
         layout
         onClick={handleForceSync}
@@ -124,8 +124,8 @@ export const DynamicIsland: React.FC = () => {
           damping: 32,
           mass: 0.8,
         }}
-        className={`pointer-events-auto cursor-pointer relative max-w-full bg-black/95 text-white backdrop-blur-2xl border border-white/20 shadow-[0_12px_40px_0_rgba(0,0,0,0.6),inset_0_1px_0_0_rgba(255,255,255,0.2)] rounded-full flex items-center justify-between overflow-hidden px-3.5 py-1.5 transition-all ${
-          isExpanded ? 'w-[280px] px-4 py-2.5' : 'w-[150px]'
+        className={`pointer-events-auto cursor-pointer relative max-w-full bg-black/95 text-white backdrop-blur-2xl border border-white/20 shadow-[0_4px_16px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.2)] rounded-full flex items-center justify-between overflow-hidden px-3 py-1 transition-all ${
+          isExpanded ? 'w-[260px] sm:w-[280px] px-3.5 py-1.5' : 'w-[130px] sm:w-[145px]'
         }`}
       >
         <AnimatePresence mode="wait">
