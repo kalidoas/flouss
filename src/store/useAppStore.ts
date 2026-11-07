@@ -2308,3 +2308,8 @@ export const useAppStore = create<AppState>()(
     }
   )
 );
+
+// Keep the store reachable from DevTools for owner initiated recovery workflows.
+if (typeof window !== 'undefined') {
+  (window as Window & { useAppStore?: typeof useAppStore }).useAppStore = useAppStore;
+}
