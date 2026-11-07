@@ -201,20 +201,20 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
             </div>
 
             <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <h4 className="text-xs sm:text-sm font-medium text-[#37352f] dark:text-[#ecebed] truncate">
+              <div className="flex items-center gap-2 min-w-0">
+                <h4 className="min-w-0 flex-1 text-xs sm:text-sm font-medium text-[#37352f] dark:text-[#ecebed] truncate">
                   {details.title}
                 </h4>
-                <span className={`text-[10px] font-medium px-1.5 py-0.2 rounded border ${details.badgeBg}`}>
+                <span className={`shrink-0 whitespace-nowrap text-[10px] font-medium px-1.5 py-0.2 rounded border ${details.badgeBg}`}>
                   {details.badgeText}
                 </span>
               </div>
-              <div className="flex items-center gap-2 text-[11px] text-[#787774] dark:text-[#9b9a97] mt-0.5">
-                <span>{formatDateTime(transaction.date, language)}</span>
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-[#787774] dark:text-[#9b9a97] mt-0.5">
+                <span className="shrink-0 whitespace-nowrap">{formatDateTime(transaction.date, language)}</span>
                 {transaction.note && (
                   <>
-                    <span>•</span>
-                    <span className="truncate max-w-[140px] sm:max-w-xs text-[#787774] dark:text-[#9b9a97]">
+                    <span className="shrink-0">•</span>
+                    <span className="min-w-0 truncate max-w-[140px] sm:max-w-xs text-[#787774] dark:text-[#9b9a97]">
                       {translateCategoryText(transaction.note, language) || transaction.note}
                     </span>
                   </>
