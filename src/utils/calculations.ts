@@ -220,15 +220,27 @@ export function getKpiData(
   const netFlow = currentIncome - currentExpense;
   const netFlowColor = netFlow >= 0 ? 'emerald' : 'rose';
 
-  const validTasks = tasks || [];
+  const validTasks = (tasks || []).filter((t) => !t.isArchived);
   const totalTasks = validTasks.length;
-  const completedTasks = validTasks.filter(
-    (task) =>
-      Array.isArray(task.completedDates) &&
-      task.completedDates.some((date) => date.slice(0, 7) === currentMonth)
+
+  const now = new Date();
+  const todayISO = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const todayCompleted = validTasks.filter(
+    (task) => Array.isArray(task.completedDates) && task.completedDates.includes(todayISO)
   ).length;
-  const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-  const pendingTasks = Math.max(0, totalTasks - completedTasks);
+  const todayRate = totalTasks > 0 ? Math.round((todayCompleted / totalTasks) * 100) : 0;
+
+  const totalMonthlyCheckmarks = validTasks.reduce((sum, task) => {
+    if (!Array.isArray(task.completedDates)) return sum;
+    return sum + task.completedDates.filter((d) => d.slice(0, 7) === currentMonth).length;
+  }, 0);
+  const totalPossibleMonthlyCheckmarks = totalTasks * daysInMonth;
+  const monthlyRate =
+    totalPossibleMonthlyCheckmarks > 0
+      ? Math.round((totalMonthlyCheckmarks / totalPossibleMonthlyCheckmarks) * 100)
+      : 0;
+
+  const pendingTasks = Math.max(0, totalTasks - todayCompleted);
 
   const validDebts = debts || [];
   const owedToMe = validDebts
@@ -255,11 +267,18 @@ export function getKpiData(
     expense: { value: currentExpense, change: expenseChange, avgDaily: avgDailySpend },
     netFlow: { value: netFlow, savingsRate, color: netFlowColor, currentSavings },
     tasks: {
-      completionRate,
-      completedCount: completedTasks,
+      completionRate: todayRate,
+      todayRate,
+      todayCompleted,
+      todayTotal: totalTasks,
+      monthlyRate,
+      monthlyCheckmarks: totalMonthlyCheckmarks,
+      totalPossibleMonthlyCheckmarks,
+      daysInMonth,
+      completedCount: todayCompleted,
       totalCount: totalTasks,
       pendingCount: pendingTasks,
-      activeStreak: completedTasks,
+      activeStreak: todayCompleted,
     },
     debts: {
       netPosition,
@@ -321,10 +340,165 @@ export function getMonthlyStats(transactions: Transaction[], monthsCount: number
   return result;
 }
 
-export function getCategorySpendingBreakdown(categories: Category[], transactions: Transaction[], month?: string, language: Language = 'fr') {
+/**
+ * Resolves an expense transaction to its parent category in `categories`.
+ * Groups subcategories (e.g. Barber & Skincare -> Santé & Hygiène) and resolves
+ * transactions using categoryId, subCategoryId, or semantic notes.
+ */
+export function resolveTransactionParentCategory(
+  tx: Transaction,
+  categories: Category[]
+): Category | undefined {
+  if (!categories || categories.length === 0) return undefined;
+
+  // 1. Direct match on categoryId
+  if (tx.categoryId) {
+    // Check if categoryId is actually a subcategory ID inside any category first!
+    const parentBySub = categories.find((c) =>
+      c.subcategories?.some((s) => s.id === tx.categoryId || s.key === tx.categoryId)
+    );
+    if (parentBySub) return parentBySub;
+
+    // Check if categoryId directly matches a parent category
+    const directParent = categories.find((c) => c.id === tx.categoryId || c.key === tx.categoryId);
+    if (directParent) return directParent;
+  }
+
+  // 2. Direct match on subCategoryId
+  if (tx.subCategoryId) {
+    const parent = categories.find((c) =>
+      c.subcategories?.some((s) => s.id === tx.subCategoryId || s.key === tx.subCategoryId)
+    );
+    if (parent) return parent;
+  }
+
+  // 3. Semantic fallback on note or category name text
+  const text = `${tx.note || ''} ${(tx as any).categoryName || ''} ${(tx as any).category || ''}`.toLowerCase();
+
+  // Health & Hygiene (Santé & Hygiène)
+  if (
+    text.includes('barber') ||
+    text.includes('salon') ||
+    text.includes('coiff') ||
+    text.includes('skincare') ||
+    text.includes('gel douch') ||
+    text.includes('soin') ||
+    text.includes('pharmacie') ||
+    text.includes('حلاقة') ||
+    text.includes('بشرة') ||
+    text.includes('صحة') ||
+    text.includes('عناية')
+  ) {
+    const health = categories.find((c) => c.id === 'cat_sante' || c.key === 'health');
+    if (health) return health;
+  }
+
+  // Café & Outings (Café & Sorties)
+  if (
+    text.includes('café') ||
+    text.includes('cafe') ||
+    text.includes('coffee') ||
+    text.includes('thé') ||
+    text.includes('مقهى') ||
+    text.includes('قهوة') ||
+    text.includes('شاي')
+  ) {
+    const cafe = categories.find((c) => c.id === 'cat_cafe' || c.key === 'cafe');
+    if (cafe) return cafe;
+  }
+
+  // Sport & Fitness (Sport & Bien-être)
+  if (
+    text.includes('gym') ||
+    text.includes('sport') ||
+    text.includes('salle') ||
+    text.includes('قاعة') ||
+    text.includes('رياضة') ||
+    text.includes('جيم')
+  ) {
+    const sport = categories.find((c) => c.id === 'cat_sport' || c.key === 'sport');
+    if (sport) return sport;
+  }
+
+  // Telecom & Subscriptions (Télécom & Abonnements / PC & Tech)
+  if (
+    text.includes('inwi') ||
+    text.includes('telecom') ||
+    text.includes('orange') ||
+    text.includes('iam') ||
+    text.includes('fibre') ||
+    text.includes('forfait') ||
+    text.includes('facture') ||
+    text.includes('اتصالات') ||
+    text.includes('انوي')
+  ) {
+    const telecom = categories.find((c) => c.id === 'cat_telecom' || c.key === 'phone' || c.id === 'cat_pc');
+    if (telecom) return telecom;
+  }
+
+  // Food & Groceries (Nourriture & Courses)
+  if (
+    text.includes('nourriture') ||
+    text.includes('courses') ||
+    text.includes('bim') ||
+    text.includes('marjane') ||
+    text.includes('carrefour') ||
+    text.includes('snack') ||
+    text.includes('fast-food') ||
+    text.includes('restaurant') ||
+    text.includes('أكل') ||
+    text.includes('تغذية') ||
+    text.includes('وجبات')
+  ) {
+    const food = categories.find((c) => c.id === 'cat_nourriture' || c.key === 'food');
+    if (food) return food;
+  }
+
+  return undefined;
+}
+
+export function getCategorySpendingBreakdown(
+  categories: Category[],
+  transactions: Transaction[],
+  month?: string,
+  language: Language = 'fr'
+) {
   const spendingMap = new Map<string, number>();
-  transactions.filter((tx) => tx.type === 'expense' && tx.categoryId && (!month || isTransactionInMonth(tx.date, month))).forEach((tx) => spendingMap.set(tx.categoryId!, (spendingMap.get(tx.categoryId!) || 0) + tx.amount));
+  const txCountMap = new Map<string, number>();
+
+  (transactions || [])
+    .filter(
+      (tx) => tx.type === 'expense' && (!month || isTransactionInMonth(tx.date, month))
+    )
+    .forEach((tx) => {
+      const parentCat = resolveTransactionParentCategory(tx, categories);
+      const catId = parentCat ? parentCat.id : tx.categoryId;
+      if (catId) {
+        spendingMap.set(catId, (spendingMap.get(catId) || 0) + (Number(tx.amount) || 0));
+        txCountMap.set(catId, (txCountMap.get(catId) || 0) + 1);
+      }
+    });
+
   const totalExpense = Array.from(spendingMap.values()).reduce((a, b) => a + b, 0);
-  const breakdown = categories.map((cat) => ({ id: cat.id, key: cat.key || cat.translationKey, translationKey: cat.translationKey || cat.key, name: getCategoryName(cat, language), color: cat.color, icon: cat.icon, amount: spendingMap.get(cat.id) || 0, percentage: totalExpense > 0 ? Math.round(((spendingMap.get(cat.id) || 0) / totalExpense) * 100) : 0 })).filter((item) => item.amount > 0).sort((a, b) => b.amount - a.amount);
-  return { breakdown, totalExpense };
+
+  const breakdown = (categories || [])
+    .map((cat) => {
+      const amount = spendingMap.get(cat.id) || 0;
+      const count = txCountMap.get(cat.id) || 0;
+      return {
+        id: cat.id,
+        key: cat.key || cat.translationKey,
+        translationKey: cat.translationKey || cat.key,
+        name: getCategoryName(cat, language),
+        color: cat.color,
+        icon: cat.icon,
+        amount: Math.round(amount * 100) / 100,
+        count,
+        percentage: totalExpense > 0 ? Math.round((amount / totalExpense) * 100) : 0,
+      };
+    })
+    .filter((item) => item.amount > 0)
+    .sort((a, b) => b.amount - a.amount);
+
+  return { breakdown, totalExpense: Math.round(totalExpense * 100) / 100 };
 }

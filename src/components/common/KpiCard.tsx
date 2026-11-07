@@ -131,9 +131,13 @@ export const KpiCard: React.FC<KpiCardProps> = ({
         <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-white truncate tabular-nums">
           {isMAD ? (
             typeof value === 'number' ? (
-              <PrivacyCurrency amount={value} suffix=" MAD" />
+              <PrivacyCurrency amount={value} />
+            ) : typeof value === 'string' && (value.includes('MAD') || value.includes('د.م.')) ? (
+              <span>{value}</span>
             ) : (
-              <span>{value} MAD</span>
+              <span>
+                {value} {language === 'ar' ? 'د.م.' : 'MAD'}
+              </span>
             )
           ) : unit === '%' ? (
             typeof value === 'number' ? (

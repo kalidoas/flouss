@@ -9,9 +9,15 @@ import {
 import { KpiCard } from '../components/common/KpiCard';
 import { formatMAD, formatDate, getCurrentMonthStr, isTransactionInMonth } from '../utils/formatters';
 import { getCategoryIcon } from '../utils/icons';
-import { getCategoryName, getSubCategoryName, translateCategoryText } from '../utils/i18nHelpers';
+import {
+  getCategoryName,
+  getSubCategoryName,
+  translateCategoryText,
+  getIncomeSourceName,
+  getIncomeTransactionTitle,
+} from '../utils/i18nHelpers';
 import { translations } from '../i18n/translations';
-import { Transaction } from '../types';
+import { Transaction, TaskItem, TaskCategory } from '../types';
 import {
   BarChart,
   Bar,
@@ -44,12 +50,130 @@ import {
   CheckCircle2,
   Calendar,
   Sparkles,
+  Target,
+  Zap,
 } from 'lucide-react';
+
+const TASK_CATEGORY_META: Record<
+  string,
+  { label: { ar: string; fr: string; en: string }; icon: string; color: string; bg: string; border: string; barColor: string }
+> = {
+  deen: {
+    label: { ar: 'دين وصلاة', fr: 'Deen & Spiritualité', en: 'Faith & Prayer' },
+    icon: '🕌',
+    color: 'text-emerald-600 dark:text-emerald-400',
+    bg: 'bg-emerald-500/10 dark:bg-emerald-500/15',
+    border: 'border-emerald-500/20',
+    barColor: '#10b981',
+  },
+  sport: {
+    label: { ar: 'رياضة وصحة', fr: 'Sport & Santé', en: 'Sport & Fitness' },
+    icon: '🏋️',
+    color: 'text-rose-600 dark:text-rose-400',
+    bg: 'bg-rose-500/10 dark:bg-rose-500/15',
+    border: 'border-rose-500/20',
+    barColor: '#f43f5e',
+  },
+  work: {
+    label: { ar: 'عمل ودراسة', fr: 'Travail & Études', en: 'Work & Career' },
+    icon: '💻',
+    color: 'text-blue-600 dark:text-blue-400',
+    bg: 'bg-blue-500/10 dark:bg-blue-500/15',
+    border: 'border-blue-500/20',
+    barColor: '#3b82f6',
+  },
+  study: {
+    label: { ar: 'تعلّم', fr: 'Apprentissage', en: 'Learning & Reading' },
+    icon: '📚',
+    color: 'text-indigo-600 dark:text-indigo-400',
+    bg: 'bg-indigo-500/10 dark:bg-indigo-500/15',
+    border: 'border-indigo-500/20',
+    barColor: '#6366f1',
+  },
+  running: {
+    label: { ar: 'جري', fr: 'Course / Jri', en: 'Running' },
+    icon: '🏃',
+    color: 'text-orange-600 dark:text-orange-400',
+    bg: 'bg-orange-500/10 dark:bg-orange-500/15',
+    border: 'border-orange-500/20',
+    barColor: '#f97316',
+  },
+  discipline: {
+    label: { ar: 'انضباط ووعي', fr: 'Discipline & Sobriété', en: 'Focus & Discipline' },
+    icon: '🛡️',
+    color: 'text-purple-600 dark:text-purple-400',
+    bg: 'bg-purple-500/10 dark:bg-purple-500/15',
+    border: 'border-purple-500/20',
+    barColor: '#a855f7',
+  },
+  routine: {
+    label: { ar: 'روتين', fr: 'Routine', en: 'Routine' },
+    icon: '⚡',
+    color: 'text-amber-600 dark:text-amber-400',
+    bg: 'bg-amber-500/10 dark:bg-amber-500/15',
+    border: 'border-amber-500/20',
+    barColor: '#f59e0b',
+  },
+  health: {
+    label: { ar: 'صحة وماء', fr: 'Bien-être & Eau', en: 'Health & Hydration' },
+    icon: '💧',
+    color: 'text-cyan-600 dark:text-cyan-400',
+    bg: 'bg-cyan-500/10 dark:bg-cyan-500/15',
+    border: 'border-cyan-500/20',
+    barColor: '#06b6d4',
+  },
+  finance: {
+    label: { ar: 'مالية', fr: 'Finances', en: 'Personal Finance' },
+    icon: '💰',
+    color: 'text-teal-600 dark:text-teal-400',
+    bg: 'bg-teal-500/10 dark:bg-teal-500/15',
+    border: 'border-teal-500/20',
+    barColor: '#14b8a6',
+  },
+  other: {
+    label: { ar: 'أخرى', fr: 'Autre', en: 'Other' },
+    icon: '📌',
+    color: 'text-zinc-600 dark:text-zinc-400',
+    bg: 'bg-zinc-500/10 dark:bg-zinc-500/15',
+    border: 'border-zinc-500/20',
+    barColor: '#71717a',
+  },
+};
+
+function formatISODate(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+const calculateStreak = (task: TaskItem): number => {
+  const completedSet = new Set(task.completedDates || []);
+  let streak = 0;
+  const checkDate = new Date();
+
+  const todayISO = formatISODate(checkDate);
+  if (!completedSet.has(todayISO)) {
+    checkDate.setDate(checkDate.getDate() - 1);
+  }
+
+  while (true) {
+    const iso = formatISODate(checkDate);
+    if (completedSet.has(iso)) {
+      streak++;
+      checkDate.setDate(checkDate.getDate() - 1);
+    } else {
+      break;
+    }
+  }
+  return streak;
+};
 
 export const StatsPage: React.FC = () => {
   const {
     transactions,
     categories,
+    incomeSources,
     language,
     tasks,
     debts,
@@ -141,13 +265,10 @@ export const StatsPage: React.FC = () => {
   const totalCategorySpent = categoryBreakdownData.totalExpense;
   const topCategory = breakdownToDisplay[0];
 
-  // Top 5 largest expenses (Outflows) with full horizontal width
-  const top5Expenses = useMemo(() => {
-    return [...currentMonthTx]
-      .filter((tx: Transaction) => tx.type === 'expense')
-      .sort((a, b) => (Number(b.amount) || 0) - (Number(a.amount) || 0))
-      .slice(0, 5);
-  }, [currentMonthTx]);
+  // Top 5 parent categories by spending for active month (Aggregated across subcategories)
+  const top5ParentCategories = useMemo(() => {
+    return breakdownToDisplay.slice(0, 5);
+  }, [breakdownToDisplay]);
 
   // Top 5 largest inflows (Income) with full horizontal width
   const top5Incomes = useMemo(() => {
@@ -157,48 +278,95 @@ export const StatsPage: React.FC = () => {
       .slice(0, 5);
   }, [currentMonthTx]);
 
-  // Multi-domain discipline & lifestyle metrics
-  const disciplineStats = useMemo(() => {
-    // 1. Gym workouts logged this month
-    const validGym = gymLogs || [];
-    const monthlyWorkouts = validGym.filter(
-      (log) => log.date && log.date.startsWith(selectedMonth)
+  // Multi-domain discipline & lifestyle metrics dynamically computed from actual tasks
+  const taskAnalytics = useMemo(() => {
+    const validTasks = (tasks || []).filter((t) => !t.isArchived);
+    const totalCount = validTasks.length;
+
+    const [yearNum, monthNum] = selectedMonth.split('-').map(Number);
+    const daysInMonth = new Date(yearNum, monthNum, 0).getDate();
+
+    // 1. Today's rate
+    const todayISO = formatISODate(new Date());
+    const todayCompletedCount = validTasks.filter(
+      (t) => Array.isArray(t.completedDates) && t.completedDates.includes(todayISO)
     ).length;
+    const todayRate = totalCount > 0 ? Math.round((todayCompletedCount / totalCount) * 100) : 0;
 
-    // 2. Study modules completed vs total
-    const validModules = studyModules || [];
-    const totalModules = validModules.length;
-    const completedModules = validModules.filter((m) => m.completed).length;
-    const moduleRate = totalModules > 0 ? Math.round((completedModules / totalModules) * 100) : 0;
+    // 2. Monthly Matrix rate & task performance list
+    let totalCompletedCheckmarks = 0;
+    const taskPerformanceList = validTasks.map((task) => {
+      const datesInMonth = (task.completedDates || []).filter((d) => d.startsWith(selectedMonth));
+      const monthlyCheckedCount = datesInMonth.length;
+      totalCompletedCheckmarks += monthlyCheckedCount;
+      const rate = daysInMonth > 0 ? Math.min(100, Math.round((monthlyCheckedCount / daysInMonth) * 100)) : 0;
+      const streak = calculateStreak(task);
 
-    // 3. Salat logged in selected month
-    const validSalat = salatLogs || {};
-    const monthlyPrayers = Object.entries(validSalat)
-      .filter(([date]) => date.startsWith(selectedMonth))
-      .reduce((sum, [_, prayers]) => sum + (Array.isArray(prayers) ? prayers.length : 0), 0);
+      return {
+        ...task,
+        monthlyCheckedCount,
+        checkedCount: monthlyCheckedCount,
+        isDoneToday: Array.isArray(task.completedDates) && task.completedDates.includes(todayISO),
+        daysInMonth,
+        rate,
+        streak,
+      };
+    });
 
-    // 4. Tasks completed this month
-    const validTasks = tasks || [];
-    const totalTasksCount = validTasks.length;
-    const completedTasksCount = validTasks.filter(
-      (t) =>
-        Array.isArray(t.completedDates) &&
-        t.completedDates.some((d) => d.startsWith(selectedMonth))
-    ).length;
-    const taskRate =
-      totalTasksCount > 0 ? Math.round((completedTasksCount / totalTasksCount) * 100) : 0;
+    const totalPossibleCheckmarks = totalCount * daysInMonth;
+    const monthlyMatrixRate =
+      totalPossibleCheckmarks > 0
+        ? Math.round((totalCompletedCheckmarks / totalPossibleCheckmarks) * 100)
+        : 0;
+
+    const overallActiveStreak = taskPerformanceList.reduce((max, t) => Math.max(max, t.streak), 0);
+
+    // 3. Category breakdown
+    const categoryMap = new Map<
+      string,
+      { category: TaskCategory; tasksCount: number; completedCheckmarks: number; totalPossible: number }
+    >();
+
+    taskPerformanceList.forEach((task) => {
+      const cat = task.category || 'other';
+      const existing = categoryMap.get(cat) || {
+        category: cat,
+        tasksCount: 0,
+        completedCheckmarks: 0,
+        totalPossible: 0,
+      };
+      existing.tasksCount += 1;
+      existing.completedCheckmarks += task.monthlyCheckedCount;
+      existing.totalPossible += daysInMonth;
+      categoryMap.set(cat, existing);
+    });
+
+    const categoryBreakdown = Array.from(categoryMap.values())
+      .map((item) => {
+        const rate =
+          item.totalPossible > 0
+            ? Math.min(100, Math.round((item.completedCheckmarks / item.totalPossible) * 100))
+            : 0;
+        return {
+          ...item,
+          rate,
+        };
+      })
+      .sort((a, b) => b.completedCheckmarks - a.completedCheckmarks);
 
     return {
-      monthlyWorkouts,
-      totalModules,
-      completedModules,
-      moduleRate,
-      monthlyPrayers,
-      totalTasksCount,
-      completedTasksCount,
-      taskRate,
+      totalCount,
+      todayCompletedCount,
+      todayRate,
+      totalCompletedCheckmarks,
+      totalPossibleCheckmarks,
+      monthlyMatrixRate,
+      overallActiveStreak,
+      daysInMonth,
+      categoryBreakdown,
+      taskPerformanceList,
     };
-  }, [gymLogs, studyModules, salatLogs, tasks, selectedMonth]);
+  }, [tasks, selectedMonth]);
 
   // Helper to extract time
   const getExactTime = (dateStr: string, createdAt?: string): string => {
@@ -273,7 +441,7 @@ export const StatsPage: React.FC = () => {
           icon={TrendingDown}
           color="rose"
           unit="MAD"
-          extraLine={`${t.kpiDailyAvg}: ${formatMAD(kpiData.expense.avgDaily, false, language)} MAD`}
+          extraLine={`${t.kpiDailyAvg}: ${formatMAD(kpiData.expense.avgDaily, false, language)}`}
           isPositiveGood={false}
         />
 
@@ -306,18 +474,18 @@ export const StatsPage: React.FC = () => {
         {/* 4. Program & Tasks Completion */}
         <KpiCard
           title={t.kpiTasks}
-          value={kpiData.tasks.completionRate}
+          value={kpiData.tasks.todayRate}
           unit="%"
           icon={Percent}
           color="indigo"
-          badge={`${kpiData.tasks.completedCount}/${kpiData.tasks.totalCount}`}
+          badge={`${kpiData.tasks.todayCompleted}/${kpiData.tasks.todayTotal}`}
           extraLine={`${kpiData.tasks.pendingCount} ${
-            isAr ? 'مهام متبقية' : language === 'fr' ? 'tâches en attente' : 'pending tasks'
+            isAr ? 'مهام متبقية اليوم' : language === 'fr' ? 'tâches restantes' : 'pending tasks'
           }`}
           subtext={
             isAr
-              ? `إنجاز ${kpiData.tasks.completionRate}%`
-              : `${kpiData.tasks.completionRate}% completed`
+              ? `اليوم: ${kpiData.tasks.todayCompleted}/${kpiData.tasks.todayTotal} (${kpiData.tasks.todayRate}%) • الشهر: ${kpiData.tasks.monthlyRate}%`
+              : `Today: ${kpiData.tasks.todayCompleted}/${kpiData.tasks.todayTotal} (${kpiData.tasks.todayRate}%) • Month: ${kpiData.tasks.monthlyRate}%`
           }
         />
 
@@ -497,11 +665,11 @@ export const StatsPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="h-64 sm:h-72 w-full pt-2">
+          <div className="h-72 sm:h-80 w-full pt-4 min-h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={monthlyStats}
-                margin={{ top: 10, right: 10, left: -15, bottom: 0 }}
+                margin={{ top: 16, right: 12, left: -12, bottom: 4 }}
                 barGap={4}
               >
                 <CartesianGrid
@@ -585,8 +753,8 @@ export const StatsPage: React.FC = () => {
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
               {/* Donut Chart */}
-              <div className="lg:col-span-5 flex flex-col items-center justify-center relative">
-                <div className="w-52 h-52 sm:w-60 sm:h-60 relative flex items-center justify-center">
+              <div className="lg:col-span-5 flex flex-col items-center justify-center relative py-2">
+                <div className="w-60 h-60 sm:w-68 sm:h-68 relative flex items-center justify-center">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Tooltip
@@ -610,7 +778,7 @@ export const StatsPage: React.FC = () => {
                         cx="50%"
                         cy="50%"
                         innerRadius={68}
-                        outerRadius={92}
+                        outerRadius={96}
                         paddingAngle={3}
                         cornerRadius={6}
                         animationDuration={800}
@@ -641,8 +809,8 @@ export const StatsPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Ranked Category List with Progress Bars */}
-              <div className="lg:col-span-7 space-y-3.5 max-h-[250px] overflow-y-auto pr-1">
+              {/* Ranked Category List with Progress Bars - Fully visible, no vertical clipping */}
+              <div className="lg:col-span-7 space-y-3.5 pr-1">
                 {breakdownToDisplay.map((item) => {
                   const cat = categories.find((c) => c.id === item.id);
                   const displayName = cat ? getCategoryName(cat, language) : item.name;
@@ -692,7 +860,7 @@ export const StatsPage: React.FC = () => {
 
       {/* ── SECTION D: TOP 5 EXPENSES & TOP INFLOWS (EXPANDED HORIZONTAL SPACE - NO TRUNCATION) ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Top 5 Expenses (Outflows) */}
+        {/* Top 5 Expenses (Outflows) - Grouped by Parent Category */}
         <div className="p-5 sm:p-6 rounded-3xl bg-white/80 dark:bg-zinc-900/60 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
@@ -710,46 +878,29 @@ export const StatsPage: React.FC = () => {
             </div>
           </div>
 
-          {top5Expenses.length === 0 ? (
+          {top5ParentCategories.length === 0 ? (
             <div className="py-8 text-center text-xs text-zinc-400">
               {t.noTopSpends}
             </div>
           ) : (
             <div className="space-y-2.5">
-              {top5Expenses.map((tx, idx) => {
-                const cat = categories.find((c) => c.id === tx.categoryId);
-                const subCat = cat?.subcategories?.find((s) => s.id === tx.subCategoryId);
+              {top5ParentCategories.map((item, idx) => {
+                const cat = categories.find((c) => c.id === item.id);
                 const IconComp = cat ? getCategoryIcon(cat.icon) : ShoppingBag;
-                let catName = cat ? getCategoryName(cat, language) : '';
-                if (!catName) {
-                  const rawCat = (tx as any).categoryName || (tx as any).category || tx.categoryId;
-                  if (rawCat) catName = translateCategoryText(rawCat, language);
-                }
-                if (!catName) {
-                  catName = translations[language].dashboard.addExpense;
-                }
-
-                let subCatName = subCat ? getSubCategoryName(subCat, language) : null;
-                if (!subCatName && tx.subCategoryId) {
-                  const translatedSub = translateCategoryText(tx.subCategoryId, language);
-                  if (translatedSub && translatedSub !== tx.subCategoryId) {
-                    subCatName = translatedSub;
-                  }
-                }
+                const catName = cat ? getCategoryName(cat, language) : item.name;
 
                 const rankColor =
                   idx === 0
                     ? 'bg-rose-500 text-white shadow-rose-500/20'
                     : idx === 1
                     ? 'bg-amber-500 text-white shadow-amber-500/20'
+                    : idx === 2
+                    ? 'bg-indigo-500 text-white shadow-indigo-500/20'
                     : 'bg-zinc-400 dark:bg-zinc-700 text-white shadow-zinc-500/20';
-
-                const translatedNote = tx.note ? translateCategoryText(tx.note, language) : '';
-                const title = translatedNote || (subCatName ? `${catName} › ${subCatName}` : catName);
 
                 return (
                   <div
-                    key={tx.id}
+                    key={item.id}
                     className="p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 border border-black/[0.04] dark:border-white/[0.06] flex items-center justify-between gap-3 relative overflow-hidden group hover:border-black/[0.1] dark:hover:border-white/[0.12] transition-colors"
                   >
                     <div className="flex items-center gap-3 min-w-0">
@@ -763,27 +914,23 @@ export const StatsPage: React.FC = () => {
                       {/* Category Icon */}
                       <div
                         className="w-9 h-9 rounded-xl flex items-center justify-center text-white shrink-0 shadow-xs"
-                        style={{ backgroundColor: cat?.color || '#f43f5e' }}
+                        style={{ backgroundColor: item.color || cat?.color || '#f43f5e' }}
                       >
                         <IconComp className="w-4 h-4" />
                       </div>
 
                       <div className="min-w-0">
                         <h4 className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-white break-words">
-                          {title}
+                          {catName}
                         </h4>
                         <div className="flex items-center gap-1.5 text-[10px] text-zinc-400 mt-0.5 flex-wrap">
-                          <span className="font-medium text-zinc-500 dark:text-zinc-400">
-                            {catName}
+                          <span className="font-semibold text-zinc-600 dark:text-zinc-300 tabular-nums">
+                            {item.percentage}% {isAr ? 'من المصاريف' : 'du total'}
                           </span>
-                          {subCatName && subCatName !== title && (
-                            <>
-                              <span>›</span>
-                              <span>{subCatName}</span>
-                            </>
-                          )}
                           <span>•</span>
-                          <span className="tabular-nums">{formatDate(tx.date, language)}</span>
+                          <span className="tabular-nums">
+                            {item.count} {isAr ? 'معاملات' : language === 'fr' ? 'opérations' : 'transactions'}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -791,7 +938,7 @@ export const StatsPage: React.FC = () => {
                     <div className="text-right shrink-0">
                       <span className="text-sm sm:text-base font-extrabold text-rose-600 dark:text-rose-400 tabular-nums">
                         <PrivacyCurrency
-                          amount={Number(tx.amount)}
+                          amount={Number(item.amount)}
                           prefix="-"
                           className="font-extrabold text-rose-600 dark:text-rose-400"
                         />
@@ -830,11 +977,7 @@ export const StatsPage: React.FC = () => {
           ) : (
             <div className="space-y-2.5">
               {top5Incomes.map((tx, idx) => {
-                const noteTitle = tx.note
-                  ? translateCategoryText(tx.note, language)
-                  : isAr
-                  ? 'مدخول'
-                  : 'Revenu';
+                const incomeTitle = getIncomeTransactionTitle(tx, incomeSources, language);
 
                 return (
                   <div
@@ -852,7 +995,7 @@ export const StatsPage: React.FC = () => {
 
                       <div className="min-w-0">
                         <h4 className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-white break-words">
-                          {noteTitle}
+                          {incomeTitle}
                         </h4>
                         <div className="flex items-center gap-1.5 text-[10px] text-zinc-400 mt-0.5">
                           <span className="tabular-nums">{formatDate(tx.date, language)}</span>
@@ -878,8 +1021,9 @@ export const StatsPage: React.FC = () => {
       </div>
 
       {/* ── SECTION E: PERSONAL LIFE & PROGRAM DISCIPLINE MATRIX ── */}
-      <div className="p-5 sm:p-6 rounded-3xl bg-white/80 dark:bg-zinc-900/60 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs space-y-4">
-        <div className="flex items-center justify-between">
+      <div className="p-5 sm:p-6 rounded-3xl bg-white/80 dark:bg-zinc-900/60 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/20 flex items-center justify-center shadow-xs">
               <Sparkles className="w-4 h-4 stroke-[2.4]" />
@@ -894,103 +1038,161 @@ export const StatsPage: React.FC = () => {
               </h2>
               <p className="text-xs text-zinc-400">
                 {isAr
-                  ? 'متابعة شاملة لتقدم المهام، الرياضة، المذاكرة، والصلوات'
+                  ? 'متابعة شاملة ودقيقة لجميع عادات ومهام البرنامج الشهري'
                   : language === 'fr'
-                  ? 'Synthèse croisée de vos habitudes, sport, études et prières'
-                  : 'Holistic multi-domain tracking of habits, fitness, study, and salat'}
+                  ? 'Synthèse complète de toutes vos habitudes et tâches du mois'
+                  : 'Comprehensive monthly tracking of all active habits and disciplines'}
               </p>
             </div>
           </div>
+
+          {/* Quick Stats Pills */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="px-3 py-1.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center gap-1.5">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span>
+                {isAr ? 'إنجاز اليوم' : 'Today'}: {taskAnalytics.todayCompletedCount}/{taskAnalytics.totalCount} ({taskAnalytics.todayRate}%)
+              </span>
+            </div>
+            <div className="px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold flex items-center gap-1.5">
+              <Calendar className="w-3.5 h-3.5" />
+              <span>
+                {isAr ? 'معدل الشهر' : 'Month'}: {taskAnalytics.monthlyMatrixRate}%
+              </span>
+            </div>
+            {taskAnalytics.overallActiveStreak > 0 && (
+              <div className="px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-bold flex items-center gap-1.5">
+                <Flame className="w-3.5 h-3.5" />
+                <span>
+                  {taskAnalytics.overallActiveStreak} {isAr ? 'أيام متتالية' : 'days streak'}
+                </span>
+              </div>
+            )}
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-1">
-          {/* 1. Tasks & Routines */}
-          <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-black/[0.04] dark:border-white/[0.06] space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                {isAr ? 'المهام' : 'Tâches'}
-              </span>
-              <CheckCircle2 className="w-4 h-4 text-indigo-500" />
-            </div>
-            <div className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-white tabular-nums">
-              {disciplineStats.taskRate}%
-            </div>
-            <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-              {disciplineStats.completedTasksCount}/{disciplineStats.totalTasksCount}{' '}
-              {isAr ? 'مهام منجزة' : 'complétées'}
-            </p>
-            <div className="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-1.5 overflow-hidden">
-              <div
-                className="h-full bg-indigo-500 rounded-full transition-all"
-                style={{ width: `${disciplineStats.taskRate}%` }}
-              />
-            </div>
+        {/* 1. Category Breakdown Badges */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between text-xs">
+            <h3 className="font-bold text-zinc-800 dark:text-zinc-200 uppercase tracking-wider text-[11px]">
+              {isAr ? 'الأقسام ومجالات الانضباط' : language === 'fr' ? 'Domaines de discipline' : 'Discipline Domains'}
+            </h3>
+            <span className="text-zinc-400 text-[11px]">
+              {taskAnalytics.categoryBreakdown.length} {isAr ? 'مجالات نشطة' : 'domaines actifs'}
+            </span>
           </div>
 
-          {/* 2. Gym Workouts */}
-          <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-black/[0.04] dark:border-white/[0.06] space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                {isAr ? 'الجيم والرياضة' : 'Gym & Sport'}
-              </span>
-              <Dumbbell className="w-4 h-4 text-amber-500" />
-            </div>
-            <div className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-white tabular-nums">
-              {disciplineStats.monthlyWorkouts}
-            </div>
-            <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-              {isAr ? 'تمارين مسجلة هذا الشهر' : 'séances ce mois'}
-            </p>
-            <div className="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-1.5 overflow-hidden">
-              <div
-                className="h-full bg-amber-500 rounded-full transition-all"
-                style={{ width: `${Math.min(100, (disciplineStats.monthlyWorkouts / 16) * 100)}%` }}
-              />
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3.5">
+            {taskAnalytics.categoryBreakdown.map((item) => {
+              const meta = TASK_CATEGORY_META[item.category] || TASK_CATEGORY_META.other;
+              const catLabel = meta.label[language] || meta.label.ar;
+              return (
+                <div
+                  key={item.category}
+                  className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-black/[0.04] dark:border-white/[0.06] flex flex-col justify-between space-y-3"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="text-lg">{meta.icon}</span>
+                      <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate">
+                        {catLabel}
+                      </span>
+                    </div>
+                    <span className="text-xs font-extrabold text-zinc-900 dark:text-white tabular-nums">
+                      {item.rate}%
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-[11px] text-zinc-500 dark:text-zinc-400">
+                      <span>{item.tasksCount} {isAr ? 'مهام' : 'tâches'}</span>
+                      <span className="tabular-nums">
+                        {item.completedCheckmarks}/{item.totalPossible}
+                      </span>
+                    </div>
+                    <div className="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-1.5 overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{
+                          width: `${item.rate}%`,
+                          backgroundColor: meta.barColor,
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* 2. Individual Task Performance List */}
+        <div className="space-y-3 pt-2">
+          <div className="flex items-center justify-between text-xs">
+            <h3 className="font-bold text-zinc-800 dark:text-zinc-200 uppercase tracking-wider text-[11px]">
+              {isAr ? 'أداء المهام اليومية - خلال الشهر' : language === 'fr' ? 'Performance individuelle des tâches' : 'Individual Task Performance'}
+            </h3>
+            <span className="text-zinc-400 text-[11px]">
+              {taskAnalytics.taskPerformanceList.length} {isAr ? 'مهام مفعلة' : 'tâches actives'}
+            </span>
           </div>
 
-          {/* 3. Study Modules */}
-          <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-black/[0.04] dark:border-white/[0.06] space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                {isAr ? 'الدراسة والوحدات' : 'Études & Modules'}
-              </span>
-              <GraduationCap className="w-4 h-4 text-blue-500" />
-            </div>
-            <div className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-white tabular-nums">
-              {disciplineStats.completedModules}/{disciplineStats.totalModules}
-            </div>
-            <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-              {disciplineStats.moduleRate}% {isAr ? 'مكتمل' : 'validés'}
-            </p>
-            <div className="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-1.5 overflow-hidden">
-              <div
-                className="h-full bg-blue-500 rounded-full transition-all"
-                style={{ width: `${disciplineStats.moduleRate}%` }}
-              />
-            </div>
-          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {taskAnalytics.taskPerformanceList.map((task) => {
+              const meta = TASK_CATEGORY_META[task.category] || TASK_CATEGORY_META.other;
+              const catLabel = meta.label[language] || meta.label.ar;
+              return (
+                <div
+                  key={task.id}
+                  className="p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-black/[0.04] dark:border-white/[0.06] space-y-2.5 hover:border-black/[0.1] dark:hover:border-white/[0.12] transition-colors"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex items-center gap-2">
+                      <span className="text-base shrink-0">{meta.icon}</span>
+                      <div className="min-w-0">
+                        <h4 className="text-xs font-bold text-zinc-900 dark:text-white truncate">
+                          {task.title}
+                        </h4>
+                        <span className={`inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded-md mt-0.5 border ${meta.bg} ${meta.color} ${meta.border}`}>
+                          {catLabel}
+                        </span>
+                      </div>
+                    </div>
 
-          {/* 4. Salat & Spiritual Routine */}
-          <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-black/[0.04] dark:border-white/[0.06] space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                {isAr ? 'الصلوات المفروضة' : 'Salat & Prières'}
-              </span>
-              <HeartHandshake className="w-4 h-4 text-emerald-500" />
-            </div>
-            <div className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-white tabular-nums">
-              {disciplineStats.monthlyPrayers}
-            </div>
-            <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-              {isAr ? 'صلوات موثقة في الشهر' : 'prières enregistrées'}
-            </p>
-            <div className="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-1.5 overflow-hidden">
-              <div
-                className="h-full bg-emerald-500 rounded-full transition-all"
-                style={{ width: `${Math.min(100, (disciplineStats.monthlyPrayers / 150) * 100)}%` }}
-              />
-            </div>
+                    <div className="text-right shrink-0">
+                      <span className="text-xs font-extrabold text-zinc-900 dark:text-white tabular-nums">
+                        {task.rate}%
+                      </span>
+                      {task.streak > 0 && (
+                        <div className="flex items-center justify-end gap-1 text-[10px] text-amber-500 font-bold mt-0.5">
+                          <Flame className="w-3 h-3 stroke-[2.5]" />
+                          <span>{task.streak}d</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Progress info and bar */}
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-[10px] text-zinc-400">
+                      <span>{task.isDoneToday ? (isAr ? '✓ أنجزت اليوم' : '✓ Fait aujourd\'hui') : (isAr ? 'لم تنجز اليوم' : 'En attente')}</span>
+                      <span className="tabular-nums">
+                        {task.checkedCount} / {taskAnalytics.daysInMonth} {isAr ? 'يوم' : 'j'}
+                      </span>
+                    </div>
+                    <div className="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-1.5 overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{
+                          width: `${task.rate}%`,
+                          backgroundColor: meta.barColor,
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

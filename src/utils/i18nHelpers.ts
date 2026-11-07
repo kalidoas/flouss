@@ -1,4 +1,4 @@
-import { Category, CategoryGroupId, IncomeSource, Language, SubCategory, NoteItem, ProgramTrack } from '../types';
+import { Category, CategoryGroupId, IncomeSource, Language, SubCategory, NoteItem, ProgramTrack, Transaction } from '../types';
 import { translations } from '../i18n/translations';
 
 /**
@@ -251,7 +251,11 @@ export function getCategoryTranslationKey(rawText: string | null | undefined): s
     if (trimmed.includes(arText)) return key;
   }
   for (const [arText, key] of Object.entries(ARABIC_CATEGORY_KEY_MAP)) {
-    if (trimmed.includes(arText)) return key;
+    if (arText === 'أخرى') {
+      if (trimmed === 'أخرى' || trimmed === 'مصاريف أخرى') return key;
+    } else if (trimmed.includes(arText)) {
+      return key;
+    }
   }
 
   return null;
@@ -388,6 +392,56 @@ export function getIncomeSubSourceName(
     }
   }
   return subSource.name;
+}
+
+/**
+ * Returns translated title for an income transaction using income sources and income source keys,
+ * never falling back to an expense label.
+ */
+export function getIncomeTransactionTitle(
+  tx: Transaction,
+  incomeSources: IncomeSource[] = [],
+  language: Language = 'fr'
+): string {
+  const isAr = language === 'ar';
+
+  // 1. Source lookup by ID or key
+  if (tx.sourceId) {
+    const src = incomeSources.find((s) => s.id === tx.sourceId || s.key === tx.sourceId);
+    if (src) {
+      return getIncomeSourceName(src, language);
+    }
+  }
+
+  // 2. Note lookup against income sources dictionary
+  if (tx.note) {
+    const trimmed = tx.note.trim();
+
+    if (trimmed === 'أعمال أخرى' || trimmed.includes('أعمال أخرى')) {
+      return (
+        translations[language]?.incomeSourcesData?.otherWork ||
+        (isAr ? 'أعمال أخرى' : language === 'fr' ? 'Autre travail' : 'Other work')
+      );
+    }
+
+    // Match against any incomeSourceData value across languages
+    for (const lang of ['ar', 'fr', 'en'] as const) {
+      const dict = translations[lang]?.incomeSourcesData as Record<string, string> | undefined;
+      if (dict) {
+        for (const [key, val] of Object.entries(dict)) {
+          if (val && (trimmed === val || trimmed.toLowerCase() === val.toLowerCase())) {
+            const activeDict = translations[language]?.incomeSourcesData as Record<string, string> | undefined;
+            if (activeDict && activeDict[key]) return activeDict[key];
+          }
+        }
+      }
+    }
+
+    return trimmed;
+  }
+
+  // 3. Fallback generic income label
+  return isAr ? 'مدخول' : language === 'fr' ? 'Revenu' : 'Income';
 }
 
 /**
