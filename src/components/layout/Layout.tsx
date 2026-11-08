@@ -9,6 +9,7 @@ import { AddToHomeScreenModal } from '../common/AddToHomeScreenModal';
 import { useAppStore } from '../../store/useAppStore';
 import { QuickAddSheet, QuickAddType } from '../transactions/QuickAddSheet';
 import { CommandPalette } from './CommandPalette';
+import { DashboardHeaderProvider } from './DashboardHeaderContext';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -81,6 +82,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   }, [toggleHideBalance]);
 
   return (
+    <DashboardHeaderProvider>
     <div className="flex h-screen w-screen overflow-hidden bg-canvas text-content font-sans">
       {/* Desktop Notion Collapsible Sidebar */}
       <Sidebar collapsed={collapsed} onToggleCollapse={handleToggleCollapse} />
@@ -89,7 +91,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden relative">
         <Header />
 
-        <main className="flex-1 overflow-y-auto pb-32 md:pb-8 px-3.5 sm:px-8 max-w-screen-2xl w-full mx-auto select-text">
+        <main className="mx-auto max-w-[1160px] w-full flex-1 overflow-y-auto px-4 pb-32 pt-4 select-text sm:px-8 sm:pt-6 md:pb-8 lg:px-10 lg:pt-8">
           {children}
         </main>
 
@@ -113,5 +115,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         <AddToHomeScreenModal />
       </div>
     </div>
+    </DashboardHeaderProvider>
   );
 };

@@ -68,19 +68,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
   return (
     <aside
       className={`hidden md:flex flex-col ${
-        collapsed ? 'w-14' : 'w-60'
-      } transition-[width] duration-200 ease-out bg-[#fbfbfa] dark:bg-[#1a1a1a] border-r border-[#e3e2de] dark:border-[#2f2f2f] shrink-0 justify-between select-none relative group/sidebar`}
+        collapsed ? 'w-14' : 'w-[248px] md:max-lg:w-14'
+      } transition-[width] duration-200 ease-out bg-surface border-r border-border-subtle shrink-0 justify-between select-none relative group/sidebar`}
     >
       <div className="flex flex-col h-full overflow-hidden">
         {/* Top Header: Workspace / Logo + Collapse Button */}
-        <div className="p-3 border-b border-[#e3e2de] dark:border-[#2f2f2f] flex items-center justify-between min-h-[49px]">
+        <div className="flex min-h-12 items-center justify-between border-b border-border-subtle p-2.5">
           {!collapsed ? (
             <div className="flex items-center justify-between w-full">
-              <Logo size="sm" showWordmark={true} />
+              <span className="md:max-lg:hidden"><Logo size="sm" showWordmark={true} /></span>
               <button
                 onClick={onToggleCollapse}
                 title={tCommon.collapseSidebar}
-                className="p-1 rounded text-[#787774] hover:text-[#37352f] dark:text-[#9b9a97] dark:hover:text-[#ecebed] hover:bg-[#f1f0ee] dark:hover:bg-[#282828] transition-colors"
+                className="flex h-10 w-10 items-center justify-center rounded-control text-muted transition-colors hover:bg-surface-raised hover:text-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               >
                 <PanelLeftClose className="w-4 h-4" />
               </button>
@@ -90,7 +90,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
               <button
                 onClick={onToggleCollapse}
                 title={tCommon.expandSidebar}
-                className="p-1 rounded text-[#787774] hover:text-[#37352f] dark:text-[#9b9a97] dark:hover:text-[#ecebed] hover:bg-[#f1f0ee] dark:hover:bg-[#282828] transition-colors"
+                className="flex h-10 w-10 items-center justify-center rounded-control text-muted transition-colors hover:bg-surface-raised hover:text-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               >
                 <PanelLeftOpen className="w-4 h-4" />
               </button>
@@ -103,7 +103,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
           {/* Financial Section */}
           <div>
             {!collapsed && (
-              <span className="px-2 text-[10px] font-semibold uppercase tracking-wider text-[#9b9a97] dark:text-[#787774] block mb-1">
+              <span className="mb-1 block px-2 text-[10px] font-semibold uppercase tracking-wider text-muted md:max-lg:hidden">
                 {t.financesSection}
               </span>
             )}
@@ -115,10 +115,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
                   <button
                     key={item.id}
                     onClick={() => setActiveScreen(item.id)}
+                    aria-label={item.label}
                     title={collapsed ? item.label : undefined}
                     className={`relative w-full flex items-center ${
-                      collapsed ? 'justify-center px-0' : 'gap-2.5 px-2.5'
-                    } py-1.5 rounded-lg text-xs transition-colors duration-150 z-10 ${
+                      collapsed ? 'justify-center px-0' : 'gap-2.5 px-2.5 md:max-lg:justify-center md:max-lg:px-0'
+                    } min-h-11 rounded-control text-xs transition-colors duration-150 z-10 ${
                       isActive
                         ? 'text-zinc-900 dark:text-white font-semibold'
                         : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
@@ -143,7 +144,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
                           : 'text-[#787774] dark:text-[#9b9a97]'
                       }`}
                     />
-                    {!collapsed && <span className="truncate">{item.label}</span>}
+                    {!collapsed && <span className="truncate md:max-lg:hidden">{item.label}</span>}
                   </button>
                 );
               })}
@@ -153,7 +154,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
           {/* Personal Section */}
           <div>
             {!collapsed && (
-              <span className="px-2 text-[10px] font-semibold uppercase tracking-wider text-[#9b9a97] dark:text-[#787774] block mb-1">
+              <span className="mb-1 block px-2 text-[10px] font-semibold uppercase tracking-wider text-muted md:max-lg:hidden">
                 {t.personalSection}
               </span>
             )}
@@ -165,10 +166,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
                   <button
                     key={item.id}
                     onClick={() => setActiveScreen(item.id)}
+                    aria-label={item.label}
                     title={collapsed ? item.label : undefined}
                     className={`relative w-full flex items-center ${
-                      collapsed ? 'justify-center px-0' : 'gap-2.5 px-2.5'
-                    } py-1.5 rounded-lg text-xs transition-colors duration-150 z-10 ${
+                      collapsed ? 'justify-center px-0' : 'gap-2.5 px-2.5 md:max-lg:justify-center md:max-lg:px-0'
+                    } min-h-11 rounded-control text-xs transition-colors duration-150 z-10 ${
                       isActive
                         ? 'text-zinc-900 dark:text-white font-semibold'
                         : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
@@ -193,7 +195,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
                           : 'text-[#787774] dark:text-[#9b9a97]'
                       }`}
                     />
-                    {!collapsed && <span className="truncate">{item.label}</span>}
+                    {!collapsed && <span className="truncate md:max-lg:hidden">{item.label}</span>}
                   </button>
                 );
               })}
@@ -204,10 +206,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
           <div className="pt-2 border-t border-[#e3e2de] dark:border-[#2f2f2f]">
             <button
               onClick={() => setActiveScreen('settings')}
+              aria-label={t.settings}
               title={collapsed ? t.settings : undefined}
               className={`relative w-full flex items-center ${
-                collapsed ? 'justify-center px-0' : 'gap-2.5 px-2.5'
-              } py-1.5 rounded-lg text-xs transition-colors duration-150 z-10 ${
+                collapsed ? 'justify-center px-0' : 'gap-2.5 px-2.5 md:max-lg:justify-center md:max-lg:px-0'
+              } min-h-11 rounded-control text-xs transition-colors duration-150 z-10 ${
                 activeScreen === 'settings'
                   ? 'text-zinc-900 dark:text-white font-semibold'
                   : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
@@ -232,44 +235,46 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
                     : 'text-[#787774] dark:text-[#9b9a97]'
                 }`}
               />
-              {!collapsed && <span className="truncate">{t.settings}</span>}
+              {!collapsed && <span className="truncate md:max-lg:hidden">{t.settings}</span>}
             </button>
           </div>
         </div>
 
         {/* Bottom Profile Section (Single, authentic location for session profile) */}
         {activeAccount && (
-          <div className="p-2 border-t border-[#e3e2de] dark:border-[#2f2f2f] flex items-center gap-1">
+          <div className="flex items-center gap-1 border-t border-border-subtle p-2">
             <button
               onClick={() => setIsProfileModalOpen(true)}
+              aria-label={activeAccount.name}
               title={collapsed ? activeAccount.name : undefined}
-              className={`flex-1 p-1.5 rounded-xl hover:bg-[#f1f0ee] dark:hover:bg-[#242424] flex items-center ${
-                collapsed ? 'justify-center' : 'justify-between gap-2'
-              } transition-colors text-left min-w-0`}
+              className={`flex min-h-11 min-w-0 flex-1 items-center rounded-control p-1.5 text-start transition-colors hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+                collapsed ? 'justify-center' : 'justify-between gap-2 md:max-lg:justify-center'
+              }`}
             >
               <div className="flex items-center gap-2 min-w-0">
                 <div
-                  className="w-6 h-6 rounded-lg flex items-center justify-center text-white font-bold text-[10px] shrink-0 shadow-xs"
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white shadow-xs"
                   style={{ backgroundColor: activeAccount.avatarColor || '#37352f' }}
                 >
                   {activeAccount.name.charAt(0).toUpperCase()}
                 </div>
                 {!collapsed && (
                   <div className="min-w-0">
-                    <span className="font-semibold text-xs text-[#37352f] dark:text-[#ecebed] truncate block">
+                    <span className="block truncate text-xs font-semibold text-content md:max-lg:hidden">
                       {activeAccount.name}
                     </span>
                   </div>
                 )}
               </div>
-              {!collapsed && <ChevronDown className="w-3.5 h-3.5 text-[#787774] shrink-0" />}
+              {!collapsed && <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted md:max-lg:hidden" />}
             </button>
 
             {!collapsed && (
               <button
                 onClick={() => logout()}
                 title={tCommon.logOut}
-                className="p-1.5 rounded-lg text-[#787774] hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors shrink-0"
+                aria-label={tCommon.logOut}
+                className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-control text-muted transition-colors hover:bg-negative/10 hover:text-negative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent lg:flex"
               >
                 <LogOut className="w-3.5 h-3.5" />
               </button>

@@ -10,6 +10,7 @@ export interface PrivacyCurrencyProps {
   prefix?: string;
   suffix?: string;
   decimals?: boolean;
+  currencyClassName?: string;
 }
 
 /**
@@ -25,6 +26,7 @@ export const PrivacyCurrency: React.FC<PrivacyCurrencyProps> = ({
   prefix = '',
   suffix = '',
   decimals = false,
+  currencyClassName,
 }) => {
   const { isBalanceHidden, hideBalance, language } = useAppStore();
   const isHidden = !forceVisible && (isBalanceHidden ?? hideBalance);
@@ -35,16 +37,21 @@ export const PrivacyCurrency: React.FC<PrivacyCurrencyProps> = ({
       : parseFloat(String(amount || 0)) || 0;
 
   const formattedAmount = formatMAD(numVal, false, language);
+  const currencyIndex = formattedAmount.lastIndexOf(' ');
+  const numericPart = currencyIndex > -1 ? formattedAmount.slice(0, currencyIndex) : formattedAmount;
+  const currencyPart = currencyIndex > -1 ? formattedAmount.slice(currencyIndex + 1) : '';
 
   return (
     <span
+      dir="ltr"
+      style={{ unicodeBidi: 'isolate' }}
       className={`tabular-nums inline-flex items-center whitespace-nowrap transition-[filter,opacity] duration-200 ${
         isHidden ? 'blur-md opacity-50 select-none pointer-events-none' : ''
       } ${className}`}
     >
       {prefix}
       {showSign && numVal > 0 && '+'}
-      {formattedAmount}
+      {numericPart}{currencyPart && <>{' '}<span className={currencyClassName}>{currencyPart}</span></>}
       {suffix}
     </span>
   );

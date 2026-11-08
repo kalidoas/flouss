@@ -1,6 +1,6 @@
 import { Category, GoalCalculation, Language, Transaction, UserAccount, TaskItem, DebtItem, SubscriptionItem } from '../types';
 import { getCategoryName } from './i18nHelpers';
-import { getIntlLocale, isTransactionInMonth } from './formatters';
+import { getIntlLocale, getTransactionMonth, isTransactionInMonth } from './formatters';
 import { money } from '../lib/currency';
 import { getCategoryVisualColor } from './categoryColor';
 
@@ -71,6 +71,21 @@ export function selectFinancialSummary(
     totalIn: money.round(totalInCents / 100),
     totalOut: money.round(totalOutCents / 100),
     net: money.round(netCents / 100),
+  };
+}
+
+/** Dashboard view totals for one month, sourced from the shared financial summary. */
+export function selectDashboardFinancials(
+  initialBalance: number | null,
+  transactions: Transaction[] = [],
+  month: string
+): FinancialSummary & { balance: number } {
+  const throughMonth = (transactions || []).filter(
+    (transaction) => getTransactionMonth(transaction.date) <= month
+  );
+  return {
+    ...selectFinancialSummary(transactions, { month }),
+    balance: calculateAvailableBalance(initialBalance, throughMonth),
   };
 }
 

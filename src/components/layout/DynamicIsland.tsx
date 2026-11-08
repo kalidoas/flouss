@@ -20,6 +20,7 @@ export const DynamicIsland: React.FC = () => {
   const [isSyncing, setIsSyncing] = useState(false);
   const { language, firebaseUser, firestoreDisabled, syncStatus, forceSyncToCloud, showToast } = useAppStore();
   const tHub = translations[language].priorityHub;
+  const tDashboard = translations[language].dashboard;
 
   useEffect(() => {
     return islandManager.subscribe((notif) => {
@@ -91,27 +92,23 @@ export const DynamicIsland: React.FC = () => {
 
   const isExpanded = Boolean(notification) || isHovered;
 
-  const idleSyncText =
-    !firebaseUser || firestoreDisabled
-      ? language === 'ar' ? 'حفظ محلي' : language === 'en' ? 'Local storage' : 'Stockage local'
-      : syncStatus === 'error'
-      ? language === 'ar' ? 'فشلت المزامنة' : language === 'en' ? 'Sync failed' : 'Échec de synchronisation'
-      : syncStatus === 'syncing'
-      ? language === 'ar' ? 'جارٍ حفظ التغييرات' : language === 'en' ? 'Saving changes' : 'Enregistrement en cours'
-      : syncStatus === 'synced'
-      ? language === 'ar' ? 'متزامن مع السحابة' : language === 'en' ? 'Synced with cloud' : 'Synchronisé au cloud'
-      : language === 'ar' ? 'جارٍ الاتصال بالسحابة' : language === 'en' ? 'Connecting to cloud' : 'Connexion au cloud';
-  const syncDotClass = !firebaseUser || firestoreDisabled
-    ? 'bg-zinc-500'
+  const isOffline = !firebaseUser || firestoreDisabled || syncStatus === 'error';
+  const idleSyncText = isOffline
+    ? tDashboard.syncOffline
     : syncStatus === 'synced'
-    ? 'bg-emerald-400 shadow-[0_0_6px_#34d399]'
-    : syncStatus === 'error'
-    ? 'bg-rose-500 shadow-[0_0_6px_#f43f5e]'
-    : 'bg-amber-400 shadow-[0_0_6px_#fbbf24]';
+      ? tDashboard.syncSynced
+      : tDashboard.syncSyncing;
+  const syncDotClass = isOffline
+    ? 'bg-[#FF9F0A]'
+    : syncStatus === 'synced'
+    ? 'bg-[#30D158]'
+    : 'bg-[#FF9F0A]';
 
   return (
     <div className="flex justify-center shrink-0 pointer-events-none select-none">
-      <motion.div
+      <motion.button
+        type="button"
+        aria-label={idleSyncText}
         layout
         onClick={handleForceSync}
         whileTap={{ scale: 0.96 }}
@@ -124,8 +121,8 @@ export const DynamicIsland: React.FC = () => {
           damping: 32,
           mass: 0.8,
         }}
-        className={`pointer-events-auto cursor-pointer relative max-w-full bg-black/95 text-white backdrop-blur-2xl border border-white/20 shadow-[0_4px_16px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.2)] rounded-full flex items-center justify-between overflow-hidden px-3 py-1 transition-all ${
-          isExpanded ? 'w-[min(260px,60vw)] sm:w-[280px] px-3.5 py-1.5' : 'w-8 md:w-[88px]'
+        className={`pointer-events-auto relative max-w-full appearance-none bg-black/95 text-white backdrop-blur-2xl border border-white/20 shadow-[0_4px_16px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.2)] rounded-full flex items-center justify-between overflow-hidden px-3 py-1 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A84FF] ${
+          isExpanded ? 'w-[min(260px,60vw)] sm:w-[280px] px-3.5 py-1.5' : 'w-[118px]'
         }`}
       >
         <AnimatePresence mode="wait">
@@ -183,14 +180,14 @@ export const DynamicIsland: React.FC = () => {
             >
               <div className="flex items-center gap-1.5">
                 <span className="hidden text-[10px] font-medium text-zinc-400 md:inline">
-                  {firebaseUser ? (language === 'ar' ? 'متصل' : language === 'fr' ? 'Sync' : 'Sync') : 'Local'}
+                  {idleSyncText}
                 </span>
                 <span aria-hidden="true" className={`h-1.5 w-1.5 rounded-full shrink-0 ${syncDotClass} ${syncStatus === 'syncing' ? 'animate-pulse' : ''}`} />
               </div>
             </motion.div>
           )}
         </AnimatePresence>
-      </motion.div>
+      </motion.button>
     </div>
   );
 };

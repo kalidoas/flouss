@@ -7,18 +7,21 @@ import { UserProfileModal } from '../profile/UserProfileModal';
 import { BottomSheet } from '../common/BottomSheet';
 import {
   LayoutDashboard, TrendingDown, Plus, CheckSquare, BarChart3, Layers,
-  TrendingUp, History, Settings, FileText, HandCoins, CreditCard, LogOut, User,
+  TrendingUp, History, Settings, FileText, HandCoins, CreditCard, LogOut, User, Moon, Sun,
 } from 'lucide-react';
+import { DynamicIsland } from './DynamicIsland';
+import { Language } from '../../types';
 
 interface NavbarProps {
   onQuickAdd: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ onQuickAdd }) => {
-  const { activeScreen, setActiveScreen, language, logout, accounts, activeAccountId, firebaseUser } = useAppStore();
+  const { activeScreen, setActiveScreen, language, setLanguage, logout, accounts, activeAccountId, firebaseUser, isDarkMode, toggleTheme } = useAppStore();
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const t = translations[language].nav;
+  const tCommon = translations[language].common;
   const isAr = language === 'ar';
 
   useEffect(() => {
@@ -77,6 +80,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onQuickAdd }) => {
 
       <BottomSheet isOpen={isMoreMenuOpen} onClose={() => setIsMoreMenuOpen(false)} title={t.morePages}>
         <div className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-border-subtle bg-surface p-3">
+            <div className="flex items-center gap-1 rounded-control border border-border-subtle bg-surface-raised p-0.5" role="group" aria-label={language === 'ar' ? 'اللغة' : language === 'fr' ? 'Langue' : 'Language'}>
+              {([{ code: 'fr', label: 'FR' }, { code: 'ar', label: 'عربي' }, { code: 'en', label: 'EN' }] as { code: Language; label: string }[]).map((item) => <button type="button" key={item.code} aria-pressed={language === item.code} onClick={() => setLanguage(item.code)} className={`min-h-11 rounded-control px-3 text-xs font-semibold ${language === item.code ? 'bg-surface text-content shadow-sm' : 'text-muted hover:text-content'}`}>{item.label}</button>)}
+            </div>
+            <button type="button" onClick={toggleTheme} aria-label={isDarkMode ? tCommon.switchToLight : tCommon.switchToDark} title={isDarkMode ? tCommon.switchToLight : tCommon.switchToDark} className="flex min-h-11 min-w-11 items-center justify-center rounded-control border border-border-subtle text-content hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">{isDarkMode ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}</button>
+            <DynamicIsland />
+          </div>
           <div className="grid grid-cols-2 gap-2">
             {moreScreens.map((item) => {
               const Icon = item.icon;
