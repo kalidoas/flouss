@@ -17,24 +17,19 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
 }) => {
   return (
     <div
-      className={`py-12 px-4 text-center rounded-lg border border-dashed border-[#e3e2de] dark:border-[#2f2f2f] bg-[#fbfbfa] dark:bg-[#1f1f1f] flex flex-col items-center justify-center space-y-3 ${className}`}
+      role="status"
+      className={`min-w-0 py-4 px-3 sm:px-4 rounded-card border border-dashed border-border-subtle bg-surface flex flex-col sm:flex-row sm:items-center gap-3 ${className}`}
     >
       {icon && (
-        <div className="w-10 h-10 rounded-md bg-[#f1f0ee] dark:bg-[#282828] text-[#787774] dark:text-[#9b9a97] flex items-center justify-center">
+        <div className="w-9 h-9 rounded-control bg-surface-raised text-muted flex items-center justify-center shrink-0">
           {icon}
         </div>
       )}
-      <div className="max-w-xs space-y-1">
-        <h4 className="text-sm font-medium text-[#37352f] dark:text-[#ecebed]">
-          {title}
-        </h4>
-        {description && (
-          <p className="text-xs text-[#787774] dark:text-[#9b9a97] leading-relaxed">
-            {description}
-          </p>
-        )}
+      <div className="min-w-0 flex-1 space-y-0.5">
+        <h4 className="text-sm font-medium text-content">{title}</h4>
+        {description && <p className="text-xs text-muted leading-relaxed">{description}</p>}
       </div>
-      {action && <div className="pt-1">{action}</div>}
+      {action && <div className="shrink-0 self-end sm:self-auto">{action}</div>}
     </div>
   );
 };

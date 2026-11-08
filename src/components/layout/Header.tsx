@@ -5,6 +5,7 @@ import { Eye, EyeOff, Moon, Sun, ChevronLeft } from 'lucide-react';
 import { Logo } from '../common/Logo';
 import { DynamicIsland } from './DynamicIsland';
 import { Language } from '../../types';
+import { translations } from '../../i18n/translations';
 import { islandManager } from '../../utils/islandManager';
 import { playHapticFeedback } from '../../utils/haptics';
 
@@ -29,6 +30,8 @@ export const Header: React.FC = () => {
       : typeof window !== 'undefined' &&
         Boolean(window.matchMedia?.('(prefers-color-scheme: dark)').matches);
 
+  const tCommon = translations[language].common;
+
   const languages: { code: Language; label: string }[] = [
     { code: 'fr', label: 'FR' },
     { code: 'ar', label: 'عربي' },
@@ -45,7 +48,7 @@ export const Header: React.FC = () => {
               playHapticFeedback('light');
               navigateBack();
             }}
-            aria-label="Go back"
+            aria-label={tCommon.back}
             className="p-1.5 -ml-1 rounded-xl text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 transition-colors"
           >
             <ChevronLeft className={`w-4 h-4 ${language === 'ar' ? 'rotate-180' : ''}`} />
@@ -111,13 +114,13 @@ export const Header: React.FC = () => {
             playHapticFeedback('light');
             toggleHideBalance();
           }}
-          title={hideBalance ? 'Afficher les montants (H)' : 'Masquer les montants (H)'}
+          title={`${hideBalance ? tCommon.showAmounts : tCommon.hideAmounts} (H)`}
           className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-normal transition-all duration-150 border ${
             hideBalance
               ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
               : 'border-transparent text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800/80'
           }`}
-          aria-label="Toggle privacy"
+          aria-label={hideBalance ? tCommon.showAmounts : tCommon.hideAmounts}
         >
           {hideBalance ? (
             <EyeOff className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
@@ -133,9 +136,9 @@ export const Header: React.FC = () => {
             playHapticFeedback('light');
             toggleTheme();
           }}
-          title={isDark ? 'Passer en mode clair' : 'Passer en mode sombre'}
+          title={isDark ? tCommon.switchToLight : tCommon.switchToDark}
           className="p-1.5 rounded-xl text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 transition-colors"
-          aria-label={isDark ? 'Passer en mode clair' : 'Passer en mode sombre'}
+          aria-label={isDark ? tCommon.switchToLight : tCommon.switchToDark}
         >
           {isDark ? (
             <Moon className="w-4 h-4 text-indigo-400 fill-indigo-400/20" />

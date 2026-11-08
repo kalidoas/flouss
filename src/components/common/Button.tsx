@@ -19,28 +19,28 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const baseStyles =
-    'inline-flex items-center justify-center font-medium disabled:opacity-50 disabled:cursor-not-allowed select-none focus:outline-none';
+    'inline-flex min-h-11 items-center justify-center font-medium disabled:opacity-50 disabled:cursor-not-allowed select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-canvas';
 
   const sizeStyles = {
-    sm: 'text-xs px-2.5 py-1.5 rounded-md gap-1.5',
-    md: 'text-sm px-3.5 py-2 rounded-md gap-2 font-medium',
-    lg: 'text-sm px-4 py-2.5 rounded-md gap-2.5 font-medium',
-    xl: 'text-base px-5 py-3 rounded-md gap-3 font-semibold',
+    sm: 'text-caption px-3 py-2 rounded-control gap-1.5',
+    md: 'text-body px-4 py-3 rounded-control gap-2 font-medium',
+    lg: 'text-body px-4 py-3 rounded-control gap-3 font-medium',
+    xl: 'text-strong px-6 py-4 rounded-control gap-3 font-semibold',
   };
 
   const variantStyles = {
     primary:
-      'bg-[#2383e2] hover:bg-[#1a73cb] text-white shadow-sm border border-[#2383e2]',
+      'bg-accent hover:brightness-95 text-white shadow-sm border border-accent',
     secondary:
-      'bg-white dark:bg-[#252525] hover:bg-[#f1f0ee] dark:hover:bg-[#2e2e2e] text-[#37352f] dark:text-[#ecebed] border border-[#e3e2de] dark:border-[#2f2f2f] shadow-sm',
+      'bg-surface hover:bg-surface-raised text-content border border-border-subtle shadow-sm',
     income:
       'bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-900/60',
     danger:
       'bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200/80 dark:border-rose-900/60',
     outline:
-      'bg-transparent hover:bg-[#f1f0ee] dark:hover:bg-[#252525] text-[#37352f] dark:text-[#ecebed] border border-[#e3e2de] dark:border-[#2f2f2f]',
+      'bg-transparent hover:bg-surface-raised text-content border border-border-subtle',
     ghost:
-      'bg-transparent hover:bg-[#f1f0ee] dark:hover:bg-[#252525] text-[#787774] hover:text-[#37352f] dark:text-[#9b9a97] dark:hover:text-[#ecebed]',
+      'bg-transparent hover:bg-surface-raised text-muted hover:text-content',
   };
 
   const widthStyle = fullWidth ? 'w-full' : '';

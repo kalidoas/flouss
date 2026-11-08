@@ -38,7 +38,7 @@ export const PrivacyCurrency: React.FC<PrivacyCurrencyProps> = ({
 
   return (
     <span
-      className={`tabular-nums inline-flex items-center transition-[filter,opacity] duration-200 ${
+      className={`tabular-nums inline-flex items-center whitespace-nowrap transition-[filter,opacity] duration-200 ${
         isHidden ? 'blur-md opacity-50 select-none pointer-events-none' : ''
       } ${className}`}
     >
@@ -49,3 +49,7 @@ export const PrivacyCurrency: React.FC<PrivacyCurrencyProps> = ({
     </span>
   );
 };
+
+// Canonical money primitive name for new UI; keep the existing export so
+// current screens can migrate without changing behavior.
+export const MoneyText = PrivacyCurrency;

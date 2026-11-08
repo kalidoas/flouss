@@ -245,7 +245,7 @@ export const HistoryPage: React.FC = () => {
             onChange={(e) => setSelectedMonth(e.target.value)}
             className="text-xs py-1 px-2.5 rounded-md border border-[#e3e2de] dark:border-[#2f2f2f] bg-white dark:bg-[#202020] text-[#37352f] dark:text-[#ecebed] outline-none"
           >
-            <option value="all">Toutes dates</option>
+            <option value="all">{t.allDates}</option>
             {availableMonths.map((m: string) => (
               <option key={m} value={m}>
                 {formatMonthYear(m, language)}
@@ -259,7 +259,7 @@ export const HistoryPage: React.FC = () => {
             onChange={(e) => setSelectedCategory(e.target.value)}
             className="text-xs py-1 px-2.5 rounded-md border border-[#e3e2de] dark:border-[#2f2f2f] bg-white dark:bg-[#202020] text-[#37352f] dark:text-[#ecebed] outline-none max-w-[160px] truncate"
           >
-            <option value="all">Toutes catégories</option>
+            <option value="all">{t.allCategories}</option>
             <optgroup label="Catégories">
               {categories.map((c: Category) => (
                 <option key={c.id} value={c.id}>

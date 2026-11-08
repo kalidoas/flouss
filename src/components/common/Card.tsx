@@ -23,11 +23,10 @@ export const Card: React.FC<CardProps> = ({
   };
 
   const variantStyles = {
-    default:
-      'bg-white dark:bg-[#202020] border border-[#e3e2de] dark:border-[#2f2f2f] shadow-sm',
-    flat: 'bg-[#f7f6f3] dark:bg-[#1f1f1f] border border-[#e3e2de] dark:border-[#2f2f2f]',
+    default: 'bg-surface border border-border-subtle shadow-sm',
+    flat: 'bg-canvas border border-border-subtle',
     bordered:
-      'bg-transparent border border-[#e3e2de] dark:border-[#2f2f2f] hover:border-[#d3d1cb] dark:hover:border-[#3f3f3f]',
+      'bg-transparent border border-border-subtle hover:border-accent',
   };
 
   const hoverStyle = hover
@@ -36,7 +35,7 @@ export const Card: React.FC<CardProps> = ({
 
   return (
     <div
-      className={`rounded-lg ${variantStyles[variant === 'gradient' as any ? 'default' : variant]} ${paddingStyles[padding]} ${hoverStyle} ${className}`}
+      className={`rounded-card ${variantStyles[variant]} ${paddingStyles[padding]} ${hoverStyle} ${className}`}
       {...props}
     >
       {children}

@@ -4,11 +4,13 @@ import { listUpcomingCalendarEvents, getStoredGoogleAccessToken } from '../../se
 import { NewMeetingModal } from './NewMeetingModal';
 import { Calendar, Clock, Plus, RefreshCw, AlertCircle, ExternalLink, Users } from 'lucide-react';
 import { playHapticFeedback } from '../../utils/haptics';
+import { translations } from '../../i18n/translations';
 
 export const UpcomingScheduleWidget: React.FC = () => {
   const { language } = useAppStore();
   const isAr = language === 'ar';
   const isEn = language === 'en';
+  const tCommon = translations[language].common;
 
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -32,7 +34,7 @@ export const UpcomingScheduleWidget: React.FC = () => {
         setEvents(res.events || []);
       }
     } catch (err: any) {
-      setError(err?.message || 'Erreur');
+      setError(err?.message || tCommon.calendarError);
     } finally {
       setLoading(false);
     }
@@ -73,10 +75,10 @@ export const UpcomingScheduleWidget: React.FC = () => {
           </div>
           <div>
             <h3 className="text-sm font-extrabold text-zinc-900 dark:text-white">
-              {isAr ? 'جدول المواعيد (7 أيام)' : isEn ? 'Upcoming Schedule (7 Days)' : 'Agenda à 7 jours'}
+              {tCommon.upcomingSchedule}
             </h3>
             <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-              {isAr ? 'مستورد من تقويم Google Calendar' : 'Synchronisé avec Google Calendar'}
+              {tCommon.syncedWithCalendar}
             </p>
           </div>
         </div>
@@ -90,7 +92,7 @@ export const UpcomingScheduleWidget: React.FC = () => {
             }}
             disabled={loading}
             className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-            title="Rafraîchir"
+            title={tCommon.refresh}
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
           </button>
@@ -104,7 +106,7 @@ export const UpcomingScheduleWidget: React.FC = () => {
             className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-all shadow-xs"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>{isAr ? 'اجتماع جديد' : isEn ? 'New Meeting' : 'Réunion'}</span>
+            <span>{tCommon.newMeeting}</span>
           </button>
         </div>
       </div>
@@ -123,7 +125,7 @@ export const UpcomingScheduleWidget: React.FC = () => {
       ) : loading ? (
         <div className="py-6 flex items-center justify-center gap-2 text-xs text-zinc-400">
           <RefreshCw className="w-4 h-4 animate-spin text-blue-500" />
-          <span>{isAr ? 'جاري تحميل المواعيد...' : 'Chargement de l’agenda...'}</span>
+          <span>{tCommon.loadingSchedule}</span>
         </div>
       ) : error ? (
         <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-2">
@@ -147,7 +149,7 @@ export const UpcomingScheduleWidget: React.FC = () => {
             >
               <div className="min-w-0 space-y-0.5">
                 <p className="font-bold text-zinc-900 dark:text-white truncate">
-                  {ev.summary || (isAr ? 'حدث بدون عنوان' : 'Événement')}
+                  {ev.summary || tCommon.untitledEvent}
                 </p>
                 <div className="flex items-center gap-2 text-[11px] text-zinc-500 dark:text-zinc-400 font-mono">
                   <Clock className="w-3 h-3 text-blue-500" />

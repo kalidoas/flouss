@@ -42,6 +42,7 @@ export const Navbar: React.FC = () => {
   } = useAppStore();
 
   const t = translations[language].nav;
+  const tCommon = translations[language].common;
   const tHub = translations[language].priorityHub;
   const isAr = language === 'ar';
 
@@ -89,7 +90,7 @@ export const Navbar: React.FC = () => {
 
     const now = new Date().toISOString();
     const fallbackTitle =
-      isAr ? 'ملاحظة مثبتة' : language === 'en' ? 'Pinned Note' : 'Rappel urgent';
+    tCommon.pinnedNote;
 
     addNoteItem({
       id: 'note_' + Date.now(),
@@ -189,12 +190,12 @@ export const Navbar: React.FC = () => {
               playHapticFeedback('medium');
               setIsActionSheetOpen(true);
             }}
-            title={isAr ? 'إضافة معاملة سريعة' : language === 'en' ? 'Add Transaction' : 'Ajouter une transaction'}
+            title={tCommon.quickAdd}
             className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-[0_6px_18px_rgba(37,99,235,0.4)] border border-white/30 backdrop-blur-xl transition-all"
-            aria-label={isAr ? 'إضافة معاملة سريعة' : language === 'en' ? 'Add Transaction' : 'Ajouter une transaction'}
+            aria-label={tCommon.quickAdd}
           >
             <Plus className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.8]" />
-            <span className="sr-only">Add</span>
+            <span className="sr-only">{tCommon.quickAdd}</span>
           </motion.button>
         </div>
 
@@ -283,7 +284,7 @@ export const Navbar: React.FC = () => {
               <div className="flex items-center justify-between pb-3 border-b border-black/[0.08] dark:border-white/10">
                 <div>
                   <h3 className="font-bold text-base text-zinc-900 dark:text-white tracking-tight">
-                    {isAr ? 'إجراء سريع' : language === 'en' ? 'Quick Action' : 'Action Rapide'}
+                    {tCommon.quickAdd}
                   </h3>
                   <p className="text-xs text-zinc-500 dark:text-zinc-400">
                     {isAr
@@ -317,7 +318,7 @@ export const Navbar: React.FC = () => {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="font-bold text-sm text-zinc-900 dark:text-white">
-                      {isAr ? 'تسجيل مدخول' : language === 'en' ? 'Add Income' : 'Nouveau Revenu'}
+                      {tCommon.addIncome}
                     </div>
                     <div className="text-xs text-zinc-500 dark:text-zinc-400 truncate">{t.incomeDesc}</div>
                   </div>
@@ -337,7 +338,7 @@ export const Navbar: React.FC = () => {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="font-bold text-sm text-zinc-900 dark:text-white">
-                      {isAr ? 'تسجيل مصروف' : language === 'en' ? 'Add Expense' : 'Nouvelle Dépense'}
+                      {tCommon.addExpense}
                     </div>
                     <div className="text-xs text-zinc-500 dark:text-zinc-400 truncate">{t.expenseDesc}</div>
                   </div>
@@ -357,7 +358,7 @@ export const Navbar: React.FC = () => {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="font-bold text-sm text-zinc-900 dark:text-white">
-                      {isAr ? 'ملاحظة مثبتة' : language === 'en' ? 'Pinned Note' : 'Note Épinglée'}
+                      {tCommon.pinnedNote}
                     </div>
                     <div className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
                       {isAr

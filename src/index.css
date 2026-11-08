@@ -6,20 +6,56 @@
   :root {
     --safe-area-top: env(safe-area-inset-top, 0px);
     --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+    --color-canvas: #f5f5f7;
+    --color-surface: #ffffff;
+    --color-surface-raised: #f1f2f5;
+    --color-border: rgba(24, 24, 32, 0.08);
+    --color-content: #20212a;
+    --color-muted: #666874;
+    --color-accent: #3478f6;
+    --color-positive: #16856b;
+    --color-negative: #d7485d;
+    --radius-card: 12px;
+    --radius-control: 8px;
+    --font-caption: 12px;
+    --font-body: 14px;
+    --font-strong: 16px;
+    --font-section: 20px;
+    --font-hero-min: 28px;
+    --font-hero-max: 40px;
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-6: 24px;
+    --space-8: 32px;
+  }
+
+  .dark {
+    color-scheme: dark;
+    --color-canvas: #0b0b0f;
+    --color-surface: #131318;
+    --color-surface-raised: #1a1a21;
+    --color-border: rgba(255, 255, 255, 0.07);
+    --color-content: #f2f2f5;
+    --color-muted: #a1a1aa;
+    --color-accent: #5b91ff;
+    --color-positive: #34b78f;
+    --color-negative: #f06478;
   }
 
   body {
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Display", 'Inter', 'Plus Jakarta Sans', sans-serif;
+    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -webkit-tap-highlight-color: transparent;
-    background-color: #f7f6f3;
-    color: #37352f;
+    background-color: var(--color-canvas);
+    color: var(--color-content);
   }
 
   .dark body, body.dark {
-    background-color: #191919;
-    color: #ecebed;
+    background-color: var(--color-canvas);
+    color: var(--color-content);
   }
 
   /* Arabic typography support */
@@ -31,6 +67,11 @@
   .tabular-nums, .font-num {
     font-variant-numeric: tabular-nums;
     font-feature-settings: 'tnum' on, 'lnum' on;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
   }
 
   /* ==========================================================================

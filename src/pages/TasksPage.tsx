@@ -678,7 +678,7 @@ export const TasksPage: React.FC = () => {
             variant="primary"
             icon={<Plus className="w-4 h-4 stroke-[2.5]" />}
           >
-            <span>{tTask.addProgram || 'Nouveau programme'}</span>
+            <span>{tTask.addProgram}</span>
           </Button>
 
           <Button
@@ -1032,7 +1032,7 @@ export const TasksPage: React.FC = () => {
                           {isSalat ? (
                             `${salatDone} / 5`
                           ) : isGym ? (
-                            gymToday ? (language === 'ar' ? 'تمت الحصة اليوم' : 'Séance validée') : (language === 'ar' ? 'لم تسجل بعد' : 'En attente')
+                            gymToday ? tTask.doneTodayStatus : tTask.notDoneTodayStatus
                           ) : isStudy ? (
                             `${studyDone} / ${studyTotal}`
                           ) : (
@@ -1041,7 +1041,7 @@ export const TasksPage: React.FC = () => {
                         </span>
 
                         <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 flex items-center gap-0.5 opacity-90 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all">
-                          <span>{tTask.openProgram || 'Ouvrir'}</span>
+                          <span>{tTask.openProgram}</span>
                           <ChevronRight className="w-3.5 h-3.5" />
                         </span>
                       </div>
@@ -1079,10 +1079,10 @@ export const TasksPage: React.FC = () => {
                   <Plus className="w-6 h-6 stroke-[2.2]" />
                 </div>
                 <span className="font-bold text-sm text-zinc-700 dark:text-zinc-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                  {tTask.addProgram || 'Nouveau programme'}
+                  {tTask.addProgram}
                 </span>
                 <span className="text-[11px] text-zinc-400 mt-0.5">
-                  {language === 'ar' ? 'إضافة مسار أو مهارة جديدة' : 'Créer une compétence ou habitude'}
+                  {tTask.createSkill}
                 </span>
               </motion.div>
             </div>
@@ -1878,7 +1878,7 @@ export const TasksPage: React.FC = () => {
 
                   <div className="flex justify-end pt-1">
                     <Button type="submit" variant="primary" size="sm" icon={<Dumbbell className="w-3.5 h-3.5" />}>
-                      <span>{tTask.addWorkoutBtn || 'Enregistrer la séance'}</span>
+                      <span>{tTask.addWorkoutBtn}</span>
                     </Button>
                   </div>
                 </form>
@@ -2103,7 +2103,7 @@ export const TasksPage: React.FC = () => {
       <Modal
         isOpen={isAddTrackModalOpen}
         onClose={() => setIsAddTrackModalOpen(false)}
-        title={tTask.addProgram || 'Nouveau programme'}
+        title={tTask.addProgram}
         subtitle={
           language === 'ar'
             ? 'إنشاء مسار جديد وتتبع مهاراتك اليومية'

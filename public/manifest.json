@@ -14,8 +14,8 @@
     "finance",
     "productivity"
   ],
-  "background_color": "#064e3b",
-  "theme_color": "#059669",
+  "background_color": "#0b0b0f",
+  "theme_color": "#0b0b0f",
   "icons": [
     {
       "src": "/icon-192.png",

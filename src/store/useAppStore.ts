@@ -846,7 +846,7 @@ export const useAppStore = create<AppState>()(
         ...extractAccountState(initialAccount),
 
         // ── UI Preferences ──────────────────────────────────────────
-        theme: 'system' as ThemeMode,
+        theme: 'dark' as ThemeMode,
         isDarkMode:
           typeof window !== 'undefined' &&
           Boolean(window.matchMedia?.('(prefers-color-scheme: dark)').matches),

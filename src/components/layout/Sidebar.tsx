@@ -34,6 +34,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   const t = translations[language].nav;
+  const tCommon = translations[language].common;
   const isAr = language === 'ar';
 
   const activeAccount =
@@ -78,7 +79,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
               <Logo size="sm" showWordmark={true} />
               <button
                 onClick={onToggleCollapse}
-                title="Réduire la barre latérale"
+                title={tCommon.collapseSidebar}
                 className="p-1 rounded text-[#787774] hover:text-[#37352f] dark:text-[#9b9a97] dark:hover:text-[#ecebed] hover:bg-[#f1f0ee] dark:hover:bg-[#282828] transition-colors"
               >
                 <PanelLeftClose className="w-4 h-4" />
@@ -88,7 +89,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
             <div className="w-full flex justify-center">
               <button
                 onClick={onToggleCollapse}
-                title="Déplier la barre latérale"
+                title={tCommon.expandSidebar}
                 className="p-1 rounded text-[#787774] hover:text-[#37352f] dark:text-[#9b9a97] dark:hover:text-[#ecebed] hover:bg-[#f1f0ee] dark:hover:bg-[#282828] transition-colors"
               >
                 <PanelLeftOpen className="w-4 h-4" />
@@ -267,7 +268,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
             {!collapsed && (
               <button
                 onClick={() => logout()}
-                title={isAr ? 'تسجيل الخروج' : language === 'en' ? 'Log out' : 'Déconnexion'}
+                title={tCommon.logOut}
                 className="p-1.5 rounded-lg text-[#787774] hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors shrink-0"
               >
                 <LogOut className="w-3.5 h-3.5" />

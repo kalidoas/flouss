@@ -13,7 +13,7 @@ interface LayoutProps {
 }
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
-  const { toggleHideBalance } = useAppStore();
+  const { toggleHideBalance, language } = useAppStore();
   const [collapsed, setCollapsed] = useState(() => {
     try {
       return localStorage.getItem('flouss_sidebar_collapsed') === 'true';
@@ -31,6 +31,12 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       return next;
     });
   };
+
+  useEffect(() => {
+    const root = document.documentElement;
+    root.lang = language === 'ar' ? 'ar-MA' : language === 'fr' ? 'fr-MA' : 'en';
+    root.dir = language === 'ar' ? 'rtl' : 'ltr';
+  }, [language]);
 
   // Keyboard shortcut: Press "H" to toggle Privacy Mode
   useEffect(() => {
@@ -57,7 +63,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   }, [toggleHideBalance]);
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#f7f6f3] dark:bg-[#191919] text-[#37352f] dark:text-[#ecebed] font-sans">
+    <div className="flex h-screen w-screen overflow-hidden bg-canvas text-content font-sans">
       {/* Desktop Notion Collapsible Sidebar */}
       <Sidebar collapsed={collapsed} onToggleCollapse={handleToggleCollapse} />
 

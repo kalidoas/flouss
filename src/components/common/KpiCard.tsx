@@ -105,7 +105,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
   const TrendIcon = isZero ? Minus : isPositive ? TrendingUp : TrendingDown;
 
   return (
-    <div className="flex flex-col justify-between p-5 rounded-2xl bg-white/80 dark:bg-zinc-900/60 backdrop-blur-xl border border-black/[0.06] dark:border-zinc-800/80 overflow-hidden min-h-[140px] shadow-xs hover:border-black/[0.12] dark:hover:border-zinc-700/80 transition-all group">
+    <div className="flex flex-col justify-between p-4 sm:p-6 rounded-card bg-surface border border-border-subtle overflow-hidden min-h-[128px] shadow-xs transition-colors group">
       {/* 1. Header: Icon + Uppercase Label */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2.5 min-w-0">
@@ -196,3 +196,5 @@ export const KpiCard: React.FC<KpiCardProps> = ({
     </div>
   );
 };
+
+export const StatCard = KpiCard;

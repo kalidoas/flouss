@@ -185,6 +185,7 @@ export const StatsPage: React.FC = () => {
   } = useAppStore();
 
   const t = translations[language].stats;
+  const tCommon = translations[language].common;
   const isAr = language === 'ar';
 
   const currentMonth = getCurrentMonthStr();
@@ -1175,7 +1176,7 @@ export const StatsPage: React.FC = () => {
                   {/* Progress info and bar */}
                   <div className="space-y-1">
                     <div className="flex items-center justify-between text-[10px] text-zinc-400">
-                      <span>{task.isDoneToday ? (isAr ? '✓ أنجزت اليوم' : '✓ Fait aujourd\'hui') : (isAr ? 'لم تنجز اليوم' : 'En attente')}</span>
+                      <span>{task.isDoneToday ? `✓ ${tCommon.doneToday}` : tCommon.notDoneToday}</span>
                       <span className="tabular-nums">
                         {task.checkedCount} / {taskAnalytics.daysInMonth} {isAr ? 'يوم' : 'j'}
                       </span>

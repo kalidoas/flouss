@@ -5,6 +5,7 @@ interface BadgeProps {
   variant?: 'emerald' | 'amber' | 'rose' | 'blue' | 'purple' | 'slate';
   size?: 'sm' | 'md';
   icon?: React.ReactNode;
+  className?: string;
 }
 
 export const Badge: React.FC<BadgeProps> = ({
@@ -12,6 +13,7 @@ export const Badge: React.FC<BadgeProps> = ({
   variant = 'slate',
   size = 'sm',
   icon,
+  className = '',
 }) => {
   const variantStyles = {
     emerald:
@@ -29,16 +31,18 @@ export const Badge: React.FC<BadgeProps> = ({
   };
 
   const sizeStyles = {
-    sm: 'text-[11px] font-medium px-1.5 py-0.5 rounded',
-    md: 'text-xs font-medium px-2 py-0.5 rounded',
+    sm: 'text-xs font-medium px-2 py-1 rounded-full',
+    md: 'text-sm font-medium px-2.5 py-1 rounded-full',
   };
 
   return (
     <span
-      className={`inline-flex items-center gap-1 border ${variantStyles[variant]} ${sizeStyles[size]}`}
+      className={`inline-flex min-h-6 items-center gap-1 border ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
     >
       {icon && <span className="shrink-0">{icon}</span>}
       <span>{children}</span>
     </span>
   );
 };
+
+export const Chip = Badge;
