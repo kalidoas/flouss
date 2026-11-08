@@ -52,14 +52,15 @@ const itemVariants: Variants = {
 };
 
 export const CategoriesPage: React.FC = () => {
-  const { categories, transactions, language } = useAppStore();
+  const { categories, transactions, language, updateCategory } = useAppStore();
   const tCat = translations[language].categories;
   const currentMonth = getCurrentMonthStr();
 
   const [activeTab, setActiveTab] = useState<'all' | 'goals' | 'expenses' | 'archived'>('all');
   const [selectedGroup, setSelectedGroup] = useState<CategoryGroupId | 'all'>('all');
   const [search, setSearch] = useState('');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode] = useState<'grid' | 'list'>('list');
+  const [showUnused, setShowUnused] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [categoryToEdit, setCategoryToEdit] = useState<Category | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
@@ -130,7 +131,9 @@ export const CategoriesPage: React.FC = () => {
     }
 
     return true;
-  });
+  }).sort((a, b) => calculateCategorySpentAmount(b.id, transactions, currentMonth) - calculateCategorySpentAmount(a.id, transactions, currentMonth));
+  const unusedCount = filteredCategories.filter((category) => !category.isGoal && calculateCategorySpentAmount(category.id, transactions, currentMonth) === 0).length;
+  const visibleCategories = filteredCategories.filter((category) => category.isGoal || calculateCategorySpentAmount(category.id, transactions, currentMonth) > 0 || showUnused);
 
   const handleOpenEdit = (category: Category) => {
     setCategoryToEdit(category);
@@ -317,32 +320,6 @@ export const CategoriesPage: React.FC = () => {
 
           {/* Controls: View Mode & Search */}
           <div className="flex items-center gap-2">
-            {/* View Mode Switcher: Grid vs Compact List */}
-            <div className="flex items-center gap-1 p-1 bg-zinc-200/60 dark:bg-zinc-800/60 backdrop-blur-md rounded-control border border-black/[0.04] dark:border-white/[0.06] shrink-0">
-              <button
-                onClick={() => setViewMode('grid')}
-                className={`p-1.5 rounded-control transition-all ${
-                  viewMode === 'grid'
-                    ? 'bg-surface text-content shadow-sm'
-                    : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
-                }`}
-                title="Bento Grid"
-              >
-                <LayoutGrid className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setViewMode('list')}
-                className={`p-1.5 rounded-control transition-all ${
-                  viewMode === 'list'
-                    ? 'bg-surface text-content shadow-sm'
-                    : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
-                }`}
-                title="Compact List"
-              >
-                <List className="w-4 h-4" />
-              </button>
-            </div>
-
             {/* Localized Apple Glass Search Input */}
             <div className="relative min-w-[200px] flex-1 sm:flex-initial">
               <Search className="w-3.5 h-3.5 text-muted absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -358,7 +335,8 @@ export const CategoriesPage: React.FC = () => {
         </div>
 
         {/* Structured Category Taxonomy Filter Pills (iOS 18 Horizontal Capsule Bar) */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+        <div className="relative after:pointer-events-none after:absolute after:inset-y-0 after:end-0 after:w-8 after:bg-gradient-to-l after:from-canvas after:to-transparent">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pe-7 scrollbar-none">
           <button
             onClick={() => setSelectedGroup('all')}
             className={`px-2.5 py-1 rounded-full text-caption font-medium transition-all shrink-0 border ${
@@ -393,6 +371,7 @@ export const CategoriesPage: React.FC = () => {
             );
           })}
         </div>
+        </div>
       </div>
 
       {/* Apple Bento Grid of Categories */}
@@ -415,25 +394,6 @@ export const CategoriesPage: React.FC = () => {
             </Button>
           }
         />
-      ) : viewMode === 'grid' ? (
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="show"
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
-        >
-          {filteredCategories.map((category: Category) => (
-            <motion.div key={category.id} variants={itemVariants}>
-              <CategoryCard
-                category={category}
-                onClick={() => setSelectedCategory(category)}
-                onQuickContribute={() => handleQuickContribute(category)}
-                onQuickExpense={() => handleQuickExpense(category)}
-                onSetGoal={() => handleSetGoal(category)}
-              />
-            </motion.div>
-          ))}
-        </motion.div>
       ) : (
         /* Compact List View (macOS Sequoia HIG) */
         <motion.div
@@ -442,20 +402,23 @@ export const CategoriesPage: React.FC = () => {
           animate="show"
           className="rounded-card sm:rounded-card bg-surface backdrop-blur-2xl border border-border-subtle shadow-xs divide-y divide-black/[0.04] dark:divide-white/[0.06] overflow-hidden"
         >
-          {filteredCategories.map((category: Category) => {
+          {visibleCategories.map((category: Category) => {
             const IconComp = getCategoryIcon(category.icon);
             const categoryName = getCategoryName(category, language);
             const resolvedGroup = resolveCategoryGroup(category);
             const groupName = getCategoryGroupName(resolvedGroup, language);
             const spentThisMonth = calculateCategorySpentAmount(category.id, transactions, currentMonth);
             const goalCalc = category.isGoal ? calculateGoalProgress(category, transactions) : null;
+            const monthlyBudget = Number(category.monthlyBudget) || 0;
+            const budgetProgress = monthlyBudget > 0 ? Math.min(100, Math.round((spentThisMonth / monthlyBudget) * 100)) : 0;
+            const progressColor = spentThisMonth > monthlyBudget && monthlyBudget > 0 ? 'bg-negative' : budgetProgress >= 80 ? 'bg-amber-500' : 'bg-accent';
 
             return (
               <motion.div
                 key={category.id}
                 variants={itemVariants}
                 onClick={() => setSelectedCategory(category)}
-                className="p-3.5 sm:p-4 flex items-center justify-between gap-3 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors cursor-pointer group"
+                className="p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors cursor-pointer group"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div
@@ -470,8 +433,8 @@ export const CategoriesPage: React.FC = () => {
                   </div>
 
                   <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-semibold text-sm text-content truncate">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <h4 className="min-w-0 flex-1 font-semibold text-sm text-content truncate">
                         {categoryName}
                       </h4>
                       {groupName && (
@@ -515,47 +478,29 @@ export const CategoriesPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 shrink-0">
-                  <div className="text-right">
-                    {category.isGoal && goalCalc ? (
-                      <>
-                        <div className="text-xs font-bold text-content tabular-nums">
-                          <MoneyText amount={goalCalc.savedAmount} />
-                        </div>
-                        <span className="text-caption text-blue-600 dark:text-blue-400 font-semibold tabular-nums">
-                          {goalCalc.progressPercent}%
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <div className="text-xs font-bold text-content tabular-nums">
-                          <MoneyText amount={spentThisMonth} />
-                        </div>
-                        <span className="text-caption text-muted block">
-                          {tCat.spentThisMonth}
-                        </span>
-                      </>
-                    )}
+                <div className="flex w-full min-w-0 items-center gap-3 sm:w-auto">
+                  <div className="min-w-20 text-end text-xs font-semibold text-content tabular-nums">
+                    <MoneyText amount={category.isGoal && goalCalc ? goalCalc.savedAmount : spentThisMonth} />
                   </div>
-
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleQuickExpense(category);
-                    }}
-                    className="p-2 rounded-control text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors shadow-2xs"
-                    title={tCat.quickExpense}
-                  >
-                    <Plus className="w-4 h-4 stroke-[2.5]" />
-                  </button>
-
-                  <ChevronRight className="w-4 h-4 text-muted group-hover:translate-x-0.5 transition-transform" />
+                  {!category.isGoal && <label className="flex min-h-11 items-center gap-1.5 text-[10px] text-muted" onClick={(event) => event.stopPropagation()}>
+                    <span>{language === 'ar' ? 'ميزانية' : 'Budget'}</span>
+                    <input type="number" min="0" step="0.01" defaultValue={category.monthlyBudget || ''} aria-label={`${categoryName} monthly budget`} onBlur={(event) => { const value = Number(event.currentTarget.value); const next = Number.isFinite(value) && value > 0 ? value : null; if (next !== (category.monthlyBudget || null)) updateCategory(category.id, { monthlyBudget: next }); }} className="h-9 w-24 rounded-control border border-border-subtle bg-canvas px-2 text-xs text-content" />
+                  </label>}
+                  {!category.isGoal && <span className="text-[10px] font-semibold text-muted tabular-nums">{monthlyBudget > 0 ? `${budgetProgress}%` : '—'}</span>}
+                  <button type="button" onClick={(event) => { event.stopPropagation(); handleQuickExpense(category); }} className="flex min-h-11 min-w-11 items-center justify-center rounded-control bg-surface-raised text-content hover:bg-accent/10 hover:text-accent" title={tCat.quickExpense}><Plus className="h-4 w-4" /></button>
                 </div>
+                {!category.isGoal && <div className="h-1.5 overflow-hidden rounded-full bg-surface-raised sm:ms-[52px]" role="progressbar" aria-valuemin={0} aria-valuemax={monthlyBudget || 100} aria-valuenow={monthlyBudget ? Math.min(spentThisMonth, monthlyBudget) : 0} aria-label={`${categoryName} budget progress`}>
+                  <div className={`h-full rounded-full ${progressColor}`} style={{ width: `${monthlyBudget > 0 ? budgetProgress : 0}%` }} />
+                </div>}
               </motion.div>
             );
           })}
         </motion.div>
+      )}
+      {unusedCount > 0 && activeTab !== 'archived' && (
+        <button type="button" onClick={() => setShowUnused((value) => !value)} className="min-h-11 rounded-control px-3 text-sm font-medium text-accent hover:bg-surface-raised">
+          {language === 'ar' ? `${showUnused ? 'إخفاء' : 'عرض'} ${unusedCount} فئات غير مستخدمة` : language === 'fr' ? `${showUnused ? 'Masquer' : 'Afficher'} ${unusedCount} catégories inutilisées` : `${showUnused ? 'Hide' : 'Show'} ${unusedCount} unused`}
+        </button>
       )}
 
       {/* Modals */}

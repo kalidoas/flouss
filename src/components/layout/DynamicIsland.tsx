@@ -125,7 +125,7 @@ export const DynamicIsland: React.FC = () => {
           mass: 0.8,
         }}
         className={`pointer-events-auto cursor-pointer relative max-w-full bg-black/95 text-white backdrop-blur-2xl border border-white/20 shadow-[0_4px_16px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.2)] rounded-full flex items-center justify-between overflow-hidden px-3 py-1 transition-all ${
-          isExpanded ? 'w-[260px] sm:w-[280px] px-3.5 py-1.5' : 'w-[130px] sm:w-[145px]'
+          isExpanded ? 'w-[min(260px,60vw)] sm:w-[280px] px-3.5 py-1.5' : 'w-8 md:w-[88px]'
         }`}
       >
         <AnimatePresence mode="wait">
@@ -179,18 +179,13 @@ export const DynamicIsland: React.FC = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="flex items-center justify-between w-full gap-2 text-[11px]"
+              className="flex items-center justify-center gap-2 text-[11px] md:justify-between"
             >
-              <div className="flex items-center gap-1.5 font-semibold text-zinc-200">
-                <span className="font-mono text-[10px] bg-white/15 px-1 rounded">F</span>
-                <span className="text-[10px] tracking-tight text-zinc-300">Flouss</span>
-              </div>
-
               <div className="flex items-center gap-1.5">
-                <span className="text-[10px] font-mono text-zinc-400">
-                  {firebaseUser ? (language === 'ar' ? 'متصل' : 'Sync') : 'Local'}
+                <span className="hidden text-[10px] font-medium text-zinc-400 md:inline">
+                  {firebaseUser ? (language === 'ar' ? 'متصل' : language === 'fr' ? 'Sync' : 'Sync') : 'Local'}
                 </span>
-                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${syncDotClass} ${syncStatus === 'syncing' ? 'animate-pulse' : ''}`} />
+                <span aria-hidden="true" className={`h-1.5 w-1.5 rounded-full shrink-0 ${syncDotClass} ${syncStatus === 'syncing' ? 'animate-pulse' : ''}`} />
               </div>
             </motion.div>
           )}

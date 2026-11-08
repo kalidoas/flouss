@@ -112,7 +112,7 @@ export const IncomePage: React.FC = () => {
             }}
             icon={<Plus className="w-4 h-4 stroke-[2.5]" />}
           >
-            + {t.newIncome}
+            {t.newIncome}
           </Button>
         </div>
       </div>
@@ -162,7 +162,7 @@ export const IncomePage: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {sourceStats.map(({ source, total, count }: { source: IncomeSource; total: number; count: number }) => {
+          {sourceStats.filter(({ count }) => count > 0).map(({ source, total, count }: { source: IncomeSource; total: number; count: number }) => {
             const IconComp = getCategoryIcon(source.icon);
             return (
               <div
@@ -202,6 +202,21 @@ export const IncomePage: React.FC = () => {
             );
           })}
         </div>
+        <details className="mt-3 rounded-card border border-border-subtle bg-surface px-3">
+          <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between text-xs font-semibold text-content">
+            <span>{t.newSource}</span><Plus className="h-4 w-4 text-accent" />
+          </summary>
+          <div className="flex flex-wrap gap-2 border-t border-border-subtle py-3">
+            {sourceStats.filter(({ count }) => count === 0).map(({ source }) => (
+              <button key={source.id} type="button" onClick={() => handleOpenAddForSource(source.id)} className="min-h-10 rounded-control border border-border-subtle px-3 text-xs text-content hover:bg-surface-raised">
+                {getIncomeSourceName(source, language)}
+              </button>
+            ))}
+            <button type="button" onClick={() => setIsAddSourceOpen(true)} className="min-h-10 rounded-control bg-accent/10 px-3 text-xs font-semibold text-accent hover:bg-accent/15">
+              {t.newSource}
+            </button>
+          </div>
+        </details>
       </div>
 
       {/* Filter bar for Income History */}

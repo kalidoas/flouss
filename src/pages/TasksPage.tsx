@@ -303,6 +303,16 @@ export const TasksPage: React.FC = () => {
     return { total, completed, percentage };
   }, [filteredTasks, selectedDate]);
 
+  const duplicateSuggestions = useMemo(() => {
+    const titles = (tasks || []).filter((task) => !task.isArchived).map((task) => task.title.toLowerCase());
+    const hasCoding = titles.some((title) => title.includes('coding')) && titles.some((title) => title.includes('development'));
+    const hasStudy = titles.some((title) => title.includes('study')) && titles.some((title) => title.includes('english'));
+    return [
+      ...(hasCoding ? ['CODING / DEVELOPMENT'] : []),
+      ...(hasStudy ? ['Study / ENGLISH'] : []),
+    ];
+  }, [tasks]);
+
   // Streak calculations per task
   const calculateStreak = (task: TaskItem): number => {
     const completedSet = new Set(task.completedDates || []);
@@ -726,60 +736,12 @@ export const TasksPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Quick Stats Badges */}
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Gamification Level Badge */}
-            <div className="bg-gradient-to-r from-amber-500/15 via-indigo-500/10 to-emerald-500/15 border border-amber-500/25 rounded-card px-3.5 py-2.5 flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-control bg-amber-500 text-white flex items-center justify-center font-black shadow-xs shrink-0">
-                <Trophy className="w-4 h-4" />
-              </div>
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-caption text-muted uppercase tracking-wider block font-bold">
-                    {tTask.levelTitle || 'Niveau & Points XP'}
-                  </span>
-                  <span className="text-caption font-black px-1.5 py-0.2 rounded-control bg-amber-500/20 text-amber-700 dark:text-amber-300">
-                    Lvl {gamificationStats.level}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className="text-xs font-black text-content tabular-nums">
-                    {gamificationStats.totalXP} {tTask.xpPoints}
-                  </span>
-                  <span className="text-caption text-muted tabular-nums">
-                    ({gamificationStats.progressPercent}% {tTask.xpNextLevel})
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-zinc-50 dark:bg-zinc-800/50 border border-black/[0.04] dark:border-white/[0.06] rounded-card px-3.5 py-2.5 flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-control bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center justify-center font-bold shrink-0">
-                <Flame className="w-4 h-4 fill-amber-500 text-amber-500" />
-              </div>
-              <div>
-                <span className="text-caption text-muted uppercase tracking-wider block font-medium">
-                  {tTask.streak}
-                </span>
-                <span className="text-xs font-bold text-content tabular-nums">
-                  {overallStreak} {tTask.streakDays || 'j 🔥'}
-                </span>
-              </div>
-            </div>
-
-            <div className="bg-zinc-50 dark:bg-zinc-800/50 border border-black/[0.04] dark:border-white/[0.06] rounded-card px-3.5 py-2.5 flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-control bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center justify-center font-bold shrink-0">
-                <TrendingUp className="w-4 h-4" />
-              </div>
-              <div>
-                <span className="text-caption text-muted uppercase tracking-wider block font-medium">
-                  {tTask.monthAverage}
-                </span>
-                <span className="text-xs font-bold text-content tabular-nums">
-                  {monthStats.rate}%
-                </span>
-              </div>
-            </div>
+          {/* Compact progress strip */}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-control border border-border-subtle bg-surface-raised/60 px-3 py-2 text-xs">
+            <span className="font-bold text-content"><Trophy className="me-1 inline h-3.5 w-3.5 text-amber-500" />Lv {gamificationStats.level} · {gamificationStats.totalXP} {tTask.xpPoints}</span>
+            <span className="text-muted">{gamificationStats.progressPercent}% {tTask.xpNextLevel}</span>
+            <span className="text-muted"><Flame className="me-1 inline h-3.5 w-3.5 text-amber-500" />{overallStreak} {tTask.streakDays}</span>
+            <span className="text-muted"><TrendingUp className="me-1 inline h-3.5 w-3.5 text-emerald-500" />{tTask.monthAverage} {monthStats.rate}%</span>
           </div>
         </div>
       </motion.div>
@@ -937,7 +899,7 @@ export const TasksPage: React.FC = () => {
               </div>
 
               <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
-                {(programTracks ?? []).length} {language === 'ar' ? 'برامج' : 'programmes'}
+                {(programTracks ?? []).length} {language === 'ar' ? 'برامج' : language === 'en' ? 'programs' : 'programmes'}
               </span>
             </div>
 
@@ -1014,7 +976,7 @@ export const TasksPage: React.FC = () => {
 
                       <p className="text-xs text-muted mt-1 line-clamp-1">
                         {isSalat
-                          ? (language === 'ar' ? '5 صلوات يومية (الحد الأقصى للنقاط)' : '5 prières quotidiennes (Score max)')
+                          ? (language === 'ar' ? '5 صلوات يومية (الحد الأقصى للنقاط)' : language === 'en' ? '5 daily prayers (maximum score)' : '5 prières quotidiennes (score maximal)')
                           : isGym
                           ? (gymToday ? `✓ ${gymToday.muscleGroups}` : (tTask.gymSubtitle || 'Journal des séances'))
                           : isStudy
@@ -1090,6 +1052,10 @@ export const TasksPage: React.FC = () => {
 
           {/* 4. DAILY ROUTINES / CUSTOM TASKS LIST */}
           <div className="space-y-3 pt-2">
+            {duplicateSuggestions.length > 0 && <p className="rounded-control border border-border-subtle bg-surface-raised px-3 py-2 text-xs leading-relaxed text-muted">
+              {language === 'ar' ? 'قد تكون هذه المهام متشابهة؛ اجمعها فقط إذا أردت: ' : language === 'fr' ? 'Ces tâches pourraient être regroupées si vous le souhaitez : ' : 'These tasks may be grouped if you choose: '}
+              <span className="font-semibold text-content">{duplicateSuggestions.join(' · ')}</span>
+            </p>}
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500">
                 {tTask.todayList} ({filteredTasks.length})
@@ -1191,36 +1157,16 @@ export const TasksPage: React.FC = () => {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setAlarmModalTaskTitle(task.title);
-                          setAlarmModalDescription(task.notes || 'Rappel Routine Flouss');
-                        }}
-                        className="p-1.5 rounded-control text-blue-500 hover:text-blue-600 hover:bg-blue-500/10 transition-colors"
-                        title={tTask.googleCalendarAlarmBtn}
-                      >
-                        <Bell className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleOpenEdit(task)}
-                        className="p-1.5 rounded-control text-muted hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-                        title={tTask.editTask}
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => {
-                          deleteTask(task.id);
-                          deleteCalendarEventByFloussId(task.id).catch(() => {});
-                        }}
-                        className="p-1.5 rounded-control text-muted hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
-                        title={tCommon.delete}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+                    <details className="relative shrink-0 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 transition-opacity">
+                      <summary aria-label={language === 'ar' ? 'إجراءات المهمة' : language === 'fr' ? 'Actions de tâche' : 'Task actions'} className="flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-control text-muted hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+                        <span className="text-xl leading-none">⋯</span>
+                      </summary>
+                      <div className="absolute end-0 top-full z-20 mt-1 w-44 rounded-card border border-border-subtle bg-surface p-1 shadow-lg">
+                        <button type="button" onClick={() => { setAlarmModalTaskTitle(task.title); setAlarmModalDescription(task.notes || ''); }} className="flex min-h-11 w-full items-center gap-2 rounded-control px-3 text-start text-xs text-content hover:bg-surface-raised"><Bell className="h-4 w-4" />{tTask.googleCalendarAlarmBtn}</button>
+                        <button type="button" onClick={() => handleOpenEdit(task)} className="flex min-h-11 w-full items-center gap-2 rounded-control px-3 text-start text-xs text-content hover:bg-surface-raised"><Edit2 className="h-4 w-4" />{tTask.editTask}</button>
+                        <button type="button" onClick={() => { deleteTask(task.id); deleteCalendarEventByFloussId(task.id).catch(() => {}); }} className="flex min-h-11 w-full items-center gap-2 rounded-control px-3 text-start text-xs text-negative hover:bg-negative/10"><Trash2 className="h-4 w-4" />{tCommon.delete}</button>
+                      </div>
+                    </details>
                   </motion.div>
                 );
               })
@@ -1673,9 +1619,9 @@ export const TasksPage: React.FC = () => {
                     onChange={(e) => setNewSubTaskInput(e.target.value)}
                     placeholder={
                       activeTrack.type === 'coding'
-                        ? (language === 'ar' ? 'مثال: Vue.js, Node.js, Python...' : 'ex : Vue.js, Node.js, Docker...')
+                        ? (language === 'ar' ? 'مثال: Vue.js, Node.js, Python...' : language === 'en' ? 'e.g. Vue.js, Node.js, Docker...' : 'ex. : Vue.js, Node.js, Docker...')
                         : activeTrack.type === 'english'
-                        ? (language === 'ar' ? 'مثال: Listening, Grammar, Vocabulary...' : 'ex : Listening, Grammar, Speaking...')
+                        ? (language === 'ar' ? 'مثال: Listening, Grammar, Vocabulary...' : language === 'en' ? 'e.g. Listening, Grammar, Speaking...' : 'ex. : Listening, grammaire, expression orale...')
                         : (tTask.subTaskPlaceholder || 'ex : Nouvelle sous-tâche...')
                     }
                     className="flex-1 px-3.5 py-2.5 rounded-control bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-content text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -1789,7 +1735,7 @@ export const TasksPage: React.FC = () => {
                       className="text-xs text-rose-500 hover:text-rose-600 font-semibold flex items-center gap-1.5 p-1 rounded-control hover:bg-rose-500/10 transition-colors"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
-                      <span>{language === 'ar' ? 'حذف هذا البرنامج' : 'Supprimer ce programme'}</span>
+                      <span>{language === 'ar' ? 'حذف هذا البرنامج' : language === 'en' ? 'Delete this program' : 'Supprimer ce programme'}</span>
                     </button>
                   </div>
                 )}
@@ -1802,7 +1748,7 @@ export const TasksPage: React.FC = () => {
                 <div className="p-3.5 rounded-card bg-rose-500/10 border border-rose-500/20 flex items-center justify-between gap-3 text-xs">
                   <div className="flex items-center gap-2 text-rose-700 dark:text-rose-300 font-semibold">
                     <Dumbbell className="w-4 h-4 text-rose-500 shrink-0" />
-                    <span>+40 XP / {language === 'ar' ? 'حصة تدريبية' : 'séance validée'}</span>
+                    <span>+40 XP / {language === 'ar' ? 'حصة تدريبية' : language === 'en' ? 'workout logged' : 'séance validée'}</span>
                   </div>
                   <span className="font-bold text-zinc-500 tabular-nums">
                     {(gymLogs ?? []).length} {tTask.workoutHistory || 'séances'}
@@ -1817,7 +1763,7 @@ export const TasksPage: React.FC = () => {
                       <span>{tTask.muscleGroups} *</span>
                       {selectedGymMuscles.length > 0 && (
                         <span className="text-caption text-rose-600 dark:text-rose-400 font-semibold tabular-nums">
-                          {selectedGymMuscles.length} {language === 'ar' ? 'محددة' : 'sélectionné(s)'}
+                          {selectedGymMuscles.length} {language === 'ar' ? 'محددة' : language === 'en' ? 'selected' : 'sélectionné(s)'}
                         </span>
                       )}
                     </label>
@@ -1850,13 +1796,13 @@ export const TasksPage: React.FC = () => {
                     {/* Optional Exercise Details Textarea */}
                     <div>
                       <label className="block text-caption font-bold text-zinc-600 dark:text-zinc-300 mb-1">
-                        {tTask.exercisesLabel} ({language === 'ar' ? 'اختياري' : 'optionnel'})
+                        {tTask.exercisesLabel} ({language === 'ar' ? 'اختياري' : language === 'en' ? 'optional' : 'optionnel'})
                       </label>
                       <textarea
                         rows={2}
                         value={gymExercises}
                         onChange={(e) => setGymExercises(e.target.value)}
-                        placeholder={tTask.exercisesPlaceholder || (language === 'ar' ? 'تفاصيل التمارين والأوزان...' : 'Détails des exercices, séries et charges...')}
+                        placeholder={tTask.exercisesPlaceholder || (language === 'ar' ? 'تفاصيل التمارين والأوزان...' : language === 'en' ? 'Workout details, sets and weights...' : 'Détails des exercices, séries et charges...')}
                         className="w-full px-3 py-2 rounded-control bg-surface border border-zinc-200 dark:border-zinc-700 text-content text-xs font-medium focus:outline-none focus:ring-2 focus:ring-rose-500"
                       />
                     </div>
@@ -1864,13 +1810,13 @@ export const TasksPage: React.FC = () => {
                     {/* Tomorrow's Plan */}
                     <div>
                       <label className="block text-caption font-bold text-zinc-600 dark:text-zinc-300 mb-1">
-                        {tTask.tomorrowPlan} ({language === 'ar' ? 'اختياري' : 'optionnel'})
+                        {tTask.tomorrowPlan} ({language === 'ar' ? 'اختياري' : language === 'en' ? 'optional' : 'optionnel'})
                       </label>
                       <textarea
                         rows={2}
                         value={gymTomorrowPlan}
                         onChange={(e) => setGymTomorrowPlan(e.target.value)}
-                        placeholder={tTask.tomorrowPlaceholder || (language === 'ar' ? 'خطة تمرين الغد...' : 'Programme pour demain...')}
+                        placeholder={tTask.tomorrowPlaceholder || (language === 'ar' ? 'خطة تمرين الغد...' : language === 'en' ? 'Plan for tomorrow...' : 'Programme pour demain...')}
                         className="w-full px-3 py-2 rounded-control bg-surface border border-zinc-200 dark:border-zinc-700 text-content text-xs font-medium focus:outline-none focus:ring-2 focus:ring-rose-500"
                       />
                     </div>
@@ -1924,7 +1870,7 @@ export const TasksPage: React.FC = () => {
                               setAlarmModalDescription(log.tomorrowPlan ? `Plan: ${log.tomorrowPlan}` : 'Séance de musculation');
                             }}
                             className="p-1 rounded-control text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
-                            title={language === 'ar' ? 'تذكير عبر تقويم جوجل' : 'Ajouter une alarme Google Calendar'}
+                            title={language === 'ar' ? 'تذكير عبر تقويم جوجل' : language === 'en' ? 'Add Google Calendar reminder' : 'Ajouter un rappel Google Calendar'}
                           >
                             <Bell className="w-3.5 h-3.5" />
                           </button>
@@ -1953,7 +1899,7 @@ export const TasksPage: React.FC = () => {
                 <div className="p-3.5 rounded-card bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-between gap-3 text-xs">
                   <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300 font-semibold">
                     <BookOpen className="w-4 h-4 text-indigo-500 shrink-0" />
-                    <span>+30 XP / {language === 'ar' ? 'وحدة دراسية' : 'module complété'}</span>
+                    <span>+30 XP / {language === 'ar' ? 'وحدة دراسية' : language === 'en' ? 'module completed' : 'module terminé'}</span>
                   </div>
                   <span className="font-bold text-zinc-500 tabular-nums">
                     {(studyModules ?? []).filter((m) => m.completed).length} / {(studyModules ?? []).length}
@@ -1964,7 +1910,7 @@ export const TasksPage: React.FC = () => {
                 <div>
                   <label className="block text-caption font-bold text-zinc-600 dark:text-zinc-300 mb-1.5 flex items-center justify-between">
                     <span>{language === 'ar' ? 'وحدات الاقتصاد والتدبير (S3)' : language === 'en' ? 'Economics & Management (S3) Modules' : 'Modules Économie & Gestion (S3)'}</span>
-                    <span className="text-caption text-indigo-600 dark:text-indigo-400 font-semibold">{language === 'ar' ? 'إضافة سريعة بنقرة واحدة' : 'Ajout rapide 1-clic'}</span>
+                    <span className="text-caption text-indigo-600 dark:text-indigo-400 font-semibold">{language === 'ar' ? 'إضافة سريعة بنقرة واحدة' : language === 'en' ? 'Quick add in one click' : 'Ajout rapide en un clic'}</span>
                   </label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 mb-3">
                     {ECONOMICS_S3_MODULES.map((modName) => {
@@ -2015,7 +1961,7 @@ export const TasksPage: React.FC = () => {
                 <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
                   {(studyModules ?? []).length === 0 ? (
                     <p className="text-xs text-muted italic py-2 text-center">
-                      {language === 'ar' ? 'لا توجد وحدات دراسية مسجلة حالياً.' : 'Aucun module pour le moment.'}
+                      {language === 'ar' ? 'لا توجد وحدات دراسية مسجلة حالياً.' : language === 'en' ? 'No modules yet.' : 'Aucun module pour le moment.'}
                     </p>
                   ) : (
                     (studyModules ?? []).map((mod) => (
@@ -2128,7 +2074,7 @@ export const TasksPage: React.FC = () => {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-bold text-content mb-1.5">
-                {language === 'ar' ? 'أيقونة' : 'Icône / Emoji'}
+                {language === 'ar' ? 'أيقونة' : language === 'en' ? 'Icon / Emoji' : 'Icône / Emoji'}
               </label>
               <div className="flex gap-2 flex-wrap">
                 {['🎯', '🚀', '🧠', '💼', '🎨', '📖'].map((emoji) => (
@@ -2150,7 +2096,7 @@ export const TasksPage: React.FC = () => {
 
             <div>
               <label className="block text-xs font-bold text-content mb-1.5">
-                {language === 'ar' ? 'لون' : 'Couleur'}
+                {language === 'ar' ? 'لون' : language === 'en' ? 'Color' : 'Couleur'}
               </label>
               <div className="flex gap-2 flex-wrap items-center pt-1">
                 {['#3b82f6', '#10b981', '#8b5cf6', '#f43f5e', '#f59e0b', '#06b6d4'].map((color) => (
@@ -2216,7 +2162,7 @@ export const TasksPage: React.FC = () => {
 
             <div>
               <label className="block text-xs font-bold text-content mb-1.5">
-                {language === 'ar' ? 'نقاط الخبرة (XP)' : 'Points XP'}
+                {language === 'ar' ? 'نقاط الخبرة (XP)' : language === 'en' ? 'Experience points (XP)' : 'Points XP'}
               </label>
               <input
                 type="number"

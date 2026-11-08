@@ -17,6 +17,7 @@ import { Search, RotateCcw, FileSpreadsheet, Receipt } from 'lucide-react';
 import { EmptyState } from '../components/common/EmptyState';
 import { MoneyText } from '../components/common/PrivacyCurrency';
 import { selectFinancialSummary } from '../utils/calculations';
+import { StyledSelect } from '../components/common/StyledSelect';
 
 export const HistoryPage: React.FC = () => {
   const { initialBalance, transactions, categories, incomeSources, hideBalance, language } = useAppStore();
@@ -170,13 +171,13 @@ export const HistoryPage: React.FC = () => {
       <div className="space-y-3 bg-surface p-3.5 rounded-control border border-border-subtle shadow-sm">
         {/* Search Input */}
         <div className="relative">
-          <Search className="w-3.5 h-3.5 text-muted absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-3.5 h-3.5 text-muted absolute start-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t.searchPlaceholder}
-            className="w-full text-xs pl-8 pr-3 py-1.5 rounded-control border border-border-subtle bg-canvas text-content focus:outline-none focus:border-accent"
+            className="min-h-11 w-full text-xs ps-8 pe-3 py-1.5 rounded-control border border-border-subtle bg-canvas text-content focus:outline-none focus:border-accent focus-visible:ring-2 focus-visible:ring-accent"
           />
         </div>
 
@@ -186,7 +187,7 @@ export const HistoryPage: React.FC = () => {
           <div className="flex items-center gap-1 p-0.5 bg-surface-raised rounded-control overflow-x-auto">
             <button
               onClick={() => setTypeFilter('all')}
-              className={`px-2.5 py-1 rounded text-xs transition-colors ${
+              className={`min-h-11 px-3 rounded-control text-xs transition-colors ${
                 typeFilter === 'all'
                   ? 'bg-surface text-content font-medium shadow-xs'
                   : 'text-muted'
@@ -196,7 +197,7 @@ export const HistoryPage: React.FC = () => {
             </button>
             <button
               onClick={() => setTypeFilter('expense')}
-              className={`px-2.5 py-1 rounded text-xs transition-colors ${
+              className={`min-h-11 px-3 rounded-control text-xs transition-colors ${
                 typeFilter === 'expense'
                   ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 font-medium'
                   : 'text-muted'
@@ -206,7 +207,7 @@ export const HistoryPage: React.FC = () => {
             </button>
             <button
               onClick={() => setTypeFilter('income')}
-              className={`px-2.5 py-1 rounded text-xs transition-colors ${
+              className={`min-h-11 px-3 rounded-control text-xs transition-colors ${
                 typeFilter === 'income'
                   ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 font-medium'
                   : 'text-muted'
@@ -216,7 +217,7 @@ export const HistoryPage: React.FC = () => {
             </button>
             <button
               onClick={() => setTypeFilter('contribution')}
-              className={`px-2.5 py-1 rounded text-xs transition-colors ${
+              className={`min-h-11 px-3 rounded-control text-xs transition-colors ${
                 typeFilter === 'contribution'
                   ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 font-medium'
                   : 'text-muted'
@@ -226,7 +227,7 @@ export const HistoryPage: React.FC = () => {
             </button>
             <button
               onClick={() => setTypeFilter('adjustment')}
-              className={`px-2.5 py-1 rounded text-xs transition-colors ${
+              className={`min-h-11 px-3 rounded-control text-xs transition-colors ${
                 typeFilter === 'adjustment'
                   ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 font-medium'
                   : 'text-muted'
@@ -237,41 +238,17 @@ export const HistoryPage: React.FC = () => {
           </div>
 
           {/* Month Selector */}
-          <select
-            value={selectedMonth}
-            onChange={(e) => setSelectedMonth(e.target.value)}
-            className="text-xs py-1 px-2.5 rounded-control border border-border-subtle bg-surface text-content outline-none"
-          >
-            <option value="all">{t.allDates}</option>
-            {availableMonths.map((m: string) => (
-              <option key={m} value={m}>
-                {formatMonthYear(m, language)}
-              </option>
-            ))}
-          </select>
+          <StyledSelect label={t.allDates} value={selectedMonth} onChange={setSelectedMonth} className="min-w-36" options={[
+            { value: 'all', label: t.allDates },
+            ...availableMonths.map((m: string) => ({ value: m, label: formatMonthYear(m, language) })),
+          ]} />
 
           {/* Category / Source Selector */}
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="text-xs py-1 px-2.5 rounded-control border border-border-subtle bg-surface text-content outline-none max-w-[160px] truncate"
-          >
-            <option value="all">{t.allCategories}</option>
-            <optgroup label="Catégories">
-              {categories.map((c: Category) => (
-                <option key={c.id} value={c.id}>
-                  {getCategoryName(c, language)}
-                </option>
-              ))}
-            </optgroup>
-            <optgroup label="Sources de revenus">
-              {incomeSources.map((s: IncomeSource) => (
-                <option key={s.id} value={s.id}>
-                  {getIncomeSourceName(s, language)}
-                </option>
-              ))}
-            </optgroup>
-          </select>
+          <StyledSelect label={t.allCategories} value={selectedCategory} onChange={setSelectedCategory} className="min-w-40 max-w-52" options={[
+            { value: 'all', label: t.allCategories },
+            ...categories.map((c: Category) => ({ value: c.id, label: getCategoryName(c, language) })),
+            ...incomeSources.map((s: IncomeSource) => ({ value: s.id, label: getIncomeSourceName(s, language) })),
+          ]} />
 
           {/* Reset Filters button if any is active */}
           {(search || typeFilter !== 'all' || selectedMonth !== 'all' || selectedCategory !== 'all') && (
@@ -282,9 +259,9 @@ export const HistoryPage: React.FC = () => {
                 setSelectedMonth('all');
                 setSelectedCategory('all');
               }}
-              className="text-xs text-rose-500 hover:text-rose-700 font-medium px-2 py-1 flex items-center gap-1"
+              className="min-h-11 px-3 text-xs text-rose-500 hover:text-rose-700 font-medium flex items-center gap-1"
             >
-              <RotateCcw className="w-3 h-3" /> Effacer filtres
+              <RotateCcw className="w-3 h-3" /> {language === 'ar' ? 'مسح الفلاتر' : language === 'en' ? 'Clear filters' : 'Effacer les filtres'}
             </button>
           )}
         </div>
@@ -295,7 +272,6 @@ export const HistoryPage: React.FC = () => {
         <EmptyState
           icon={<Receipt className="w-5 h-5" />}
           title={t.noTransactionsFound}
-          description="Aucune transaction ne correspond à vos filtres actuels."
         />
       ) : (
         <div className="space-y-6">

@@ -1,639 +1,204 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import React, { useMemo, useState } from 'react';
 import { useAppStore } from '../store/useAppStore';
 import { Card } from '../components/common/Card';
-import { Button } from '../components/common/Button';
-import { Modal } from '../components/common/Modal';
-import { EmptyState } from '../components/common/EmptyState';
-import { GoalProgressBar } from '../components/goals/GoalProgressBar';
-import { TransactionItem } from '../components/transactions/TransactionItem';
-import { AddExpenseModal } from '../components/transactions/AddExpenseModal';
-import { AddIncomeModal } from '../components/transactions/AddIncomeModal';
-import { AddContributionModal } from '../components/transactions/AddContributionModal';
-import { CountUpNumber } from '../components/common/CountUpNumber';
-import { FocusTaskList } from '../components/dashboard/FocusTaskList';
-import { PriorityHub } from '../components/dashboard/PriorityHub';
-import { WalletCard } from '../components/dashboard/WalletCard';
-import { AppleCardBalanceChart } from '../components/dashboard/AppleCardBalanceChart';
 import { MoneyText } from '../components/common/PrivacyCurrency';
-import { Pressable } from '../components/common/Pressable';
-import {
-  calculateAvailableBalance,
-  calculateNetWorth,
-  calculateGoalProgress,
-  getCategorySpendingBreakdown,
-  calculateTotalSavingsInGoals,
-  selectFinancialSummary,
-} from '../utils/calculations';
-import { formatMAD, getCurrentMonthStr, formatMonthYear, isTransactionInMonth } from '../utils/formatters';
-import { Category, RecurringIncomeRule, Transaction } from '../types';
+import { AppleCardBalanceChart } from '../components/dashboard/AppleCardBalanceChart';
+import { TransactionItem } from '../components/transactions/TransactionItem';
+import { selectFinancialSummary, calculateAvailableBalance } from '../utils/calculations';
+import { getCategoryName } from '../utils/i18nHelpers';
+import { getCategoryIcon } from '../utils/icons';
+import { calculateNextDueDate } from '../utils/subscriptions';
+import { getTransactionMonth, formatMonthYear, getCurrentMonthStr } from '../utils/formatters';
 import { translations } from '../i18n/translations';
-import { getIncomeSourceName, getCategoryName, translateCategoryText } from '../utils/i18nHelpers';
-import {
-  ArrowUpRight,
-  ArrowDownRight,
-  Target,
-  ChevronRight,
-  Wallet,
-  Sparkles,
-  CheckCircle2,
-  BellRing,
-  PiggyBank,
-  PieChart as PieIcon,
-  Receipt,
-} from 'lucide-react';
-import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
+import { Category, Transaction } from '../types';
+import { ArrowDownRight, ArrowLeft, ArrowRight, ArrowUpRight, CalendarClock, CheckSquare, Receipt } from 'lucide-react';
+
+function shiftMonth(month: string, delta: number) {
+  const [year, monthNumber] = month.split('-').map(Number);
+  const date = new Date(year, monthNumber - 1 + delta, 1);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+}
+
+function localDateString(date: Date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
 
 export const DashboardPage: React.FC = () => {
   const {
-    balance: storeBalance,
-    initialBalance,
-    transactions,
-    categories,
-    incomeSources,
-    recurringRules,
-    dismissedRecurringForMonth,
-    confirmRecurringIncome,
-    dismissRecurringPrompt,
-    contributeToAllGoals,
-    hideBalance,
-    setActiveScreen,
-    language,
+    initialBalance, transactions, categories, tasks, subscriptions, notes,
+    language, hideBalance, setActiveScreen,
   } = useAppStore();
-
-  const navigate = useNavigate();
-
-  const tDash = translations[language].dashboard;
-  const tCommon = translations[language].common;
-
-  const [isExpenseOpen, setIsExpenseOpen] = useState(false);
-  const [isIncomeOpen, setIsIncomeOpen] = useState(false);
-  const [isContributionOpen, setIsContributionOpen] = useState(false);
-  const [selectedGoalId, setSelectedGoalId] = useState<string | undefined>();
-  const [isSaveAllModalOpen, setIsSaveAllModalOpen] = useState(false);
-
+  const t = translations[language].dashboard;
+  const scopes = translations[language].summaryScopes;
   const currentMonth = getCurrentMonthStr();
   const today = new Date();
-  const currentDayOfMonth = today.getDate();
+  const todayKey = localDateString(today);
+  const [selectedMonth, setSelectedMonth] = useState(currentMonth);
+  const isCurrentMonth = selectedMonth === currentMonth;
 
-  // Ground truth mathematical balance
-  const balance = calculateAvailableBalance(initialBalance, transactions);
-  const totalInGoals = calculateTotalSavingsInGoals(categories, transactions);
-  const netWorth = balance + totalInGoals;
+  const monthSummary = useMemo(
+    () => selectFinancialSummary(transactions, { month: selectedMonth }),
+    [transactions, selectedMonth]
+  );
+  const balance = useMemo(() => {
+    const throughMonth = transactions.filter((transaction) => getTransactionMonth(transaction.date) <= selectedMonth);
+    return calculateAvailableBalance(initialBalance, throughMonth);
+  }, [initialBalance, transactions, selectedMonth]);
 
-  // Month-to-date metrics with exact currency precision
-  const currentMonthTx = transactions.filter((t: Transaction) => isTransactionInMonth(t.date, currentMonth));
-  const monthlySummary = selectFinancialSummary(transactions, { month: currentMonth });
-  const incomeThisMonth = monthlySummary.income;
-  const expenseThisMonth = monthlySummary.expenses;
-  const savedThisMonth = monthlySummary.contributions;
+  const daysInMonth = new Date(Number(selectedMonth.slice(0, 4)), Number(selectedMonth.slice(5, 7)), 0).getDate();
+  const daysRemaining = isCurrentMonth ? Math.max(1, daysInMonth - today.getDate() + 1) : daysInMonth;
+  const dailyAvailable = balance / daysRemaining;
 
-  // Donut Spending Breakdown
-  const { breakdown: spendingBreakdown, totalExpense: monthlyTotalExpense } =
-    getCategorySpendingBreakdown(categories, transactions, currentMonth, language);
-
-  // Active savings goals
-  const activeGoalCategories = categories
-    .filter((c: Category) => c.isGoal && !c.isArchived && (c.targetAmount || 0) > 0)
-    .sort((a: Category, b: Category) => {
-      const calcA = calculateGoalProgress(a, transactions);
-      const calcB = calculateGoalProgress(b, transactions);
-      if (calcA.status === 'completed' && calcB.status !== 'completed') return 1;
-      if (calcB.status === 'completed' && calcA.status !== 'completed') return -1;
-      return calcB.progressPercent - calcA.progressPercent;
+  const categoryTotals = useMemo(() => {
+    const totals = new Map<string, number>();
+    transactions.forEach((transaction) => {
+      if (transaction.type !== 'expense' || !transaction.categoryId || !transaction.date.startsWith(selectedMonth)) return;
+      totals.set(transaction.categoryId, (totals.get(transaction.categoryId) || 0) + transaction.amount);
     });
+    return categories
+      .filter((category) => !category.isArchived && !category.isGoal && (totals.get(category.id) || 0) > 0)
+      .map((category) => ({ category, spent: totals.get(category.id) || 0 }))
+      .sort((a, b) => b.spent - a.spent)
+      .slice(0, 4);
+  }, [categories, transactions, selectedMonth]);
 
-  const top3Goals = activeGoalCategories.slice(0, 3);
+  const upcomingBills = useMemo(() => subscriptions
+    .filter((subscription) => !subscription.endDate || subscription.endDate >= todayKey)
+    .map((subscription) => {
+      const dueDate = subscription.nextDueDate || calculateNextDueDate(subscription, today);
+      const isPaid = subscription.payments?.some((payment) => payment.cycleDate === dueDate)
+        || subscription.paidMonths?.includes(dueDate.slice(0, 7));
+      const days = Math.round((Date.parse(`${dueDate}T00:00:00`) - Date.parse(`${todayKey}T00:00:00`)) / 86_400_000);
+      return { subscription, dueDate, days, isPaid: Boolean(isPaid) };
+    })
+    .filter((item) => !item.isPaid && item.days <= 45 && item.days >= -30)
+    .sort((a, b) => a.days - b.days)
+    .slice(0, 3), [subscriptions, todayKey]);
 
-  // Monthly Savings Reminder Calculations
-  const totalMonthlyGoalTarget = activeGoalCategories.reduce((sum, g) => {
-    const calc = calculateGoalProgress(g, transactions);
-    return calc.status !== 'completed' ? sum + calc.monthlyNeeded : sum;
-  }, 0);
+  const activeTasks = (tasks || []).filter((task) => !task.isArchived);
+  const doneToday = activeTasks.filter((task) => task.completedDates?.includes(todayKey)).length;
+  const pinnedNote = (notes || []).find((note) => note.isPinned);
+  const recentTransactions = useMemo(() => [...transactions]
+    .sort((a, b) => {
+      const aTime = Date.parse(a.date) || Date.parse(a.createdAt) || 0;
+      const bTime = Date.parse(b.date) || Date.parse(b.createdAt) || 0;
+      return bTime - aTime;
+    })
+    .slice(0, 5), [transactions]);
 
-  const savedThisMonthToGoals = monthlySummary.contributions;
-
-  const remainingToSaveThisMonth = Math.max(0, totalMonthlyGoalTarget - savedThisMonthToGoals);
-
-  // Check recurring income prompt
-  const dueRecurringRule = recurringRules.find((rule: RecurringIncomeRule) => {
-    const isDue = currentDayOfMonth >= rule.dayOfMonth;
-    const notConfirmedThisMonth = rule.lastConfirmedMonth !== currentMonth;
-    const notDismissedThisMonth =
-      !(dismissedRecurringForMonth ?? []).includes(rule.id + '_' + currentMonth) &&
-      !(dismissedRecurringForMonth ?? []).includes(currentMonth);
-    return isDue && notConfirmedThisMonth && notDismissedThisMonth;
-  });
-
-  const dueSource = dueRecurringRule
-    ? incomeSources.find((s) => s.id === dueRecurringRule.sourceId)
-    : null;
-
-  // Keep this list correct even when imported or synced records arrive unsorted.
-  const getTransactionTime = (transaction: Transaction) => {
-    const transactionTime = Date.parse(transaction.date);
-    if (Number.isFinite(transactionTime)) return transactionTime;
-    const createdTime = Date.parse(transaction.createdAt || '');
-    return Number.isFinite(createdTime) ? createdTime : 0;
-  };
-  const recentTransactions = [...transactions]
-    .sort((a, b) => getTransactionTime(b) - getTransactionTime(a))
-    .slice(0, 5);
-
-  const handleOpenGoalContribution = (goalCatId?: string) => {
-    setSelectedGoalId(goalCatId);
-    setIsContributionOpen(true);
+  const changeMonth = (delta: number) => {
+    const next = shiftMonth(selectedMonth, delta);
+    if (next <= currentMonth) setSelectedMonth(next);
   };
 
-  const handleExecuteSaveAll = () => {
-    contributeToAllGoals();
-    setIsSaveAllModalOpen(false);
+  const openQuickAdd = (type: 'income' | 'expense') => {
+    window.dispatchEvent(new CustomEvent('flouss:quick-add', { detail: { type } }));
   };
+
+  const isAr = language === 'ar';
+  const isRtl = isAr;
+  const ArrowPrev = isRtl ? ArrowRight : ArrowLeft;
+  const ArrowNext = isRtl ? ArrowLeft : ArrowRight;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-page select-text">
-      {/* Recurring Income Due Banner */}
-      {dueRecurringRule && dueSource && (
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="rounded-card bg-emerald-500/10 dark:bg-emerald-950/40 border border-emerald-500/20 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs backdrop-blur-xl shadow-xs"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-control bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center justify-center shrink-0">
-              <BellRing className="w-4 h-4 stroke-[2]" />
-            </div>
-            <div>
-              <h4 className="font-semibold text-content tracking-tight">
-                {tDash.recurringBannerTitle}
-              </h4>
-              <p className="text-muted mt-0.5">
-                {tDash.recurringBannerDesc
-                  .replace('{source}', getIncomeSourceName(dueSource, language))
-                  .replace('{amount}', formatMAD(dueRecurringRule.amount, false, language))}
-              </p>
-            </div>
+    <div className="mx-auto max-w-5xl space-y-4 pb-2 animate-page select-text">
+      <section className="rounded-card border border-border-subtle bg-surface p-4 sm:p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <span className="flex h-9 w-9 items-center justify-center rounded-control bg-accent/10 text-accent"><Receipt className="h-4 w-4" /></span>
+            <span className="text-sm font-semibold text-content">{translations[language].nav.dashboard}</span>
           </div>
-
-          <div className="flex items-center gap-2 self-end sm:self-center">
-            <button
-              onClick={() => dismissRecurringPrompt(currentMonth)}
-              className="px-3 py-1.5 text-xs text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
-            >
-              {tDash.dismiss}
-            </button>
-            <button
-              onClick={() => {
-                const tx: Transaction = {
-                  id: 'tx_' + Date.now(),
-                  type: 'income',
-                  amount: dueRecurringRule.amount,
-                  sourceId: dueRecurringRule.sourceId,
-                  date: new Date().toISOString(),
-                  note: 'Revenu récurrent confirmé',
-                  isRecurring: true,
-                  createdAt: new Date().toISOString(),
-                };
-                confirmRecurringIncome(dueRecurringRule.id, currentMonth, tx);
-              }}
-              className="px-3.5 py-1.5 text-xs font-semibold rounded-control bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1.5 transition-colors shadow-xs"
-            >
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>{tDash.confirmRecurring}</span>
-            </button>
+          <div className="flex items-center gap-1 rounded-control border border-border-subtle bg-canvas p-0.5" dir="ltr">
+            <button type="button" onClick={() => changeMonth(-1)} className="flex min-h-10 min-w-10 items-center justify-center rounded-control text-muted hover:bg-surface" aria-label={language === 'ar' ? 'الشهر السابق' : language === 'fr' ? 'Mois précédent' : 'Previous month'}><ArrowPrev className="h-4 w-4" /></button>
+            <span className="min-w-28 text-center text-xs font-semibold text-content">{formatMonthYear(selectedMonth, language)}</span>
+            <button type="button" onClick={() => changeMonth(1)} disabled={selectedMonth >= currentMonth} className="flex min-h-10 min-w-10 items-center justify-center rounded-control text-muted hover:bg-surface disabled:opacity-30" aria-label={language === 'ar' ? 'الشهر التالي' : language === 'fr' ? 'Mois suivant' : 'Next month'}><ArrowNext className="h-4 w-4" /></button>
           </div>
-        </motion.div>
-      )}
-
-      {/* Apple Bento Centerpiece: 2/3 (Priority & Pinned Hub + My Focus List) + 1/3 Compact Apple Wallet Card */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-        {/* Priority & Pinned Hub + Focus List (2/3 width on desktop) */}
-        <div className="lg:col-span-8 order-2 lg:order-1 space-y-5">
-          <PriorityHub />
-          <FocusTaskList />
         </div>
 
-        {/* Compact Apple Wallet Card */}
-        <div className="lg:col-span-4 order-1 lg:order-2 space-y-5">
-          <WalletCard
-            balance={balance}
-            incomeThisMonth={incomeThisMonth}
-            expenseThisMonth={expenseThisMonth}
-            onOpenIncome={() => setIsIncomeOpen(true)}
-            onOpenExpense={() => setIsExpenseOpen(true)}
-            onOpenGoal={() => handleOpenGoalContribution()}
-            onNavigateIncome={() => setActiveScreen('income')}
-            onNavigateExpense={() => setActiveScreen('expenses')}
-          />
-          <p className="px-1 text-xs leading-relaxed text-muted whitespace-normal break-words">
-            {translations[language].summaryScopes.dashboard}
-          </p>
-
-        </div>
-      </div>
-
-      {/* Recent Transactions use the dashboard's full width so dates, labels, and
-          amounts remain readable instead of wrapping inside the wallet column. */}
-      <section className="rounded-card p-4 sm:p-5 bg-surface backdrop-blur-xl border border-border-subtle shadow-xs space-y-3">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="w-7 h-7 rounded-control bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
-              <Receipt className="w-3.5 h-3.5" />
-            </div>
-            <h3 className="font-bold text-sm text-content tracking-tight">
-              {tDash.recentTransactions}
-            </h3>
+        <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-xs text-muted">{translations[language].walletCard.availableBalance}</p>
+            <MoneyText amount={balance} className="mt-1 text-3xl font-bold tracking-tight text-content sm:text-4xl" />
+            <p className="mt-1 text-xs text-muted">
+              <MoneyText amount={balance} className="font-semibold text-content" /> {t.left} · ~<MoneyText amount={dailyAvailable} className="font-semibold text-content" /> {t.perDay}
+            </p>
           </div>
-          <button
-            onClick={() => setActiveScreen('history')}
-            className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1 shrink-0"
-          >
-            <span>{tDash.seeAllTransactions}</span>
-            <ChevronRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-
-        {recentTransactions.length === 0 ? (
-          <EmptyState
-            icon={<Receipt className="w-4 h-4" />}
-            title={tDash.noTransactions}
-            description={tDash.allTransactionsDescription}
-          />
-        ) : (
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-2">
-            {recentTransactions.map((tx: Transaction) => (
-              <TransactionItem
-                key={tx.id}
-                transaction={tx}
-                hideBalance={hideBalance}
-              />
-            ))}
+          <div className="flex gap-2">
+            <button type="button" onClick={() => openQuickAdd('expense')} className="flex min-h-11 items-center gap-2 rounded-control bg-negative px-3 text-sm font-semibold text-white"><ArrowDownRight className="h-4 w-4" />{translations[language].common.addExpense}</button>
+            <button type="button" onClick={() => openQuickAdd('income')} className="flex min-h-11 items-center gap-2 rounded-control border border-positive/30 bg-positive/10 px-3 text-sm font-semibold text-positive"><ArrowUpRight className="h-4 w-4" />{translations[language].common.addIncome}</button>
           </div>
-        )}
+        </div>
+        <p className="mt-3 text-[11px] leading-relaxed text-muted">{scopes.dashboard}</p>
       </section>
 
-      {/* Apple HIG Financial Balance Chart */}
-      <AppleCardBalanceChart balance={balance} />
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        {[
+          { label: t.incomeThisMonth, value: monthSummary.income, color: 'text-positive', route: 'income' as const },
+          { label: t.expensesThisMonth, value: monthSummary.expenses, color: 'text-negative', route: 'expenses' as const },
+          { label: language === 'ar' ? 'الصافي' : language === 'fr' ? 'Net' : 'Net', value: monthSummary.net, color: monthSummary.net >= 0 ? 'text-positive' : 'text-negative', route: 'history' as const },
+        ].map((stat) => (
+          <button key={stat.label} type="button" onClick={() => setActiveScreen(stat.route)} className="min-w-0 rounded-control border border-border-subtle bg-surface px-3 py-2.5 text-start hover:bg-surface-raised">
+            <span className="block text-xs text-muted">{stat.label}</span>
+            <MoneyText amount={stat.value} showSign className={`mt-1 text-lg font-semibold ${stat.color}`} />
+          </button>
+        ))}
+      </div>
 
-      {/* Monthly Savings Reminder Card */}
-      {totalMonthlyGoalTarget > 0 && (
-        <div className="p-4 sm:p-5 rounded-card bg-surface backdrop-blur-xl border border-border-subtle shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">
-          <div className="flex items-start gap-3">
-            <div className="w-9 h-9 rounded-control bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 flex items-center justify-center shrink-0">
-              <PiggyBank className="w-4 h-4 stroke-[2]" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h4 className="font-semibold text-content text-sm tracking-tight">
-                  {tDash.savingsReminderTitle} :{' '}
-                  <MoneyText
-                    amount={totalMonthlyGoalTarget}
-                    className="font-bold text-emerald-600 dark:text-emerald-400"
-                  />
-                </h4>
-              </div>
-              <p className="text-muted mt-0.5">
-                <MoneyText amount={savedThisMonthToGoals} className="font-medium" />{' '}
-                {tDash.alreadySavedOf}{' '}
-                <MoneyText amount={totalMonthlyGoalTarget} className="font-medium" />{' '}
-                {tDash.monthlyTarget}.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 self-end sm:self-center">
-            {remainingToSaveThisMonth > 0 ? (
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => setIsSaveAllModalOpen(true)}
-                icon={<Sparkles className="w-3.5 h-3.5" />}
-              >
-                <span>{tDash.saveAllButton}</span>
-              </Button>
-            ) : (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-semibold">
-                <CheckCircle2 className="w-3.5 h-3.5" /> {tDash.monthlyTargetCompleted}
-              </span>
-            )}
-          </div>
-        </div>
+      {pinnedNote && (
+        <button type="button" onClick={() => setActiveScreen('notes')} className="flex min-h-11 w-full items-center gap-2 overflow-hidden whitespace-nowrap rounded-control border border-amber-500/25 bg-amber-500/10 px-3 text-start text-sm text-content">
+          <span className="h-2 w-2 shrink-0 rounded-full bg-amber-500" />
+          <span className="min-w-0 truncate font-semibold">{pinnedNote.title}</span>
+          {pinnedNote.content && <span className="hidden min-w-0 truncate text-muted sm:inline">· {pinnedNote.content}</span>}
+        </button>
       )}
 
-      {/* Month Flow Overview: Income vs Expense Cards (Clickable navigation to /income & /expenses) */}
-      <div className="grid grid-cols-2 gap-3 sm:gap-4">
-        <Pressable
-          variant="card"
-          onClick={() => navigate('/income')}
-          className="text-start rounded-card p-4 sm:p-5 bg-surface backdrop-blur-xl border border-border-subtle shadow-xs cursor-pointer block w-full hover:border-emerald-500/30 transition-colors"
-        >
-          <div className="flex items-center justify-between text-xs text-muted mb-1">
-            <span className="font-medium">{tDash.incomeThisMonth}</span>
-            <span className="w-2 h-2 rounded-full bg-emerald-500" />
-          </div>
-          <MoneyText
-            amount={incomeThisMonth}
-            showSign={true}
-            className="text-xl sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400 tracking-tight"
-          />
-          <span className="text-caption text-muted dark:text-zinc-500 mt-1 block tabular-nums">
-            {tDash.incomeCount.replace(
-              '{count}',
-              String(currentMonthTx.filter((t: Transaction) => t.type === 'income').length)
-            )}
-          </span>
-        </Pressable>
+      <button type="button" onClick={() => setActiveScreen('tasks')} className="flex min-h-11 w-full items-center justify-between rounded-control border border-border-subtle bg-surface px-3 text-sm text-content hover:bg-surface-raised">
+        <span className="flex items-center gap-2"><CheckSquare className="h-4 w-4 text-accent" />{t.todayTasks}</span>
+        <span className="font-semibold tabular-nums">{doneToday}/{activeTasks.length} <span aria-hidden="true">→</span></span>
+      </button>
 
-        <Pressable
-          variant="card"
-          onClick={() => navigate('/expenses')}
-          className="text-start rounded-card p-4 sm:p-5 bg-surface backdrop-blur-xl border border-border-subtle shadow-xs cursor-pointer block w-full hover:border-rose-500/30 transition-colors"
-        >
-          <div className="flex items-center justify-between text-xs text-muted mb-1">
-            <span className="font-medium">{tDash.expensesThisMonth}</span>
-            <span className="w-2 h-2 rounded-full bg-rose-500" />
-          </div>
-          <MoneyText
-            amount={expenseThisMonth}
-            prefix="-"
-            className="text-xl sm:text-2xl font-bold text-rose-600 dark:text-rose-400 tracking-tight"
-          />
-          <span className="text-caption text-muted dark:text-zinc-500 mt-1 block tabular-nums">
-            {tDash.expenseCount.replace(
-              '{count}',
-              String(currentMonthTx.filter((t: Transaction) => t.type === 'expense').length)
-            )}
-          </span>
-        </Pressable>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <Card padding="md" className="space-y-3">
+          <div className="flex items-center justify-between gap-2"><h2 className="text-sm font-semibold text-content">{t.spendingBreakdown}</h2><span className="text-xs text-muted">{formatMonthYear(selectedMonth, language)}</span></div>
+          {categoryTotals.length ? categoryTotals.map(({ category, spent }) => {
+            const Icon = getCategoryIcon(category.icon);
+            const budget = Number(category.monthlyBudget) || 0;
+            const progress = budget > 0 ? Math.min(100, Math.round((spent / budget) * 100)) : 0;
+            const bar = spent > budget && budget > 0 ? 'bg-negative' : progress >= 80 ? 'bg-amber-500' : 'bg-accent';
+            return (
+              <div key={category.id} className="space-y-1.5">
+                <div className="flex items-center gap-2 text-xs">
+                  <Icon className="h-4 w-4 shrink-0 text-muted" />
+                  <span className="min-w-0 flex-1 truncate text-content">{getCategoryName(category, language)}</span>
+                  <MoneyText amount={spent} className="font-semibold text-content" />
+                  {budget > 0 && <span className="text-muted">/ <MoneyText amount={budget} /></span>}
+                </div>
+                <div className="h-1.5 overflow-hidden rounded-full bg-surface-raised" role="progressbar" aria-valuemin={0} aria-valuemax={budget || 100} aria-valuenow={budget ? Math.min(spent, budget) : 0} aria-label={`${getCategoryName(category, language)} ${t.budget}`}>
+                  <div className={`h-full rounded-full ${budget > 0 ? bar : 'bg-border-subtle'}`} style={{ width: `${budget > 0 ? progress : 0}%` }} />
+                </div>
+                {budget <= 0 && <span className="text-[10px] text-muted">{t.noBudget}</span>}
+              </div>
+            );
+          }) : <p className="text-xs text-muted">{t.noBudgetedCategories}</p>}
+        </Card>
+
+        <Card padding="md" className="space-y-3">
+          <div className="flex items-center justify-between gap-2"><h2 className="text-sm font-semibold text-content">{t.nextBills}</h2><button type="button" onClick={() => setActiveScreen('subscriptions')} className="text-xs font-medium text-accent">{translations[language].nav.subscriptions} →</button></div>
+          {upcomingBills.length ? upcomingBills.map(({ subscription, days, dueDate }) => (
+            <div key={subscription.id} className="flex min-h-11 items-center justify-between gap-3 border-b border-border-subtle pb-2 last:border-0 last:pb-0">
+              <div className="min-w-0"><p className="truncate text-sm font-medium text-content">{subscription.name}</p><p className="text-xs text-muted">{days < 0 ? t.overdue : days === 0 ? t.dueToday : t.inDays.replace('{count}', String(days))} · {dueDate}</p></div>
+              <MoneyText amount={subscription.amount} className="shrink-0 text-sm font-semibold text-content" />
+            </div>
+          )) : <p className="text-xs text-muted">{t.noUpcomingBills}</p>}
+        </Card>
       </div>
 
-      {/* Two Column Grid: Spending Donut + Top Goals */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        {/* Spending Breakdown Donut (5 cols) */}
-        <div className="lg:col-span-5">
-          <div className="rounded-card p-5 bg-surface backdrop-blur-xl border border-border-subtle shadow-xs h-full flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-xs sm:text-sm text-content tracking-tight">
-                  {tDash.spendingBreakdown}
-                </h3>
-                <span className="text-caption font-medium text-muted">
-                  {tDash.thisMonth}
-                </span>
-              </div>
+      <Card padding="md" className="space-y-3">
+        <div className="flex items-center justify-between gap-3"><h2 className="flex items-center gap-2 text-sm font-semibold text-content"><Receipt className="h-4 w-4 text-accent" />{t.recentTransactions}</h2><button type="button" onClick={() => setActiveScreen('history')} className="text-xs font-medium text-accent">{t.seeAllTransactions} →</button></div>
+        {recentTransactions.length ? <div className="grid grid-cols-1 gap-2 xl:grid-cols-2">{recentTransactions.map((transaction: Transaction) => <TransactionItem key={transaction.id} transaction={transaction} hideBalance={hideBalance} />)}</div> : <p className="py-2 text-xs text-muted">{t.noTransactions}</p>}
+      </Card>
 
-              {spendingBreakdown.length === 0 ? (
-                <EmptyState
-                  icon={<PieIcon className="w-5 h-5" />}
-                  title={tDash.noExpensesThisMonth}
-                  action={
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => setIsExpenseOpen(true)}
-                      icon={<ArrowDownRight className="w-3.5 h-3.5" />}
-                    >
-                      {tDash.addExpenseCta}
-                    </Button>
-                  }
-                />
-              ) : (
-                <>
-                  <div className="h-40 sm:h-44 w-full relative">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={spendingBreakdown}
-                          dataKey="amount"
-                          nameKey="name"
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={46}
-                          outerRadius={68}
-                          paddingAngle={2}
-                        >
-                          {spendingBreakdown.map((entry) => (
-                            <Cell key={`cell-${entry.id}`} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <Tooltip
-                          formatter={(value: number) => [
-                            formatMAD(value, false, language),
-                            tDash.expenseCategory,
-                          ]}
-                          contentStyle={{
-                            borderRadius: '12px',
-                            backgroundColor: '#18181b',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            color: '#ffffff',
-                            fontSize: '11px',
-                          }}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                      <span className="text-caption text-muted uppercase tracking-wider">
-                        Total
-                      </span>
-                      <span
-                        className={`text-xs font-bold text-content tabular-nums tracking-tight transition-[filter] duration-200 ${
-                          hideBalance ? 'privacy-blur' : ''
-                        }`}
-                      >
-                        <MoneyText amount={monthlyTotalExpense} />
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Top Spending Items list */}
-                  <div className="space-y-1.5 mt-2">
-                    {spendingBreakdown.slice(0, 4).map((item) => {
-                      const cat = categories.find((c) => c.id === item.id);
-                      const displayName = cat ? getCategoryName(cat, language) : (translateCategoryText(item.name, language) || item.name);
-                      return (
-                        <div
-                          key={item.id}
-                          className="flex items-center justify-between text-xs py-1"
-                        >
-                          <div className="flex items-center gap-2 min-w-0">
-                            <span
-                              className="w-2.5 h-2.5 rounded-full shrink-0"
-                              style={{ backgroundColor: item.color }}
-                            />
-                            <span className="text-content truncate max-w-[140px]">
-                              {displayName}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-muted text-caption tabular-nums">
-                              {item.percentage}%
-                            </span>
-                            <span
-                              className={`font-semibold text-content tabular-nums tracking-tight transition-[filter] duration-200 ${
-                                hideBalance ? 'privacy-blur' : ''
-                              }`}
-                            >
-                              <MoneyText amount={item.amount} />
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Top Goals (7 cols) */}
-        <div className="lg:col-span-7">
-          <div className="rounded-card p-5 bg-surface backdrop-blur-xl border border-border-subtle shadow-xs h-full flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-xs sm:text-sm text-content tracking-tight">
-                    {tDash.topGoals}
-                  </h3>
-                  {top3Goals.length > 0 && (
-                    <span className="text-caption bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-muted px-2 py-0.5 rounded-full font-mono tabular-nums">
-                      {top3Goals.length}
-                    </span>
-                  )}
-                </div>
-                <button
-                  onClick={() => setActiveScreen('categories')}
-                  className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-0.5 font-medium"
-                >
-                  <span>{tDash.seeAllGoals}</span>
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-
-              {top3Goals.length === 0 ? (
-                <EmptyState
-                  icon={<Target className="w-5 h-5" />}
-                  title={tDash.noGoalsYet}
-                  action={
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => setActiveScreen('categories')}
-                    >
-                      + {tDash.createFirstGoal}
-                    </Button>
-                  }
-                />
-              ) : (
-                <div className="space-y-3">
-                  {top3Goals.map((goalCat: Category) => {
-                    const calc = calculateGoalProgress(goalCat, transactions);
-                    return (
-                      <div
-                        key={goalCat.id}
-                        className="p-3.5 rounded-control bg-zinc-50 dark:bg-zinc-800/50 border border-border-subtle"
-                      >
-                        <div className="flex items-center justify-between mb-1.5">
-                          <h4 className="font-semibold text-xs text-content">
-                            {getCategoryName(goalCat, language)}
-                          </h4>
-                          <span
-                            className={`text-caption text-muted tabular-nums transition-[filter] duration-200 ${
-                              hideBalance ? 'privacy-blur' : ''
-                            }`}
-                          >
-                            <MoneyText amount={calc.savedAmount} /> /{' '}
-                            <MoneyText amount={goalCat.targetAmount || 0} />
-                          </span>
-                        </div>
-                        <GoalProgressBar
-                          category={goalCat}
-                          calc={calc}
-                          hideBalance={hideBalance}
-                          onContribute={() => handleOpenGoalContribution(goalCat.id)}
-                          showContributeButton={true}
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Bulk Save Confirmation Modal ("Tout épargner") */}
-      <Modal
-        isOpen={isSaveAllModalOpen}
-        onClose={() => setIsSaveAllModalOpen(false)}
-        title={tDash.saveAllConfirmTitle}
-        subtitle={tDash.saveAllModalSubtitle}
-        maxWidth="sm"
-      >
-        <div className="space-y-4 text-xs">
-          <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed">
-            {tDash.saveAllConfirmDesc.replace(
-              '{amount}',
-              formatMAD(remainingToSaveThisMonth, false, language)
-            )}
-          </p>
-
-          <div className="p-3.5 rounded-control bg-zinc-50 dark:bg-zinc-800/60 border border-border-subtle space-y-1.5">
-            <span className="text-caption font-semibold text-zinc-500 uppercase tracking-wider block">
-              {tDash.plannedDistribution}
-            </span>
-            {activeGoalCategories.map((g) => {
-              const calc = calculateGoalProgress(g, transactions);
-              if (calc.status === 'completed' || calc.monthlyNeeded <= 0) return null;
-              return (
-                <div key={g.id} className="flex justify-between py-0.5">
-                  <span className="text-content">
-                    {getCategoryName(g, language)}
-                  </span>
-                  <span className="font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">
-                    <MoneyText amount={calc.monthlyNeeded} prefix="+" />
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="flex gap-2 pt-2">
-            <Button
-              variant="secondary"
-              fullWidth
-              onClick={() => setIsSaveAllModalOpen(false)}
-            >
-              {tCommon.cancel}
-            </Button>
-            <Button
-              variant="primary"
-              fullWidth
-              onClick={handleExecuteSaveAll}
-              icon={<Sparkles className="w-3.5 h-3.5" />}
-            >
-              {tDash.saveAllButton}
-            </Button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* Modals */}
-      <AddExpenseModal
-        isOpen={isExpenseOpen}
-        onClose={() => setIsExpenseOpen(false)}
-      />
-      <AddIncomeModal
-        isOpen={isIncomeOpen}
-        onClose={() => setIsIncomeOpen(false)}
-      />
-      <AddContributionModal
-        isOpen={isContributionOpen}
-        onClose={() => setIsContributionOpen(false)}
-        defaultCategoryId={selectedGoalId}
-      />
+      <AppleCardBalanceChart balance={calculateAvailableBalance(initialBalance, transactions)} />
     </div>
   );
 };

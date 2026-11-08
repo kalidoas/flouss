@@ -367,7 +367,7 @@ export const ExpensesPage: React.FC = () => {
 
                     const exactTime = getExactTime(tx.date, tx.createdAt);
                     const translatedNote = tx.note ? translateCategoryText(tx.note, language) : '';
-                    const itemName = translatedNote || (subCatName ? `${catName} › ${subCatName}` : catName);
+                    const itemName = translatedNote || subCatName || catName;
 
                     return (
                       <motion.div
@@ -391,31 +391,19 @@ export const ExpensesPage: React.FC = () => {
                               {itemName}
                             </h4>
 
-                            <div className="flex items-center gap-2 mt-0.5 text-caption text-muted flex-wrap">
-                              <span className="font-medium text-zinc-600 dark:text-zinc-300">
+                            <div className="mt-1">
+                              <span className="inline-flex max-w-full rounded-full bg-surface-raised px-2 py-0.5 text-[10px] font-medium text-muted truncate">
                                 {catName}
-                              </span>
-
-                              {subCatName && (
-                                <>
-                                  <span>•</span>
-                                  <span className="px-1.5 py-0.5 rounded-control bg-zinc-100 dark:bg-zinc-800 text-caption font-medium text-zinc-600 dark:text-zinc-300">
-                                    {subCatName}
-                                  </span>
-                                </>
-                              )}
-
-                              <span>•</span>
-                              <span className="flex items-center gap-1 text-caption text-muted tabular-nums">
-                                <Clock className="w-3 h-3 text-muted" />
-                                {exactTime}
                               </span>
                             </div>
                           </div>
                         </div>
 
                         {/* Right: Amount & Quick Delete */}
-                        <div className="flex items-center gap-3 shrink-0">
+                        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                          <span className="hidden sm:flex items-center gap-1 text-caption text-muted tabular-nums">
+                            <Clock className="w-3 h-3" />{exactTime}
+                          </span>
                           <span className="text-base sm:text-lg font-bold text-rose-600 dark:text-rose-400 tabular-nums">
                             <MoneyText
                               amount={Number(tx.amount)}

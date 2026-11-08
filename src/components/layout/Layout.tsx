@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
 import { Navbar } from './Navbar';
@@ -7,6 +7,8 @@ import { InAppAlarmSheet } from '../common/InAppAlarmSheet';
 import { ReconnectGoogleCalendarModal } from '../common/ReconnectGoogleCalendarModal';
 import { AddToHomeScreenModal } from '../common/AddToHomeScreenModal';
 import { useAppStore } from '../../store/useAppStore';
+import { QuickAddSheet, QuickAddType } from '../transactions/QuickAddSheet';
+import { CommandPalette } from './CommandPalette';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -14,6 +16,22 @@ interface LayoutProps {
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { toggleHideBalance, language } = useAppStore();
+  const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
+  const [quickAddType, setQuickAddType] = useState<QuickAddType>('expense');
+
+  const openQuickAdd = useCallback((type: QuickAddType = 'expense') => {
+    setQuickAddType(type);
+    setIsQuickAddOpen(true);
+  }, []);
+
+  useEffect(() => {
+    const handleQuickAdd = (event: Event) => {
+      const type = (event as CustomEvent<{ type?: QuickAddType }>).detail?.type;
+      openQuickAdd(type === 'income' ? 'income' : 'expense');
+    };
+    window.addEventListener('flouss:quick-add', handleQuickAdd);
+    return () => window.removeEventListener('flouss:quick-add', handleQuickAdd);
+  }, [openQuickAdd]);
   const [collapsed, setCollapsed] = useState(() => {
     try {
       return localStorage.getItem('flouss_sidebar_collapsed') === 'true';
@@ -77,11 +95,13 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
         {/* Desktop Quick Add Floating Button (strictly hidden on mobile) */}
         <div className="hidden md:block select-none">
-          <QuickAddButton />
+          <QuickAddButton onClick={() => openQuickAdd('expense')} />
         </div>
 
         {/* Mobile Navigation Bar (strictly hidden on desktop) */}
-        <Navbar />
+        <Navbar onQuickAdd={() => openQuickAdd('expense')} />
+        <QuickAddSheet isOpen={isQuickAddOpen} onClose={() => setIsQuickAddOpen(false)} initialType={quickAddType} />
+        <CommandPalette onQuickAdd={() => openQuickAdd('expense')} />
 
         {/* Global In-App High Priority Alarm Sheet */}
         <InAppAlarmSheet />
