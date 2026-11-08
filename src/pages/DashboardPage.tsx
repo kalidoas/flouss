@@ -16,7 +16,7 @@ import { FocusTaskList } from '../components/dashboard/FocusTaskList';
 import { PriorityHub } from '../components/dashboard/PriorityHub';
 import { WalletCard } from '../components/dashboard/WalletCard';
 import { AppleCardBalanceChart } from '../components/dashboard/AppleCardBalanceChart';
-import { PrivacyCurrency } from '../components/common/PrivacyCurrency';
+import { MoneyText } from '../components/common/PrivacyCurrency';
 import { Pressable } from '../components/common/Pressable';
 import {
   calculateAvailableBalance,
@@ -24,9 +24,9 @@ import {
   calculateGoalProgress,
   getCategorySpendingBreakdown,
   calculateTotalSavingsInGoals,
+  selectFinancialSummary,
 } from '../utils/calculations';
 import { formatMAD, getCurrentMonthStr, formatMonthYear, isTransactionInMonth } from '../utils/formatters';
-import { money } from '../lib/currency';
 import { Category, RecurringIncomeRule, Transaction } from '../types';
 import { translations } from '../i18n/translations';
 import { getIncomeSourceName, getCategoryName, translateCategoryText } from '../utils/i18nHelpers';
@@ -84,21 +84,10 @@ export const DashboardPage: React.FC = () => {
 
   // Month-to-date metrics with exact currency precision
   const currentMonthTx = transactions.filter((t: Transaction) => isTransactionInMonth(t.date, currentMonth));
-  const incomeThisMonth = money.round(
-    currentMonthTx
-      .filter((t: Transaction) => t.type === 'income')
-      .reduce((sum: number, t: Transaction) => sum + money.toCents(t.amount), 0) / 100
-  );
-  const expenseThisMonth = money.round(
-    currentMonthTx
-      .filter((t: Transaction) => t.type === 'expense')
-      .reduce((sum: number, t: Transaction) => sum + money.toCents(t.amount), 0) / 100
-  );
-  const savedThisMonth = money.round(
-    currentMonthTx
-      .filter((t: Transaction) => t.type === 'contribution')
-      .reduce((sum: number, t: Transaction) => sum + money.toCents(t.amount), 0) / 100
-  );
+  const monthlySummary = selectFinancialSummary(transactions, { month: currentMonth });
+  const incomeThisMonth = monthlySummary.income;
+  const expenseThisMonth = monthlySummary.expenses;
+  const savedThisMonth = monthlySummary.contributions;
 
   // Donut Spending Breakdown
   const { breakdown: spendingBreakdown, totalExpense: monthlyTotalExpense } =
@@ -123,9 +112,7 @@ export const DashboardPage: React.FC = () => {
     return calc.status !== 'completed' ? sum + calc.monthlyNeeded : sum;
   }, 0);
 
-  const savedThisMonthToGoals = currentMonthTx
-    .filter((t: Transaction) => t.type === 'contribution')
-    .reduce((sum, t) => sum + t.amount, 0);
+  const savedThisMonthToGoals = monthlySummary.contributions;
 
   const remainingToSaveThisMonth = Math.max(0, totalMonthlyGoalTarget - savedThisMonthToGoals);
 
@@ -171,17 +158,17 @@ export const DashboardPage: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl bg-emerald-500/10 dark:bg-emerald-950/40 border border-emerald-500/20 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs backdrop-blur-xl shadow-xs"
+          className="rounded-card bg-emerald-500/10 dark:bg-emerald-950/40 border border-emerald-500/20 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs backdrop-blur-xl shadow-xs"
         >
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center justify-center shrink-0">
-              <BellRing className="w-4 h-4 stroke-[2.2]" />
+            <div className="w-9 h-9 rounded-control bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center justify-center shrink-0">
+              <BellRing className="w-4 h-4 stroke-[2]" />
             </div>
             <div>
-              <h4 className="font-semibold text-zinc-900 dark:text-white tracking-tight">
+              <h4 className="font-semibold text-content tracking-tight">
                 {tDash.recurringBannerTitle}
               </h4>
-              <p className="text-zinc-500 dark:text-zinc-400 mt-0.5">
+              <p className="text-muted mt-0.5">
                 {tDash.recurringBannerDesc
                   .replace('{source}', getIncomeSourceName(dueSource, language))
                   .replace('{amount}', formatMAD(dueRecurringRule.amount, false, language))}
@@ -210,7 +197,7 @@ export const DashboardPage: React.FC = () => {
                 };
                 confirmRecurringIncome(dueRecurringRule.id, currentMonth, tx);
               }}
-              className="px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1.5 transition-colors shadow-xs"
+              className="px-3.5 py-1.5 text-xs font-semibold rounded-control bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1.5 transition-colors shadow-xs"
             >
               <CheckCircle2 className="w-3.5 h-3.5" />
               <span>{tDash.confirmRecurring}</span>
@@ -239,19 +226,22 @@ export const DashboardPage: React.FC = () => {
             onNavigateIncome={() => setActiveScreen('income')}
             onNavigateExpense={() => setActiveScreen('expenses')}
           />
+          <p className="px-1 text-xs leading-relaxed text-muted whitespace-normal break-words">
+            {translations[language].summaryScopes.dashboard}
+          </p>
 
         </div>
       </div>
 
       {/* Recent Transactions use the dashboard's full width so dates, labels, and
           amounts remain readable instead of wrapping inside the wallet column. */}
-      <section className="rounded-2xl p-4 sm:p-5 bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs space-y-3">
+      <section className="rounded-card p-4 sm:p-5 bg-surface backdrop-blur-xl border border-border-subtle shadow-xs space-y-3">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 min-w-0">
-            <div className="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+            <div className="w-7 h-7 rounded-control bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
               <Receipt className="w-3.5 h-3.5" />
             </div>
-            <h3 className="font-bold text-sm text-zinc-900 dark:text-white tracking-tight">
+            <h3 className="font-bold text-sm text-content tracking-tight">
               {tDash.recentTransactions}
             </h3>
           </div>
@@ -288,25 +278,25 @@ export const DashboardPage: React.FC = () => {
 
       {/* Monthly Savings Reminder Card */}
       {totalMonthlyGoalTarget > 0 && (
-        <div className="p-4 sm:p-5 rounded-2xl bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">
+        <div className="p-4 sm:p-5 rounded-card bg-surface backdrop-blur-xl border border-border-subtle shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">
           <div className="flex items-start gap-3">
-            <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 flex items-center justify-center shrink-0">
-              <PiggyBank className="w-4 h-4 stroke-[2.2]" />
+            <div className="w-9 h-9 rounded-control bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 flex items-center justify-center shrink-0">
+              <PiggyBank className="w-4 h-4 stroke-[2]" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h4 className="font-semibold text-zinc-900 dark:text-white text-sm tracking-tight">
+                <h4 className="font-semibold text-content text-sm tracking-tight">
                   {tDash.savingsReminderTitle} :{' '}
-                  <PrivacyCurrency
+                  <MoneyText
                     amount={totalMonthlyGoalTarget}
                     className="font-bold text-emerald-600 dark:text-emerald-400"
                   />
                 </h4>
               </div>
-              <p className="text-zinc-500 dark:text-zinc-400 mt-0.5">
-                <PrivacyCurrency amount={savedThisMonthToGoals} className="font-medium" />{' '}
+              <p className="text-muted mt-0.5">
+                <MoneyText amount={savedThisMonthToGoals} className="font-medium" />{' '}
                 {tDash.alreadySavedOf}{' '}
-                <PrivacyCurrency amount={totalMonthlyGoalTarget} className="font-medium" />{' '}
+                <MoneyText amount={totalMonthlyGoalTarget} className="font-medium" />{' '}
                 {tDash.monthlyTarget}.
               </p>
             </div>
@@ -336,18 +326,18 @@ export const DashboardPage: React.FC = () => {
         <Pressable
           variant="card"
           onClick={() => navigate('/income')}
-          className="text-start rounded-2xl p-4 sm:p-5 bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs cursor-pointer block w-full hover:border-emerald-500/30 transition-colors"
+          className="text-start rounded-card p-4 sm:p-5 bg-surface backdrop-blur-xl border border-border-subtle shadow-xs cursor-pointer block w-full hover:border-emerald-500/30 transition-colors"
         >
-          <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 mb-1">
+          <div className="flex items-center justify-between text-xs text-muted mb-1">
             <span className="font-medium">{tDash.incomeThisMonth}</span>
             <span className="w-2 h-2 rounded-full bg-emerald-500" />
           </div>
-          <PrivacyCurrency
+          <MoneyText
             amount={incomeThisMonth}
             showSign={true}
             className="text-xl sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400 tracking-tight"
           />
-          <span className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-1 block tabular-nums">
+          <span className="text-caption text-muted dark:text-zinc-500 mt-1 block tabular-nums">
             {tDash.incomeCount.replace(
               '{count}',
               String(currentMonthTx.filter((t: Transaction) => t.type === 'income').length)
@@ -358,18 +348,18 @@ export const DashboardPage: React.FC = () => {
         <Pressable
           variant="card"
           onClick={() => navigate('/expenses')}
-          className="text-start rounded-2xl p-4 sm:p-5 bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs cursor-pointer block w-full hover:border-rose-500/30 transition-colors"
+          className="text-start rounded-card p-4 sm:p-5 bg-surface backdrop-blur-xl border border-border-subtle shadow-xs cursor-pointer block w-full hover:border-rose-500/30 transition-colors"
         >
-          <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 mb-1">
+          <div className="flex items-center justify-between text-xs text-muted mb-1">
             <span className="font-medium">{tDash.expensesThisMonth}</span>
             <span className="w-2 h-2 rounded-full bg-rose-500" />
           </div>
-          <PrivacyCurrency
+          <MoneyText
             amount={expenseThisMonth}
             prefix="-"
             className="text-xl sm:text-2xl font-bold text-rose-600 dark:text-rose-400 tracking-tight"
           />
-          <span className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-1 block tabular-nums">
+          <span className="text-caption text-muted dark:text-zinc-500 mt-1 block tabular-nums">
             {tDash.expenseCount.replace(
               '{count}',
               String(currentMonthTx.filter((t: Transaction) => t.type === 'expense').length)
@@ -382,13 +372,13 @@ export const DashboardPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* Spending Breakdown Donut (5 cols) */}
         <div className="lg:col-span-5">
-          <div className="rounded-2xl p-5 bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs h-full flex flex-col justify-between">
+          <div className="rounded-card p-5 bg-surface backdrop-blur-xl border border-border-subtle shadow-xs h-full flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-xs sm:text-sm text-zinc-900 dark:text-white tracking-tight">
+                <h3 className="font-semibold text-xs sm:text-sm text-content tracking-tight">
                   {tDash.spendingBreakdown}
                 </h3>
-                <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
+                <span className="text-caption font-medium text-muted">
                   {tDash.thisMonth}
                 </span>
               </div>
@@ -443,15 +433,15 @@ export const DashboardPage: React.FC = () => {
                       </PieChart>
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                      <span className="text-[10px] text-zinc-400 uppercase tracking-wider">
+                      <span className="text-caption text-muted uppercase tracking-wider">
                         Total
                       </span>
                       <span
-                        className={`text-xs font-bold text-zinc-900 dark:text-white tabular-nums tracking-tight transition-[filter] duration-200 ${
+                        className={`text-xs font-bold text-content tabular-nums tracking-tight transition-[filter] duration-200 ${
                           hideBalance ? 'privacy-blur' : ''
                         }`}
                       >
-                        {formatMAD(monthlyTotalExpense, false, language)}
+                        <MoneyText amount={monthlyTotalExpense} />
                       </span>
                     </div>
                   </div>
@@ -471,20 +461,20 @@ export const DashboardPage: React.FC = () => {
                               className="w-2.5 h-2.5 rounded-full shrink-0"
                               style={{ backgroundColor: item.color }}
                             />
-                            <span className="text-zinc-700 dark:text-zinc-300 truncate max-w-[140px]">
+                            <span className="text-content truncate max-w-[140px]">
                               {displayName}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-zinc-400 text-[11px] tabular-nums">
+                            <span className="text-muted text-caption tabular-nums">
                               {item.percentage}%
                             </span>
                             <span
-                              className={`font-semibold text-zinc-900 dark:text-white tabular-nums tracking-tight transition-[filter] duration-200 ${
+                              className={`font-semibold text-content tabular-nums tracking-tight transition-[filter] duration-200 ${
                                 hideBalance ? 'privacy-blur' : ''
                               }`}
                             >
-                              {formatMAD(item.amount, false, language)}
+                              <MoneyText amount={item.amount} />
                             </span>
                           </div>
                         </div>
@@ -499,15 +489,15 @@ export const DashboardPage: React.FC = () => {
 
         {/* Top Goals (7 cols) */}
         <div className="lg:col-span-7">
-          <div className="rounded-2xl p-5 bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs h-full flex flex-col justify-between">
+          <div className="rounded-card p-5 bg-surface backdrop-blur-xl border border-border-subtle shadow-xs h-full flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-xs sm:text-sm text-zinc-900 dark:text-white tracking-tight">
+                  <h3 className="font-semibold text-xs sm:text-sm text-content tracking-tight">
                     {tDash.topGoals}
                   </h3>
                   {top3Goals.length > 0 && (
-                    <span className="text-[11px] bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 px-2 py-0.5 rounded-full font-mono tabular-nums">
+                    <span className="text-caption bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-muted px-2 py-0.5 rounded-full font-mono tabular-nums">
                       {top3Goals.length}
                     </span>
                   )}
@@ -542,19 +532,19 @@ export const DashboardPage: React.FC = () => {
                     return (
                       <div
                         key={goalCat.id}
-                        className="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-black/[0.04] dark:border-white/[0.05]"
+                        className="p-3.5 rounded-control bg-zinc-50 dark:bg-zinc-800/50 border border-border-subtle"
                       >
                         <div className="flex items-center justify-between mb-1.5">
-                          <h4 className="font-semibold text-xs text-zinc-900 dark:text-white">
+                          <h4 className="font-semibold text-xs text-content">
                             {getCategoryName(goalCat, language)}
                           </h4>
                           <span
-                            className={`text-[11px] text-zinc-500 dark:text-zinc-400 tabular-nums transition-[filter] duration-200 ${
+                            className={`text-caption text-muted tabular-nums transition-[filter] duration-200 ${
                               hideBalance ? 'privacy-blur' : ''
                             }`}
                           >
-                            {formatMAD(calc.savedAmount, false, language)} /{' '}
-                            {formatMAD(goalCat.targetAmount || 0, false, language)}
+                            <MoneyText amount={calc.savedAmount} /> /{' '}
+                            <MoneyText amount={goalCat.targetAmount || 0} />
                           </span>
                         </div>
                         <GoalProgressBar
@@ -590,8 +580,8 @@ export const DashboardPage: React.FC = () => {
             )}
           </p>
 
-          <div className="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-black/[0.04] dark:border-white/[0.05] space-y-1.5">
-            <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider block">
+          <div className="p-3.5 rounded-control bg-zinc-50 dark:bg-zinc-800/60 border border-border-subtle space-y-1.5">
+            <span className="text-caption font-semibold text-zinc-500 uppercase tracking-wider block">
               {tDash.plannedDistribution}
             </span>
             {activeGoalCategories.map((g) => {
@@ -599,11 +589,11 @@ export const DashboardPage: React.FC = () => {
               if (calc.status === 'completed' || calc.monthlyNeeded <= 0) return null;
               return (
                 <div key={g.id} className="flex justify-between py-0.5">
-                  <span className="text-zinc-800 dark:text-zinc-200">
+                  <span className="text-content">
                     {getCategoryName(g, language)}
                   </span>
                   <span className="font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">
-                    +{formatMAD(calc.monthlyNeeded, false, language)}
+                    <MoneyText amount={calc.monthlyNeeded} prefix="+" />
                   </span>
                 </div>
               );

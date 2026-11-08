@@ -15,7 +15,8 @@ import {
 import { exportToExcel } from '../utils/excelExport';
 import { Search, RotateCcw, FileSpreadsheet, Receipt } from 'lucide-react';
 import { EmptyState } from '../components/common/EmptyState';
-import { PrivacyCurrency } from '../components/common/PrivacyCurrency';
+import { MoneyText } from '../components/common/PrivacyCurrency';
+import { selectFinancialSummary } from '../utils/calculations';
 
 export const HistoryPage: React.FC = () => {
   const { initialBalance, transactions, categories, incomeSources, hideBalance, language } = useAppStore();
@@ -79,20 +80,12 @@ export const HistoryPage: React.FC = () => {
     return true;
   });
 
-  // Calculate filtered totals (adjustments excluded from income and expense aggregates)
-  const totalIn = filteredTransactions
-    .filter((tx: Transaction) => tx.type === 'income' || tx.type === 'goal_withdraw')
-    .reduce((sum: number, tx: Transaction) => sum + tx.amount, 0);
-
-  const totalOut = filteredTransactions
-    .filter((tx: Transaction) => tx.type === 'expense' || tx.type === 'contribution')
-    .reduce((sum: number, tx: Transaction) => sum + tx.amount, 0);
-
-  const totalAdj = filteredTransactions
-    .filter((tx: Transaction) => tx.type === 'adjustment')
-    .reduce((sum: number, tx: Transaction) => sum + tx.amount, 0);
-
-  const netTotal = totalIn - totalOut + totalAdj;
+  // In/out include goal transfers; adjustments affect net only.
+  const filteredSummary = selectFinancialSummary(filteredTransactions);
+  const totalIn = filteredSummary.totalIn;
+  const totalOut = filteredSummary.totalOut;
+  const totalAdj = filteredSummary.adjustments;
+  const netTotal = filteredSummary.net;
 
   // Group by date (day string YYYY-MM-DD)
   const groupedTransactions: { [dateStr: string]: Transaction[] } = {};
@@ -133,10 +126,10 @@ export const HistoryPage: React.FC = () => {
       {/* KPI Strip for the filtered set */}
       <div className="grid grid-cols-3 gap-3">
         <Card padding="sm" className="text-left">
-          <span className="text-[10px] text-[#787774] dark:text-[#9b9a97] uppercase tracking-wider block">
+          <span className="text-caption text-muted uppercase tracking-wider block">
             {t.totalIn}
           </span>
-          <PrivacyCurrency
+          <MoneyText
             amount={totalIn}
             showSign={true}
             className="text-sm sm:text-base font-semibold text-emerald-600 dark:text-emerald-400 mt-0.5 block"
@@ -144,10 +137,10 @@ export const HistoryPage: React.FC = () => {
         </Card>
 
         <Card padding="sm" className="text-left">
-          <span className="text-[10px] text-[#787774] dark:text-[#9b9a97] uppercase tracking-wider block">
+          <span className="text-caption text-muted uppercase tracking-wider block">
             {t.totalOut}
           </span>
-          <PrivacyCurrency
+          <MoneyText
             amount={totalOut}
             prefix="-"
             className="text-sm sm:text-base font-semibold text-rose-600 dark:text-rose-400 mt-0.5 block"
@@ -155,10 +148,10 @@ export const HistoryPage: React.FC = () => {
         </Card>
 
         <Card padding="sm" className="text-left">
-          <span className="text-[10px] text-[#787774] dark:text-[#9b9a97] uppercase tracking-wider block">
+          <span className="text-caption text-muted uppercase tracking-wider block">
             {t.netTotal}
           </span>
-          <PrivacyCurrency
+          <MoneyText
             amount={netTotal}
             className={`text-sm sm:text-base font-semibold mt-0.5 block ${
               netTotal >= 0
@@ -169,30 +162,34 @@ export const HistoryPage: React.FC = () => {
         </Card>
       </div>
 
+      <p className="-mt-4 text-xs leading-relaxed text-muted whitespace-normal break-words">
+        {translations[language].summaryScopes.history}
+      </p>
+
       {/* Search & Filters Bar */}
-      <div className="space-y-3 bg-white dark:bg-[#202020] p-3.5 rounded-lg border border-[#e3e2de] dark:border-[#2f2f2f] shadow-sm">
+      <div className="space-y-3 bg-surface p-3.5 rounded-control border border-border-subtle shadow-sm">
         {/* Search Input */}
         <div className="relative">
-          <Search className="w-3.5 h-3.5 text-[#787774] absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-3.5 h-3.5 text-muted absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t.searchPlaceholder}
-            className="w-full text-xs pl-8 pr-3 py-1.5 rounded-md border border-[#e3e2de] dark:border-[#2f2f2f] bg-[#fbfbfa] dark:bg-[#1a1a1a] text-[#37352f] dark:text-[#ecebed] focus:outline-none focus:border-[#2383e2]"
+            className="w-full text-xs pl-8 pr-3 py-1.5 rounded-control border border-border-subtle bg-canvas text-content focus:outline-none focus:border-accent"
           />
         </div>
 
         {/* Filter Controls Row */}
         <div className="flex flex-wrap items-center gap-2 pt-1">
           {/* Type Filter Pills */}
-          <div className="flex items-center gap-1 p-0.5 bg-[#f1f0ee] dark:bg-[#282828] rounded-md overflow-x-auto">
+          <div className="flex items-center gap-1 p-0.5 bg-surface-raised rounded-control overflow-x-auto">
             <button
               onClick={() => setTypeFilter('all')}
               className={`px-2.5 py-1 rounded text-xs transition-colors ${
                 typeFilter === 'all'
-                  ? 'bg-white dark:bg-[#202020] text-[#37352f] dark:text-[#ecebed] font-medium shadow-xs'
-                  : 'text-[#787774] dark:text-[#9b9a97]'
+                  ? 'bg-surface text-content font-medium shadow-xs'
+                  : 'text-muted'
               }`}
             >
               {t.filterAll}
@@ -202,7 +199,7 @@ export const HistoryPage: React.FC = () => {
               className={`px-2.5 py-1 rounded text-xs transition-colors ${
                 typeFilter === 'expense'
                   ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 font-medium'
-                  : 'text-[#787774] dark:text-[#9b9a97]'
+                  : 'text-muted'
               }`}
             >
               {t.filterExpenses}
@@ -212,7 +209,7 @@ export const HistoryPage: React.FC = () => {
               className={`px-2.5 py-1 rounded text-xs transition-colors ${
                 typeFilter === 'income'
                   ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 font-medium'
-                  : 'text-[#787774] dark:text-[#9b9a97]'
+                  : 'text-muted'
               }`}
             >
               {t.filterIncome}
@@ -222,7 +219,7 @@ export const HistoryPage: React.FC = () => {
               className={`px-2.5 py-1 rounded text-xs transition-colors ${
                 typeFilter === 'contribution'
                   ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 font-medium'
-                  : 'text-[#787774] dark:text-[#9b9a97]'
+                  : 'text-muted'
               }`}
             >
               {t.filterSavings}
@@ -232,7 +229,7 @@ export const HistoryPage: React.FC = () => {
               className={`px-2.5 py-1 rounded text-xs transition-colors ${
                 typeFilter === 'adjustment'
                   ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 font-medium'
-                  : 'text-[#787774] dark:text-[#9b9a97]'
+                  : 'text-muted'
               }`}
             >
               {t.filterAdjustments}
@@ -243,7 +240,7 @@ export const HistoryPage: React.FC = () => {
           <select
             value={selectedMonth}
             onChange={(e) => setSelectedMonth(e.target.value)}
-            className="text-xs py-1 px-2.5 rounded-md border border-[#e3e2de] dark:border-[#2f2f2f] bg-white dark:bg-[#202020] text-[#37352f] dark:text-[#ecebed] outline-none"
+            className="text-xs py-1 px-2.5 rounded-control border border-border-subtle bg-surface text-content outline-none"
           >
             <option value="all">{t.allDates}</option>
             {availableMonths.map((m: string) => (
@@ -257,7 +254,7 @@ export const HistoryPage: React.FC = () => {
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="text-xs py-1 px-2.5 rounded-md border border-[#e3e2de] dark:border-[#2f2f2f] bg-white dark:bg-[#202020] text-[#37352f] dark:text-[#ecebed] outline-none max-w-[160px] truncate"
+            className="text-xs py-1 px-2.5 rounded-control border border-border-subtle bg-surface text-content outline-none max-w-[160px] truncate"
           >
             <option value="all">{t.allCategories}</option>
             <optgroup label="Catégories">
@@ -310,7 +307,7 @@ export const HistoryPage: React.FC = () => {
                   <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                     {formatDate(dateStr, language)}
                   </h3>
-                  <span className="text-[11px] text-slate-400">
+                  <span className="text-caption text-slate-400">
                     {dayTransactions.length} transaction(s)
                   </span>
                 </div>

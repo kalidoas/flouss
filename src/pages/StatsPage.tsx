@@ -1,14 +1,16 @@
 import React, { useMemo, useState } from 'react';
 import { useAppStore } from '../store/useAppStore';
-import { PrivacyCurrency } from '../components/common/PrivacyCurrency';
+import { MoneyText } from '../components/common/PrivacyCurrency';
 import {
   getMonthlyStats,
   getCategorySpendingBreakdown,
   getKpiData,
+  selectFinancialSummary,
 } from '../utils/calculations';
 import { KpiCard } from '../components/common/KpiCard';
 import { formatMAD, formatDate, getCurrentMonthStr, isTransactionInMonth } from '../utils/formatters';
 import { getCategoryIcon } from '../utils/icons';
+import { getCategoryVisualColor } from '../utils/categoryColor';
 import {
   getCategoryName,
   getSubCategoryName,
@@ -133,7 +135,7 @@ const TASK_CATEGORY_META: Record<
   other: {
     label: { ar: 'أخرى', fr: 'Autre', en: 'Other' },
     icon: '📌',
-    color: 'text-zinc-600 dark:text-zinc-400',
+    color: 'text-zinc-600 dark:text-muted',
     bg: 'bg-zinc-500/10 dark:bg-zinc-500/15',
     border: 'border-zinc-500/20',
     barColor: '#71717a',
@@ -233,24 +235,13 @@ export const StatsPage: React.FC = () => {
       isTransactionInMonth(tx.date, selectedMonth)
     );
   }, [transactions, selectedMonth]);
-
-  const currentIncome = useMemo(() => {
-    return currentMonthTx
-      .filter((tx: Transaction) => tx.type === 'income')
-      .reduce((s: number, tx: Transaction) => s + (Number(tx.amount) || 0), 0);
-  }, [currentMonthTx]);
-
-  const currentExpense = useMemo(() => {
-    return currentMonthTx
-      .filter((tx: Transaction) => tx.type === 'expense')
-      .reduce((s: number, tx: Transaction) => s + (Number(tx.amount) || 0), 0);
-  }, [currentMonthTx]);
-
-  const currentSavings = useMemo(() => {
-    return currentMonthTx
-      .filter((tx: Transaction) => tx.type === 'contribution')
-      .reduce((s: number, tx: Transaction) => s + (Number(tx.amount) || 0), 0);
-  }, [currentMonthTx]);
+  const currentSummary = useMemo(
+    () => selectFinancialSummary(transactions, { month: selectedMonth }),
+    [transactions, selectedMonth]
+  );
+  const currentIncome = currentSummary.income;
+  const currentExpense = currentSummary.expenses;
+  const currentSavings = currentSummary.contributions;
 
   const savingsRate =
     currentIncome > 0
@@ -385,14 +376,14 @@ export const StatsPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 border-b border-black/[0.06] dark:border-white/[0.06] pb-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 flex items-center justify-center font-bold shadow-xs">
-              <PieChartIcon className="w-5 h-5 stroke-[2.4]" />
+            <div className="w-9 h-9 rounded-control bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 flex items-center justify-center font-bold shadow-xs">
+              <PieChartIcon className="w-5 h-5 stroke-[2]" />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-content tracking-tight">
               {t.title}
             </h1>
           </div>
-          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1.5">
+          <p className="text-xs sm:text-sm text-muted mt-1.5">
             {t.subtitle}
           </p>
         </div>
@@ -404,7 +395,7 @@ export const StatsPage: React.FC = () => {
           <select
             value={selectedMonth}
             onChange={(event) => setSelectedMonth(event.target.value)}
-            className="min-w-52 rounded-xl border border-black/[0.08] dark:border-white/[0.08] bg-white/90 dark:bg-zinc-900/90 px-3.5 py-2.5 text-xs font-semibold text-zinc-800 dark:text-zinc-100 outline-none shadow-xs hover:border-black/[0.15] dark:hover:border-white/[0.15] focus:ring-2 focus:ring-indigo-500/20 transition-all cursor-pointer"
+            className="min-w-52 rounded-control border border-black/[0.08] dark:border-white/[0.08] bg-white/90 dark:bg-zinc-900/90 px-3.5 py-2.5 text-xs font-semibold text-zinc-800 dark:text-zinc-100 outline-none shadow-xs hover:border-black/[0.15] dark:hover:border-white/[0.15] focus:ring-2 focus:ring-indigo-500/20 transition-all cursor-pointer"
           >
             {monthOptions.map((month) => (
               <option key={month.value} value={month.value}>
@@ -442,7 +433,7 @@ export const StatsPage: React.FC = () => {
           icon={TrendingDown}
           color="rose"
           unit="MAD"
-          extraLine={`${t.kpiDailyAvg}: ${formatMAD(kpiData.expense.avgDaily, false, language)}`}
+          extraLine={<>{t.kpiDailyAvg}: <MoneyText amount={kpiData.expense.avgDaily} /></>}
           isPositiveGood={false}
         />
 
@@ -500,11 +491,7 @@ export const StatsPage: React.FC = () => {
           badge={`${kpiData.debts.unsettledCount} ${
             t.unsettled || (isAr ? 'غير مسددة' : 'non réglés')
           }`}
-          extraLine={`${isAr ? 'لك' : language === 'fr' ? 'Créances' : 'Owed'}: ${formatMAD(
-            kpiData.debts.owedToMe,
-            false,
-            language
-          )}`}
+          extraLine={<>{isAr ? 'لك' : language === 'fr' ? 'Créances' : 'Owed'}: <MoneyText amount={kpiData.debts.owedToMe} /></>}
         />
 
         {/* 6. Recurring Burn (Subscriptions) */}
@@ -523,15 +510,19 @@ export const StatsPage: React.FC = () => {
         />
       </div>
 
+      <p className="-mt-3 text-xs leading-relaxed text-muted whitespace-normal break-words">
+        {translations[language].summaryScopes.analytics}
+      </p>
+
       {/* ── SECTION B: SMART FINANCIAL & LIFESTYLE INSIGHTS (3-CARD GRID) ── */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Savings Rate Card */}
-        <div className="p-5 rounded-2xl bg-white/80 dark:bg-zinc-900/60 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 mb-2">
-            <span className="font-semibold text-[11px] uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+        <div className="p-5 rounded-card bg-surface backdrop-blur-xl border border-border-subtle shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between text-xs text-muted mb-2">
+            <span className="font-semibold text-caption uppercase tracking-wider text-muted">
               {t.savingsRate}
             </span>
-            <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+            <div className="w-7 h-7 rounded-control bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
               <Percent className="w-3.5 h-3.5" />
             </div>
           </div>
@@ -539,10 +530,10 @@ export const StatsPage: React.FC = () => {
             <div className="text-2xl sm:text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 tabular-nums">
               {savingsRate}%
             </div>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1.5">
+            <p className="text-xs text-muted mt-1.5">
               {currentSavings > 0 ? (
                 <>
-                  <PrivacyCurrency
+                  <MoneyText
                     amount={currentSavings}
                     className="font-bold text-zinc-900 dark:text-zinc-100"
                   />{' '}
@@ -556,36 +547,36 @@ export const StatsPage: React.FC = () => {
         </div>
 
         {/* Top Spending Category Card */}
-        <div className="p-5 rounded-2xl bg-white/80 dark:bg-zinc-900/60 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 mb-2">
-            <span className="font-semibold text-[11px] uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+        <div className="p-5 rounded-card bg-surface backdrop-blur-xl border border-border-subtle shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between text-xs text-muted mb-2">
+            <span className="font-semibold text-caption uppercase tracking-wider text-muted">
               {t.topSpendingCategory}
             </span>
-            <div className="w-7 h-7 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+            <div className="w-7 h-7 rounded-control bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center">
               <ShoppingBag className="w-3.5 h-3.5" />
             </div>
           </div>
           <div>
             {topCategory ? (
               <>
-                <div className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-white truncate">
+                <div className="text-xl sm:text-2xl font-bold text-content truncate">
                   {(() => {
                     const cat = categories.find((c) => c.id === topCategory.id);
                     return cat ? getCategoryName(cat, language) : topCategory.name;
                   })()}
                 </div>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1.5 flex items-center gap-1.5">
-                  <PrivacyCurrency
+                <p className="text-xs text-muted mt-1.5 flex items-center gap-1.5">
+                  <MoneyText
                     amount={topCategory.amount}
                     className="font-bold text-rose-600 dark:text-rose-400"
                   />
-                  <span className="px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-[10px] font-bold text-zinc-600 dark:text-zinc-300">
+                  <span className="px-2 py-0.5 rounded-control bg-zinc-100 dark:bg-zinc-800 text-caption font-bold text-zinc-600 dark:text-zinc-300">
                     {topCategory.percentage}% {isAr ? 'من المصاريف' : 'du total'}
                   </span>
                 </p>
               </>
             ) : (
-              <div className="text-xs text-zinc-400 mt-2 font-medium">
+              <div className="text-xs text-muted mt-2 font-medium">
                 {t.noExpensesRecorded}
               </div>
             )}
@@ -593,24 +584,24 @@ export const StatsPage: React.FC = () => {
         </div>
 
         {/* Financial Health Status Card */}
-        <div className="p-5 rounded-2xl bg-white/80 dark:bg-zinc-900/60 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 mb-2">
-            <span className="font-semibold text-[11px] uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+        <div className="p-5 rounded-card bg-surface backdrop-blur-xl border border-border-subtle shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between text-xs text-muted mb-2">
+            <span className="font-semibold text-caption uppercase tracking-wider text-muted">
               {t.summary}
             </span>
-            <div className="w-7 h-7 rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center">
+            <div className="w-7 h-7 rounded-control bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center">
               <Award className="w-3.5 h-3.5" />
             </div>
           </div>
           <div>
-            <div className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-white">
+            <div className="text-lg sm:text-xl font-bold text-content">
               {currentIncome >= currentExpense ? t.balancedBudget : t.deficitBudget}
             </div>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1.5">
+            <p className="text-xs text-muted mt-1.5">
               {currentIncome >= currentExpense ? (
                 <>
                   {t.netSurplus}{' '}
-                  <PrivacyCurrency
+                  <MoneyText
                     amount={currentIncome - currentExpense}
                     className="font-bold text-emerald-600 dark:text-emerald-400"
                   />
@@ -618,7 +609,7 @@ export const StatsPage: React.FC = () => {
               ) : (
                 <>
                   {t.netDeficit}{' '}
-                  <PrivacyCurrency
+                  <MoneyText
                     amount={currentExpense - currentIncome}
                     className="font-bold text-rose-600 dark:text-rose-400"
                   />
@@ -632,13 +623,13 @@ export const StatsPage: React.FC = () => {
       {/* ── SECTION C: VISUAL CHARTS & BREAKDOWNS ── */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-stretch">
         {/* 1. Monthly income and expense trend */}
-        <div className="p-5 sm:p-6 h-full rounded-3xl bg-white/80 dark:bg-zinc-900/60 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs space-y-4">
+        <div className="p-5 sm:p-6 h-full rounded-card bg-surface backdrop-blur-xl border border-border-subtle shadow-xs space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white">
+              <h2 className="text-base sm:text-lg font-bold text-content">
                 {t.incomeVsExpense}
               </h2>
-              <p className="text-xs text-zinc-400 mt-0.5">
+              <p className="text-xs text-muted mt-0.5">
                 {t.incomeVsExpenseSubtitle}
               </p>
             </div>
@@ -737,18 +728,18 @@ export const StatsPage: React.FC = () => {
         </div>
 
         {/* 2. Category spending breakdown Donut & Progress list */}
-        <div className="p-5 sm:p-6 h-full rounded-3xl bg-white/80 dark:bg-zinc-900/60 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs space-y-4">
+        <div className="p-5 sm:p-6 h-full rounded-card bg-surface backdrop-blur-xl border border-border-subtle shadow-xs space-y-4">
           <div>
-            <h2 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white">
+            <h2 className="text-base sm:text-lg font-bold text-content">
               {t.categoryBreakdown}
             </h2>
-            <p className="text-xs text-zinc-400 mt-0.5">
+            <p className="text-xs text-muted mt-0.5">
               {t.categoryBreakdownSubtitle}
             </p>
           </div>
 
           {breakdownToDisplay.length === 0 ? (
-            <div className="py-12 text-center text-xs text-zinc-400">
+            <div className="py-12 text-center text-xs text-muted">
               {t.noExpensesRecorded}
             </div>
           ) : (
@@ -797,13 +788,13 @@ export const StatsPage: React.FC = () => {
 
                   {/* Donut Center Totals */}
                   <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
+                    <span className="text-caption font-semibold uppercase tracking-wider text-muted">
                       {t.donutCenterTotal}
                     </span>
-                    <div className="text-base sm:text-lg font-extrabold text-zinc-900 dark:text-white tabular-nums mt-0.5">
-                      <PrivacyCurrency
+                    <div className="text-base sm:text-lg font-extrabold text-content tabular-nums mt-0.5">
+                      <MoneyText
                         amount={totalCategorySpent}
-                        className="font-extrabold text-zinc-900 dark:text-white"
+                        className="font-extrabold text-content"
                       />
                     </div>
                   </div>
@@ -823,17 +814,17 @@ export const StatsPage: React.FC = () => {
                             className="w-2.5 h-2.5 rounded-full shrink-0 shadow-2xs"
                             style={{ backgroundColor: item.color }}
                           />
-                          <span className="font-bold text-zinc-800 dark:text-zinc-200">
+                          <span className="font-bold text-content">
                             {displayName}
                           </span>
                         </div>
 
                         <div className="flex items-center gap-2">
-                          <span className="text-zinc-400 text-[11px] font-semibold tabular-nums">
+                          <span className="text-muted text-caption font-semibold tabular-nums">
                             {item.percentage}%
                           </span>
                           <span className="font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">
-                            <PrivacyCurrency
+                            <MoneyText
                               amount={item.amount}
                               className="font-bold text-zinc-900 dark:text-zinc-100"
                             />
@@ -862,17 +853,17 @@ export const StatsPage: React.FC = () => {
       {/* ── SECTION D: TOP 5 EXPENSES & TOP INFLOWS (EXPANDED HORIZONTAL SPACE - NO TRUNCATION) ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top 5 Expenses (Outflows) - Grouped by Parent Category */}
-        <div className="p-5 sm:p-6 rounded-3xl bg-white/80 dark:bg-zinc-900/60 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs space-y-4">
+        <div className="p-5 sm:p-6 rounded-card bg-surface backdrop-blur-xl border border-border-subtle shadow-xs space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20 flex items-center justify-center shadow-xs">
-                <Flame className="w-4 h-4 stroke-[2.4]" />
+              <div className="w-8 h-8 rounded-control bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20 flex items-center justify-center shadow-xs">
+                <Flame className="w-4 h-4 stroke-[2]" />
               </div>
               <div>
-                <h2 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white">
+                <h2 className="text-base sm:text-lg font-bold text-content">
                   {t.topSpends}
                 </h2>
-                <p className="text-xs text-zinc-400">
+                <p className="text-xs text-muted">
                   {t.topSpendsSubtitle}
                 </p>
               </div>
@@ -880,7 +871,7 @@ export const StatsPage: React.FC = () => {
           </div>
 
           {top5ParentCategories.length === 0 ? (
-            <div className="py-8 text-center text-xs text-zinc-400">
+            <div className="py-8 text-center text-xs text-muted">
               {t.noTopSpends}
             </div>
           ) : (
@@ -902,29 +893,29 @@ export const StatsPage: React.FC = () => {
                 return (
                   <div
                     key={item.id}
-                    className="p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 border border-black/[0.04] dark:border-white/[0.06] flex items-center justify-between gap-3 relative overflow-hidden group hover:border-black/[0.1] dark:hover:border-white/[0.12] transition-colors"
+                    className="p-3.5 rounded-card bg-zinc-50 dark:bg-zinc-800/60 border border-black/[0.04] dark:border-white/[0.06] flex items-center justify-between gap-3 relative overflow-hidden group hover:border-black/[0.1] dark:hover:border-white/[0.12] transition-colors"
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       {/* Rank Badge */}
                       <div
-                        className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 shadow-xs ${rankColor}`}
+                        className={`w-6 h-6 rounded-full flex items-center justify-center text-caption font-black shrink-0 shadow-xs ${rankColor}`}
                       >
                         {idx + 1}
                       </div>
 
                       {/* Category Icon */}
                       <div
-                        className="w-9 h-9 rounded-xl flex items-center justify-center text-white shrink-0 shadow-xs"
-                        style={{ backgroundColor: item.color || cat?.color || '#f43f5e' }}
+                        className="w-9 h-9 rounded-control flex items-center justify-center text-white shrink-0 shadow-xs"
+                        style={{ backgroundColor: getCategoryVisualColor(cat?.id || item.id) }}
                       >
                         <IconComp className="w-4 h-4" />
                       </div>
 
                       <div className="min-w-0">
-                        <h4 className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-white break-words">
+                        <h4 className="text-xs sm:text-sm font-bold text-content break-words">
                           {catName}
                         </h4>
-                        <div className="flex items-center gap-1.5 text-[10px] text-zinc-400 mt-0.5 flex-wrap">
+                        <div className="flex items-center gap-1.5 text-caption text-muted mt-0.5 flex-wrap">
                           <span className="font-semibold text-zinc-600 dark:text-zinc-300 tabular-nums">
                             {item.percentage}% {isAr ? 'من المصاريف' : 'du total'}
                           </span>
@@ -938,7 +929,7 @@ export const StatsPage: React.FC = () => {
 
                     <div className="text-right shrink-0">
                       <span className="text-sm sm:text-base font-extrabold text-rose-600 dark:text-rose-400 tabular-nums">
-                        <PrivacyCurrency
+                        <MoneyText
                           amount={Number(item.amount)}
                           prefix="-"
                           className="font-extrabold text-rose-600 dark:text-rose-400"
@@ -953,17 +944,17 @@ export const StatsPage: React.FC = () => {
         </div>
 
         {/* Top 5 Inflows (Income) */}
-        <div className="p-5 sm:p-6 rounded-3xl bg-white/80 dark:bg-zinc-900/60 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs space-y-4">
+        <div className="p-5 sm:p-6 rounded-card bg-surface backdrop-blur-xl border border-border-subtle shadow-xs space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center justify-center shadow-xs">
-                <ArrowUpRight className="w-4 h-4 stroke-[2.4]" />
+              <div className="w-8 h-8 rounded-control bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center justify-center shadow-xs">
+                <ArrowUpRight className="w-4 h-4 stroke-[2]" />
               </div>
               <div>
-                <h2 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white">
+                <h2 className="text-base sm:text-lg font-bold text-content">
                   {t.topInflows || (isAr ? 'أكبر الواردات' : 'Top Inflows')}
                 </h2>
-                <p className="text-xs text-zinc-400">
+                <p className="text-xs text-muted">
                   {t.topInflowsSubtitle ||
                     (isAr ? 'أكبر المداخيل المسجلة هذا الشهر' : 'Top income transactions')}
                 </p>
@@ -972,7 +963,7 @@ export const StatsPage: React.FC = () => {
           </div>
 
           {top5Incomes.length === 0 ? (
-            <div className="py-8 text-center text-xs text-zinc-400">
+            <div className="py-8 text-center text-xs text-muted">
               {t.noInflows || (isAr ? 'لا توجد واردات مسجلة' : 'No income recorded')}
             </div>
           ) : (
@@ -983,22 +974,22 @@ export const StatsPage: React.FC = () => {
                 return (
                   <div
                     key={tx.id}
-                    className="p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 border border-black/[0.04] dark:border-white/[0.06] flex items-center justify-between gap-3 relative overflow-hidden group hover:border-black/[0.1] dark:hover:border-white/[0.12] transition-colors"
+                    className="p-3.5 rounded-card bg-zinc-50 dark:bg-zinc-800/60 border border-black/[0.04] dark:border-white/[0.06] flex items-center justify-between gap-3 relative overflow-hidden group hover:border-black/[0.1] dark:hover:border-white/[0.12] transition-colors"
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 shadow-xs bg-emerald-600 text-white">
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center text-caption font-black shrink-0 shadow-xs bg-emerald-600 text-white">
                         {idx + 1}
                       </div>
 
-                      <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white shrink-0 shadow-xs bg-emerald-500">
+                      <div className="w-9 h-9 rounded-control flex items-center justify-center text-white shrink-0 shadow-xs bg-emerald-500">
                         <Wallet className="w-4 h-4" />
                       </div>
 
                       <div className="min-w-0">
-                        <h4 className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-white break-words">
+                        <h4 className="text-xs sm:text-sm font-bold text-content break-words">
                           {incomeTitle}
                         </h4>
-                        <div className="flex items-center gap-1.5 text-[10px] text-zinc-400 mt-0.5">
+                        <div className="flex items-center gap-1.5 text-caption text-muted mt-0.5">
                           <span className="tabular-nums">{formatDate(tx.date, language)}</span>
                         </div>
                       </div>
@@ -1006,7 +997,7 @@ export const StatsPage: React.FC = () => {
 
                     <div className="text-right shrink-0">
                       <span className="text-sm sm:text-base font-extrabold text-emerald-600 dark:text-emerald-400 tabular-nums">
-                        <PrivacyCurrency
+                        <MoneyText
                           amount={Number(tx.amount)}
                           prefix="+"
                           className="font-extrabold text-emerald-600 dark:text-emerald-400"
@@ -1022,22 +1013,22 @@ export const StatsPage: React.FC = () => {
       </div>
 
       {/* ── SECTION E: PERSONAL LIFE & PROGRAM DISCIPLINE MATRIX ── */}
-      <div className="p-5 sm:p-6 rounded-3xl bg-white/80 dark:bg-zinc-900/60 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs space-y-6">
+      <div className="p-5 sm:p-6 rounded-card bg-surface backdrop-blur-xl border border-border-subtle shadow-xs space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/20 flex items-center justify-center shadow-xs">
-              <Sparkles className="w-4 h-4 stroke-[2.4]" />
+            <div className="w-8 h-8 rounded-control bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/20 flex items-center justify-center shadow-xs">
+              <Sparkles className="w-4 h-4 stroke-[2]" />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white">
+              <h2 className="text-base sm:text-lg font-bold text-content">
                 {isAr
                   ? 'البرنامج والانضباط الشخصي'
                   : language === 'fr'
                   ? 'Programme & Discipline Personnelle'
                   : 'Personal Life & Discipline Matrix'}
               </h2>
-              <p className="text-xs text-zinc-400">
+              <p className="text-xs text-muted">
                 {isAr
                   ? 'متابعة شاملة ودقيقة لجميع عادات ومهام البرنامج الشهري'
                   : language === 'fr'
@@ -1049,20 +1040,20 @@ export const StatsPage: React.FC = () => {
 
           {/* Quick Stats Pills */}
           <div className="flex items-center gap-2 flex-wrap">
-            <div className="px-3 py-1.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center gap-1.5">
+            <div className="px-3 py-1.5 rounded-control bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5" />
               <span>
                 {isAr ? 'إنجاز اليوم' : 'Today'}: {taskAnalytics.todayCompletedCount}/{taskAnalytics.totalCount} ({taskAnalytics.todayRate}%)
               </span>
             </div>
-            <div className="px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold flex items-center gap-1.5">
+            <div className="px-3 py-1.5 rounded-control bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold flex items-center gap-1.5">
               <Calendar className="w-3.5 h-3.5" />
               <span>
                 {isAr ? 'معدل الشهر' : 'Month'}: {taskAnalytics.monthlyMatrixRate}%
               </span>
             </div>
             {taskAnalytics.overallActiveStreak > 0 && (
-              <div className="px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-bold flex items-center gap-1.5">
+              <div className="px-3 py-1.5 rounded-control bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-bold flex items-center gap-1.5">
                 <Flame className="w-3.5 h-3.5" />
                 <span>
                   {taskAnalytics.overallActiveStreak} {isAr ? 'أيام متتالية' : 'days streak'}
@@ -1075,10 +1066,10 @@ export const StatsPage: React.FC = () => {
         {/* 1. Category Breakdown Badges */}
         <div className="space-y-3">
           <div className="flex items-center justify-between text-xs">
-            <h3 className="font-bold text-zinc-800 dark:text-zinc-200 uppercase tracking-wider text-[11px]">
+            <h3 className="font-bold text-content uppercase tracking-wider text-caption">
               {isAr ? 'الأقسام ومجالات الانضباط' : language === 'fr' ? 'Domaines de discipline' : 'Discipline Domains'}
             </h3>
-            <span className="text-zinc-400 text-[11px]">
+            <span className="text-muted text-caption">
               {taskAnalytics.categoryBreakdown.length} {isAr ? 'مجالات نشطة' : 'domaines actifs'}
             </span>
           </div>
@@ -1090,22 +1081,22 @@ export const StatsPage: React.FC = () => {
               return (
                 <div
                   key={item.category}
-                  className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-black/[0.04] dark:border-white/[0.06] flex flex-col justify-between space-y-3"
+                  className="p-4 rounded-card bg-zinc-50 dark:bg-zinc-800/50 border border-black/[0.04] dark:border-white/[0.06] flex flex-col justify-between space-y-3"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="text-lg">{meta.icon}</span>
-                      <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate">
+                      <span className="text-xs font-bold text-content truncate">
                         {catLabel}
                       </span>
                     </div>
-                    <span className="text-xs font-extrabold text-zinc-900 dark:text-white tabular-nums">
+                    <span className="text-xs font-extrabold text-content tabular-nums">
                       {item.rate}%
                     </span>
                   </div>
 
                   <div className="space-y-1.5">
-                    <div className="flex items-center justify-between text-[11px] text-zinc-500 dark:text-zinc-400">
+                    <div className="flex items-center justify-between text-caption text-muted">
                       <span>{item.tasksCount} {isAr ? 'مهام' : 'tâches'}</span>
                       <span className="tabular-nums">
                         {item.completedCheckmarks}/{item.totalPossible}
@@ -1130,10 +1121,10 @@ export const StatsPage: React.FC = () => {
         {/* 2. Individual Task Performance List */}
         <div className="space-y-3 pt-2">
           <div className="flex items-center justify-between text-xs">
-            <h3 className="font-bold text-zinc-800 dark:text-zinc-200 uppercase tracking-wider text-[11px]">
+            <h3 className="font-bold text-content uppercase tracking-wider text-caption">
               {isAr ? 'أداء المهام اليومية - خلال الشهر' : language === 'fr' ? 'Performance individuelle des tâches' : 'Individual Task Performance'}
             </h3>
-            <span className="text-zinc-400 text-[11px]">
+            <span className="text-muted text-caption">
               {taskAnalytics.taskPerformanceList.length} {isAr ? 'مهام مفعلة' : 'tâches actives'}
             </span>
           </div>
@@ -1145,27 +1136,27 @@ export const StatsPage: React.FC = () => {
               return (
                 <div
                   key={task.id}
-                  className="p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-black/[0.04] dark:border-white/[0.06] space-y-2.5 hover:border-black/[0.1] dark:hover:border-white/[0.12] transition-colors"
+                  className="p-3.5 rounded-card bg-zinc-50 dark:bg-zinc-800/50 border border-black/[0.04] dark:border-white/[0.06] space-y-2.5 hover:border-black/[0.1] dark:hover:border-white/[0.12] transition-colors"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0 flex items-center gap-2">
                       <span className="text-base shrink-0">{meta.icon}</span>
                       <div className="min-w-0">
-                        <h4 className="text-xs font-bold text-zinc-900 dark:text-white truncate">
+                        <h4 className="text-xs font-bold text-content truncate">
                           {task.title}
                         </h4>
-                        <span className={`inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded-md mt-0.5 border ${meta.bg} ${meta.color} ${meta.border}`}>
+                        <span className={`inline-block text-caption font-semibold px-1.5 py-0.5 rounded-control mt-0.5 border ${meta.bg} ${meta.color} ${meta.border}`}>
                           {catLabel}
                         </span>
                       </div>
                     </div>
 
                     <div className="text-right shrink-0">
-                      <span className="text-xs font-extrabold text-zinc-900 dark:text-white tabular-nums">
+                      <span className="text-xs font-extrabold text-content tabular-nums">
                         {task.rate}%
                       </span>
                       {task.streak > 0 && (
-                        <div className="flex items-center justify-end gap-1 text-[10px] text-amber-500 font-bold mt-0.5">
+                        <div className="flex items-center justify-end gap-1 text-caption text-amber-500 font-bold mt-0.5">
                           <Flame className="w-3 h-3 stroke-[2.5]" />
                           <span>{task.streak}d</span>
                         </div>
@@ -1175,7 +1166,7 @@ export const StatsPage: React.FC = () => {
 
                   {/* Progress info and bar */}
                   <div className="space-y-1">
-                    <div className="flex items-center justify-between text-[10px] text-zinc-400">
+                    <div className="flex items-center justify-between text-caption text-muted">
                       <span>{task.isDoneToday ? `✓ ${tCommon.doneToday}` : tCommon.notDoneToday}</span>
                       <span className="tabular-nums">
                         {task.checkedCount} / {taskAnalytics.daysInMonth} {isAr ? 'يوم' : 'j'}

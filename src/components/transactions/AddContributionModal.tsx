@@ -15,6 +15,7 @@ import {
   calculateCategorySavedAmount,
 } from '../../utils/calculations';
 import { getCategoryIcon } from '../../utils/icons';
+import { getCategoryVisualColor } from '../../utils/categoryColor';
 import { translations } from '../../i18n/translations';
 import { getCategoryName, getSubCategoryName } from '../../utils/i18nHelpers';
 import { Target, Sparkles, AlertTriangle, Check } from 'lucide-react';
@@ -176,7 +177,7 @@ export const AddContributionModal: React.FC<AddContributionModalProps> = ({
                     )}
                     <div
                       className="w-8 h-8 rounded-xl flex items-center justify-center text-white shrink-0 shadow-xs"
-                      style={{ backgroundColor: cat.color }}
+                      style={{ backgroundColor: getCategoryVisualColor(cat.id) }}
                     >
                       <IconComp className="w-4 h-4" />
                     </div>

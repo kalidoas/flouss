@@ -11,7 +11,8 @@ import { formatMAD, getCurrentMonthStr } from '../../utils/formatters';
 import { getCategoryIcon } from '../../utils/icons';
 import { translations } from '../../i18n/translations';
 import { getCategoryName } from '../../utils/i18nHelpers';
-import { PrivacyCurrency } from '../common/PrivacyCurrency';
+import { MoneyText } from '../common/PrivacyCurrency';
+import { getCategoryVisualColor } from '../../utils/categoryColor';
 
 interface CategoryCardProps {
   category: Category;
@@ -28,6 +29,7 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({
   const { transactions, hideBalance, language } = useAppStore();
   const tCat = translations[language].categories;
   const IconComp = getCategoryIcon(category.icon);
+  const visualColor = getCategoryVisualColor(category.id);
 
   const currentMonth = getCurrentMonthStr();
   const spentThisMonth = calculateCategorySpentAmount(category.id, transactions, currentMonth);
@@ -40,26 +42,26 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({
       onClick={onClick}
       whileHover={{ y: -4, transition: { type: 'spring', stiffness: 350, damping: 25 } }}
       whileTap={{ scale: 0.98 }}
-      className="group relative cursor-pointer rounded-3xl p-5 bg-white/80 dark:bg-zinc-900/65 backdrop-blur-2xl border border-black/[0.06] dark:border-white/[0.08] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:shadow-[0_8px_30px_0_rgba(0,0,0,0.3)] hover:border-black/[0.12] dark:hover:border-white/[0.18] transition-all flex flex-col justify-between min-h-[170px]"
+      className="group relative cursor-pointer rounded-card p-5 bg-white/80 dark:bg-zinc-900/65 backdrop-blur-2xl border border-black/[0.06] dark:border-white/[0.08] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:shadow-[0_8px_30px_0_rgba(0,0,0,0.3)] hover:border-black/[0.12] dark:hover:border-white/[0.18] transition-all flex flex-col justify-between min-h-[170px]"
     >
       {/* Top: Prominent Apple Frosted Icon & Type Pill */}
       <div className="flex items-start justify-between gap-3">
         <div
-          className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-xs transition-transform group-hover:scale-105"
+          className="w-12 h-12 rounded-card flex items-center justify-center shrink-0 shadow-xs transition-transform group-hover:scale-105"
           style={{
-            backgroundColor: `${category.color}18`,
-            color: category.color,
+            backgroundColor: `${visualColor}18`,
+            color: visualColor,
             border: `1px solid ${category.color}30`,
           }}
         >
-          <IconComp className="w-6 h-6 stroke-[2.2]" />
+          <IconComp className="w-6 h-6 stroke-[2]" />
         </div>
 
         <span
-          className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${
+          className={`text-caption font-semibold px-2.5 py-0.5 rounded-full ${
             category.isGoal
               ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20'
-              : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-black/[0.04] dark:border-white/[0.06]'
+              : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-muted border border-black/[0.04] dark:border-white/[0.06]'
           }`}
         >
           {category.isGoal ? tCat.goalBadge : tCat.expenseBadge}
@@ -78,7 +80,7 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({
         {category.isGoal && goalCalc ? (
           <>
             <div className="flex items-center justify-between text-xs">
-              <PrivacyCurrency
+              <MoneyText
                 amount={goalCalc.savedAmount}
                 className="font-bold text-zinc-900 dark:text-white"
               />
@@ -93,7 +95,7 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({
                 className="h-full rounded-full transition-all duration-500 ease-out"
                 style={{
                   width: `${Math.min(100, Math.max(0, goalCalc.progressPercent))}%`,
-                  backgroundColor: category.color || '#3b82f6',
+                  backgroundColor: visualColor,
                 }}
               />
             </div>
@@ -101,10 +103,10 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({
         ) : (
           <>
             <div className="flex items-center justify-between text-xs">
-              <span className="text-[11px] text-zinc-400 font-medium">
+              <span className="text-caption text-muted font-medium">
                 {tCat.spentThisMonth}
               </span>
-              <PrivacyCurrency
+              <MoneyText
                 amount={spentThisMonth}
                 className="font-bold text-zinc-900 dark:text-white"
               />

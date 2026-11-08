@@ -18,7 +18,7 @@ export interface KpiCardProps {
   changeSuffix?: string;
   count?: number;
   countLabel?: string;
-  extraLine?: string;
+  extraLine?: React.ReactNode;
   subtext?: React.ReactNode;
   footerRight?: React.ReactNode;
   badge?: string;
@@ -167,19 +167,19 @@ export const KpiCard: React.FC<KpiCardProps> = ({
           ) : null}
 
           {changeLabel && (
-            <span className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate">
+            <span className="min-w-0 text-[11px] text-zinc-500 dark:text-zinc-400 whitespace-normal break-words">
               {changeLabel}
             </span>
           )}
 
           {subtext && !changeLabel && (
-            <div className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate">
+            <div className="text-[11px] text-zinc-500 dark:text-zinc-400 whitespace-normal break-words">
               {subtext}
             </div>
           )}
         </div>
 
-        <div className="text-right shrink-0">
+        <div className="w-1/2 min-w-0 text-start">
           {footerRight ? (
             footerRight
           ) : count !== undefined && countLabel ? (
@@ -187,7 +187,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
               {count} {countLabel}
             </span>
           ) : extraLine ? (
-            <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 truncate max-w-[140px] block">
+            <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 whitespace-normal break-words max-w-none block text-start">
               {extraLine}
             </span>
           ) : null}

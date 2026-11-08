@@ -12,6 +12,7 @@ import {
   calculateCategoryBudgetStatus,
 } from '../../utils/calculations';
 import { formatMAD, getCurrentMonthStr } from '../../utils/formatters';
+import { getCategoryVisualColor } from '../../utils/categoryColor';
 import { getCategoryIcon } from '../../utils/icons';
 import { translations } from '../../i18n/translations';
 import { getCategoryName, getSubCategoryName } from '../../utils/i18nHelpers';
@@ -137,7 +138,7 @@ export const CategoryDetailModal: React.FC<CategoryDetailModalProps> = ({
             <div className="flex items-center gap-3.5">
               <div
                 className="w-14 h-14 rounded-3xl flex items-center justify-center text-white shrink-0 shadow-md"
-                style={{ backgroundColor: category.color }}
+                style={{ backgroundColor: getCategoryVisualColor(category.id) }}
               >
                 <IconComp className="w-7 h-7" />
               </div>

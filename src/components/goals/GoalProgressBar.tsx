@@ -1,6 +1,7 @@
 import React from 'react';
 import { Category, GoalCalculation } from '../../types';
 import { formatMAD } from '../../utils/formatters';
+import { getCategoryVisualColor } from '../../utils/categoryColor';
 import { Badge } from '../common/Badge';
 import { useAppStore } from '../../store/useAppStore';
 import { translations } from '../../i18n/translations';
@@ -72,7 +73,7 @@ export const GoalProgressBar: React.FC<GoalProgressBarProps> = ({
           className="h-full rounded-full transition-all duration-500 ease-out"
           style={{
             width: progressPercent === 0 ? '0%' : `${Math.min(100, progressPercent)}%`,
-            backgroundColor: category.color || '#2383e2',
+            backgroundColor: getCategoryVisualColor(category.id),
           }}
         />
       </div>

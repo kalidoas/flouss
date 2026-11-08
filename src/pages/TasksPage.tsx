@@ -140,7 +140,7 @@ const CATEGORY_CONFIG: Record<
     ar: 'أخرى',
     en: 'Other',
     icon: '📌',
-    color: 'text-zinc-600 dark:text-zinc-400',
+    color: 'text-zinc-600 dark:text-muted',
     bg: 'bg-zinc-500/10',
     border: 'border-zinc-500/20',
   },
@@ -660,14 +660,14 @@ export const TasksPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-white tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-bold text-content tracking-tight">
               {tTask.title}
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+            <span className="px-2.5 py-0.5 rounded-full text-caption font-semibold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
               {tTask.badge}
             </span>
           </div>
-          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+          <p className="text-xs sm:text-sm text-muted mt-1">
             {tTask.subtitle}
           </p>
         </div>
@@ -695,11 +695,11 @@ export const TasksPage: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-3xl p-6 sm:p-7 bg-white/80 dark:bg-zinc-900/65 backdrop-blur-2xl border border-black/[0.06] dark:border-white/[0.08] shadow-[0_8px_32px_0_rgba(0,0,0,0.06),inset_0_1px_0_0_rgba(255,255,255,0.8)] dark:shadow-[0_12px_40px_0_rgba(0,0,0,0.45),inset_0_1px_0_0_rgba(255,255,255,0.08)] space-y-5"
+        className="rounded-card p-6 sm:p-7 bg-surface backdrop-blur-2xl border border-border-subtle shadow-[0_8px_32px_0_rgba(0,0,0,0.06),inset_0_1px_0_0_rgba(255,255,255,0.8)] dark:shadow-[0_12px_40px_0_rgba(0,0,0,0.45),inset_0_1px_0_0_rgba(255,255,255,0.08)] space-y-5"
       >
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-2">
-            <div className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400 text-xs font-medium">
+            <div className="flex items-center gap-2 text-muted text-xs font-medium">
               <Sparkles className="w-3.5 h-3.5 text-blue-500" />
               <span>{tTask.todayProgress}</span>
               <span>•</span>
@@ -709,10 +709,10 @@ export const TasksPage: React.FC = () => {
             </div>
 
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl sm:text-5xl font-bold tracking-tight text-zinc-900 dark:text-white tabular-nums">
+              <span className="text-3xl sm:text-5xl font-bold tracking-tight text-content tabular-nums">
                 {dailyStats.percentage}%
               </span>
-              <span className="text-xs text-zinc-500 dark:text-zinc-400 tabular-nums">
+              <span className="text-xs text-muted tabular-nums">
                 ({dailyStats.completed} / {dailyStats.total} {tTask.completedDays})
               </span>
             </div>
@@ -729,53 +729,53 @@ export const TasksPage: React.FC = () => {
           {/* Quick Stats Badges */}
           <div className="flex flex-wrap items-center gap-3">
             {/* Gamification Level Badge */}
-            <div className="bg-gradient-to-r from-amber-500/15 via-indigo-500/10 to-emerald-500/15 border border-amber-500/25 rounded-2xl px-3.5 py-2.5 flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center font-black shadow-xs shrink-0">
+            <div className="bg-gradient-to-r from-amber-500/15 via-indigo-500/10 to-emerald-500/15 border border-amber-500/25 rounded-card px-3.5 py-2.5 flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-control bg-amber-500 text-white flex items-center justify-center font-black shadow-xs shrink-0">
                 <Trophy className="w-4 h-4" />
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block font-bold">
+                  <span className="text-caption text-muted uppercase tracking-wider block font-bold">
                     {tTask.levelTitle || 'Niveau & Points XP'}
                   </span>
-                  <span className="text-[10px] font-black px-1.5 py-0.2 rounded-md bg-amber-500/20 text-amber-700 dark:text-amber-300">
+                  <span className="text-caption font-black px-1.5 py-0.2 rounded-control bg-amber-500/20 text-amber-700 dark:text-amber-300">
                     Lvl {gamificationStats.level}
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className="text-xs font-black text-zinc-900 dark:text-white tabular-nums">
+                  <span className="text-xs font-black text-content tabular-nums">
                     {gamificationStats.totalXP} {tTask.xpPoints}
                   </span>
-                  <span className="text-[10px] text-zinc-400 tabular-nums">
+                  <span className="text-caption text-muted tabular-nums">
                     ({gamificationStats.progressPercent}% {tTask.xpNextLevel})
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="bg-zinc-50 dark:bg-zinc-800/50 border border-black/[0.04] dark:border-white/[0.06] rounded-2xl px-3.5 py-2.5 flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center justify-center font-bold shrink-0">
+            <div className="bg-zinc-50 dark:bg-zinc-800/50 border border-black/[0.04] dark:border-white/[0.06] rounded-card px-3.5 py-2.5 flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-control bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center justify-center font-bold shrink-0">
                 <Flame className="w-4 h-4 fill-amber-500 text-amber-500" />
               </div>
               <div>
-                <span className="text-[10px] text-zinc-400 uppercase tracking-wider block font-medium">
+                <span className="text-caption text-muted uppercase tracking-wider block font-medium">
                   {tTask.streak}
                 </span>
-                <span className="text-xs font-bold text-zinc-900 dark:text-white tabular-nums">
+                <span className="text-xs font-bold text-content tabular-nums">
                   {overallStreak} {tTask.streakDays || 'j 🔥'}
                 </span>
               </div>
             </div>
 
-            <div className="bg-zinc-50 dark:bg-zinc-800/50 border border-black/[0.04] dark:border-white/[0.06] rounded-2xl px-3.5 py-2.5 flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center justify-center font-bold shrink-0">
+            <div className="bg-zinc-50 dark:bg-zinc-800/50 border border-black/[0.04] dark:border-white/[0.06] rounded-card px-3.5 py-2.5 flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-control bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center justify-center font-bold shrink-0">
                 <TrendingUp className="w-4 h-4" />
               </div>
               <div>
-                <span className="text-[10px] text-zinc-400 uppercase tracking-wider block font-medium">
+                <span className="text-caption text-muted uppercase tracking-wider block font-medium">
                   {tTask.monthAverage}
                 </span>
-                <span className="text-xs font-bold text-zinc-900 dark:text-white tabular-nums">
+                <span className="text-xs font-bold text-content tabular-nums">
                   {monthStats.rate}%
                 </span>
               </div>
@@ -785,14 +785,14 @@ export const TasksPage: React.FC = () => {
       </motion.div>
 
       {/* Date Strip Navigator: Apple Segmented Pill Container */}
-      <div className="bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl rounded-2xl p-2.5 sm:p-3 border border-black/[0.06] dark:border-white/[0.08] shadow-xs flex items-center justify-between gap-2 overflow-x-auto">
+      <div className="bg-surface backdrop-blur-xl rounded-card p-2.5 sm:p-3 border border-border-subtle shadow-xs flex items-center justify-between gap-2 overflow-x-auto">
         <button
           onClick={() => {
             const d = new Date(selectedDate);
             d.setDate(d.getDate() - 1);
             setSelectedDate(formatISODate(d));
           }}
-          className="p-2 rounded-xl text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+          className="p-2 rounded-control text-muted hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
           title={language === 'ar' ? 'اليوم السابق' : language === 'en' ? 'Previous day' : 'Jour précédent'}
         >
           <ChevronLeft className="w-5 h-5" />
@@ -805,13 +805,13 @@ export const TasksPage: React.FC = () => {
               <button
                 key={item.dateStr}
                 onClick={() => setSelectedDate(item.dateStr)}
-                className={`flex flex-col items-center justify-center min-w-[54px] py-2 px-2.5 rounded-2xl transition-all ${
+                className={`flex flex-col items-center justify-center min-w-[54px] py-2 px-2.5 rounded-card transition-all ${
                   isSelected
                     ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30 font-bold scale-105'
-                    : 'bg-zinc-50 dark:bg-zinc-800/60 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                    : 'bg-zinc-50 dark:bg-zinc-800/60 text-zinc-600 dark:text-muted hover:bg-zinc-100 dark:hover:bg-zinc-800'
                 }`}
               >
-                <span className="text-[10px] uppercase font-semibold tracking-wider opacity-80">
+                <span className="text-caption uppercase font-semibold tracking-wider opacity-80">
                   {item.dayName}
                 </span>
                 <span className="text-base font-bold mt-0.5 tabular-nums">{item.dayNum}</span>
@@ -833,7 +833,7 @@ export const TasksPage: React.FC = () => {
             d.setDate(d.getDate() + 1);
             setSelectedDate(formatISODate(d));
           }}
-          className="p-2 rounded-xl text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+          className="p-2 rounded-control text-muted hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
           title={language === 'ar' ? 'اليوم التالي' : language === 'en' ? 'Next day' : 'Jour suivant'}
         >
           <ChevronRight className="w-5 h-5" />
@@ -842,7 +842,7 @@ export const TasksPage: React.FC = () => {
         {selectedDate !== todayStr && (
           <button
             onClick={() => setSelectedDate(todayStr)}
-            className="text-xs font-semibold text-blue-600 dark:text-blue-400 px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 transition-colors shrink-0"
+            className="text-xs font-semibold text-blue-600 dark:text-blue-400 px-3 py-1.5 rounded-control bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 transition-colors shrink-0"
           >
             {language === 'ar' ? 'اليوم' : language === 'en' ? 'Today' : "Aujourd'hui"}
           </button>
@@ -850,13 +850,13 @@ export const TasksPage: React.FC = () => {
       </div>
 
       {/* Navigation Sub-Tabs */}
-      <div className="flex items-center gap-2 border-b border-black/[0.04] dark:border-white/[0.05] pb-2">
+      <div className="flex items-center gap-2 border-b border-border-subtle pb-2">
         <button
           onClick={() => setActiveTab('daily')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-control text-xs font-semibold transition-all ${
             activeTab === 'daily'
               ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs'
-              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+              : 'text-zinc-600 dark:text-muted hover:bg-zinc-100 dark:hover:bg-zinc-800'
           }`}
         >
           <ListTodo className="w-4 h-4" />
@@ -865,10 +865,10 @@ export const TasksPage: React.FC = () => {
 
         <button
           onClick={() => setActiveTab('month')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-control text-xs font-semibold transition-all ${
             activeTab === 'month'
               ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs'
-              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+              : 'text-zinc-600 dark:text-muted hover:bg-zinc-100 dark:hover:bg-zinc-800'
           }`}
         >
           <Calendar className="w-4 h-4" />
@@ -877,10 +877,10 @@ export const TasksPage: React.FC = () => {
 
         <button
           onClick={() => setActiveTab('stats')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-control text-xs font-semibold transition-all ${
             activeTab === 'stats'
               ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs'
-              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+              : 'text-zinc-600 dark:text-muted hover:bg-zinc-100 dark:hover:bg-zinc-800'
           }`}
         >
           <BarChart2 className="w-4 h-4" />
@@ -895,7 +895,7 @@ export const TasksPage: React.FC = () => {
           className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors shrink-0 ${
             selectedCategory === 'all'
               ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900'
-              : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200'
+              : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-muted hover:bg-zinc-200'
           }`}
         >
           {tTask.all} (<span className="tabular-nums">{tasks.length}</span>)
@@ -907,7 +907,7 @@ export const TasksPage: React.FC = () => {
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors shrink-0 ${
               selectedCategory === catKey
                 ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900'
-                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200'
+                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-muted hover:bg-zinc-200'
             }`}
           >
             <span>{conf.icon}</span>
@@ -923,11 +923,11 @@ export const TasksPage: React.FC = () => {
           <div className="space-y-3.5">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
+                <h2 className="text-base sm:text-lg font-bold text-content tracking-tight flex items-center gap-2">
                   <LayoutGrid className="w-5 h-5 text-blue-600" />
                   <span>{tTask.title}</span>
                 </h2>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                <p className="text-xs text-muted">
                   {language === 'ar'
                     ? 'اضغط على أي بطاقة لفتح التفاصيل وإضافة المهام الفرعية مباشرة'
                     : language === 'en'
@@ -971,12 +971,12 @@ export const TasksPage: React.FC = () => {
                     onClick={() => setSelectedTrackId(track.id)}
                     whileHover={{ y: -3, transition: { type: 'spring', stiffness: 350, damping: 25 } }}
                     whileTap={{ scale: 0.98 }}
-                    className="group relative cursor-pointer rounded-3xl p-5 bg-white/80 dark:bg-zinc-900/65 backdrop-blur-2xl border border-black/[0.06] dark:border-white/[0.08] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:shadow-[0_8px_30px_0_rgba(0,0,0,0.3)] hover:border-black/[0.14] dark:hover:border-white/[0.18] transition-all flex flex-col justify-between min-h-[175px]"
+                    className="group relative cursor-pointer rounded-card p-5 bg-surface backdrop-blur-2xl border border-border-subtle shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:shadow-[0_8px_30px_0_rgba(0,0,0,0.3)] hover:border-black/[0.14] dark:hover:border-white/[0.18] transition-all flex flex-col justify-between min-h-[175px]"
                   >
                     {/* Top Row: Prominent Frosted Icon & XP Badge */}
                     <div className="flex items-start justify-between gap-3">
                       <div
-                        className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-xs transition-transform group-hover:scale-105 shrink-0"
+                        className="w-12 h-12 rounded-card flex items-center justify-center text-2xl shadow-xs transition-transform group-hover:scale-105 shrink-0"
                         style={{
                           backgroundColor: `${track.color || '#3b82f6'}18`,
                           border: `1px solid ${track.color || '#3b82f6'}30`,
@@ -987,19 +987,19 @@ export const TasksPage: React.FC = () => {
 
                       <div className="flex items-center gap-1.5">
                         {isSalat ? (
-                          <span className="text-[11px] font-black px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25">
+                          <span className="text-caption font-black px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25">
                             +50 XP (Max)
                           </span>
                         ) : isGym ? (
-                          <span className="text-[11px] font-black px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/25">
+                          <span className="text-caption font-black px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/25">
                             +40 XP
                           </span>
                         ) : isStudy ? (
-                          <span className="text-[11px] font-black px-2.5 py-0.5 rounded-full bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/25">
+                          <span className="text-caption font-black px-2.5 py-0.5 rounded-full bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/25">
                             +30 XP
                           </span>
                         ) : (
-                          <span className="text-[11px] font-black px-2.5 py-0.5 rounded-full bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/25">
+                          <span className="text-caption font-black px-2.5 py-0.5 rounded-full bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/25">
                             +10 XP
                           </span>
                         )}
@@ -1008,11 +1008,11 @@ export const TasksPage: React.FC = () => {
 
                     {/* Middle: Title & Quick Preview */}
                     <div className="my-3">
-                      <h3 className="font-bold text-base sm:text-lg text-zinc-900 dark:text-white tracking-tight truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                      <h3 className="font-bold text-base sm:text-lg text-content tracking-tight truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                         {getProgramTrackTitle(track, language)}
                       </h3>
 
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-1">
+                      <p className="text-xs text-muted mt-1 line-clamp-1">
                         {isSalat
                           ? (language === 'ar' ? '5 صلوات يومية (الحد الأقصى للنقاط)' : '5 prières quotidiennes (Score max)')
                           : isGym
@@ -1026,9 +1026,9 @@ export const TasksPage: React.FC = () => {
                     </div>
 
                     {/* Bottom: Fluid Progress Bar & Open Trigger */}
-                    <div className="space-y-2 pt-2 border-t border-black/[0.04] dark:border-white/[0.05]">
+                    <div className="space-y-2 pt-2 border-t border-border-subtle">
                       <div className="flex items-center justify-between text-xs">
-                        <span className="font-semibold text-zinc-600 dark:text-zinc-400 tabular-nums">
+                        <span className="font-semibold text-zinc-600 dark:text-muted tabular-nums">
                           {isSalat ? (
                             `${salatDone} / 5`
                           ) : isGym ? (
@@ -1040,7 +1040,7 @@ export const TasksPage: React.FC = () => {
                           )}
                         </span>
 
-                        <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 flex items-center gap-0.5 opacity-90 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all">
+                        <span className="text-caption font-bold text-blue-600 dark:text-blue-400 flex items-center gap-0.5 opacity-90 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all">
                           <span>{tTask.openProgram}</span>
                           <ChevronRight className="w-3.5 h-3.5" />
                         </span>
@@ -1073,15 +1073,15 @@ export const TasksPage: React.FC = () => {
                 onClick={() => setIsAddTrackModalOpen(true)}
                 whileHover={{ y: -3, transition: { type: 'spring', stiffness: 350, damping: 25 } }}
                 whileTap={{ scale: 0.98 }}
-                className="cursor-pointer rounded-3xl p-5 border-2 border-dashed border-zinc-200 dark:border-zinc-800 hover:border-blue-500/50 dark:hover:border-blue-500/50 transition-all flex flex-col items-center justify-center text-center min-h-[175px] group bg-zinc-50/50 dark:bg-zinc-900/30"
+                className="cursor-pointer rounded-card p-5 border-2 border-dashed border-zinc-200 dark:border-zinc-800 hover:border-blue-500/50 dark:hover:border-blue-500/50 transition-all flex flex-col items-center justify-center text-center min-h-[175px] group bg-zinc-50/50 dark:bg-zinc-900/30"
               >
-                <div className="w-12 h-12 rounded-2xl bg-zinc-100 dark:bg-zinc-800 text-zinc-400 group-hover:text-blue-600 group-hover:bg-blue-50 dark:group-hover:bg-blue-950/40 flex items-center justify-center mb-3 transition-colors">
-                  <Plus className="w-6 h-6 stroke-[2.2]" />
+                <div className="w-12 h-12 rounded-card bg-zinc-100 dark:bg-zinc-800 text-muted group-hover:text-blue-600 group-hover:bg-blue-50 dark:group-hover:bg-blue-950/40 flex items-center justify-center mb-3 transition-colors">
+                  <Plus className="w-6 h-6 stroke-[2]" />
                 </div>
-                <span className="font-bold text-sm text-zinc-700 dark:text-zinc-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                <span className="font-bold text-sm text-content group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                   {tTask.addProgram}
                 </span>
-                <span className="text-[11px] text-zinc-400 mt-0.5">
+                <span className="text-caption text-muted mt-0.5">
                   {tTask.createSkill}
                 </span>
               </motion.div>
@@ -1118,20 +1118,20 @@ export const TasksPage: React.FC = () => {
                   <motion.div
                     key={task.id}
                     whileHover={{ y: -1 }}
-                    className={`group flex items-center justify-between p-4 rounded-2xl border transition-all duration-200 ${
+                    className={`group flex items-center justify-between p-4 rounded-card border transition-all duration-200 ${
                       isCompleted
                         ? 'bg-emerald-500/10 dark:bg-emerald-950/20 border-emerald-500/20 shadow-xs'
-                        : 'bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl border-black/[0.06] dark:border-white/[0.08] shadow-xs hover:border-black/[0.12] dark:hover:border-white/[0.14]'
+                        : 'bg-surface backdrop-blur-xl border-border-subtle shadow-xs hover:border-black/[0.12] dark:hover:border-white/[0.14]'
                     }`}
                   >
                     <div className="flex items-center gap-3.5 min-w-0">
                       {/* The Check Button */}
                       <button
                         onClick={() => handleToggle(task.id)}
-                        className={`w-9 h-9 rounded-xl flex items-center justify-center transition-transform active:scale-90 shrink-0 ${
+                        className={`w-9 h-9 rounded-control flex items-center justify-center transition-transform active:scale-90 shrink-0 ${
                           isCompleted
                             ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
-                            : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 hover:text-zinc-600 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                            : 'bg-zinc-100 dark:bg-zinc-800 text-muted hover:text-zinc-600 hover:bg-zinc-200 dark:hover:bg-zinc-700'
                         }`}
                         aria-label="Toggle task"
                       >
@@ -1148,8 +1148,8 @@ export const TasksPage: React.FC = () => {
                             onClick={() => handleOpenEdit(task)}
                             className={`font-semibold text-sm tracking-tight truncate cursor-pointer hover:underline ${
                               isCompleted
-                                ? 'line-through text-zinc-400 dark:text-zinc-500'
-                                : 'text-zinc-900 dark:text-white'
+                                ? 'line-through text-muted dark:text-zinc-500'
+                                : 'text-content'
                             }`}
                           >
                             {task.title}
@@ -1158,32 +1158,32 @@ export const TasksPage: React.FC = () => {
 
                         <div className="flex items-center gap-2 mt-1">
                           <span
-                            className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${conf.bg} ${conf.color} ${conf.border}`}
+                            className={`inline-flex items-center gap-1 text-caption font-semibold px-2 py-0.5 rounded-full border ${conf.bg} ${conf.color} ${conf.border}`}
                           >
                             <span>{conf.icon}</span>
                             <span>{conf[language] || conf.fr}</span>
                           </span>
 
-                          <span className="text-[11px] text-zinc-400">
+                          <span className="text-caption text-muted">
                             {FREQUENCY_LABELS[task.frequency]?.[language] ||
                               FREQUENCY_LABELS[task.frequency]?.fr}
                           </span>
 
                           {streak > 0 && (
-                            <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded-full tabular-nums">
+                            <span className="inline-flex items-center gap-0.5 text-caption font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded-full tabular-nums">
                               🔥 {streak} j
                             </span>
                           )}
 
                           {task.scheduledTime && (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded-full tabular-nums">
+                            <span className="inline-flex items-center gap-1 text-caption font-semibold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded-full tabular-nums">
                               <Clock className="w-2.5 h-2.5" />
                               <span>{task.scheduledTime}</span>
                               {task.addToGoogleCalendar && <Bell className="w-2.5 h-2.5 text-blue-500 animate-pulse" />}
                             </span>
                           )}
 
-                          <span className="text-[10px] font-bold text-zinc-400 tabular-nums">
+                          <span className="text-caption font-bold text-muted tabular-nums">
                             +15 XP
                           </span>
                         </div>
@@ -1198,14 +1198,14 @@ export const TasksPage: React.FC = () => {
                           setAlarmModalTaskTitle(task.title);
                           setAlarmModalDescription(task.notes || 'Rappel Routine Flouss');
                         }}
-                        className="p-1.5 rounded-lg text-blue-500 hover:text-blue-600 hover:bg-blue-500/10 transition-colors"
+                        className="p-1.5 rounded-control text-blue-500 hover:text-blue-600 hover:bg-blue-500/10 transition-colors"
                         title={tTask.googleCalendarAlarmBtn}
                       >
                         <Bell className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleOpenEdit(task)}
-                        className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                        className="p-1.5 rounded-control text-muted hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                         title={tTask.editTask}
                       >
                         <Edit2 className="w-4 h-4" />
@@ -1215,7 +1215,7 @@ export const TasksPage: React.FC = () => {
                           deleteTask(task.id);
                           deleteCalendarEventByFloussId(task.id).catch(() => {});
                         }}
-                        className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
+                        className="p-1.5 rounded-control text-muted hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
                         title={tCommon.delete}
                       >
                         <Trash2 className="w-4 h-4" />
@@ -1236,12 +1236,12 @@ export const TasksPage: React.FC = () => {
 
       {/* VIEW 2: MONTHLY MATRIX / PROGRAM (TRACK ENTIRE MONTH) */}
       {activeTab === 'month' && (
-        <div className="bg-white/80 dark:bg-zinc-900/65 backdrop-blur-2xl rounded-3xl p-5 border border-black/[0.06] dark:border-white/[0.08] shadow-xs space-y-5">
+        <div className="bg-surface backdrop-blur-2xl rounded-card p-5 border border-border-subtle shadow-xs space-y-5">
           <div className="flex items-center justify-between">
-            <h3 className="font-bold text-base text-zinc-900 dark:text-white flex items-center gap-2 tracking-tight">
+            <h3 className="font-bold text-base text-content flex items-center gap-2 tracking-tight">
               <Calendar className="w-5 h-5 text-blue-600" />
               <span>{tTask.matrixTitle}</span>
-              <span className="text-xs font-medium text-zinc-400">({currentMonthStr})</span>
+              <span className="text-xs font-medium text-muted">({currentMonthStr})</span>
             </h3>
             <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-full tabular-nums">
               {monthDaysCount} {tTask.daysInMonth}
@@ -1251,7 +1251,7 @@ export const TasksPage: React.FC = () => {
           <div className="overflow-x-auto pb-2 scrollbar-thin scroll-smooth">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-black/[0.05] dark:border-white/[0.06] text-zinc-400 font-semibold">
+                <tr className="border-b border-border-subtle text-muted font-semibold">
                   <th className={`sticky ${language === 'ar' ? 'right-0' : 'left-0'} z-20 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md py-2.5 px-3 min-w-[140px] max-w-[180px] shadow-[1px_0_0_0_rgba(0,0,0,0.06)] dark:shadow-[1px_0_0_0_rgba(255,255,255,0.08)]`}>
                     {tTask.taskRoutine}
                   </th>
@@ -1284,7 +1284,7 @@ export const TasksPage: React.FC = () => {
                       key={task.id}
                       className="hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors"
                     >
-                      <td className={`sticky ${language === 'ar' ? 'right-0' : 'left-0'} z-10 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md py-3 px-3 font-semibold text-zinc-800 dark:text-zinc-200 truncate max-w-[180px] min-w-[140px] shadow-[1px_0_0_0_rgba(0,0,0,0.06)] dark:shadow-[1px_0_0_0_rgba(255,255,255,0.08)]`}>
+                      <td className={`sticky ${language === 'ar' ? 'right-0' : 'left-0'} z-10 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md py-3 px-3 font-semibold text-content truncate max-w-[180px] min-w-[140px] shadow-[1px_0_0_0_rgba(0,0,0,0.06)] dark:shadow-[1px_0_0_0_rgba(255,255,255,0.08)]`}>
                         {task.title}
                       </td>
 
@@ -1297,9 +1297,9 @@ export const TasksPage: React.FC = () => {
                           <td key={day} className="text-center py-2 px-0.5">
                             <button
                               onClick={() => toggleTaskCompletion(task.id, dayStr)}
-                              className={`w-5 h-5 rounded-md mx-auto flex items-center justify-center transition-all ${
+                              className={`w-5 h-5 rounded-control mx-auto flex items-center justify-center transition-all ${
                                 isDone
-                                  ? 'bg-blue-600 text-white font-bold text-[10px]'
+                                  ? 'bg-blue-600 text-white font-bold text-caption'
                                   : 'bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 text-transparent'
                               }`}
                               title={`${task.title} - ${dayStr}`}
@@ -1325,8 +1325,8 @@ export const TasksPage: React.FC = () => {
       {/* VIEW 3: STATS & EVALUATIONS */}
       {activeTab === 'stats' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-white/80 dark:bg-zinc-900/65 backdrop-blur-2xl rounded-3xl p-5 border border-black/[0.06] dark:border-white/[0.08] shadow-xs space-y-4">
-            <h3 className="font-bold text-base text-zinc-900 dark:text-white flex items-center gap-2 tracking-tight">
+          <div className="bg-surface backdrop-blur-2xl rounded-card p-5 border border-border-subtle shadow-xs space-y-4">
+            <h3 className="font-bold text-base text-content flex items-center gap-2 tracking-tight">
               <Award className="w-5 h-5 text-amber-500" />
               <span>{tTask.monthAverage}</span>
             </h3>
@@ -1341,7 +1341,7 @@ export const TasksPage: React.FC = () => {
                 return (
                   <div key={task.id} className="space-y-1.5">
                     <div className="flex items-center justify-between text-xs font-semibold">
-                      <span className="text-zinc-700 dark:text-zinc-300">{task.title}</span>
+                      <span className="text-content">{task.title}</span>
                       <span className="text-emerald-600 dark:text-emerald-400 tabular-nums">
                         {completedInMonth} / {monthDaysCount} j ({percentage}%)
                       </span>
@@ -1358,17 +1358,17 @@ export const TasksPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white/80 dark:bg-zinc-900/65 backdrop-blur-2xl rounded-3xl p-5 border border-black/[0.06] dark:border-white/[0.08] shadow-xs space-y-4">
-            <h3 className="font-bold text-base text-zinc-900 dark:text-white flex items-center gap-2 tracking-tight">
+          <div className="bg-surface backdrop-blur-2xl rounded-card p-5 border border-border-subtle shadow-xs space-y-4">
+            <h3 className="font-bold text-base text-content flex items-center gap-2 tracking-tight">
               <Zap className="w-5 h-5 text-amber-500" />
               <span>{tTask.consistencyTips}</span>
             </h3>
-            <div className="space-y-3 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
-              <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-200">
+            <div className="space-y-3 text-xs text-zinc-600 dark:text-muted leading-relaxed">
+              <div className="p-4 rounded-card bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-200">
                 <span className="font-bold block mb-1">🔥 {tTask.consistencyTips}</span>
                 {tTask.rule21Days}
               </div>
-              <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-900 dark:text-emerald-200">
+              <div className="p-4 rounded-card bg-emerald-500/10 border border-emerald-500/20 text-emerald-900 dark:text-emerald-200">
                 <span className="font-bold block mb-1">⚡ {tTask.streak}</span>
                 {tTask.ruleNeverBreak}
               </div>
@@ -1386,7 +1386,7 @@ export const TasksPage: React.FC = () => {
       >
         <form onSubmit={handleSaveTask} className="space-y-4 pt-2">
           <div>
-            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+            <label className="block text-xs font-bold text-content mb-1.5">
               {tTask.taskTitleLabel} *
             </label>
             <input
@@ -1395,19 +1395,19 @@ export const TasksPage: React.FC = () => {
               value={taskTitle}
               onChange={(e) => setTaskTitle(e.target.value)}
               placeholder={tTask.taskTitlePlaceholder}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
+              className="w-full px-3.5 py-2.5 rounded-control bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-content font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+              <label className="block text-xs font-bold text-content mb-1.5">
                 {tTask.categoryLabel}
               </label>
               <select
                 value={taskCategory}
                 onChange={(e) => setTaskCategory(e.target.value as TaskCategory)}
-                className="w-full px-3 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-3 py-2 rounded-control bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-content text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
               >
                 {Object.entries(CATEGORY_CONFIG).map(([k, c]) => (
                   <option key={k} value={k}>
@@ -1418,13 +1418,13 @@ export const TasksPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+              <label className="block text-xs font-bold text-content mb-1.5">
                 {tTask.frequencyLabel}
               </label>
               <select
                 value={taskFrequency}
                 onChange={(e) => setTaskFrequency(e.target.value as TaskFrequency)}
-                className="w-full px-3 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-3 py-2 rounded-control bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-content text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
               >
                 {Object.entries(FREQUENCY_LABELS).map(([k, v]) => (
                   <option key={k} value={k}>
@@ -1436,7 +1436,7 @@ export const TasksPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+            <label className="block text-xs font-bold text-content mb-1.5">
               {tTask.notesLabel}
             </label>
             <textarea
@@ -1444,39 +1444,39 @@ export const TasksPage: React.FC = () => {
               value={taskNotes}
               onChange={(e) => setTaskNotes(e.target.value)}
               placeholder={tTask.notesPlaceholder}
-              className="w-full px-3.5 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-3.5 py-2 rounded-control bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-content text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
 
           {/* Date & Time Picker */}
-          <div className="p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200/70 dark:border-zinc-700/60 space-y-3">
-            <div className="flex items-center gap-2 text-xs font-bold text-zinc-900 dark:text-white">
+          <div className="p-3.5 rounded-card bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200/70 dark:border-zinc-700/60 space-y-3">
+            <div className="flex items-center gap-2 text-xs font-bold text-content">
               <Clock className="w-4 h-4 text-blue-500" />
               <span>{tTask.dateTimeLabel}</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               <div>
-                <label className="block text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 mb-1">
+                <label className="block text-caption font-semibold text-muted mb-1">
                   {tTask.datePickerLabel}
                 </label>
                 <input
                   type="date"
                   value={taskScheduledDate}
                   onChange={(e) => setTaskScheduledDate(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 rounded-control bg-surface border border-zinc-200 dark:border-zinc-700 text-content text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 mb-1">
+                <label className="block text-caption font-semibold text-muted mb-1">
                   {tTask.timePickerLabel}
                 </label>
                 <input
                   type="time"
                   value={taskScheduledTime}
                   onChange={(e) => setTaskScheduledTime(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 rounded-control bg-surface border border-zinc-200 dark:border-zinc-700 text-content text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -1489,7 +1489,7 @@ export const TasksPage: React.FC = () => {
                   setAlarmModalTaskTitle(taskTitle || 'Tâche Routine');
                   setAlarmModalDescription(taskNotes || 'Rappel Flouss');
                 }}
-                className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98]"
+                className="w-full py-2.5 px-4 rounded-control bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98]"
               >
                 <Bell className="w-4 h-4" />
                 <span>{tTask.googleCalendarAlarmBtn}</span>
@@ -1498,14 +1498,14 @@ export const TasksPage: React.FC = () => {
               {/* Google Calendar Native Phone Alarm Toggle */}
               <div className="flex items-start justify-between gap-3 pt-1">
                 <div className="flex items-start gap-2.5">
-                  <div className="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-7 h-7 rounded-control bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 mt-0.5">
                     <Bell className="w-3.5 h-3.5" />
                   </div>
                   <div>
-                    <label htmlFor="calendar-alarm-toggle" className="text-xs font-bold text-zinc-900 dark:text-white cursor-pointer select-none">
+                    <label htmlFor="calendar-alarm-toggle" className="text-xs font-bold text-content cursor-pointer select-none">
                       {tTask.googleCalendarToggle}
                     </label>
-                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5 leading-relaxed">
+                    <p className="text-caption text-muted mt-0.5 leading-relaxed">
                       {tTask.googleCalendarDesc}
                     </p>
                   </div>
@@ -1562,16 +1562,16 @@ export const TasksPage: React.FC = () => {
             {/* 1. SALAT TRACK DETAIL */}
             {activeTrack.type === 'salat' && (
               <div className="space-y-4">
-                <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between gap-3">
+                <div className="p-4 rounded-card bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-bold text-lg shadow-xs">
+                    <div className="w-10 h-10 rounded-control bg-emerald-500 text-white flex items-center justify-center font-bold text-lg shadow-xs">
                       🕌
                     </div>
                     <div>
-                      <h4 className="font-bold text-sm text-zinc-900 dark:text-white">
+                      <h4 className="font-bold text-sm text-content">
                         {tTask.salatSection || 'Prières (Salat)'}
                       </h4>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                      <p className="text-xs text-muted">
                         {tTask.salatMaxReward || 'Score maximal : +50 XP / prière'}
                       </p>
                     </div>
@@ -1580,7 +1580,7 @@ export const TasksPage: React.FC = () => {
                     <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 block tabular-nums">
                       {selectedDatePrayers.length} / 5
                     </span>
-                    <span className="text-[10px] font-bold text-zinc-400">
+                    <span className="text-caption font-bold text-muted">
                       +{selectedDatePrayers.length * 50} XP
                     </span>
                   </div>
@@ -1603,25 +1603,25 @@ export const TasksPage: React.FC = () => {
                         key={prayer.key}
                         type="button"
                         onClick={() => handleToggleSalat(prayer.key)}
-                        className={`flex flex-col items-center justify-center p-3.5 rounded-2xl border transition-all duration-200 active:scale-95 ${
+                        className={`flex flex-col items-center justify-center p-3.5 rounded-card border transition-all duration-200 active:scale-95 ${
                           isCompleted
                             ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 shadow-xs'
-                            : 'bg-zinc-50 dark:bg-zinc-800/60 text-zinc-600 dark:text-zinc-400 border-zinc-200/60 dark:border-zinc-700/60 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                            : 'bg-zinc-50 dark:bg-zinc-800/60 text-zinc-600 dark:text-muted border-zinc-200/60 dark:border-zinc-700/60 hover:bg-zinc-100 dark:hover:bg-zinc-800'
                         }`}
                       >
                         <div
-                          className={`w-9 h-9 rounded-xl flex items-center justify-center mb-1.5 transition-colors ${
+                          className={`w-9 h-9 rounded-control flex items-center justify-center mb-1.5 transition-colors ${
                             isCompleted
                               ? 'bg-emerald-600 text-white shadow-xs'
-                              : 'bg-zinc-200/80 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400'
+                              : 'bg-zinc-200/80 dark:bg-zinc-700 text-muted'
                           }`}
                         >
                           {isCompleted ? <Check className="w-4 h-4 stroke-[2.5]" /> : <Icon className="w-4 h-4" />}
                         </div>
                         <span className="text-xs font-bold tracking-tight">{prayer.label}</span>
                         <span
-                          className={`text-[10px] mt-0.5 font-bold tabular-nums ${
-                            isCompleted ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-400'
+                          className={`text-caption mt-0.5 font-bold tabular-nums ${
+                            isCompleted ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted'
                           }`}
                         >
                           +50 XP
@@ -1636,7 +1636,7 @@ export const TasksPage: React.FC = () => {
                   <motion.div
                     initial={{ opacity: 0, scale: 0.98 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-500/20 via-teal-500/15 to-emerald-500/20 border border-emerald-500/30 flex items-center justify-between gap-3 text-xs"
+                    className="p-3.5 rounded-card bg-gradient-to-r from-emerald-500/20 via-teal-500/15 to-emerald-500/20 border border-emerald-500/30 flex items-center justify-between gap-3 text-xs"
                   >
                     <div className="flex items-center gap-2">
                       <span className="text-base">✨</span>
@@ -1644,7 +1644,7 @@ export const TasksPage: React.FC = () => {
                         {tTask.salatCompletedAll}
                       </span>
                     </div>
-                    <span className="font-black text-emerald-600 dark:text-emerald-400 bg-white dark:bg-zinc-900 px-2 py-0.5 rounded-lg shadow-2xs">
+                    <span className="font-black text-emerald-600 dark:text-emerald-400 bg-surface px-2 py-0.5 rounded-control shadow-2xs">
                       +250 XP
                     </span>
                   </motion.div>
@@ -1655,7 +1655,7 @@ export const TasksPage: React.FC = () => {
             {/* 2. SUBTASKS TRACKS DETAIL (CODING, ENGLISH, CUSTOM) */}
             {(activeTrack.type === 'coding' || activeTrack.type === 'english' || activeTrack.type === 'custom') && (
               <div className="space-y-4">
-                <div className="p-3.5 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-between gap-3 text-xs">
+                <div className="p-3.5 rounded-card bg-blue-500/10 border border-blue-500/20 flex items-center justify-between gap-3 text-xs">
                   <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300 font-semibold">
                     <Sparkles className="w-4 h-4 text-blue-500 shrink-0" />
                     <span>{tTask.dynamicPointsNotice?.replace('{points}', '10') || '+10 XP par tâche réalisée'}</span>
@@ -1678,7 +1678,7 @@ export const TasksPage: React.FC = () => {
                         ? (language === 'ar' ? 'مثال: Listening, Grammar, Vocabulary...' : 'ex : Listening, Grammar, Speaking...')
                         : (tTask.subTaskPlaceholder || 'ex : Nouvelle sous-tâche...')
                     }
-                    className="flex-1 px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 px-3.5 py-2.5 rounded-control bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-content text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <Button type="submit" variant="primary" size="sm" icon={<Plus className="w-3.5 h-3.5" />}>
                     <span>{tTask.addSubTask || 'Ajouter'}</span>
@@ -1688,7 +1688,7 @@ export const TasksPage: React.FC = () => {
                 {/* Subtasks List */}
                 <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
                   {(activeTrack.subtasks || []).length === 0 ? (
-                    <p className="text-xs text-zinc-400 italic py-4 text-center">
+                    <p className="text-xs text-muted italic py-4 text-center">
                       {tTask.noSubtasks || 'Aucune sous-tâche. Ajoutez-en une ci-dessus !'}
                     </p>
                   ) : (
@@ -1697,10 +1697,10 @@ export const TasksPage: React.FC = () => {
                       return (
                         <div
                           key={sub.id}
-                          className={`flex items-center justify-between p-3 rounded-2xl border transition-all ${
+                          className={`flex items-center justify-between p-3 rounded-card border transition-all ${
                             isDone
-                              ? 'bg-blue-500/10 border-blue-500/25 text-zinc-400 dark:text-zinc-500'
-                              : 'bg-zinc-50 dark:bg-zinc-800/60 border-zinc-200/60 dark:border-zinc-700/60 text-zinc-800 dark:text-zinc-200'
+                              ? 'bg-blue-500/10 border-blue-500/25 text-muted dark:text-zinc-500'
+                              : 'bg-zinc-50 dark:bg-zinc-800/60 border-zinc-200/60 dark:border-zinc-700/60 text-content'
                           }`}
                         >
                           <div
@@ -1720,15 +1720,15 @@ export const TasksPage: React.FC = () => {
                                 e.stopPropagation();
                                 handleToggleSubTask(activeTrack.id, sub.id);
                               }}
-                              className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all shrink-0 ${
+                              className={`w-6 h-6 rounded-control flex items-center justify-center transition-all shrink-0 ${
                                 isDone
                                   ? 'bg-blue-600 text-white shadow-xs'
-                                  : 'bg-zinc-200 dark:bg-zinc-700 text-transparent hover:text-zinc-400'
+                                  : 'bg-zinc-200 dark:bg-zinc-700 text-transparent hover:text-muted'
                               }`}
                             >
                               <Check className="w-3.5 h-3.5 stroke-[2.5]" />
                             </button>
-                            <span className={`text-xs font-bold truncate hover:underline ${isDone ? 'line-through text-zinc-400' : ''}`}>
+                            <span className={`text-xs font-bold truncate hover:underline ${isDone ? 'line-through text-muted' : ''}`}>
                               {sub.title}
                             </span>
                           </div>
@@ -1740,7 +1740,7 @@ export const TasksPage: React.FC = () => {
                                 setAlarmModalTaskTitle(`${getProgramTrackTitle(activeTrack, language)}: ${sub.title}`);
                                 setAlarmModalDescription(`Rappel pour ${sub.title}`);
                               }}
-                              className="p-1 rounded-lg text-blue-500 hover:text-blue-600 hover:bg-blue-500/10 transition-colors"
+                              className="p-1 rounded-control text-blue-500 hover:text-blue-600 hover:bg-blue-500/10 transition-colors"
                               title={tTask.googleCalendarAlarmBtn}
                             >
                               <Bell className="w-3.5 h-3.5" />
@@ -1755,18 +1755,18 @@ export const TasksPage: React.FC = () => {
                                   points: sub.points || 10,
                                 })
                               }
-                              className="p-1 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
+                              className="p-1 rounded-control text-muted hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
                               title="Modifier"
                             >
                               <Edit2 className="w-3.5 h-3.5" />
                             </button>
-                            <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 tabular-nums">
+                            <span className="text-caption font-bold text-blue-600 dark:text-blue-400 tabular-nums">
                               +{sub.points || 10} XP
                             </span>
                             <button
                               type="button"
                               onClick={() => deleteProgramSubTask(activeTrack.id, sub.id)}
-                              className="p-1 rounded-lg text-zinc-400 hover:text-rose-500 transition-colors"
+                              className="p-1 rounded-control text-muted hover:text-rose-500 transition-colors"
                               title={tCommon.delete}
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -1786,7 +1786,7 @@ export const TasksPage: React.FC = () => {
                         deleteProgramTrack(activeTrack.id);
                         setSelectedTrackId(null);
                       }}
-                      className="text-xs text-rose-500 hover:text-rose-600 font-semibold flex items-center gap-1.5 p-1 rounded-lg hover:bg-rose-500/10 transition-colors"
+                      className="text-xs text-rose-500 hover:text-rose-600 font-semibold flex items-center gap-1.5 p-1 rounded-control hover:bg-rose-500/10 transition-colors"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                       <span>{language === 'ar' ? 'حذف هذا البرنامج' : 'Supprimer ce programme'}</span>
@@ -1799,7 +1799,7 @@ export const TasksPage: React.FC = () => {
             {/* 3. GYM TRACK DETAIL */}
             {activeTrack.type === 'gym' && (
               <div className="space-y-4">
-                <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-between gap-3 text-xs">
+                <div className="p-3.5 rounded-card bg-rose-500/10 border border-rose-500/20 flex items-center justify-between gap-3 text-xs">
                   <div className="flex items-center gap-2 text-rose-700 dark:text-rose-300 font-semibold">
                     <Dumbbell className="w-4 h-4 text-rose-500 shrink-0" />
                     <span>+40 XP / {language === 'ar' ? 'حصة تدريبية' : 'séance validée'}</span>
@@ -1810,13 +1810,13 @@ export const TasksPage: React.FC = () => {
                 </div>
 
                 {/* Form */}
-                <form onSubmit={handleAddGym} className="p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-700/60 space-y-3.5">
+                <form onSubmit={handleAddGym} className="p-3.5 rounded-card bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-700/60 space-y-3.5">
                   {/* 1-Click Apple-style Muscle Group Toggle Chips */}
                   <div>
-                    <label className="block text-[11px] font-bold text-zinc-600 dark:text-zinc-300 mb-1.5 flex items-center justify-between">
+                    <label className="block text-caption font-bold text-zinc-600 dark:text-zinc-300 mb-1.5 flex items-center justify-between">
                       <span>{tTask.muscleGroups} *</span>
                       {selectedGymMuscles.length > 0 && (
-                        <span className="text-[10px] text-rose-600 dark:text-rose-400 font-semibold tabular-nums">
+                        <span className="text-caption text-rose-600 dark:text-rose-400 font-semibold tabular-nums">
                           {selectedGymMuscles.length} {language === 'ar' ? 'محددة' : 'sélectionné(s)'}
                         </span>
                       )}
@@ -1832,10 +1832,10 @@ export const TasksPage: React.FC = () => {
                             key={chip}
                             type="button"
                             onClick={() => toggleMuscleChip(chip)}
-                            className={`px-2.5 py-2 rounded-xl text-xs font-semibold transition-all border flex items-center justify-center gap-1.5 ${
+                            className={`px-2.5 py-2 rounded-control text-xs font-semibold transition-all border flex items-center justify-center gap-1.5 ${
                               isSelected
                                 ? 'bg-rose-600 text-white border-rose-600 shadow-xs scale-[1.02]'
-                                : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                                : 'bg-surface text-content border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800'
                             }`}
                           >
                             <span>{chipMeta?.icon || '💪'}</span>
@@ -1849,7 +1849,7 @@ export const TasksPage: React.FC = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {/* Optional Exercise Details Textarea */}
                     <div>
-                      <label className="block text-[11px] font-bold text-zinc-600 dark:text-zinc-300 mb-1">
+                      <label className="block text-caption font-bold text-zinc-600 dark:text-zinc-300 mb-1">
                         {tTask.exercisesLabel} ({language === 'ar' ? 'اختياري' : 'optionnel'})
                       </label>
                       <textarea
@@ -1857,13 +1857,13 @@ export const TasksPage: React.FC = () => {
                         value={gymExercises}
                         onChange={(e) => setGymExercises(e.target.value)}
                         placeholder={tTask.exercisesPlaceholder || (language === 'ar' ? 'تفاصيل التمارين والأوزان...' : 'Détails des exercices, séries et charges...')}
-                        className="w-full px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-rose-500"
+                        className="w-full px-3 py-2 rounded-control bg-surface border border-zinc-200 dark:border-zinc-700 text-content text-xs font-medium focus:outline-none focus:ring-2 focus:ring-rose-500"
                       />
                     </div>
 
                     {/* Tomorrow's Plan */}
                     <div>
-                      <label className="block text-[11px] font-bold text-zinc-600 dark:text-zinc-300 mb-1">
+                      <label className="block text-caption font-bold text-zinc-600 dark:text-zinc-300 mb-1">
                         {tTask.tomorrowPlan} ({language === 'ar' ? 'اختياري' : 'optionnel'})
                       </label>
                       <textarea
@@ -1871,7 +1871,7 @@ export const TasksPage: React.FC = () => {
                         value={gymTomorrowPlan}
                         onChange={(e) => setGymTomorrowPlan(e.target.value)}
                         placeholder={tTask.tomorrowPlaceholder || (language === 'ar' ? 'خطة تمرين الغد...' : 'Programme pour demain...')}
-                        className="w-full px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-rose-500"
+                        className="w-full px-3 py-2 rounded-control bg-surface border border-zinc-200 dark:border-zinc-700 text-content text-xs font-medium focus:outline-none focus:ring-2 focus:ring-rose-500"
                       />
                     </div>
                   </div>
@@ -1886,31 +1886,31 @@ export const TasksPage: React.FC = () => {
                 {/* Workout History */}
                 <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                   {(gymLogs ?? []).length === 0 ? (
-                    <p className="text-xs text-zinc-400 italic py-2 text-center">
+                    <p className="text-xs text-muted italic py-2 text-center">
                       {tTask.noWorkoutsYet}
                     </p>
                   ) : (
                     (gymLogs ?? []).map((log) => (
                       <div
                         key={log.id}
-                        className="p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200/60 dark:border-zinc-700/60 text-xs flex items-center justify-between gap-3"
+                        className="p-2.5 rounded-control bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200/60 dark:border-zinc-700/60 text-xs flex items-center justify-between gap-3"
                       >
                         <div className="space-y-0.5 min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-zinc-900 dark:text-white truncate">
+                            <span className="font-bold text-content truncate">
                               {log.muscleGroups}
                             </span>
-                            <span className="text-[10px] text-zinc-400 font-mono shrink-0">
+                            <span className="text-caption text-muted font-mono shrink-0">
                               {log.date}
                             </span>
                           </div>
                           {log.exercises && (
-                            <p className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate">
+                            <p className="text-caption text-muted truncate">
                               {log.exercises}
                             </p>
                           )}
                           {log.tomorrowPlan && (
-                            <p className="text-[10px] text-rose-600 dark:text-rose-400 font-medium">
+                            <p className="text-caption text-rose-600 dark:text-rose-400 font-medium">
                               ➜ {log.tomorrowPlan}
                             </p>
                           )}
@@ -1923,18 +1923,18 @@ export const TasksPage: React.FC = () => {
                               setAlarmModalTaskTitle(`Séance Gym: ${log.muscleGroups}`);
                               setAlarmModalDescription(log.tomorrowPlan ? `Plan: ${log.tomorrowPlan}` : 'Séance de musculation');
                             }}
-                            className="p-1 rounded-lg text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
+                            className="p-1 rounded-control text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
                             title={language === 'ar' ? 'تذكير عبر تقويم جوجل' : 'Ajouter une alarme Google Calendar'}
                           >
                             <Bell className="w-3.5 h-3.5" />
                           </button>
-                          <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400">
+                          <span className="text-caption font-bold text-rose-600 dark:text-rose-400">
                             +40 XP
                           </span>
                           <button
                             type="button"
                             onClick={() => deleteGymLog(log.id)}
-                            className="p-1 rounded-lg text-zinc-400 hover:text-rose-500 transition-colors"
+                            className="p-1 rounded-control text-muted hover:text-rose-500 transition-colors"
                             title={tCommon.delete}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -1950,7 +1950,7 @@ export const TasksPage: React.FC = () => {
             {/* 4. STUDY TRACK DETAIL */}
             {activeTrack.type === 'study' && (
               <div className="space-y-4">
-                <div className="p-3.5 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-between gap-3 text-xs">
+                <div className="p-3.5 rounded-card bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-between gap-3 text-xs">
                   <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300 font-semibold">
                     <BookOpen className="w-4 h-4 text-indigo-500 shrink-0" />
                     <span>+30 XP / {language === 'ar' ? 'وحدة دراسية' : 'module complété'}</span>
@@ -1962,9 +1962,9 @@ export const TasksPage: React.FC = () => {
 
                 {/* 1-Click Apple-style Economics & Management S3 Modules Chips */}
                 <div>
-                  <label className="block text-[11px] font-bold text-zinc-600 dark:text-zinc-300 mb-1.5 flex items-center justify-between">
+                  <label className="block text-caption font-bold text-zinc-600 dark:text-zinc-300 mb-1.5 flex items-center justify-between">
                     <span>{language === 'ar' ? 'وحدات الاقتصاد والتدبير (S3)' : language === 'en' ? 'Economics & Management (S3) Modules' : 'Modules Économie & Gestion (S3)'}</span>
-                    <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold">{language === 'ar' ? 'إضافة سريعة بنقرة واحدة' : 'Ajout rapide 1-clic'}</span>
+                    <span className="text-caption text-indigo-600 dark:text-indigo-400 font-semibold">{language === 'ar' ? 'إضافة سريعة بنقرة واحدة' : 'Ajout rapide 1-clic'}</span>
                   </label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 mb-3">
                     {ECONOMICS_S3_MODULES.map((modName) => {
@@ -1976,10 +1976,10 @@ export const TasksPage: React.FC = () => {
                           key={modName}
                           type="button"
                           onClick={() => handleQuickAddEconomicsModule(modName)}
-                          className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all text-left rtl:text-right border ${
+                          className={`px-2.5 py-1.5 rounded-control text-xs font-semibold flex items-center gap-1.5 transition-all text-left rtl:text-right border ${
                             isAlreadyAdded
                               ? 'bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-500/30 shadow-2xs'
-                              : 'bg-white dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 hover:border-indigo-300'
+                              : 'bg-white dark:bg-zinc-800/80 text-content border-zinc-200 dark:border-zinc-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 hover:border-indigo-300'
                           }`}
                         >
                           <span className="text-indigo-500 font-bold shrink-0">{isAlreadyAdded ? '✓' : '+'}</span>
@@ -1997,14 +1997,14 @@ export const TasksPage: React.FC = () => {
                     value={moduleTitle}
                     onChange={(e) => setModuleTitle(e.target.value)}
                     placeholder={tTask.modulePlaceholder || 'Nom du module ou matière...'}
-                    className="flex-1 px-3.5 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="flex-1 px-3.5 py-2 rounded-control bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-content text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                   <input
                     type="text"
                     value={moduleSubject}
                     onChange={(e) => setModuleSubject(e.target.value)}
                     placeholder={tTask.subjectPlaceholder || 'Discipline (optionnel)...'}
-                    className="sm:w-44 px-3.5 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="sm:w-44 px-3.5 py-2 rounded-control bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-content text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                   <Button type="submit" variant="primary" size="sm" icon={<Plus className="w-3.5 h-3.5" />}>
                     <span>{tCommon.confirm}</span>
@@ -2014,17 +2014,17 @@ export const TasksPage: React.FC = () => {
                 {/* Modules List */}
                 <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
                   {(studyModules ?? []).length === 0 ? (
-                    <p className="text-xs text-zinc-400 italic py-2 text-center">
+                    <p className="text-xs text-muted italic py-2 text-center">
                       {language === 'ar' ? 'لا توجد وحدات دراسية مسجلة حالياً.' : 'Aucun module pour le moment.'}
                     </p>
                   ) : (
                     (studyModules ?? []).map((mod) => (
                       <div
                         key={mod.id}
-                        className={`flex items-center justify-between p-3 rounded-2xl border transition-all ${
+                        className={`flex items-center justify-between p-3 rounded-card border transition-all ${
                           mod.completed
-                            ? 'bg-indigo-500/10 border-indigo-500/20 text-zinc-400 dark:text-zinc-500'
-                            : 'bg-zinc-50 dark:bg-zinc-800/60 border-zinc-200/60 dark:border-zinc-700/60 text-zinc-800 dark:text-zinc-200'
+                            ? 'bg-indigo-500/10 border-indigo-500/20 text-muted dark:text-zinc-500'
+                            : 'bg-zinc-50 dark:bg-zinc-800/60 border-zinc-200/60 dark:border-zinc-700/60 text-content'
                         }`}
                       >
                         <div
@@ -2037,20 +2037,20 @@ export const TasksPage: React.FC = () => {
                               e.stopPropagation();
                               toggleStudyModule(mod.id);
                             }}
-                            className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all shrink-0 ${
+                            className={`w-6 h-6 rounded-control flex items-center justify-center transition-all shrink-0 ${
                               mod.completed
                                 ? 'bg-indigo-600 text-white'
-                                : 'bg-zinc-200 dark:bg-zinc-700 text-transparent hover:text-zinc-400'
+                                : 'bg-zinc-200 dark:bg-zinc-700 text-transparent hover:text-muted'
                             }`}
                           >
                             <Check className="w-3.5 h-3.5 stroke-[2.5]" />
                           </button>
                           <div className="truncate">
-                            <span className={`text-xs font-bold block hover:underline ${mod.completed ? 'line-through text-zinc-400' : ''}`}>
+                            <span className={`text-xs font-bold block hover:underline ${mod.completed ? 'line-through text-muted' : ''}`}>
                               {mod.title}
                             </span>
                             {mod.subject && (
-                              <span className="text-[10px] text-zinc-400 font-medium">
+                              <span className="text-caption text-muted font-medium">
                                 {mod.subject}
                               </span>
                             )}
@@ -2064,7 +2064,7 @@ export const TasksPage: React.FC = () => {
                               setAlarmModalTaskTitle(`Révision: ${mod.title}${mod.subject ? ` (${mod.subject})` : ''}`);
                               setAlarmModalDescription(`Session de révision S3: ${mod.title}`);
                             }}
-                            className="p-1 rounded-lg text-indigo-500 hover:text-indigo-600 hover:bg-indigo-500/10 transition-colors"
+                            className="p-1 rounded-control text-indigo-500 hover:text-indigo-600 hover:bg-indigo-500/10 transition-colors"
                             title={tTask.googleCalendarAlarmBtn}
                           >
                             <Bell className="w-3.5 h-3.5" />
@@ -2072,18 +2072,18 @@ export const TasksPage: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => setEditingStudyModule(mod)}
-                            className="p-1 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
+                            className="p-1 rounded-control text-muted hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
                             title="Modifier"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
                           </button>
-                          <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400">
+                          <span className="text-caption font-bold text-indigo-600 dark:text-indigo-400">
                             +30 XP
                           </span>
                           <button
                             type="button"
                             onClick={() => deleteStudyModule(mod.id)}
-                            className="p-1 rounded-lg text-zinc-400 hover:text-rose-500 transition-colors"
+                            className="p-1 rounded-control text-muted hover:text-rose-500 transition-colors"
                             title={tCommon.delete}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -2112,7 +2112,7 @@ export const TasksPage: React.FC = () => {
       >
         <form onSubmit={handleCreateProgramTrack} className="space-y-4 pt-2">
           <div>
-            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+            <label className="block text-xs font-bold text-content mb-1.5">
               {tTask.programName || 'Nom du programme'} *
             </label>
             <input
@@ -2121,13 +2121,13 @@ export const TasksPage: React.FC = () => {
               value={newTrackTitle}
               onChange={(e) => setNewTrackTitle(e.target.value)}
               placeholder="ex : Deutsch (Allemand), Marketing, UI/UX..."
-              className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              className="w-full px-3.5 py-2.5 rounded-control bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-content font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+              <label className="block text-xs font-bold text-content mb-1.5">
                 {language === 'ar' ? 'أيقونة' : 'Icône / Emoji'}
               </label>
               <div className="flex gap-2 flex-wrap">
@@ -2136,7 +2136,7 @@ export const TasksPage: React.FC = () => {
                     key={emoji}
                     type="button"
                     onClick={() => setNewTrackIcon(emoji)}
-                    className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg border transition-all ${
+                    className={`w-9 h-9 rounded-control flex items-center justify-center text-lg border transition-all ${
                       newTrackIcon === emoji
                         ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/60 scale-105'
                         : 'border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800'
@@ -2149,7 +2149,7 @@ export const TasksPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+              <label className="block text-xs font-bold text-content mb-1.5">
                 {language === 'ar' ? 'لون' : 'Couleur'}
               </label>
               <div className="flex gap-2 flex-wrap items-center pt-1">
@@ -2202,7 +2202,7 @@ export const TasksPage: React.FC = () => {
             className="space-y-4 pt-2"
           >
             <div>
-              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+              <label className="block text-xs font-bold text-content mb-1.5">
                 {language === 'ar' ? 'عنوان المهمة الفرعية' : language === 'en' ? 'Sub-task Title' : 'Titre de la sous-tâche'} *
               </label>
               <input
@@ -2210,12 +2210,12 @@ export const TasksPage: React.FC = () => {
                 required
                 value={editingSubTask.title}
                 onChange={(e) => setEditingSubTask({ ...editingSubTask, title: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                className="w-full px-3.5 py-2.5 rounded-control bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-content font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+              <label className="block text-xs font-bold text-content mb-1.5">
                 {language === 'ar' ? 'نقاط الخبرة (XP)' : 'Points XP'}
               </label>
               <input
@@ -2224,7 +2224,7 @@ export const TasksPage: React.FC = () => {
                 max={100}
                 value={editingSubTask.points}
                 onChange={(e) => setEditingSubTask({ ...editingSubTask, points: Number(e.target.value) })}
-                className="w-full px-3.5 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3.5 py-2 rounded-control bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-content text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -2237,7 +2237,7 @@ export const TasksPage: React.FC = () => {
                   setAlarmModalTaskTitle(`${trackTitle}: ${editingSubTask.title}`);
                   setAlarmModalDescription(`Rappel pour ${editingSubTask.title}`);
                 }}
-                className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98]"
+                className="w-full py-2.5 px-4 rounded-control bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98]"
               >
                 <Bell className="w-4 h-4" />
                 <span>{tTask.googleCalendarAlarmBtn}</span>
@@ -2277,7 +2277,7 @@ export const TasksPage: React.FC = () => {
             className="space-y-4 pt-2"
           >
             <div>
-              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+              <label className="block text-xs font-bold text-content mb-1.5">
                 {tTask.modulePlaceholder || 'Nom du module'} *
               </label>
               <input
@@ -2285,19 +2285,19 @@ export const TasksPage: React.FC = () => {
                 required
                 value={editingStudyModule.title}
                 onChange={(e) => setEditingStudyModule({ ...editingStudyModule, title: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                className="w-full px-3.5 py-2.5 rounded-control bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-content font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+              <label className="block text-xs font-bold text-content mb-1.5">
                 {tTask.subjectPlaceholder || 'Discipline'}
               </label>
               <input
                 type="text"
                 value={editingStudyModule.subject || ''}
                 onChange={(e) => setEditingStudyModule({ ...editingStudyModule, subject: e.target.value })}
-                className="w-full px-3.5 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3.5 py-2 rounded-control bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-content text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
 
@@ -2309,7 +2309,7 @@ export const TasksPage: React.FC = () => {
                   setAlarmModalTaskTitle(`Révision: ${editingStudyModule.title}${editingStudyModule.subject ? ` (${editingStudyModule.subject})` : ''}`);
                   setAlarmModalDescription(`Session de révision S3: ${editingStudyModule.title}`);
                 }}
-                className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98]"
+                className="w-full py-2.5 px-4 rounded-control bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98]"
               >
                 <Bell className="w-4 h-4" />
                 <span>{tTask.googleCalendarAlarmBtn}</span>

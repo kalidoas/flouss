@@ -2,21 +2,81 @@ import { Category, GoalCalculation, Language, Transaction, UserAccount, TaskItem
 import { getCategoryName } from './i18nHelpers';
 import { getIntlLocale, isTransactionInMonth } from './formatters';
 import { money } from '../lib/currency';
+import { getCategoryVisualColor } from './categoryColor';
+
+export interface FinancialSummary {
+  income: number;
+  expenses: number;
+  contributions: number;
+  goalWithdrawals: number;
+  adjustments: number;
+  totalIn: number;
+  totalOut: number;
+  net: number;
+}
+
+export interface FinancialSummaryOptions {
+  month?: string;
+  /** Adjustments always remain visible in `adjustments`; this controls their effect on `net`. */
+  includeAdjustments?: boolean;
+}
+
+/**
+ * The shared source for financial totals.
+ * Income excludes goal withdrawals; expenses exclude savings contributions;
+ * total in/out include those transfers, and net includes signed adjustments
+ * unless explicitly excluded.
+ */
+export function selectFinancialSummary(
+  transactions: Transaction[] = [],
+  { month, includeAdjustments = true }: FinancialSummaryOptions = {}
+): FinancialSummary {
+  const totals = (transactions || []).reduce(
+    (sum, transaction) => {
+      if (month && !isTransactionInMonth(transaction.date, month)) return sum;
+      const amountCents = money.toCents(Number(transaction.amount) || 0);
+
+      switch (transaction.type) {
+        case 'income':
+          sum.income += amountCents;
+          break;
+        case 'expense':
+          sum.expenses += amountCents;
+          break;
+        case 'contribution':
+          sum.contributions += amountCents;
+          break;
+        case 'goal_withdraw':
+          sum.goalWithdrawals += amountCents;
+          break;
+        case 'adjustment':
+          sum.adjustments += amountCents;
+          break;
+      }
+      return sum;
+    },
+    { income: 0, expenses: 0, contributions: 0, goalWithdrawals: 0, adjustments: 0 }
+  );
+
+  const totalInCents = totals.income + totals.goalWithdrawals;
+  const totalOutCents = totals.expenses + totals.contributions;
+  const netCents = totalInCents - totalOutCents + (includeAdjustments ? totals.adjustments : 0);
+
+  return {
+    income: money.round(totals.income / 100),
+    expenses: money.round(totals.expenses / 100),
+    contributions: money.round(totals.contributions / 100),
+    goalWithdrawals: money.round(totals.goalWithdrawals / 100),
+    adjustments: money.round(totals.adjustments / 100),
+    totalIn: money.round(totalInCents / 100),
+    totalOut: money.round(totalOutCents / 100),
+    net: money.round(netCents / 100),
+  };
+}
 
 export function calculateAvailableBalance(initialBalance: number | null, transactions: Transaction[]): number {
   const baseCents = typeof initialBalance === 'number' && !isNaN(initialBalance) ? money.toCents(initialBalance) : 0;
-  const netCents = (transactions || []).reduce((acc, tx) => {
-    const amtCents = typeof tx.amount === 'number' && !isNaN(tx.amount) ? money.toCents(tx.amount) : money.toCents(String(tx.amount || 0));
-    switch (tx.type) {
-      case 'income': return acc + amtCents;
-      case 'expense': return acc - amtCents;
-      case 'contribution': return acc - amtCents;
-      case 'goal_withdraw': return acc + amtCents;
-      case 'adjustment': return acc + amtCents;
-      default: return acc;
-    }
-  }, baseCents);
-  return money.round(netCents / 100);
+  return money.round(baseCents / 100 + selectFinancialSummary(transactions).net);
 }
 
 export function calculateReconciledInitialBalance(targetBalance: number, transactions: Transaction[]): number {
@@ -184,14 +244,10 @@ export function getKpiData(
   const prevMonth = monthNum === 1 ? 12 : monthNum - 1;
   const lastMonth = `${prevYear}-${String(prevMonth).padStart(2, '0')}`;
 
-  const getMonthMetric = (monthKey: string, type: 'income' | 'expense' | 'contribution') => {
-    return (transactions || [])
-      .filter((tx) => tx.type === type && isTransactionInMonth(tx.date, monthKey))
-      .reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
-  };
-
-  const currentIncome = getMonthMetric(currentMonth, 'income');
-  const lastIncome = getMonthMetric(lastMonth, 'income');
+  const currentSummary = selectFinancialSummary(transactions, { month: currentMonth });
+  const lastSummary = selectFinancialSummary(transactions, { month: lastMonth });
+  const currentIncome = currentSummary.income;
+  const lastIncome = lastSummary.income;
   const incomeChange =
     lastIncome > 0
       ? Math.round(((currentIncome - lastIncome) / lastIncome) * 100)
@@ -202,8 +258,8 @@ export function getKpiData(
     (tx) => tx.type === 'income' && isTransactionInMonth(tx.date, currentMonth)
   ).length;
 
-  const currentExpense = getMonthMetric(currentMonth, 'expense');
-  const lastExpense = getMonthMetric(lastMonth, 'expense');
+  const currentExpense = currentSummary.expenses;
+  const lastExpense = lastSummary.expenses;
   const expenseChange =
     lastExpense > 0
       ? Math.round(((currentExpense - lastExpense) / lastExpense) * 100)
@@ -213,12 +269,12 @@ export function getKpiData(
   const daysInMonth = new Date(yearNum, monthNum, 0).getDate();
   const avgDailySpend = daysInMonth > 0 ? Math.round(currentExpense / daysInMonth) : 0;
 
-  const currentSavings = getMonthMetric(currentMonth, 'contribution');
+  const currentSavings = currentSummary.contributions;
   const savingsRate =
     currentIncome > 0
       ? Math.max(0, Math.min(100, Math.round((currentSavings / currentIncome) * 100)))
       : 0;
-  const netFlow = currentIncome - currentExpense;
+  const netFlow = currentSummary.net;
   const netFlowColor = netFlow >= 0 ? 'emerald' : 'rose';
 
   const validTasks = (tasks || []).filter((t) => !t.isArchived);
@@ -329,13 +385,13 @@ export function getMonthlyStats(transactions: Transaction[], monthsCount: number
   for (let i = monthsCount - 1; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-    const monthTx = transactions.filter((tx) => isTransactionInMonth(tx.date, monthKey));
+    const summary = selectFinancialSummary(transactions, { month: monthKey });
     result.push({
       monthKey,
       label: new Intl.DateTimeFormat(locale, { month: 'short' }).format(d).charAt(0).toUpperCase() + new Intl.DateTimeFormat(locale, { month: 'short' }).format(d).slice(1),
-      income: monthTx.filter((t) => t.type === 'income').reduce((sum, t) => sum + t.amount, 0),
-      expense: monthTx.filter((t) => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0),
-      savings: monthTx.filter((t) => t.type === 'contribution').reduce((sum, t) => sum + t.amount, 0),
+      income: summary.income,
+      expense: summary.expenses,
+      savings: summary.contributions,
     });
   }
   return result;
@@ -491,7 +547,7 @@ export function getCategorySpendingBreakdown(
         key: cat.key || cat.translationKey,
         translationKey: cat.translationKey || cat.key,
         name: getCategoryName(cat, language),
-        color: cat.color,
+        color: getCategoryVisualColor(cat.id),
         icon: cat.icon,
         amount: Math.round(amount * 100) / 100,
         count,

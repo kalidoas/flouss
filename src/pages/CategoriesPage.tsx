@@ -13,6 +13,8 @@ import { getCategoryName, getSubCategoryName, getCategoryGroupName } from '../ut
 import { CATEGORY_GROUPS_META, resolveCategoryGroup } from '../utils/categoryTheme';
 import { getCategoryIcon } from '../utils/icons';
 import { formatMAD, getCurrentMonthStr, isTransactionInMonth } from '../utils/formatters';
+import { getCategoryVisualColor } from '../utils/categoryColor';
+import { MoneyText } from '../components/common/PrivacyCurrency';
 import {
   calculateCategorySpentAmount,
   calculateGoalProgress,
@@ -160,10 +162,10 @@ export const CategoriesPage: React.FC = () => {
       {/* Page Header with Apple HIG Surface Glow */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-white tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold text-content tracking-tight">
             {tCat.title}
           </h1>
-          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+          <p className="text-xs sm:text-sm text-muted mt-1">
             {tCat.subtitle}
           </p>
         </div>
@@ -182,54 +184,54 @@ export const CategoriesPage: React.FC = () => {
 
       {/* Apple Intelligence Category Analytics Hub */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="p-4 rounded-2xl bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-2xs">
-          <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 mb-1">
+        <div className="p-4 rounded-card bg-surface backdrop-blur-xl border border-border-subtle shadow-2xs">
+          <div className="flex items-center justify-between text-xs text-muted mb-1">
             <span className="font-medium">{language === 'ar' ? 'مجموع الأصناف' : 'Total Catégories'}</span>
             <Layers className="w-3.5 h-3.5 text-blue-500" />
           </div>
-          <div className="text-xl sm:text-2xl font-extrabold text-zinc-900 dark:text-white tabular-nums">
+          <div className="text-xl sm:text-2xl font-extrabold text-content tabular-nums">
             {categoryStats.activeCategoriesCount}
           </div>
-          <span className="text-[11px] text-zinc-400 block mt-0.5">
+          <span className="text-caption text-muted block mt-0.5">
             {categoryStats.activeGoalsCount} {language === 'ar' ? 'أهداف ادخار' : 'objectifs actifs'}
           </span>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-2xs">
-          <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 mb-1">
+        <div className="p-4 rounded-card bg-surface backdrop-blur-xl border border-border-subtle shadow-2xs">
+          <div className="flex items-center justify-between text-xs text-muted mb-1">
             <span className="font-medium">{tCat.spentThisMonth}</span>
             <TrendingDown className="w-3.5 h-3.5 text-rose-500" />
           </div>
           <div className="text-xl sm:text-2xl font-extrabold text-rose-600 dark:text-rose-400 tabular-nums">
-            {formatMAD(categoryStats.totalSpent, false, language)}
+            <MoneyText amount={categoryStats.totalSpent} />
           </div>
-          <span className="text-[11px] text-zinc-400 block mt-0.5">
+          <span className="text-caption text-muted block mt-0.5">
             {language === 'ar' ? 'خلال هذا الشهر' : 'Total dépenses du mois'}
           </span>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-2xs">
-          <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 mb-1">
+        <div className="p-4 rounded-card bg-surface backdrop-blur-xl border border-border-subtle shadow-2xs">
+          <div className="flex items-center justify-between text-xs text-muted mb-1">
             <span className="font-medium">{language === 'ar' ? 'الأكثر استهلاكاً' : 'Plus forte dépense'}</span>
             <Sparkles className="w-3.5 h-3.5 text-amber-500" />
           </div>
-          <div className="text-sm sm:text-base font-bold text-zinc-900 dark:text-white truncate">
+          <div className="text-sm sm:text-base font-bold text-content truncate">
             {categoryStats.topCategory ? getCategoryName(categoryStats.topCategory, language) : '—'}
           </div>
-          <span className="text-[11px] text-amber-600 dark:text-amber-400 font-semibold block mt-0.5 tabular-nums">
-            {categoryStats.topCatAmount > 0 ? formatMAD(categoryStats.topCatAmount, false, language) : '0 DH'}
+          <span className="text-caption text-amber-600 dark:text-amber-400 font-semibold block mt-0.5 tabular-nums">
+            <MoneyText amount={categoryStats.topCatAmount} />
           </span>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-2xs">
-          <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 mb-1">
+        <div className="p-4 rounded-card bg-surface backdrop-blur-xl border border-border-subtle shadow-2xs">
+          <div className="flex items-center justify-between text-xs text-muted mb-1">
             <span className="font-medium">{language === 'ar' ? 'أهداف الادخار' : 'Objectifs Actifs'}</span>
             <PiggyBank className="w-3.5 h-3.5 text-emerald-500" />
           </div>
           <div className="text-xl sm:text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 tabular-nums">
             {categoryStats.activeGoalsCount}
           </div>
-          <span className="text-[11px] text-zinc-400 block mt-0.5">
+          <span className="text-caption text-muted block mt-0.5">
             {language === 'ar' ? 'قيد الإنجاز' : 'En cours d’épargne'}
           </span>
         </div>
@@ -239,13 +241,13 @@ export const CategoriesPage: React.FC = () => {
       <div className="space-y-3">
         <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
           {/* Apple Segmented Tab Control */}
-          <div className="flex items-center gap-1 p-1 bg-zinc-200/60 dark:bg-zinc-800/60 backdrop-blur-md rounded-xl border border-black/[0.04] dark:border-white/[0.06] overflow-x-auto">
+          <div className="flex items-center gap-1 p-1 bg-zinc-200/60 dark:bg-zinc-800/60 backdrop-blur-md rounded-control border border-black/[0.04] dark:border-white/[0.06] overflow-x-auto">
             <button
               onClick={() => setActiveTab('all')}
-              className={`px-3 py-1.5 rounded-lg text-xs transition-all whitespace-nowrap flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-control text-xs transition-all whitespace-nowrap flex items-center gap-1.5 ${
                 activeTab === 'all'
-                  ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white font-medium shadow-sm'
-                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+                  ? 'bg-surface text-content font-medium shadow-sm'
+                  : 'text-zinc-600 dark:text-muted hover:text-zinc-900 dark:hover:text-white'
               }`}
             >
               <Layers className="w-3.5 h-3.5" />
@@ -260,10 +262,10 @@ export const CategoriesPage: React.FC = () => {
 
             <button
               onClick={() => setActiveTab('goals')}
-              className={`px-3 py-1.5 rounded-lg text-xs transition-all whitespace-nowrap flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-control text-xs transition-all whitespace-nowrap flex items-center gap-1.5 ${
                 activeTab === 'goals'
-                  ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white font-medium shadow-sm'
-                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+                  ? 'bg-surface text-content font-medium shadow-sm'
+                  : 'text-zinc-600 dark:text-muted hover:text-zinc-900 dark:hover:text-white'
               }`}
             >
               <Target className="w-3.5 h-3.5" />
@@ -278,10 +280,10 @@ export const CategoriesPage: React.FC = () => {
 
             <button
               onClick={() => setActiveTab('expenses')}
-              className={`px-3 py-1.5 rounded-lg text-xs transition-all whitespace-nowrap flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-control text-xs transition-all whitespace-nowrap flex items-center gap-1.5 ${
                 activeTab === 'expenses'
-                  ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white font-medium shadow-sm'
-                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+                  ? 'bg-surface text-content font-medium shadow-sm'
+                  : 'text-zinc-600 dark:text-muted hover:text-zinc-900 dark:hover:text-white'
               }`}
             >
               <ShoppingBag className="w-3.5 h-3.5" />
@@ -296,10 +298,10 @@ export const CategoriesPage: React.FC = () => {
 
             <button
               onClick={() => setActiveTab('archived')}
-              className={`px-3 py-1.5 rounded-lg text-xs transition-all whitespace-nowrap flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-control text-xs transition-all whitespace-nowrap flex items-center gap-1.5 ${
                 activeTab === 'archived'
-                  ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white font-medium shadow-sm'
-                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+                  ? 'bg-surface text-content font-medium shadow-sm'
+                  : 'text-zinc-600 dark:text-muted hover:text-zinc-900 dark:hover:text-white'
               }`}
             >
               <Archive className="w-3.5 h-3.5" />
@@ -316,12 +318,12 @@ export const CategoriesPage: React.FC = () => {
           {/* Controls: View Mode & Search */}
           <div className="flex items-center gap-2">
             {/* View Mode Switcher: Grid vs Compact List */}
-            <div className="flex items-center gap-1 p-1 bg-zinc-200/60 dark:bg-zinc-800/60 backdrop-blur-md rounded-xl border border-black/[0.04] dark:border-white/[0.06] shrink-0">
+            <div className="flex items-center gap-1 p-1 bg-zinc-200/60 dark:bg-zinc-800/60 backdrop-blur-md rounded-control border border-black/[0.04] dark:border-white/[0.06] shrink-0">
               <button
                 onClick={() => setViewMode('grid')}
-                className={`p-1.5 rounded-lg transition-all ${
+                className={`p-1.5 rounded-control transition-all ${
                   viewMode === 'grid'
-                    ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-sm'
+                    ? 'bg-surface text-content shadow-sm'
                     : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
                 }`}
                 title="Bento Grid"
@@ -330,9 +332,9 @@ export const CategoriesPage: React.FC = () => {
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`p-1.5 rounded-lg transition-all ${
+                className={`p-1.5 rounded-control transition-all ${
                   viewMode === 'list'
-                    ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-sm'
+                    ? 'bg-surface text-content shadow-sm'
                     : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
                 }`}
                 title="Compact List"
@@ -343,13 +345,13 @@ export const CategoriesPage: React.FC = () => {
 
             {/* Localized Apple Glass Search Input */}
             <div className="relative min-w-[200px] flex-1 sm:flex-initial">
-              <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <Search className="w-3.5 h-3.5 text-muted absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder={tCat.filterPlaceholder}
-                className="w-full text-xs pl-8 pr-3 py-2 rounded-xl border border-black/[0.06] dark:border-white/[0.08] bg-white/80 dark:bg-zinc-900/65 backdrop-blur-xl text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                className="w-full text-xs pl-8 pr-3 py-2 rounded-control border border-border-subtle bg-surface backdrop-blur-xl text-content placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
               />
             </div>
           </div>
@@ -359,10 +361,10 @@ export const CategoriesPage: React.FC = () => {
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
           <button
             onClick={() => setSelectedGroup('all')}
-            className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-all shrink-0 border ${
+            className={`px-2.5 py-1 rounded-full text-caption font-medium transition-all shrink-0 border ${
               selectedGroup === 'all'
                 ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 border-transparent shadow-xs'
-                : 'bg-white/60 dark:bg-zinc-900/60 text-zinc-600 dark:text-zinc-400 border-black/[0.05] dark:border-white/[0.06] hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                : 'bg-white/60 dark:bg-zinc-900/60 text-zinc-600 dark:text-muted border-border-subtle hover:bg-zinc-100 dark:hover:bg-zinc-800'
             }`}
           >
             {tCat.groupFilterAll}
@@ -376,15 +378,15 @@ export const CategoriesPage: React.FC = () => {
               <button
                 key={groupId}
                 onClick={() => setSelectedGroup(groupId)}
-                className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-all shrink-0 border flex items-center gap-1.5 ${
+                className={`px-2.5 py-1 rounded-full text-caption font-medium transition-all shrink-0 border flex items-center gap-1.5 ${
                   isSelected
-                    ? `${meta.badgeClass} ring-1 ring-current shadow-xs`
-                    : 'bg-white/60 dark:bg-zinc-900/60 text-zinc-600 dark:text-zinc-400 border-black/[0.05] dark:border-white/[0.06] hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                    ? `bg-surface-raised text-content border-border-subtle ring-1 ring-border-subtle shadow-xs`
+                    : 'bg-white/60 dark:bg-zinc-900/60 text-zinc-600 dark:text-muted border-border-subtle hover:bg-zinc-100 dark:hover:bg-zinc-800'
                 }`}
               >
                 <span
                   className="w-2 h-2 rounded-full shrink-0"
-                  style={{ backgroundColor: meta.color }}
+                  style={{ backgroundColor: getCategoryVisualColor(groupId) }}
                 />
                 <span>{groupLabel}</span>
               </button>
@@ -438,7 +440,7 @@ export const CategoriesPage: React.FC = () => {
           variants={containerVariants}
           initial="hidden"
           animate="show"
-          className="rounded-2xl sm:rounded-3xl bg-white/80 dark:bg-zinc-900/65 backdrop-blur-2xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs divide-y divide-black/[0.04] dark:divide-white/[0.06] overflow-hidden"
+          className="rounded-card sm:rounded-card bg-surface backdrop-blur-2xl border border-border-subtle shadow-xs divide-y divide-black/[0.04] dark:divide-white/[0.06] overflow-hidden"
         >
           {filteredCategories.map((category: Category) => {
             const IconComp = getCategoryIcon(category.icon);
@@ -457,31 +459,31 @@ export const CategoriesPage: React.FC = () => {
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform"
+                    className="w-10 h-10 rounded-control flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform"
                     style={{
-                      backgroundColor: `${category.color}20`,
-                      color: category.color,
-                      border: `1px solid ${category.color}35`,
+                      backgroundColor: `${getCategoryVisualColor(category.id)}20`,
+                      color: getCategoryVisualColor(category.id),
+                      border: `1px solid ${getCategoryVisualColor(category.id)}35`,
                     }}
                   >
-                    <IconComp className="w-5 h-5 stroke-[2.2]" />
+                    <IconComp className="w-5 h-5 stroke-[2]" />
                   </div>
 
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <h4 className="font-semibold text-sm text-zinc-900 dark:text-white truncate">
+                      <h4 className="font-semibold text-sm text-content truncate">
                         {categoryName}
                       </h4>
                       {groupName && (
-                        <span className="text-[10px] font-medium px-2 py-0.2 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-black/[0.04] dark:border-white/[0.06] shrink-0 hidden sm:inline-block">
+                        <span className="text-caption font-medium px-2 py-0.2 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-black/[0.04] dark:border-white/[0.06] shrink-0 hidden sm:inline-block">
                           {groupName}
                         </span>
                       )}
                       <span
-                        className={`text-[9px] font-bold px-1.5 py-0.2 rounded-md ${
+                        className={`text-caption font-bold px-1.5 py-0.2 rounded-control ${
                           category.isGoal
                             ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400'
-                            : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'
+                            : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-muted'
                         }`}
                       >
                         {category.isGoal ? tCat.goalBadge : tCat.expenseBadge}
@@ -497,14 +499,14 @@ export const CategoriesPage: React.FC = () => {
                             <div
                               key={sub.id}
                               title={getSubCategoryName(sub, language)}
-                              className="w-5 h-5 rounded-md bg-zinc-100 dark:bg-zinc-800/80 border border-black/[0.04] dark:border-white/[0.06] flex items-center justify-center text-zinc-500 dark:text-zinc-400"
+                              className="w-5 h-5 rounded-control bg-zinc-100 dark:bg-zinc-800/80 border border-black/[0.04] dark:border-white/[0.06] flex items-center justify-center text-muted"
                             >
                               <SubIcon className="w-3 h-3 stroke-[2]" />
                             </div>
                           );
                         })}
                         {category.subcategories.length > 5 && (
-                          <span className="text-[9px] text-zinc-400 font-mono">
+                          <span className="text-caption text-muted font-mono">
                             +{category.subcategories.length - 5}
                           </span>
                         )}
@@ -517,19 +519,19 @@ export const CategoriesPage: React.FC = () => {
                   <div className="text-right">
                     {category.isGoal && goalCalc ? (
                       <>
-                        <div className="text-xs font-bold text-zinc-900 dark:text-white tabular-nums">
-                          {formatMAD(goalCalc.savedAmount, false, language)}
+                        <div className="text-xs font-bold text-content tabular-nums">
+                          <MoneyText amount={goalCalc.savedAmount} />
                         </div>
-                        <span className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold tabular-nums">
+                        <span className="text-caption text-blue-600 dark:text-blue-400 font-semibold tabular-nums">
                           {goalCalc.progressPercent}%
                         </span>
                       </>
                     ) : (
                       <>
-                        <div className="text-xs font-bold text-zinc-900 dark:text-white tabular-nums">
-                          {formatMAD(spentThisMonth, false, language)}
+                        <div className="text-xs font-bold text-content tabular-nums">
+                          <MoneyText amount={spentThisMonth} />
                         </div>
-                        <span className="text-[10px] text-zinc-400 block">
+                        <span className="text-caption text-muted block">
                           {tCat.spentThisMonth}
                         </span>
                       </>
@@ -542,13 +544,13 @@ export const CategoriesPage: React.FC = () => {
                       e.stopPropagation();
                       handleQuickExpense(category);
                     }}
-                    className="p-2 rounded-xl text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors shadow-2xs"
+                    className="p-2 rounded-control text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors shadow-2xs"
                     title={tCat.quickExpense}
                   >
                     <Plus className="w-4 h-4 stroke-[2.5]" />
                   </button>
 
-                  <ChevronRight className="w-4 h-4 text-zinc-400 group-hover:translate-x-0.5 transition-transform" />
+                  <ChevronRight className="w-4 h-4 text-muted group-hover:translate-x-0.5 transition-transform" />
                 </div>
               </motion.div>
             );

@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { useAppStore } from '../../store/useAppStore';
-import { calculateAvailableBalance, calculateTotalSavingsInGoals } from '../../utils/calculations';
+import { calculateAvailableBalance, calculateTotalSavingsInGoals, selectFinancialSummary } from '../../utils/calculations';
 import { formatMAD, getCurrentMonthStr } from '../../utils/formatters';
-import { Transaction } from '../../types';
 import { PrivacyCurrency } from '../common/PrivacyCurrency';
 import { Coins, ChevronUp, ChevronDown, ArrowUpRight, ArrowDownRight, Target } from 'lucide-react';
 
@@ -17,13 +16,9 @@ export const BalanceWidget: React.FC = () => {
   const totalInGoals = calculateTotalSavingsInGoals(categories, transactions);
 
   const currentMonth = getCurrentMonthStr();
-  const currentMonthTx = transactions.filter((t: Transaction) => t.date.startsWith(currentMonth));
-  const incomeThisMonth = currentMonthTx
-    .filter((t: Transaction) => t.type === 'income')
-    .reduce((sum: number, t: Transaction) => sum + t.amount, 0);
-  const expenseThisMonth = currentMonthTx
-    .filter((t: Transaction) => t.type === 'expense')
-    .reduce((sum: number, t: Transaction) => sum + t.amount, 0);
+  const monthlySummary = selectFinancialSummary(transactions, { month: currentMonth });
+  const incomeThisMonth = monthlySummary.income;
+  const expenseThisMonth = monthlySummary.expenses;
 
   const isAr = language === 'ar';
 

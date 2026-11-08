@@ -3,8 +3,8 @@ import { motion } from 'framer-motion';
 import { useAppStore } from '../../store/useAppStore';
 import { AppleGlassCard } from '../common/AppleGlassCard';
 import { PrivacyCurrency } from '../common/PrivacyCurrency';
-import { calculateAvailableBalance } from '../../utils/calculations';
-import { getCurrentMonthStr, isTransactionInMonth } from '../../utils/formatters';
+import { calculateAvailableBalance, selectFinancialSummary } from '../../utils/calculations';
+import { getCurrentMonthStr } from '../../utils/formatters';
 import { Sparkles, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
 
 interface AIAssistantCardProps {
@@ -17,13 +17,9 @@ export const AIAssistantCard: React.FC<AIAssistantCardProps> = ({ onQuickAction 
 
   const balance = calculateAvailableBalance(initialBalance, transactions);
 
-  const monthTx = (transactions || []).filter((tx) => isTransactionInMonth(tx.date, currentMonth));
-  const incomeThisMonth = monthTx
-    .filter((tx) => tx.type === 'income')
-    .reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
-  const expenseThisMonth = monthTx
-    .filter((tx) => tx.type === 'expense')
-    .reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
+  const monthSummary = selectFinancialSummary(transactions, { month: currentMonth });
+  const incomeThisMonth = monthSummary.income;
+  const expenseThisMonth = monthSummary.expenses;
 
   const isAr = language === 'ar';
   const isEn = language === 'en';

@@ -5,9 +5,8 @@ import { AppleGlassCard } from '../common/AppleGlassCard';
 import { AnimatedCurrency } from '../common/AnimatedCurrency';
 import { PrivacyCurrency } from '../common/PrivacyCurrency';
 import { translations } from '../../i18n/translations';
-import { formatMAD, getCurrentMonthStr, formatMonthYear, isTransactionInMonth, getTransactionMonth } from '../../utils/formatters';
-import { calculateAvailableBalance, selectAvailableBalance } from '../../utils/calculations';
-import { money } from '../../lib/currency';
+import { formatMAD, getCurrentMonthStr, formatMonthYear, getTransactionMonth } from '../../utils/formatters';
+import { calculateAvailableBalance, selectAvailableBalance, selectFinancialSummary } from '../../utils/calculations';
 import { AdjustBalanceModal } from './AdjustBalanceModal';
 import { playHapticFeedback } from '../../utils/haptics';
 import {
@@ -105,17 +104,9 @@ export const WalletCard: React.FC<WalletCardProps> = ({
     const historicalBalance = calculateAvailableBalance(initialBalance, txUpToSelectedMonth);
 
     // Selected month's cashflow with exact currency arithmetic
-    const monthTx = (transactions || []).filter((tx) => isTransactionInMonth(tx.date, selectedMonth));
-    const historicalIncome = money.round(
-      monthTx
-        .filter((tx) => tx.type === 'income')
-        .reduce((sum, tx) => sum + money.toCents(tx.amount), 0) / 100
-    );
-    const historicalExpense = money.round(
-      monthTx
-        .filter((tx) => tx.type === 'expense')
-        .reduce((sum, tx) => sum + money.toCents(tx.amount), 0) / 100
-    );
+    const summary = selectFinancialSummary(transactions, { month: selectedMonth });
+    const historicalIncome = summary.income;
+    const historicalExpense = summary.expenses;
 
     return {
       displayBalance: historicalBalance,

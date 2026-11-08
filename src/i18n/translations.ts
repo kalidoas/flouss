@@ -6,6 +6,13 @@ export const translations = {
     tagline: 'Finances & Épargne au Maroc',
     currency: 'MAD',
     dir: 'ltr',
+    summaryScopes: {
+      dashboard: 'Solde disponible : toutes les opérations et régularisations. Totaux mensuels : mois en cours.',
+      expenses: 'Dépenses uniquement · mois et filtres sélectionnés.',
+      history: 'Opérations filtrées · entrées/sorties incluent les transferts d’objectifs ; les régularisations affectent le net.',
+      analytics: 'Mois sélectionné · le net inclut les transferts d’objectifs et les régularisations ; revenus et dépenses excluent les transferts.',
+      adjustment: 'Régularisation : incluse dans le solde net, exclue des totaux de revenus et dépenses.',
+    },
 
     nav: {
       dashboard: 'Accueil',
@@ -289,7 +296,7 @@ export const translations = {
       kpiDebts: 'Dettes',
       kpiDebtsDesc: 'À encaisser / À rembourser',
       kpiSubs: 'Abonnements',
-      kpiSubsBurn: '% des dépenses',
+      kpiSubsBurn: 'des dépenses',
       kpiNoChange: '—',
 
       // Income breakdown
@@ -987,6 +994,13 @@ export const translations = {
     tagline: 'إدارة وتتبع المصاريف والادخار بالمغرب',
     currency: 'د.م.',
     dir: 'rtl',
+    summaryScopes: {
+      dashboard: 'الرصيد المتاح يشمل كل المعاملات والتسويات. إجماليات الشهر تخص الشهر الحالي.',
+      expenses: 'المصاريف فقط · حسب الشهر والفلاتر المحددة.',
+      history: 'المعاملات المفلترة · المداخيل والمصاريف تشمل تحويلات الأهداف؛ التسويات تؤثر على الصافي فقط.',
+      analytics: 'الشهر المحدد · الصافي يشمل تحويلات الأهداف والتسويات؛ المداخيل والمصاريف تستثني التحويلات.',
+      adjustment: 'تسوية الرصيد: تدخل في الرصيد الصافي ولا تدخل في إجمالي المداخيل والمصاريف.',
+    },
 
     nav: {
       dashboard: 'الرئيسية',
@@ -1269,7 +1283,7 @@ export const translations = {
       kpiDebts: 'الديون',
       kpiDebtsDesc: 'الاستحقاق / السداد',
       kpiSubs: 'الاشتراكات',
-      kpiSubsBurn: '% من المصروفات',
+      kpiSubsBurn: 'من المصروفات',
       kpiNoChange: '—',
 
       // Income breakdown
@@ -1965,6 +1979,13 @@ export const translations = {
     tagline: 'Personal Finance & Savings in Morocco',
     currency: 'MAD',
     dir: 'ltr',
+    summaryScopes: {
+      dashboard: 'Available balance includes all transactions and adjustments. Monthly totals use this month.',
+      expenses: 'Expense transactions only · selected month and filters.',
+      history: 'Filtered transactions · in/out include goal transfers; adjustments affect net only.',
+      analytics: 'Selected month · net includes goal transfers and adjustments; income and expenses exclude transfers.',
+      adjustment: 'Balance adjustment: included in net balance, excluded from income and expense totals.',
+    },
 
     nav: {
       dashboard: 'Dashboard',
@@ -2238,7 +2259,7 @@ export const translations = {
       kpiIncomeCount: 'deposits',
       kpiExpenses: 'Total Outflow',
       kpiExpensesChange: 'vs last month',
-      kpiDailyAvg: 'Daily average burn',
+      kpiDailyAvg: 'Avg spend / day',
       kpiNetFlow: 'Net Cash Flow',
       kpiNetFlowDesc: 'Savings rate',
       kpiTasks: 'Program & Tasks',
@@ -2247,7 +2268,7 @@ export const translations = {
       kpiDebts: 'Net Debt Position',
       kpiDebtsDesc: 'Receivables vs Payables',
       kpiSubs: 'Recurring Burn',
-      kpiSubsBurn: '% of expenses',
+      kpiSubsBurn: 'of expenses',
       kpiNoChange: '—',
 
       // Income breakdown

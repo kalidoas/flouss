@@ -11,6 +11,7 @@ import { formatMAD } from '../../utils/formatters';
 import { translations } from '../../i18n/translations';
 import { getCategoryName, getSubCategoryName, getCategoryGroupName } from '../../utils/i18nHelpers';
 import { CATEGORY_GROUPS_META, resolveCategoryGroup } from '../../utils/categoryTheme';
+import { getCategoryVisualColor } from '../../utils/categoryColor';
 import { Target, Layers, Calculator, Plus, Trash2, X } from 'lucide-react';
 
 interface CategoryModalProps {
@@ -176,9 +177,9 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Live Preview Header */}
-        <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-800">
+        <div className="flex items-center gap-3 p-3.5 rounded-card bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-800">
           <div
-            className="w-12 h-12 rounded-2xl flex items-center justify-center text-white shrink-0 shadow-sm"
+            className="w-12 h-12 rounded-card flex items-center justify-center text-white shrink-0 shadow-sm"
             style={{ backgroundColor: color }}
           >
             <IconPreview className="w-6 h-6" />
@@ -211,7 +212,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
           <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
             {language === 'ar' ? 'تصنيف المجموعة' : language === 'en' ? 'Category Group' : 'Groupe financier'}
           </label>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-36 overflow-y-auto p-1 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-200/60 dark:border-slate-800">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-36 overflow-y-auto p-1 bg-slate-50 dark:bg-slate-800/40 rounded-card border border-slate-200/60 dark:border-slate-800">
             {(Object.keys(CATEGORY_GROUPS_META) as CategoryGroupId[]).map((grpId) => {
               const meta = CATEGORY_GROUPS_META[grpId];
               const isSelected = group === grpId;
@@ -221,15 +222,15 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
                   key={grpId}
                   type="button"
                   onClick={() => setGroup(grpId)}
-                  className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all text-left rtl:text-right ${
+                  className={`px-2.5 py-1.5 rounded-control text-xs font-semibold flex items-center gap-1.5 transition-all text-left rtl:text-right ${
                     isSelected
-                      ? `${meta.badgeClass} ring-1 ring-current shadow-2xs`
+                      ? `bg-surface-raised text-content border-border-subtle ring-1 ring-border-subtle shadow-2xs`
                       : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200/60 dark:border-slate-700/60'
                   }`}
                 >
                   <span
                     className="w-2 h-2 rounded-full shrink-0"
-                    style={{ backgroundColor: meta.color }}
+                    style={{ backgroundColor: getCategoryVisualColor(grpId) }}
                   />
                   <span className="truncate">{label}</span>
                 </button>
@@ -255,7 +256,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
         </div>
 
         {/* Sub-categories management */}
-        <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800 space-y-2.5">
+        <div className="p-3.5 rounded-card bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800 space-y-2.5">
           <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
             {tCat.subcategoriesLabel || 'Sous-catégories'}
           </label>
@@ -264,7 +265,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
             {subcategories.map((sub) => (
               <span
                 key={sub.id}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-control text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200"
               >
                 {getSubCategoryName(sub, language)}
                 <button
@@ -295,7 +296,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
                   handleAddSubcat();
                 }
               }}
-              className="flex-1 py-1.5 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium text-slate-900 dark:text-white outline-none focus:border-emerald-500"
+              className="flex-1 py-1.5 px-3 rounded-control border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium text-slate-900 dark:text-white outline-none focus:border-emerald-500"
             />
             <Button
               type="button"
@@ -327,9 +328,9 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
 
         {/* Goal Toggle */}
         <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
-          <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-800">
+          <div className="flex items-center justify-between p-3 rounded-card bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-800">
             <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400">
+              <div className="p-2 rounded-control bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400">
                 <Target className="w-5 h-5" />
               </div>
               <div>
@@ -356,7 +357,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
 
         {/* Goal Configuration Fields */}
         {isGoal && (
-          <div className="space-y-4 p-4 rounded-2xl bg-emerald-50/40 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-800/50 animate-in fade-in duration-200">
+          <div className="space-y-4 p-4 rounded-card bg-emerald-50/40 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-800/50 animate-in fade-in duration-200">
             {/* Optional subcategory attachment */}
             {subcategories.length > 0 && (
               <div>
@@ -366,7 +367,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
                 <select
                   value={selectedSubCategoryId || ''}
                   onChange={(e) => setSelectedSubCategoryId(e.target.value || null)}
-                  className="w-full py-2 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-800 dark:text-slate-200"
+                  className="w-full py-2 px-3 rounded-control border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-800 dark:text-slate-200"
                 >
                   <option value="">
                     {(tCat.globalCategoryOption || 'Catégorie globale ({name})').replace('{name}', name || '...')}
@@ -400,7 +401,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setDurationMode('months')}
-                  className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all ${
+                  className={`py-2 px-3 rounded-control text-xs font-bold border transition-all ${
                     durationMode === 'months'
                       ? 'border-emerald-500 bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-300 shadow-sm'
                       : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'
@@ -411,7 +412,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setDurationMode('date')}
-                  className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all ${
+                  className={`py-2 px-3 rounded-control text-xs font-bold border transition-all ${
                     durationMode === 'date'
                       ? 'border-emerald-500 bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-300 shadow-sm'
                       : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'
@@ -443,7 +444,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
 
             {/* Real-time Calculation Display */}
             {targetAmount > 0 && (
-              <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-emerald-300 dark:border-emerald-800/60 flex items-start gap-3">
+              <div className="p-3 bg-white dark:bg-slate-900 rounded-control border border-emerald-300 dark:border-emerald-800/60 flex items-start gap-3">
                 <Calculator className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
                 <div className="text-xs">
                   <span className="font-bold text-slate-800 dark:text-slate-100">

@@ -4,11 +4,12 @@ import { useAppStore } from '../store/useAppStore';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { EmptyState } from '../components/common/EmptyState';
-import { PrivacyCurrency } from '../components/common/PrivacyCurrency';
+import { MoneyText } from '../components/common/PrivacyCurrency';
 import { AddExpenseModal } from '../components/transactions/AddExpenseModal';
 import { translations } from '../i18n/translations';
 import { formatMAD, formatDate, getCurrentMonthStr } from '../utils/formatters';
-import { money } from '../lib/currency';
+import { selectFinancialSummary } from '../utils/calculations';
+import { getCategoryVisualColor } from '../utils/categoryColor';
 import { getCategoryIcon } from '../utils/icons';
 import { getCategoryName, getSubCategoryName, translateCategoryText } from '../utils/i18nHelpers';
 import { Transaction } from '../types';
@@ -94,9 +95,7 @@ export const ExpensesPage: React.FC = () => {
 
   // Metrics calculations with exact currency precision
   const totalExpenseAmount = useMemo(() => {
-    return money.round(
-      filteredExpenses.reduce((sum, tx) => sum + money.toCents(tx.amount), 0) / 100
-    );
+    return selectFinancialSummary(filteredExpenses).expenses;
   }, [filteredExpenses]);
 
   // Group filtered expenses by Date (YYYY-MM-DD)
@@ -148,21 +147,21 @@ export const ExpensesPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20 flex items-center justify-center font-bold">
-              <TrendingDown className="w-4 h-4 stroke-[2.4]" />
+            <div className="w-8 h-8 rounded-control bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20 flex items-center justify-center font-bold">
+              <TrendingDown className="w-4 h-4 stroke-[2]" />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-content tracking-tight">
               {t.title}
             </h1>
           </div>
-          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+          <p className="text-xs sm:text-sm text-muted mt-1">
             {t.subtitle}
           </p>
         </div>
 
         <Button
           variant="primary"
-          icon={<Plus className="w-4 h-4 stroke-[2.4]" />}
+          icon={<Plus className="w-4 h-4 stroke-[2]" />}
           onClick={() => setIsAddExpenseOpen(true)}
           className="bg-rose-600 hover:bg-rose-700 text-white border-rose-600 shadow-xs self-start sm:self-auto"
         >
@@ -173,62 +172,66 @@ export const ExpensesPage: React.FC = () => {
       {/* KPI Highlight Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Total Expenses Card */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-white/80 dark:bg-zinc-900/60 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs flex items-center justify-between">
+        <div className="p-4 sm:p-5 rounded-card bg-surface backdrop-blur-xl border border-border-subtle shadow-xs flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block">
+            <span className="text-caption font-semibold text-muted uppercase tracking-wider block">
               {t.totalExpenses}
             </span>
             <div className="text-2xl sm:text-3xl font-extrabold text-rose-600 dark:text-rose-400 tabular-nums mt-0.5">
-              <PrivacyCurrency
+              <MoneyText
                 amount={totalExpenseAmount}
                 prefix="-"
                 className="font-extrabold text-rose-600 dark:text-rose-400"
               />
             </div>
           </div>
-          <div className="w-11 h-11 rounded-2xl bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 flex items-center justify-center">
-            <ArrowDownRight className="w-6 h-6 stroke-[2.2]" />
+          <div className="w-11 h-11 rounded-card bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 flex items-center justify-center">
+            <ArrowDownRight className="w-6 h-6 stroke-[2]" />
           </div>
         </div>
 
         {/* Total Operations Count Card */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-white/80 dark:bg-zinc-900/60 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs flex items-center justify-between">
+        <div className="p-4 sm:p-5 rounded-card bg-surface backdrop-blur-xl border border-border-subtle shadow-xs flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block">
+            <span className="text-caption font-semibold text-muted uppercase tracking-wider block">
               {t.transactionsCount}
             </span>
-            <div className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white tabular-nums mt-0.5">
+            <div className="text-2xl sm:text-3xl font-extrabold text-content tabular-nums mt-0.5">
               {filteredExpenses.length}
             </div>
           </div>
-          <div className="w-11 h-11 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 flex items-center justify-center">
-            <Receipt className="w-6 h-6 stroke-[2.2]" />
+          <div className="w-11 h-11 rounded-card bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 flex items-center justify-center">
+            <Receipt className="w-6 h-6 stroke-[2]" />
           </div>
         </div>
       </div>
 
+      <p className="-mt-3 text-xs leading-relaxed text-muted whitespace-normal break-words">
+        {translations[language].summaryScopes.expenses}
+      </p>
+
       {/* Filter and Search Bar */}
-      <div className="p-4 rounded-2xl bg-white/80 dark:bg-zinc-900/60 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] shadow-xs space-y-3">
+      <div className="p-4 rounded-card bg-surface backdrop-blur-xl border border-border-subtle shadow-xs space-y-3">
         <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
           {/* Scope Toggle: This Month vs All Time */}
           <div className="flex flex-wrap items-center gap-2 self-start">
-          <div className="inline-flex rounded-xl p-1 bg-zinc-100 dark:bg-zinc-800/80 border border-black/[0.04] dark:border-white/[0.06] shrink-0">
+          <div className="inline-flex rounded-control p-1 bg-zinc-100 dark:bg-zinc-800/80 border border-black/[0.04] dark:border-white/[0.06] shrink-0">
             <button
               onClick={() => setViewScope('month')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`px-3 py-1.5 rounded-control text-xs font-semibold transition-all ${
                 viewScope === 'month'
-                  ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-2xs'
-                  : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'
+                  ? 'bg-white dark:bg-zinc-700 text-content shadow-2xs'
+                  : 'text-zinc-500 hover:text-zinc-900 dark:text-muted dark:hover:text-white'
               }`}
             >
               {t.filterThisMonth}
             </button>
             <button
               onClick={() => setViewScope('all')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`px-3 py-1.5 rounded-control text-xs font-semibold transition-all ${
                 viewScope === 'all'
-                  ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-2xs'
-                  : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'
+                  ? 'bg-white dark:bg-zinc-700 text-content shadow-2xs'
+                  : 'text-zinc-500 hover:text-zinc-900 dark:text-muted dark:hover:text-white'
               }`}
             >
               {t.filterAll}
@@ -236,12 +239,12 @@ export const ExpensesPage: React.FC = () => {
           </div>
           {viewScope === 'month' && (
             <label className="relative">
-              <Calendar className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
+              <Calendar className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
               <select
                 aria-label={language === 'ar' ? 'اختر الشهر' : language === 'fr' ? 'Choisir le mois' : 'Choose month'}
                 value={selectedMonth}
                 onChange={(event) => setSelectedMonth(event.target.value)}
-                className="appearance-none pl-8 pr-3 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-100 border border-black/[0.07] dark:border-white/[0.08] outline-none focus:ring-2 focus:ring-rose-500/20"
+                className="appearance-none pl-8 pr-3 py-2 rounded-control text-xs font-semibold bg-surface text-zinc-800 dark:text-zinc-100 border border-black/[0.07] dark:border-white/[0.08] outline-none focus:ring-2 focus:ring-rose-500/20"
               >
                 {monthOptions.map((month) => <option key={month.value} value={month.value}>{month.label}</option>)}
               </select>
@@ -251,13 +254,13 @@ export const ExpensesPage: React.FC = () => {
 
           {/* Search Input */}
           <div className="relative flex-1 max-w-md">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
             <input
               type="text"
               placeholder={t.searchPlaceholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3.5 py-1.5 rounded-xl text-xs bg-zinc-100 dark:bg-zinc-800/80 text-zinc-900 dark:text-white border border-transparent focus:border-rose-500/40 focus:ring-2 focus:ring-rose-500/10 outline-none transition-all placeholder:text-zinc-400"
+              className="w-full pl-9 pr-3.5 py-1.5 rounded-control text-xs bg-zinc-100 dark:bg-zinc-800/80 text-content border border-transparent focus:border-rose-500/40 focus:ring-2 focus:ring-rose-500/10 outline-none transition-all placeholder:text-muted"
             />
           </div>
         </div>
@@ -266,10 +269,10 @@ export const ExpensesPage: React.FC = () => {
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-0.5 no-scrollbar">
           <button
             onClick={() => setSelectedCategoryId('all')}
-            className={`px-2.5 py-1 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors shrink-0 ${
+            className={`px-2.5 py-1 rounded-control text-xs font-semibold whitespace-nowrap transition-colors shrink-0 ${
               selectedCategoryId === 'all'
                 ? 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/30'
-                : 'bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-400'
+                : 'bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 dark:text-muted'
             }`}
           >
             {t.allCategories}
@@ -280,15 +283,15 @@ export const ExpensesPage: React.FC = () => {
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategoryId(cat.id)}
-                className={`px-2.5 py-1 rounded-xl text-xs font-medium whitespace-nowrap transition-colors shrink-0 flex items-center gap-1.5 ${
+                className={`px-2.5 py-1 rounded-control text-xs font-medium whitespace-nowrap transition-colors shrink-0 flex items-center gap-1.5 ${
                   isSelected
                     ? 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/30 font-semibold'
-                    : 'bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-400'
+                    : 'bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 dark:text-muted'
                 }`}
               >
                 <span
                   className="w-2 h-2 rounded-full shrink-0"
-                  style={{ backgroundColor: cat.color }}
+                  style={{ backgroundColor: getCategoryVisualColor(cat.id) }}
                 />
                 <span>{getCategoryName(cat, language)}</span>
               </button>
@@ -299,7 +302,7 @@ export const ExpensesPage: React.FC = () => {
 
       {/* Date-Grouped Expenses List */}
       {groupedByDate.length === 0 ? (
-        <div className="p-8 rounded-2xl bg-white/80 dark:bg-zinc-900/60 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] text-center">
+        <div className="p-8 rounded-card bg-surface backdrop-blur-xl border border-border-subtle text-center">
           <EmptyState
             title={t.noExpensesFound}
             description={t.noExpensesYet}
@@ -319,9 +322,7 @@ export const ExpensesPage: React.FC = () => {
       ) : (
         <div className="space-y-6">
           {groupedByDate.map(([dateKey, items]) => {
-            const dayTotal = money.round(
-              items.reduce((sum, item) => sum + money.toCents(item.amount), 0) / 100
-            );
+            const dayTotal = selectFinancialSummary(items).expenses;
             const dateLabel = formatDate(dateKey, language);
 
             return (
@@ -329,22 +330,22 @@ export const ExpensesPage: React.FC = () => {
                 {/* Date Group Header */}
                 <div className="flex items-center justify-between px-1">
                   <div className="flex items-center gap-2">
-                    <Calendar className="w-3.5 h-3.5 text-zinc-400" />
-                    <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200">
+                    <Calendar className="w-3.5 h-3.5 text-muted" />
+                    <span className="text-xs font-bold text-content">
                       {dateLabel}
                     </span>
-                    <span className="text-[10px] text-zinc-400 font-medium">
+                    <span className="text-caption text-muted font-medium">
                       ({items.length})
                     </span>
                   </div>
 
                   <span className="text-xs font-bold text-rose-600 dark:text-rose-400 tabular-nums">
-                    -{formatMAD(dayTotal, false, language)}
+                    <MoneyText amount={dayTotal} prefix="-" />
                   </span>
                 </div>
 
                 {/* Day's Expenses Cards */}
-                <div className="rounded-2xl bg-white/80 dark:bg-zinc-900/60 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] divide-y divide-black/[0.04] dark:divide-white/[0.05] overflow-hidden shadow-xs">
+                <div className="rounded-card bg-surface backdrop-blur-xl border border-border-subtle divide-y divide-black/[0.04] dark:divide-white/[0.05] overflow-hidden shadow-xs">
                   {items.map((tx) => {
                     const cat = categories.find((c) => c.id === tx.categoryId);
                     const subCat = cat?.subcategories?.find((s) => s.id === tx.subCategoryId);
@@ -379,18 +380,18 @@ export const ExpensesPage: React.FC = () => {
                         {/* Left: Category Icon & Item Details */}
                         <div className="flex items-center gap-3 min-w-0">
                           <div
-                            className="w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0 shadow-xs"
-                            style={{ backgroundColor: cat?.color || '#f43f5e' }}
+                            className="w-10 h-10 rounded-control flex items-center justify-center text-white shrink-0 shadow-xs"
+                            style={{ backgroundColor: getCategoryVisualColor(cat?.id) }}
                           >
                             <IconComp className="w-5 h-5" />
                           </div>
 
                           <div className="min-w-0">
-                            <h4 className="text-sm font-bold text-zinc-900 dark:text-white truncate">
+                            <h4 className="text-sm font-bold text-content truncate">
                               {itemName}
                             </h4>
 
-                            <div className="flex items-center gap-2 mt-0.5 text-[11px] text-zinc-500 dark:text-zinc-400 flex-wrap">
+                            <div className="flex items-center gap-2 mt-0.5 text-caption text-muted flex-wrap">
                               <span className="font-medium text-zinc-600 dark:text-zinc-300">
                                 {catName}
                               </span>
@@ -398,15 +399,15 @@ export const ExpensesPage: React.FC = () => {
                               {subCatName && (
                                 <>
                                   <span>•</span>
-                                  <span className="px-1.5 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-[10px] font-medium text-zinc-600 dark:text-zinc-300">
+                                  <span className="px-1.5 py-0.5 rounded-control bg-zinc-100 dark:bg-zinc-800 text-caption font-medium text-zinc-600 dark:text-zinc-300">
                                     {subCatName}
                                   </span>
                                 </>
                               )}
 
                               <span>•</span>
-                              <span className="flex items-center gap-1 text-[10px] text-zinc-400 tabular-nums">
-                                <Clock className="w-3 h-3 text-zinc-400" />
+                              <span className="flex items-center gap-1 text-caption text-muted tabular-nums">
+                                <Clock className="w-3 h-3 text-muted" />
                                 {exactTime}
                               </span>
                             </div>
@@ -416,7 +417,7 @@ export const ExpensesPage: React.FC = () => {
                         {/* Right: Amount & Quick Delete */}
                         <div className="flex items-center gap-3 shrink-0">
                           <span className="text-base sm:text-lg font-bold text-rose-600 dark:text-rose-400 tabular-nums">
-                            <PrivacyCurrency
+                            <MoneyText
                               amount={Number(tx.amount)}
                               prefix="-"
                               className="font-bold text-rose-600 dark:text-rose-400"
@@ -425,7 +426,7 @@ export const ExpensesPage: React.FC = () => {
 
                           <button
                             onClick={() => handleDelete(tx)}
-                            className="p-1.5 rounded-lg text-zinc-300 hover:text-rose-600 dark:text-zinc-600 dark:hover:text-rose-400 hover:bg-rose-500/10 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                            className="p-1.5 rounded-control text-zinc-300 hover:text-rose-600 dark:text-zinc-600 dark:hover:text-rose-400 hover:bg-rose-500/10 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
                             title={tCommon.delete}
                             aria-label={tCommon.delete}
                           >

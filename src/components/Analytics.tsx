@@ -1,23 +1,16 @@
 import React from 'react';
 import { Card } from './common/Card';
 import { useAppStore } from '../store/useAppStore';
-import { calculateAvailableBalance } from '../utils/calculations';
+import { calculateAvailableBalance, selectFinancialSummary } from '../utils/calculations';
 import { formatMAD } from '../utils/formatters';
-import { money } from '../lib/currency';
 
 export const Analytics: React.FC = () => {
   const { transactions, initialBalance, language } = useAppStore();
 
   // Calculate analytics data with exact currency arithmetic
-  const incomeCents = (transactions || [])
-    .filter(t => t.type === 'income')
-    .reduce((sum, t) => sum + money.toCents(t.amount), 0);
-  const expenseCents = (transactions || [])
-    .filter(t => t.type === 'expense')
-    .reduce((sum, t) => sum + money.toCents(t.amount), 0);
-
-  const totalIncome = money.round(incomeCents / 100);
-  const totalExpenses = money.round(expenseCents / 100);
+  const summary = selectFinancialSummary(transactions);
+  const totalIncome = summary.income;
+  const totalExpenses = summary.expenses;
   const balance = calculateAvailableBalance(initialBalance, transactions);
 
   return (

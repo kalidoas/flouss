@@ -4,6 +4,7 @@ import { useAppStore } from '../../store/useAppStore';
 import { formatMAD, formatDateTime } from '../../utils/formatters';
 import { getCategoryIcon } from '../../utils/icons';
 import { translations } from '../../i18n/translations';
+import { getCategoryVisualColor } from '../../utils/categoryColor';
 import {
   getCategoryName,
   getSubCategoryName,
@@ -14,7 +15,7 @@ import {
 import { Trash2, AlertTriangle } from 'lucide-react';
 import { Modal } from '../common/Modal';
 import { Button } from '../common/Button';
-import { PrivacyCurrency } from '../common/PrivacyCurrency';
+import { MoneyText } from '../common/PrivacyCurrency';
 import { SwipeRow } from '../common/SwipeRow';
 
 interface TransactionItemProps {
@@ -108,7 +109,7 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
         return {
           title: subName ? `${catName} › ${subName}` : catName,
           icon: category?.icon || 'Utensils',
-          color: category?.color || '#f43f5e',
+          color: getCategoryVisualColor(category?.id),
           amountPrefix: '- ',
           amountClass: 'text-rose-600 dark:text-rose-400 font-bold',
           badgeText: translations[language].dashboard.addExpense,
@@ -120,7 +121,7 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
         return {
           title: `${tCommon.savingFor} ${catName}`,
           icon: category?.icon || 'Target',
-          color: category?.color || '#3b82f6',
+          color: getCategoryVisualColor(category?.id),
           amountPrefix: '- ',
           amountClass: 'text-blue-600 dark:text-blue-400 font-bold',
           badgeText: translations[language].dashboard.addContribution,
@@ -189,12 +190,12 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
       <SwipeRow onDelete={handleSwipeDelete}>
         <div
           data-press="row"
-          className="group interactive-row flex items-center justify-between p-2.5 sm:p-3 rounded-md bg-white dark:bg-[#202020] border border-[#e3e2de] dark:border-[#2f2f2f] hover:bg-[#fbfbfa] dark:hover:bg-[#252525] transition-colors"
+          className="group interactive-row flex items-center justify-between p-2.5 sm:p-3 rounded-control bg-surface border border-border-subtle hover:bg-surface-raised transition-colors"
         >
           {/* Left: Icon & Names */}
           <div className="flex items-center gap-2.5 min-w-0">
             <div
-              className="w-8 h-8 rounded-md flex items-center justify-center text-white shrink-0"
+              className="w-8 h-8 rounded-control flex items-center justify-center text-white shrink-0"
               style={{ backgroundColor: details.color }}
             >
               <IconComp className="w-4 h-4" />
@@ -202,19 +203,22 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
 
             <div className="min-w-0">
               <div className="flex items-center gap-2 min-w-0">
-                <h4 className="min-w-0 flex-1 text-xs sm:text-sm font-medium text-[#37352f] dark:text-[#ecebed] truncate">
+                <h4 className="min-w-0 flex-1 text-xs sm:text-sm font-medium text-content whitespace-normal break-words">
                   {details.title}
                 </h4>
-                <span className={`shrink-0 whitespace-nowrap text-[10px] font-medium px-1.5 py-0.2 rounded border ${details.badgeBg}`}>
+                <span
+                  title={transaction.type === 'adjustment' ? translations[language].summaryScopes.adjustment : undefined}
+                  className={`shrink-0 whitespace-nowrap text-caption font-medium px-1.5 py-0.5 rounded-control border ${details.badgeBg} ${transaction.type === 'adjustment' ? 'bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/30' : ''}`}
+                >
                   {details.badgeText}
                 </span>
               </div>
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-[#787774] dark:text-[#9b9a97] mt-0.5">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-caption text-muted mt-0.5">
                 <span className="shrink-0 whitespace-nowrap">{formatDateTime(transaction.date, language)}</span>
                 {transaction.note && (
                   <>
                     <span className="shrink-0">•</span>
-                    <span className="min-w-0 truncate max-w-[140px] sm:max-w-xs text-[#787774] dark:text-[#9b9a97]">
+                    <span className="min-w-0 whitespace-normal break-words text-muted">
                       {translateCategoryText(transaction.note, language) || transaction.note}
                     </span>
                   </>
@@ -225,7 +229,7 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
 
           {/* Right: Amount & Delete action */}
           <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-2">
-            <PrivacyCurrency
+            <MoneyText
               amount={transaction.type === 'adjustment' ? Math.abs(transaction.amount) : transaction.amount}
               prefix={details.amountPrefix}
               className={`text-xs sm:text-sm font-semibold ${details.amountClass}`}
@@ -234,7 +238,7 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
             <button
               onClick={() => setShowDeleteConfirm(true)}
               title={t.deleteTransactionTitle}
-              className="opacity-0 group-hover:opacity-100 focus:opacity-100 p-1 rounded text-[#787774] hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+              className="opacity-0 group-hover:opacity-100 focus:opacity-100 p-1 rounded text-muted hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
               aria-label={tCommon.delete}
             >
               <Trash2 className="w-3.5 h-3.5" />
