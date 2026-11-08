@@ -7,6 +7,7 @@ import { AddContributionModal } from '../transactions/AddContributionModal';
 import { BalanceSparkline, buildBalanceSeries } from './BalanceSparkline';
 import { selectDashboardFinancials } from '../../utils/calculations';
 import { getCurrentMonthStr } from '../../utils/formatters';
+import { getDailyRateInsight } from '../../utils/dashboard';
 import { translations } from '../../i18n/translations';
 import { ArrowDownRight, ArrowUpRight, Pencil, PiggyBank, TrendingDown, TrendingUp } from 'lucide-react';
 
@@ -30,8 +31,7 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
     () => buildBalanceSeries(initialBalance, transactions, selectedMonth, currentMonth, today),
     [initialBalance, transactions, selectedMonth, currentMonth]
   );
-  const daysLeft = Math.max(1, new Date(Number(selectedMonth.slice(0, 4)), Number(selectedMonth.slice(5, 7)), 0).getDate() - today.getDate() + 1);
-  const dailyRate = summary.balance / daysLeft;
+  const dailyInsight = getDailyRateInsight(summary.balance, selectedMonth, today);
   const openingBalance = series.length ? series[0].balance - series[0].change : 0;
   const delta = summary.balance - openingBalance;
   const deltaPercent = openingBalance !== 0 ? Math.round((delta / Math.abs(openingBalance)) * 100) : 0;
@@ -63,9 +63,9 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
                 </button>
               )}
             </div>
-            {isCurrentMonth && summary.balance > 0 && <p className="mt-3 flex flex-wrap items-center gap-x-1.5 text-sm text-[#A1A1A6]">
-              <span>{t.about}</span><MoneyText amount={dailyRate} className="font-semibold text-[#F5F5F7]" />
-              <span>{t.perDay}; {daysLeft} {t.daysLeft}</span>
+            {dailyInsight && <p className="mt-3 flex flex-wrap items-center gap-x-1.5 text-sm text-[#A1A1A6]">
+              <span>{t.about}</span><MoneyText amount={dailyInsight.amountPerDay} className="font-semibold text-[#F5F5F7]" />
+              <span>{t.perDay}; {dailyInsight.daysLeft} {t.daysLeft}</span>
             </p>}
             <span className={`mt-3 inline-flex min-h-8 items-center gap-1.5 rounded-full border px-2.5 text-xs font-semibold ${deltaPositive ? 'border-[#30D158]/25 bg-[#30D158]/10 text-[#30D158]' : 'border-[#FF6961]/25 bg-[#FF453A]/10 text-[#FF6961]'}`}>
               {deltaPositive ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}

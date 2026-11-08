@@ -51,7 +51,7 @@ export const PrivacyCurrency: React.FC<PrivacyCurrencyProps> = ({
     >
       {prefix}
       {showSign && numVal > 0 && '+'}
-      {numericPart}{currencyPart && <>{' '}<span className={currencyClassName}>{currencyPart}</span></>}
+      {numericPart}{currencyPart && <span className={`ms-1 ${currencyClassName || ''}`}>{currencyPart}</span>}
       {suffix}
     </span>
   );

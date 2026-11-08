@@ -5,6 +5,9 @@ import { BottomSheet } from '../common/BottomSheet';
 import { getCategoryName, getIncomeSourceName } from '../../utils/i18nHelpers';
 import { translations } from '../../i18n/translations';
 import { Transaction } from '../../types';
+import { MoneyText } from '../common/PrivacyCurrency';
+import { deriveFrequentExpenseCombos } from '../../utils/dashboard';
+import { formatMAD } from '../../utils/formatters';
 
 export type QuickAddType = 'expense' | 'income';
 
@@ -20,8 +23,9 @@ const toLocalInputValue = (date: Date) => {
 };
 
 export const QuickAddSheet: React.FC<QuickAddSheetProps> = ({ isOpen, onClose, initialType = 'expense' }) => {
-  const { categories, incomeSources, transactions, addTransaction, language } = useAppStore();
+  const { categories, incomeSources, transactions, addTransaction, deleteTransaction, showToast, language } = useAppStore();
   const t = translations[language].common;
+  const tDashboard = translations[language].dashboard;
   const [type, setType] = useState<QuickAddType>(initialType);
   const [amount, setAmount] = useState('');
   const [selectionId, setSelectionId] = useState('');
@@ -54,6 +58,26 @@ export const QuickAddSheet: React.FC<QuickAddSheetProps> = ({ isOpen, onClose, i
       : categories.filter((category) => !category.isArchived && !category.isGoal);
     return [...sourceOptions].sort((a, b) => (counts.get(b.id) || 0) - (counts.get(a.id) || 0));
   }, [categories, incomeSources, transactions, type]);
+
+  const frequentExpenses = useMemo(
+    () => deriveFrequentExpenseCombos(transactions, categories),
+    [transactions, categories]
+  );
+
+  const addFrequentExpense = (categoryId: string, value: number) => {
+    const now = new Date().toISOString();
+    const transaction: Transaction = {
+      id: `tx_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      type: 'expense',
+      amount: value,
+      categoryId,
+      date: now,
+      createdAt: now,
+    };
+    addTransaction(transaction);
+    showToast({ message: tDashboard.quickExpenseAdded, actionText: t.undo, onAction: () => deleteTransaction(transaction.id) });
+    onClose();
+  };
 
   useEffect(() => {
     if (options.length && !options.some((option) => option.id === selectionId)) {
@@ -143,6 +167,21 @@ export const QuickAddSheet: React.FC<QuickAddSheetProps> = ({ isOpen, onClose, i
             >{key}</button>
           ))}
         </div>
+
+        {type === 'expense' && frequentExpenses.length > 0 && <section aria-label={tDashboard.frequentExpenses} className="space-y-2">
+          <p className="text-xs font-medium text-muted">{tDashboard.frequentExpenses}</p>
+          <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
+            {frequentExpenses.map((item) => {
+              const category = categories.find((entry) => entry.id === item.categoryId);
+              if (!category) return null;
+              const label = getCategoryName(category, language);
+              const formattedAmount = formatMAD(item.amount, false, language);
+              return <button key={`${item.categoryId}:${item.amount}`} type="button" onClick={() => addFrequentExpense(item.categoryId, item.amount)} aria-label={`${label}, ${formattedAmount}`} title={`${label} · ${formattedAmount} · ${item.count}`} className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-control border border-border-subtle bg-surface px-3 text-xs font-medium text-content hover:border-accent/40 hover:bg-accent/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+                <span className="max-w-28 truncate">{label}</span><MoneyText amount={item.amount} className="font-semibold text-content" />
+              </button>;
+            })}
+          </div>
+        </section>}
 
         <div>
           <p className="mb-2 text-xs font-medium text-muted">{type === 'expense' ? t.category : t.source}</p>

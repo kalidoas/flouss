@@ -88,10 +88,10 @@ export const Header: React.FC = () => {
   );
 
   const monthSwitch = (
-    <div dir="ltr" className="inline-flex h-11 shrink-0 items-center gap-0.5 rounded-control border border-border-subtle bg-surface-raised p-0.5">
-      <button type="button" onClick={() => shiftMonth(-1)} aria-label={tWallet.prevMonth} className="flex h-10 w-10 items-center justify-center rounded-control text-muted hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A84FF]"><ChevronLeft className="h-4 w-4" /></button>
-      <span className="min-w-[116px] px-1 text-center text-xs font-semibold text-content">{formatMonthYear(selectedMonth, language)}</span>
-      <button type="button" onClick={() => shiftMonth(1)} aria-label={tWallet.nextMonth} disabled={selectedMonth >= currentMonth} className="flex h-10 w-10 items-center justify-center rounded-control text-muted hover:bg-surface disabled:opacity-35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A84FF]"><ChevronLeft className="h-4 w-4 rotate-180" /></button>
+    <div dir="ltr" className="inline-flex h-10 shrink-0 items-center gap-0.5 rounded-control border border-border-subtle bg-surface-raised p-0.5 lg:h-11">
+      <button type="button" onClick={() => shiftMonth(-1)} aria-label={tWallet.prevMonth} className="flex h-9 w-9 items-center justify-center rounded-control text-muted hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A84FF] lg:h-10 lg:w-10"><ChevronLeft className="h-4 w-4" /></button>
+      <span className="min-w-[88px] px-1 text-center text-[11px] font-semibold text-content lg:min-w-[116px] lg:text-xs">{formatMonthYear(selectedMonth, language)}</span>
+      <button type="button" onClick={() => shiftMonth(1)} aria-label={tWallet.nextMonth} disabled={selectedMonth >= currentMonth} className="flex h-9 w-9 items-center justify-center rounded-control text-muted hover:bg-surface disabled:opacity-35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A84FF] lg:h-10 lg:w-10"><ChevronLeft className="h-4 w-4 rotate-180" /></button>
     </div>
   );
 
@@ -116,8 +116,9 @@ export const Header: React.FC = () => {
           {monthSwitch}{privacyButton}{languageSwitch}{themeButton}<DynamicIsland />
         </div>
         <div className="flex w-full items-center justify-between gap-2 lg:hidden">
-          <button type="button" onClick={() => { playHapticFeedback('light'); navigateBack(); }} aria-label={tCommon.back} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-control text-muted hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A84FF]"><ChevronLeft className={`h-5 w-5 ${language === 'ar' ? 'rotate-180' : ''}`} /></button>
+          <button type="button" onClick={() => { playHapticFeedback('light'); navigateBack(); }} aria-label={tCommon.back} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control text-muted hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A84FF]"><ChevronLeft className={`h-5 w-5 ${language === 'ar' ? 'rotate-180' : ''}`} /></button>
           {monthSwitch}{privacyButton}
+          <button type="button" onClick={() => window.dispatchEvent(new Event('flouss:open-more'))} aria-label={tNav.morePages} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control text-muted hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A84FF]"><Menu className="h-5 w-5" /></button>
         </div>
       </div>
     </header>;
