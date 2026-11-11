@@ -9,6 +9,7 @@ import { PinLockModal } from './components/auth/PinLockModal';
 import { PinAuthScreen } from './components/auth/PinAuthScreen';
 import { GuidedTour } from './components/tour/GuidedTour';
 import { Toast } from './components/common/Toast';
+import { WelcomeModal } from './components/common/WelcomeModal';
 import { DashboardPage } from './pages/DashboardPage';
 import { CategoriesPage } from './pages/CategoriesPage';
 import { IncomePage } from './pages/IncomePage';
@@ -199,6 +200,7 @@ export const App: React.FC = () => {
     <>
       {pinEnabled && !isPinUnlocked && <PinLockModal />}
       <Layout>{renderScreen()}</Layout>
+      <WelcomeModal />
       <GuidedTour />
       <Toast />
     </>

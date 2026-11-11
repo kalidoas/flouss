@@ -20,6 +20,10 @@ import {
   clearPendingOtpSession,
   sendVerificationCodeEmail,
 } from '../../services/emailAuthService';
+import {
+  isBiometricsEnrolled,
+  authenticateWithPlatformBiometrics,
+} from '../../utils/biometrics';
 
 export { hashPin };
 
@@ -59,13 +63,19 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
   const [successMessage, setSuccessMessage] = useState('');
   const [lockout, setLockout] = useState(() => getPinLockoutStatus(user.uid));
 
+  // Biometrics availability
+  const [hasBiometrics, setHasBiometrics] = useState(false);
+
   // Forgot PIN OTP state
   const [otpDigits, setOtpDigits] = useState<string[]>(['', '', '', '', '', '']);
   const [otpTimer, setOtpTimer] = useState(60);
   const [isSubmittingOtp, setIsSubmittingOtp] = useState(false);
-  const [devOtpCode, setDevOtpCode] = useState<string | null>(null);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const otpInputsRef = React.useRef<(HTMLInputElement | null)[]>([]);
+
+  useEffect(() => {
+    isBiometricsEnrolled(user.uid).then(setHasBiometrics);
+  }, [user.uid]);
 
   useEffect(() => {
     if (!lockout.isLocked) return;
@@ -216,46 +226,19 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
     setErrorMessage('');
   };
 
-  // Handle biometric (FaceID / TouchID) via WebAuthn
+  // Handle platform biometric (Face ID / Touch ID) via registered WebAuthn credential
   const handleBiometric = async () => {
     try {
-      if (!window.PublicKeyCredential) {
-        setErrorMessage(
-          isAr ? 'المصادقة البيومترية غير مدعومة على هذا الجهاز.' : 'Biometric auth not supported on this device.'
-        );
-        return;
-      }
-      await window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable?.();
-      // Trigger biometric challenge
-      const credential = await navigator.credentials.get({
-        publicKey: {
-          challenge: crypto.getRandomValues(new Uint8Array(32)),
-          rpId: window.location.hostname,
-          allowCredentials: [],
-          userVerification: 'required',
-          timeout: 60000,
-        },
-      });
-      if (credential) {
-        // Success — bypass PIN by calling onVerify with a special biometric signal
-        // For now, trigger the verify with a placeholder that the store can handle
-        const isValid = await onVerify('__biometric__');
-        if (!isValid) {
-          setErrorMessage(
-            isAr
-              ? 'تعذّر التحقق البيومتري. استخدم رمز PIN.'
-              : isFr
-              ? 'Échec de la vérification biométrique. Utilisez votre PIN.'
-              : 'Biometric verification failed. Use PIN.'
-          );
-        }
+      const verified = await authenticateWithPlatformBiometrics(user.uid);
+      if (verified) {
+        await onVerify('__biometric__');
       }
     } catch {
-      // User cancelled or no registered passkey - silently ignore
+      // User cancelled: silent fallback to PIN keypad
     }
   };
 
-  // Initiate Forgot PIN flow: send OTP to email
+  // Initiate Forgot PIN flow: send OTP exclusively to email
   const handleForgotPin = async () => {
     if (!user.email) {
       setErrorMessage(
@@ -271,16 +254,26 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
     setErrorMessage('');
     try {
       const code = generateCryptographicOtp();
-      setDevOtpCode(code);
       await storePendingOtpSession(user.email, code, {
         fullName: user.displayName || user.email.split('@')[0],
         mode: 'login',
       });
-      await sendVerificationCodeEmail(
+      const result = await sendVerificationCodeEmail(
         user.email,
         user.displayName || user.email.split('@')[0],
         code
       );
+      if (!result.success) {
+        setErrorMessage(
+          result.error ||
+            (isAr
+              ? 'فشل إرسال رمز التحقق بالبريد. يرجى المحاولة مرة أخرى.'
+              : isFr
+              ? 'Échec de l’envoi du code par email. Veuillez réessayer.'
+              : 'Failed to send verification code. Please retry.')
+        );
+        return;
+      }
       setOtpDigits(['', '', '', '', '', '']);
       setOtpTimer(60);
       setMode('forgotPin_otp');
@@ -290,7 +283,7 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
         isAr
           ? 'فشل إرسال رمز التحقق. يرجى المحاولة مرة أخرى.'
           : isFr
-          ? 'Échec de l\'envoi du code. Veuillez réessayer.'
+          ? 'Échec de l’envoi du code. Veuillez réessayer.'
           : 'Failed to send verification code. Please try again.'
       );
     } finally {
@@ -313,11 +306,21 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
     try {
       const check = await verifyPendingOtpSession(code, user.email || '');
       if (!check.valid) {
-        setErrorMessage(
-          check.reason === 'expired'
-            ? (isAr ? 'انتهت صلاحية الرمز. اطلب رمزاً جديداً.' : 'Code expiré. Demandez un nouveau code.')
-            : (isAr ? 'رمز غير صحيح. يرجى المحاولة مرة أخرى.' : 'Code incorrect. Veuillez réessayer.')
-        );
+        if (check.reason === 'expired') {
+          setErrorMessage(
+            isAr ? 'انتهت صلاحية الرمز (10 دقائق). اطلب رمزاً جديداً.' : 'Code expiré (10 min). Demandez un nouveau code.'
+          );
+        } else if (check.reason === 'max_attempts_exceeded') {
+          setErrorMessage(
+            isAr ? 'تم تجاوز الحد الأقصى للمحاولات (5 محاولات). اطلب رمزاً جديداً.' : 'Nombre maximal de tentatives dépassé (5 max). Demandez un nouveau code.'
+          );
+        } else {
+          setErrorMessage(
+            isAr
+              ? `رمز غير صحيح. المحاولات المتبقية: ${check.attemptsRemaining ?? 0}`
+              : `Code incorrect. Tentatives restantes : ${check.attemptsRemaining ?? 0}`
+          );
+        }
         return;
       }
       clearPendingOtpSession();
@@ -399,20 +402,6 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
           <p className="text-xs font-mono font-semibold text-indigo-500 dark:text-indigo-400 mb-4">
             {user.email}
           </p>
-
-          {/* Dev OTP banner */}
-          {devOtpCode && (
-            <div className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 dark:text-indigo-400 text-xs mb-3">
-              <span className="font-mono font-bold">🔐 Code: {devOtpCode}</span>
-              <button
-                type="button"
-                onClick={() => { setOtpDigits(devOtpCode.split('').slice(0, 6)); otpInputsRef.current[5]?.focus(); }}
-                className="px-2 py-1 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/30 text-xs font-bold cursor-pointer"
-              >
-                {isAr ? 'تعبئة' : 'Fill'}
-              </button>
-            </div>
-          )}
 
           {errorMessage && (
             <p className="text-xs text-rose-500 font-medium mb-3 animate-shake">{errorMessage}</p>
@@ -601,13 +590,13 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
             0
           </button>
 
-          {/* Biometric icon on verify mode | Delete on create mode */}
-          {mode === 'verify' ? (
+          {/* Biometric icon on verify mode ONLY if enrolled on this device | Otherwise Delete button */}
+          {mode === 'verify' && hasBiometrics ? (
             <button
               type="button"
               onClick={handleBiometric}
-              title={isAr ? 'FaceID / TouchID' : 'FaceID / TouchID'}
-              className="h-11 rounded-xl text-[#787774] dark:text-[#9b9a97] hover:bg-[#f1f0ee] dark:hover:bg-[#282828] active:scale-95 flex items-center justify-center transition-all cursor-pointer"
+              title={isAr ? 'Face ID / Touch ID' : 'Face ID / Touch ID'}
+              className="h-11 rounded-xl text-indigo-500 hover:bg-[#f1f0ee] dark:hover:bg-[#282828] active:scale-95 flex items-center justify-center transition-all cursor-pointer"
               aria-label="Biometric authentication"
             >
               <ScanFace className="w-5 h-5" />

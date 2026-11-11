@@ -145,7 +145,7 @@ export const ExpensesPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-[1280px] mx-auto space-y-5 animate-page select-text pb-8">
+    <div className="w-full max-w-[1280px] max-w-full overflow-x-hidden min-w-0 mx-auto space-y-5 animate-page select-text pb-8">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -405,7 +405,7 @@ export const ExpensesPage: React.FC = () => {
 
                             <button
                               onClick={() => handleDelete(tx)}
-                              className="p-1.5 rounded-lg text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                              className="hidden sm:flex p-1.5 rounded-lg text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
                               title={tCommon.delete}
                               aria-label={tCommon.delete}
                             >

@@ -54,8 +54,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onQuickAdd }) => {
 
   return (
     <>
-      <nav aria-label={language === 'ar' ? 'التنقل الرئيسي' : language === 'fr' ? 'Navigation principale' : 'Main navigation'} className="md:hidden fixed bottom-0 inset-x-0 z-[100] mx-3 mb-3 pb-[env(safe-area-inset-bottom)]">
-        <div className="grid grid-cols-5 items-center rounded-full bg-[#0D0E14]/85 backdrop-blur-2xl border border-white/10 shadow-2xl px-2 py-1.5">
+      <nav aria-label={language === 'ar' ? 'التنقل الرئيسي' : language === 'fr' ? 'Navigation principale' : 'Main navigation'} className="md:hidden fixed bottom-0 inset-x-0 z-[100] px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pointer-events-none">
+        <div className="grid grid-cols-5 items-center rounded-full bg-[#0D0E14]/90 backdrop-blur-2xl border border-white/10 shadow-2xl px-2 py-1.5 max-w-md mx-auto w-full pointer-events-auto">
         {items.slice(0, 2).map((item) => {
           const Icon = item.icon;
           const selected = activeScreen === item.id;
@@ -115,7 +115,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onQuickAdd }) => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="fixed bottom-[88px] left-1/2 -translate-x-1/2 z-[105] w-[calc(100vw-2rem)] max-w-sm rounded-[28px] bg-[#0D0E14]/95 backdrop-blur-2xl border border-white/10 p-3.5 shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_0_0_rgba(255,255,255,0.1)]"
+              className="fixed bottom-[96px] inset-x-4 mx-auto z-[105] w-[calc(100vw-2rem)] max-w-sm rounded-[28px] bg-[#0D0E14]/95 backdrop-blur-2xl border border-white/10 p-3.5 shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_0_0_rgba(255,255,255,0.1)]"
             >
               <div className="grid grid-cols-2 gap-2.5">
                 {/* Action 1: Add Expense */}

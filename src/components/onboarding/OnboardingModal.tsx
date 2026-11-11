@@ -15,9 +15,14 @@ import {
   Coins,
   AlertTriangle,
   Sparkles,
+  ScanFace,
 } from 'lucide-react';
+import {
+  isPlatformBiometricsAvailable,
+  enrollPlatformBiometrics,
+} from '../../utils/biometrics';
 
-type OnboardingStep = 'pin' | 'balance';
+type OnboardingStep = 'pin' | 'biometrics' | 'balance';
 
 export const OnboardingModal: React.FC = () => {
   const { isOnboarded, lockInitialBalance, language, firebaseUser } = useAppStore();
@@ -56,7 +61,14 @@ export const OnboardingModal: React.FC = () => {
         setPinConfirm(next);
         if (next.length === 4) {
           if (next === pin) {
-            setTimeout(() => setStep('balance'), 250);
+            setTimeout(async () => {
+              const isBioAvailable = await isPlatformBiometricsAvailable();
+              if (isBioAvailable && firebaseUser?.uid) {
+                setStep('biometrics');
+              } else {
+                setStep('balance');
+              }
+            }, 250);
           } else {
             setError(
               isAr
@@ -233,6 +245,47 @@ export const OnboardingModal: React.FC = () => {
                 className="text-xs text-[#787774] hover:text-[#37352f] dark:hover:text-[#ecebed] underline transition-colors cursor-pointer"
               >
                 {isAr ? 'تخطي إعداد PIN في الوقت الحالي' : 'Passer cette étape (configurer plus tard)'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ================= STEP: Biometrics Opt-in ================= */}
+        {step === 'biometrics' && (
+          <div className="space-y-4 py-2">
+            <div>
+              <div className="w-14 h-14 mx-auto rounded-2xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center justify-center mb-3">
+                <ScanFace className="w-7 h-7" />
+              </div>
+              <h2 className="text-base font-bold text-[#37352f] dark:text-[#ecebed]">
+                {translations[language].auth.enableBiometricsTitle}
+              </h2>
+              <p className="text-xs text-[#787774] dark:text-[#9b9a97] mt-1 leading-relaxed">
+                {translations[language].auth.enableBiometricsDesc}
+              </p>
+            </div>
+
+            <div className="pt-3 space-y-2.5">
+              <button
+                type="button"
+                onClick={async () => {
+                  if (firebaseUser?.uid) {
+                    await enrollPlatformBiometrics(firebaseUser.uid, firebaseUser.email || undefined);
+                  }
+                  setStep('balance');
+                }}
+                className="w-full py-2.5 px-4 rounded-full bg-[#37352f] dark:bg-white text-white dark:text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-md active:scale-[0.98] transition-all"
+              >
+                <ScanFace className="w-4 h-4" />
+                <span>{translations[language].auth.enableBiometricsBtn}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setStep('balance')}
+                className="w-full py-2 px-4 rounded-full text-xs font-semibold text-[#787774] dark:text-[#9b9a97] hover:text-[#37352f] dark:hover:text-[#ecebed] cursor-pointer transition-colors"
+              >
+                {translations[language].auth.skipBiometricsBtn}
               </button>
             </div>
           </div>

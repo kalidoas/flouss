@@ -521,75 +521,13 @@ export const DEFAULT_INCOME_SOURCES: IncomeSource[] = [
   },
 ];
 
-export const DEFAULT_TASKS: TaskItem[] = [
-  {
-    id: 'task_salat',
-    title: 'Prière à l’heure (Salat)',
-    category: 'deen',
-    frequency: 'daily',
-    timeOfDay: 'anytime',
-    notes: 'Priorité spirituelle quotidienne',
-    createdAt: new Date().toISOString(),
-    completedDates: [],
-  },
-  {
-    id: 'task_sport',
-    title: 'Sport / Entraînement (45 min)',
-    category: 'sport',
-    frequency: 'daily',
-    timeOfDay: 'evening',
-    notes: 'Salle ou course à pied',
-    createdAt: new Date().toISOString(),
-    completedDates: [],
-  },
-  {
-    id: 'task_work',
-    title: 'Session Focus / Apprentissage & Code',
-    category: 'work',
-    frequency: 'weekdays',
-    timeOfDay: 'morning',
-    notes: '2 heures de concentration sans distraction',
-    createdAt: new Date().toISOString(),
-    completedDates: [],
-  },
-  {
-    id: 'task_water',
-    title: 'Boire 2 Litres d’eau',
-    category: 'health',
-    frequency: 'daily',
-    timeOfDay: 'anytime',
-    notes: 'Hydratation tout au long de la journée',
-    createdAt: new Date().toISOString(),
-    completedDates: [],
-  },
-  {
-    id: 'task_reading',
-    title: 'Lecture & Développement (20 pages)',
-    category: 'routine',
-    frequency: 'daily',
-    timeOfDay: 'evening',
-    notes: 'Livre de finance ou développement personnel',
-    createdAt: new Date().toISOString(),
-    completedDates: [],
-  },
-];
+export const DEFAULT_TASKS: TaskItem[] = [];
 
 export const DEFAULT_DEBTS: DebtItem[] = [];
 
 export const DEFAULT_SUBSCRIPTIONS: SubscriptionItem[] = [];
 
-export const DEFAULT_NOTES: NoteItem[] = [
-  {
-    id: 'note_welcome',
-    title: 'Bienvenue dans votre Espace Personnel 🌟',
-    content: 'Votre espace est sécurisé et synchronisé dans le cloud avec Firebase. Vous pouvez y noter vos priorités, plans ou pense-bêtes.',
-    color: '#10b981',
-    isPinned: true,
-    category: 'Personnel',
-    updatedAt: new Date().toISOString(),
-    createdAt: new Date().toISOString(),
-  },
-];
+export const DEFAULT_NOTES: NoteItem[] = [];
 
 export const DEFAULT_FOCUS_LISTS: FocusListMenu[] = [
   {
@@ -600,142 +538,12 @@ export const DEFAULT_FOCUS_LISTS: FocusListMenu[] = [
   },
 ];
 
-export const DEFAULT_FOCUS_TASKS: FocusTask[] = [
-  {
-    id: 'ft_1',
-    listId: 'default',
-    text: 'Payer la facture Wi-Fi et eau avant le 10',
-    completed: false,
-    isPinned: true,
-    priority: 'urgent',
-    dueDate: new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0],
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'ft_2',
-    listId: 'default',
-    text: 'Transférer 1 000 DH vers le fonds d’urgence',
-    completed: false,
-    isPinned: true,
-    priority: 'normal',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'ft_3',
-    listId: 'default',
-    text: 'Vérifier les dépenses de la semaine passée',
-    completed: true,
-    isPinned: false,
-    priority: 'normal',
-    createdAt: new Date().toISOString(),
-  },
-];
+export const DEFAULT_FOCUS_TASKS: FocusTask[] = [];
 
-export const DEFAULT_STUDY_MODULES: StudyModuleItem[] = [
-  {
-    id: 'mod_mkt',
-    title: 'Marketing de Base',
-    subject: 'Économie & Gestion (S3)',
-    completed: true,
-    notes: 'Segmentation, ciblage et mix marketing',
-    createdAt: new Date().toISOString(),
-    completedAt: new Date().toISOString(),
-  },
-  {
-    id: 'mod_compta',
-    title: 'Comptabilité Analytique',
-    subject: 'Économie & Gestion (S3)',
-    completed: false,
-    notes: 'Coûts complets, centres d’analyse et seuil de rentabilité',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'mod_eco_mon',
-    title: 'Économie Monétaire et Financière',
-    subject: 'Économie & Gestion (S3)',
-    completed: false,
-    notes: 'Masse monétaire, banques centrales et taux d’intérêt',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'mod_echant',
-    title: 'Échantillonnage et Estimation',
-    subject: 'Statistiques & Économie (S3)',
-    completed: false,
-    notes: 'Loi normale, intervalles de confiance et tests statistiques',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'mod_pes',
-    title: 'Problèmes Économiques et Sociaux',
-    subject: 'Économie & Gestion (S3)',
-    completed: false,
-    notes: 'Chômage, inflation et politiques macroéconomiques',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'mod_grh',
-    title: 'Gestion des Ressources Humaines',
-    subject: 'Management (S3)',
-    completed: false,
-    notes: 'Recrutement, rémunération et gestion des carrières',
-    createdAt: new Date().toISOString(),
-  },
-];
+export const DEFAULT_STUDY_MODULES: StudyModuleItem[] = [];
 
 export const DEFAULT_GYM_LOGS: GymWorkoutLog[] = [];
 
-export const DEFAULT_PROGRAM_TRACKS: ProgramTrack[] = [
-  {
-    id: 'prog_salat',
-    title: 'Salat',
-    icon: '🕌',
-    color: '#10b981',
-    type: 'salat',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'prog_coding',
-    title: 'Coding',
-    icon: '💻',
-    color: '#3b82f6',
-    type: 'coding',
-    createdAt: new Date().toISOString(),
-    subtasks: [
-      { id: 'sub_php', title: 'PHP & Backend', points: 10, createdAt: new Date().toISOString(), completedDates: [] },
-      { id: 'sub_html', title: 'HTML & CSS', points: 10, createdAt: new Date().toISOString(), completedDates: [] },
-      { id: 'sub_react', title: 'React & TypeScript', points: 10, createdAt: new Date().toISOString(), completedDates: [] },
-    ],
-  },
-  {
-    id: 'prog_english',
-    title: 'English',
-    icon: '🗣️',
-    color: '#8b5cf6',
-    type: 'english',
-    createdAt: new Date().toISOString(),
-    subtasks: [
-      { id: 'sub_listening', title: 'Listening (Podcast)', points: 10, createdAt: new Date().toISOString(), completedDates: [] },
-      { id: 'sub_reading', title: 'Reading (Articles)', points: 10, createdAt: new Date().toISOString(), completedDates: [] },
-      { id: 'sub_speaking', title: 'Speaking Practice', points: 10, createdAt: new Date().toISOString(), completedDates: [] },
-    ],
-  },
-  {
-    id: 'prog_gym',
-    title: 'Gym & Fitness',
-    icon: '🏋️',
-    color: '#f43f5e',
-    type: 'gym',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'prog_study',
-    title: 'Study & Revision',
-    icon: '📚',
-    color: '#6366f1',
-    type: 'study',
-    createdAt: new Date().toISOString(),
-  },
-];
+export const DEFAULT_PROGRAM_TRACKS: ProgramTrack[] = [];
 
 

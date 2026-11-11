@@ -40,7 +40,7 @@ vi.mock('@firebase/firestore', () => ({
   onSnapshot: vi.fn(() => vi.fn()),
 }));
 
-import { applyRemoteAccount, useAppStore } from './useAppStore';
+import { applyRemoteAccount, makeInitialAccount, useAppStore } from './useAppStore';
 import { getDoc, setDoc } from '@firebase/firestore';
 import { Transaction } from '../types';
 
@@ -226,7 +226,13 @@ describe('useAppStore - Persistence & Cloud Sync Safety', () => {
     });
   });
 
-  it('addTransaction persists to localStorage immediately so data is never lost', () => {
+  it('addTransaction persists to scoped localStorage immediately so data is never lost', () => {
+    useAppStore.setState({
+      firebaseUser: { uid: 'test_uid', email: 'test@example.com' } as any,
+      activeAccountId: 'test_uid',
+      accounts: [makeInitialAccount('test_uid', 'Test User', 'test@example.com')],
+    });
+
     const store = useAppStore.getState();
 
     const newTx: Transaction = {
@@ -246,14 +252,14 @@ describe('useAppStore - Persistence & Cloud Sync Safety', () => {
     const currentTxs = useAppStore.getState().transactions;
     expect(currentTxs.some((t) => t.id === 'tx_bus_100')).toBe(true);
 
-    // Verify localStorage has it saved immediately
-    const rawDefault = localStorage.getItem('flouss_user_default');
-    expect(rawDefault).not.toBeNull();
-    const saved = JSON.parse(rawDefault!);
+    // Verify scoped localStorage has it saved immediately
+    const rawScoped = localStorage.getItem('flouss_user_test_uid');
+    expect(rawScoped).not.toBeNull();
+    const saved = JSON.parse(rawScoped!);
     expect(saved.transactions.some((t: any) => t.id === 'tx_bus_100')).toBe(true);
   });
 
-  it('initAuthSession(null) DOES NOT wipe local accounts or transactions', async () => {
+  it('initAuthSession(null) clears in-memory store and wipes global legacy keys', async () => {
     const store = useAppStore.getState();
 
     const localTx: Transaction = {
@@ -266,12 +272,13 @@ describe('useAppStore - Persistence & Cloud Sync Safety', () => {
     };
     store.addTransaction(localTx);
 
-    // Call initAuthSession(null) e.g. on unauthenticated state or popup closed
+    // Call initAuthSession(null) e.g. on unauthenticated state or sign-out
     await store.initAuthSession(null);
 
     const stateAfter = useAppStore.getState();
-    expect(stateAfter.accounts.length).toBeGreaterThan(0);
-    expect(stateAfter.transactions.some((t) => t.id === 'tx_local_saved')).toBe(true);
+    expect(stateAfter.accounts.length).toBe(0);
+    expect(stateAfter.transactions.length).toBe(0);
+    expect(localStorage.getItem('flouss_user_default')).toBeNull();
   });
 
   it('initAuthSession(user) treats Firestore as ground truth and never resurrects stale local transactions', async () => {

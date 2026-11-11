@@ -223,87 +223,13 @@ export interface AppState {
   setDemoMode?: (v: boolean) => void;
 }
 
-export const RESTORED_EXPENSES: Transaction[] = [
-  {
-    id: 'tx_exp_gym_nov2',
-    type: 'expense',
-    amount: 150.0,
-    categoryId: 'cat_sport',
-    subCategoryId: 'sub_gym',
-    note: 'اشتراك القاعة الرياضية',
-    date: '2026-11-02T10:00:00.000Z',
-    createdAt: '2026-11-02T10:00:00.000Z',
-  },
-  {
-    id: 'tx_exp_gel_nov2',
-    type: 'expense',
-    amount: 15.4,
-    categoryId: 'cat_sante',
-    subCategoryId: 'sub_skincare',
-    note: 'عناية بالبشرة Gel douch',
-    date: '2026-11-02T11:30:00.000Z',
-    createdAt: '2026-11-02T11:30:00.000Z',
-  },
-  {
-    id: 'tx_exp_cafe_nov2',
-    type: 'expense',
-    amount: 12.0,
-    categoryId: 'cat_cafe',
-    subCategoryId: 'sub_coffee',
-    note: 'قهوة وشاي',
-    date: '2026-11-02T15:00:00.000Z',
-    createdAt: '2026-11-02T15:00:00.000Z',
-  },
-  {
-    id: 'tx_exp_cafe_nov1',
-    type: 'expense',
-    amount: 12.0,
-    categoryId: 'cat_cafe',
-    subCategoryId: 'sub_coffee',
-    note: 'قهوة وشاي',
-    date: '2026-11-01T16:30:00.000Z',
-    createdAt: '2026-11-01T16:30:00.000Z',
-  },
-  {
-    id: 'tx_exp_snack_nov1',
-    type: 'expense',
-    amount: 5.0,
-    categoryId: 'cat_nourriture',
-    subCategoryId: 'sub_fastFood',
-    note: 'وجبات سريعة وخفيفة',
-    date: '2026-11-01T13:00:00.000Z',
-    createdAt: '2026-11-01T13:00:00.000Z',
-  },
-];
+export const RESTORED_EXPENSES: Transaction[] = [];
 
 export function ensureRestoredExpenses(transactions: Transaction[]): {
   transactions: Transaction[];
   changed: boolean;
 } {
-  const current = Array.isArray(transactions) ? [...transactions] : [];
-  let changed = false;
-
-  for (const item of RESTORED_EXPENSES) {
-    const exists = current.some((t) => {
-      if (t.id === item.id) return true;
-      if (t.type !== 'expense') return false;
-      const sameAmount = Math.abs(Number(t.amount) - item.amount) < 0.01;
-      const sameDate = t.date.slice(0, 10) === item.date.slice(0, 10);
-      const sameCategory = t.categoryId === item.categoryId;
-      return sameAmount && sameDate && sameCategory;
-    });
-
-    if (!exists) {
-      current.push(item);
-      changed = true;
-    }
-  }
-
-  if (changed) {
-    current.sort((a, b) => b.date.localeCompare(a.date));
-  }
-
-  return { transactions: current, changed };
+  return { transactions: Array.isArray(transactions) ? transactions : [], changed: false };
 }
 
 export function makeInitialAccount(uid: string, name: string, email?: string): UserAccount {
@@ -316,7 +242,7 @@ export function makeInitialAccount(uid: string, name: string, email?: string): U
     tourCompleted: false,
     avatarColor: '#2383e2',
     avatarIcon: '👤',
-    initialBalance: 0,
+    initialBalance: null,
     initialBalanceLockedAt: null,
     balance: 0,
     isOnboarded: false,
@@ -326,17 +252,17 @@ export function makeInitialAccount(uid: string, name: string, email?: string): U
     deletedTransactionIds: [],
     recurringRules: [],
     recentNotes: [],
-    tasks: DEFAULT_TASKS,
-    focusTasks: DEFAULT_FOCUS_TASKS,
+    tasks: [],
+    focusTasks: [],
     focusLists: DEFAULT_FOCUS_LISTS,
-    debts: DEFAULT_DEBTS,
-    subscriptions: migrateSubscriptions(DEFAULT_SUBSCRIPTIONS),
-    notes: DEFAULT_NOTES,
+    debts: [],
+    subscriptions: [],
+    notes: [],
     deletedCategoryIds: [],
     salatLogs: {},
-    studyModules: DEFAULT_STUDY_MODULES,
-    gymLogs: DEFAULT_GYM_LOGS,
-    programTracks: DEFAULT_PROGRAM_TRACKS,
+    studyModules: [],
+    gymLogs: [],
+    programTracks: [],
     meetings: [],
     notificationSettings: {
       soundEnabled: true,
@@ -581,7 +507,7 @@ export function applyRemoteAccount(
 
   try {
     localStorage.setItem(`flouss_user_${uid}`, JSON.stringify(finalSyncedAccount));
-    localStorage.setItem('flouss_user_default', JSON.stringify(finalSyncedAccount));
+    localStorage.removeItem('flouss_user_default');
   } catch (e) {}
 
   return { finalSyncedAccount, remotePin };
@@ -813,8 +739,7 @@ export const useAppStore = create<AppState>()(
             if (uid) {
               localStorage.setItem(`flouss_user_${uid}`, JSON.stringify(extracted.currentAccount));
             }
-            // Always maintain flouss_user_default as an offline safety backup
-            localStorage.setItem('flouss_user_default', JSON.stringify(extracted.currentAccount));
+            localStorage.removeItem('flouss_user_default');
           } catch (e) {}
 
           if (uid) {
@@ -873,36 +798,20 @@ export const useAppStore = create<AppState>()(
           }
 
           if (!user) {
-            // NEVER wipe local state if auth drops, is unauthenticated, or sync fails
-            let fallbackAccount: UserAccount | null = null;
             try {
-              const rawDefault = localStorage.getItem('flouss_user_default');
-              if (rawDefault) fallbackAccount = JSON.parse(rawDefault);
+              localStorage.removeItem('flouss_user_default');
             } catch (e) {}
-
-            const s = get();
-            const currentAcc =
-              s.accounts.find(
-                (a: UserAccount) =>
-                  (a.transactions && a.transactions.length > 0) ||
-                  a.initialBalance !== null ||
-                  Boolean(a.isOnboarded)
-              ) ||
-              s.accounts[0] ||
-              fallbackAccount ||
-              makeInitialAccount('default', 'Khalid');
-
-            const extracted = extractAccountState(currentAcc);
 
             set({
               firebaseUser: null,
               loadingAuth: false,
-              isHydratedFromCloud: true,
+              isHydratedFromCloud: false,
               isPinVerified: false,
+              isPinUnlocked: false,
               userPinCode: null,
-              accounts: s.accounts.length > 0 ? s.accounts : [currentAcc],
-              activeAccountId: s.activeAccountId || currentAcc.id,
-              ...extracted,
+              accounts: [],
+              activeAccountId: null,
+              ...extractAccountState(null),
             });
             return;
           }
@@ -914,10 +823,16 @@ export const useAppStore = create<AppState>()(
               clearTimeout(syncTimer);
               syncTimer = null;
             }
+            try {
+              localStorage.removeItem('flouss_user_default');
+            } catch (e) {}
             set({
               isHydratedFromCloud: false,
               accounts: [],
               activeAccountId: null,
+              userPinCode: null,
+              isPinVerified: false,
+              isPinUnlocked: false,
               ...extractAccountState(null),
             });
           }
@@ -925,8 +840,6 @@ export const useAppStore = create<AppState>()(
           const uid = user.uid;
           const userDocRef = doc(db, 'users', uid);
 
-          // Requirement 3: Never check localStorage first to decide if isOnboarded is true.
-          // Keep loadingAuth true so Apple shimmer skeleton renders while fetching from Firestore.
           set({
             firebaseUser: user,
             loadingAuth: true,
@@ -936,61 +849,27 @@ export const useAppStore = create<AppState>()(
           let firestorePin: string | null = null;
           let resolvedAccount: UserAccount | null = null;
 
-          // 1. Gather any existing local data on this client device (e.g. from PC session)
-          let legacyFocusTasks: FocusTask[] = [];
+          let localAccount: UserAccount | null = null;
           try {
-            const rawFT = localStorage.getItem('flouss_focus_tasks_v1');
-            if (rawFT) {
-              const parsed = JSON.parse(rawFT);
-              if (Array.isArray(parsed) && parsed.length > 0) {
-                legacyFocusTasks = parsed;
+            const raw = localStorage.getItem(`flouss_user_${uid}`);
+            if (raw) {
+              const parsed = JSON.parse(raw);
+              if (parsed && (parsed.id === uid || !parsed.id)) {
+                parsed.id = uid;
+                localAccount = parsed;
               }
             }
           } catch (e) {}
 
-          let localAccount: UserAccount | null = null;
           try {
-            const raw = localStorage.getItem(`flouss_user_${uid}`);
-            if (raw) localAccount = JSON.parse(raw);
+            localStorage.removeItem('flouss_user_default');
           } catch (e) {}
-
-          if (!localAccount) {
-            try {
-              const rawDefault = localStorage.getItem('flouss_user_default');
-              if (rawDefault) localAccount = JSON.parse(rawDefault);
-            } catch (e) {}
-          }
 
           if (localAccount) {
             localAccount.subscriptions = migrateSubscriptions(localAccount.subscriptions ?? DEFAULT_SUBSCRIPTIONS);
           }
 
-          if (localAccount && legacyFocusTasks.length > 0 && (!localAccount.focusTasks || localAccount.focusTasks.length === 0)) {
-            localAccount.focusTasks = legacyFocusTasks;
-          }
-
-          if (!localAccount) {
-            const memAcc = get().accounts.find(
-              (a: UserAccount) =>
-                a.initialBalance !== null ||
-                (a.transactions && a.transactions.length > 0) ||
-                (a.notes && a.notes.length > 0) ||
-                (a.subscriptions && a.subscriptions.length > 0)
-            );
-            if (memAcc) localAccount = memAcc;
-          }
-
-          const hasLocalData = Boolean(
-            localAccount &&
-              (localAccount.initialBalance !== null ||
-                (Array.isArray(localAccount.transactions) && localAccount.transactions.length > 0) ||
-                (Array.isArray(localAccount.notes) && localAccount.notes.length > 0) ||
-                (Array.isArray(localAccount.subscriptions) && localAccount.subscriptions.length > 0) ||
-                (Array.isArray(localAccount.focusTasks) && localAccount.focusTasks.length > 0) ||
-                Boolean(localAccount.isOnboarded))
-          );
-
-          // 2. Query Firestore document users/{uid} directly (No artificial timeouts!)
+          // Query Firestore document users/{uid} directly
           let snap: any = null;
           try {
             snap = await getDoc(userDocRef);
@@ -1003,9 +882,7 @@ export const useAppStore = create<AppState>()(
           let shouldSyncRecoveredTransactions = false;
 
           if (cloudDocExists && cloudData) {
-            // Start with cloud state, then recover local-only transactions left by an offline session.
             console.log(`☁️ [Flouss Cloud] Hydrating store from existing Firestore document users/${uid}...`);
-            // Seed the monotonic guard with the remote version we are about to apply.
             lastAppliedRemoteUpdatedAt = remoteTimestampMs(cloudData);
             const applied = applyRemoteAccount(uid, cloudData, user);
             if (applied) {
@@ -1034,74 +911,13 @@ export const useAppStore = create<AppState>()(
                 };
               }
             }
-          } else if (snap !== null && !snap.exists() && hasLocalData && localAccount) {
-            // Case A: Cloud Firestore document is verified missing AND this client has offline data -> AUTO-MIGRATE ONCE
-            console.log(`🚀 [Flouss Cloud] Verified empty Firestore with existing local data. Auto-migrating to users/${uid}...`);
-            const computedBal =
-              localAccount.balance !== undefined && localAccount.balance !== null && !isNaN(localAccount.balance)
-                ? localAccount.balance
-                : calculateAvailableBalance(localAccount.initialBalance ?? null, localAccount.transactions ?? []);
-
-            const migratedAccount: UserAccount = {
-              ...makeInitialAccount(uid, user.displayName || 'Utilisateur', user.email || ''),
-              ...localAccount,
-              id: uid,
-              balance: computedBal,
-              isOnboarded: true,
-            };
-            firestorePin = migratedAccount.pinCode ?? null;
-            resolvedAccount = migratedAccount;
-
-            const migrationPayload = {
-              uid,
-              email: user.email || null,
-              displayName: user.displayName || null,
-              pinCode: firestorePin,
-              pinEnabled: !!firestorePin,
-              initialBalance: migratedAccount.initialBalance ?? null,
-              balance: computedBal,
-              isOnboarded: true,
-              account: migratedAccount,
-              createdAt: new Date().toISOString(),
-              updatedAt: serverTimestamp(),
-            };
-
-            try {
-              await setDoc(userDocRef, migrationPayload, { merge: true });
-              console.log(`✅ [Flouss Cloud] Auto-migration successfully written to Firestore users/${uid}`);
-            } catch (err) {
-              console.error(`❌ [Flouss Cloud] Auto-migration write error:`, err);
-            }
-          } else if (localAccount) {
-            // Case C: Offline fallback (e.g. network failure during getDoc) - read local cache without overwriting cloud
-            const localBal =
-              localAccount.balance !== undefined && localAccount.balance !== null && !isNaN(localAccount.balance)
-                ? localAccount.balance
-                : calculateAvailableBalance(localAccount.initialBalance ?? null, localAccount.transactions ?? []);
-
-            resolvedAccount = {
-              ...makeInitialAccount(uid, user.displayName || 'Utilisateur', user.email || ''),
-              ...localAccount,
-              id: uid,
-              balance: localBal,
-              focusTasks:
-                localAccount.focusTasks && localAccount.focusTasks.length > 0
-                  ? localAccount.focusTasks
-                  : legacyFocusTasks.length > 0
-                  ? legacyFocusTasks
-                  : DEFAULT_FOCUS_TASKS,
-              focusLists:
-                localAccount.focusLists && localAccount.focusLists.length > 0
-                  ? localAccount.focusLists
-                  : DEFAULT_FOCUS_LISTS,
-            };
           } else if (snap !== null && !snap.exists()) {
-            // Case D: Completely new user registration
+            // Completely NEW user registration! Start with a 100% EMPTY workspace.
+            console.log(`🆕 [Flouss Cloud] Brand new user registration: creating clean empty workspace for users/${uid}`);
             const freshAccount = makeInitialAccount(uid, user.displayName || 'Utilisateur', user.email || '');
-            if (legacyFocusTasks.length > 0) {
-              freshAccount.focusTasks = legacyFocusTasks;
-            }
             resolvedAccount = freshAccount;
+            firestorePin = null;
+
             try {
               await setDoc(
                 userDocRef,
@@ -1114,6 +930,7 @@ export const useAppStore = create<AppState>()(
                   pinEnabled: false,
                   initialBalance: null,
                   balance: 0,
+                  isOnboarded: false,
                   account: freshAccount,
                   createdAt: new Date().toISOString(),
                   updatedAt: serverTimestamp(),
@@ -1121,12 +938,26 @@ export const useAppStore = create<AppState>()(
                 { merge: true }
               );
               console.log(`🆕 [Flouss Cloud] Created initial document for users/${uid}`);
-            } catch (err) {}
+            } catch (err) {
+              console.warn('[Flouss Cloud] Initial doc create notice:', err);
+            }
+          } else if (localAccount) {
+            // Offline fallback (network failure during getDoc) - read local cache without overwriting cloud
+            const localBal =
+              localAccount.balance !== undefined && localAccount.balance !== null && !isNaN(localAccount.balance)
+                ? localAccount.balance
+                : calculateAvailableBalance(localAccount.initialBalance ?? null, localAccount.transactions ?? []);
+
+            resolvedAccount = {
+              ...makeInitialAccount(uid, user.displayName || 'Utilisateur', user.email || ''),
+              ...localAccount,
+              id: uid,
+              balance: localBal,
+            };
+            firestorePin = localAccount.pinCode ?? null;
           } else {
-            // Firestore could not be read. Keep a local/offline view if available,
-            // but never treat a read failure as proof that the account is new.
-            console.warn(`[Flouss Cloud] Preserving existing cloud data: Firestore read failed for users/${uid}; no cloud write attempted.`);
             resolvedAccount = makeInitialAccount(uid, user.displayName || 'Utilisateur', user.email || '');
+            firestorePin = null;
           }
 
           if (!resolvedAccount) {
@@ -1139,10 +970,10 @@ export const useAppStore = create<AppState>()(
             lastKnownTransactionsByUid.set(uid, Array.isArray(resolvedAccount.transactions) ? resolvedAccount.transactions : []);
           }
 
-          // Save hydrated account to local cache for fast offline access
+          // Save hydrated account to local cache for fast offline access strictly scoped by uid
           try {
             localStorage.setItem(`flouss_user_${uid}`, JSON.stringify(resolvedAccount));
-            localStorage.setItem('flouss_user_default', JSON.stringify(resolvedAccount));
+            localStorage.removeItem('flouss_user_default');
           } catch (e) {}
 
           const hasPin = Boolean(firestorePin && firestorePin.trim().length > 0);
@@ -1252,16 +1083,24 @@ export const useAppStore = create<AppState>()(
             activeSnapshotUnsubscribe();
             activeSnapshotUnsubscribe = null;
           }
+          if (syncTimer) {
+            clearTimeout(syncTimer);
+            syncTimer = null;
+          }
           const uid = get().firebaseUser?.uid;
           if (uid) {
             sessionStorage.removeItem(`flouss_2fa_${uid}`);
           }
+          try {
+            localStorage.removeItem('flouss_user_default');
+          } catch (e) {}
           try {
             await auth.signOut();
           } catch (e) {}
           set({
             firebaseUser: null,
             isPinVerified: false,
+            isPinUnlocked: false,
             userPinCode: null,
             accounts: [],
             activeAccountId: null,
