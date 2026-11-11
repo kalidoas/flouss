@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useAppStore } from '../store/useAppStore';
 import { Card } from '../components/common/Card';
 import { MoneyText } from '../components/common/PrivacyCurrency';
@@ -9,6 +9,7 @@ import { DashboardPinnedNote } from '../components/dashboard/DashboardPinnedNote
 import { DashboardSpendingCard } from '../components/dashboard/DashboardSpendingCard';
 import { DashboardBillsCard } from '../components/dashboard/DashboardBillsCard';
 import { DashboardRecentTransactions } from '../components/dashboard/DashboardRecentTransactions';
+import { DashboardAiWidget } from '../components/dashboard/DashboardAiWidget';
 import { selectDashboardFinancials } from '../utils/calculations';
 import { getNetPresentation } from '../utils/dashboard';
 import { isTransactionInMonth } from '../utils/formatters';
@@ -17,6 +18,7 @@ import { useDashboardHeader } from '../components/layout/DashboardHeaderContext'
 
 export const DashboardPage: React.FC = () => {
   const { initialBalance, transactions, categories, subscriptions = [], language, setActiveScreen } = useAppStore();
+  const [showDetails, setShowDetails] = useState(false);
   const t = translations[language].dashboard;
   const { selectedMonth } = useDashboardHeader();
   const summary = useMemo(
@@ -43,31 +45,104 @@ export const DashboardPage: React.FC = () => {
   ];
 
   return (
-    <div className="mx-auto max-w-[1160px] space-y-4 pb-2 animate-page select-text">
-      <DashboardFocusNow />
-      <div className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
-        <section className="min-w-0 lg:col-start-1 lg:row-start-1">
+    <div className="mx-auto max-w-[1280px] w-full pb-8 animate-page select-text">
+      <div
+        className="columns-1 md:columns-2 xl:columns-3 gap-4"
+        dir={language === 'ar' ? 'rtl' : 'ltr'}
+      >
+        {/* Card 1: Available Balance Hero Tile */}
+        <div className="break-inside-avoid mb-4">
           <DashboardHero selectedMonth={selectedMonth} />
-        </section>
-        <div className="lg:col-start-2 lg:row-start-1">
-          <DashboardTodayCard />
         </div>
 
-        <section aria-label={t.monthlySummary} className="min-w-0 space-y-2 lg:col-start-1 lg:row-start-2">
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-          {statItems.map((stat) => <Card key={stat.key} padding="sm" className="min-w-0">
-            <p className="truncate text-xs font-medium text-muted">{stat.label}</p>
-            <MoneyText amount={stat.value} prefix={stat.prefix} showSign={stat.sign} className={`mt-1 block max-w-full truncate text-lg font-semibold ${stat.color}`} />
-            <p className="mt-1 truncate text-[11px] text-muted" title={stat.count}>{stat.count}</p>
-          </Card>)}
+        {/* Card 2: Monthly Summary Card (Compact & Expandable) */}
+        <section aria-label={t.monthlySummary} className="break-inside-avoid mb-4">
+          <div
+            data-spotlight="true"
+            className="spotlight-card rounded-2xl bg-white/5 p-3.5 sm:p-4 md:p-4.5 backdrop-blur-xl border border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] relative overflow-hidden transition-all duration-300 h-fit"
+          >
+            <div className={`grid ${showDetails ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-2'} divide-y sm:divide-y-0 sm:divide-x divide-white/[0.06] rtl:sm:divide-x-reverse gap-y-3 sm:gap-y-0 transition-all duration-300`}>
+              {/* Income this month */}
+              <div className="sm:px-3 first:ps-0 last:pe-0">
+                <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-400 block truncate">
+                  {t.incomeThisMonth}
+                </span>
+                <MoneyText
+                  amount={summary.income}
+                  showSign={true}
+                  className="mt-1 block max-w-full truncate text-base sm:text-lg md:text-xl font-bold tracking-tight tabular-nums text-emerald-400"
+                />
+                {showDetails && (
+                  <p className="mt-0.5 text-caption text-zinc-500 truncate" title={t.incomeCount.replace('{count}', String(incomeCount))}>
+                    {t.incomeCount.replace('{count}', String(incomeCount))}
+                  </p>
+                )}
+              </div>
+
+              {/* Expenses this month */}
+              <div className="sm:px-3 first:ps-0 last:pe-0">
+                <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-400 block truncate">
+                  {t.expensesThisMonth}
+                </span>
+                <MoneyText
+                  amount={summary.expenses}
+                  prefix="− "
+                  showSign={false}
+                  className="mt-1 block max-w-full truncate text-base sm:text-lg md:text-xl font-bold tracking-tight tabular-nums text-rose-400"
+                />
+                {showDetails && (
+                  <p className="mt-0.5 text-caption text-zinc-500 truncate" title={t.expenseCount.replace('{count}', String(expenseCount))}>
+                    {t.expenseCount.replace('{count}', String(expenseCount))}
+                  </p>
+                )}
+              </div>
+
+              {/* Net (Hidden by default, revealed on More details toggle) */}
+              {showDetails && (
+                <div className="pt-2.5 sm:pt-0 sm:px-3 first:ps-0 last:pe-0">
+                  <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-400 block truncate">
+                    {t.netLabel}
+                  </span>
+                  <MoneyText
+                    amount={summary.net}
+                    showSign={true}
+                    className={`mt-1 block max-w-full truncate text-base sm:text-lg md:text-xl font-bold tracking-tight tabular-nums ${summary.net >= 0 ? 'text-indigo-300' : 'text-rose-400'}`}
+                  />
+                  <p className="mt-0.5 text-caption text-zinc-500 truncate" title={netCaption}>
+                    {netCaption}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Bottom Toggle Bar */}
+            <div className="mt-2.5 pt-2 border-t border-white/[0.05] flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => setShowDetails((prev) => !prev)}
+                className="inline-flex items-center gap-1 text-[11px] font-medium text-indigo-400 hover:text-indigo-300 transition-colors active:scale-95 duration-200"
+              >
+                <span>
+                  {showDetails
+                    ? language === 'ar'
+                      ? 'تفاصيل أقل ←'
+                      : 'Less details ←'
+                    : language === 'ar'
+                    ? 'المزيد من التفاصيل →'
+                    : 'More details →'}
+                </span>
+              </button>
+              {showDetails && (
+                <span className="text-[10px] text-zinc-500 truncate">
+                  {translations[language].summaryScopes.dashboard}
+                </span>
+              )}
+            </div>
           </div>
-          <p className="px-1 text-[11px] text-muted">{translations[language].summaryScopes.dashboard}</p>
         </section>
-        <div className="lg:col-start-2 lg:row-start-2">
-          <DashboardPinnedNote />
-        </div>
 
-        <div className="lg:col-start-1 lg:row-start-3">
+        {/* Card 3: Spending Breakdown */}
+        <div className="break-inside-avoid mb-4">
           <DashboardSpendingCard
             categories={categories}
             transactions={transactions}
@@ -77,11 +152,40 @@ export const DashboardPage: React.FC = () => {
             onOpenBudgets={() => setActiveScreen('categories')}
           />
         </div>
-        <div className="lg:col-start-2 lg:row-start-3">
-          <DashboardBillsCard subscriptions={subscriptions} language={language} onOpen={() => setActiveScreen('subscriptions')} />
+
+        {/* Card 4: Focus Now (Tasks) */}
+        <DashboardFocusNow />
+
+        {/* Card 5: Today's Program */}
+        <div className="break-inside-avoid mb-4">
+          <DashboardTodayCard />
         </div>
-        <div className="lg:col-span-2 lg:row-start-4">
-          <DashboardRecentTransactions transactions={recentTransactions} onViewAll={() => setActiveScreen('history')} />
+
+        {/* Card 6: Flouss AI Copilot */}
+        <div className="break-inside-avoid mb-4">
+          <DashboardAiWidget />
+        </div>
+
+        {/* Card 7: Pinned Note */}
+        <div className="break-inside-avoid mb-4">
+          <DashboardPinnedNote />
+        </div>
+
+        {/* Card 8: Upcoming Bills */}
+        <div className="break-inside-avoid mb-4">
+          <DashboardBillsCard
+            subscriptions={subscriptions}
+            language={language}
+            onOpen={() => setActiveScreen('subscriptions')}
+          />
+        </div>
+
+        {/* Card 9: Recent Transactions */}
+        <div className="break-inside-avoid mb-4">
+          <DashboardRecentTransactions
+            transactions={recentTransactions}
+            onViewAll={() => setActiveScreen('history')}
+          />
         </div>
       </div>
     </div>

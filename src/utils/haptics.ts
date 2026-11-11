@@ -232,6 +232,21 @@ const VIBRATION_PATTERNS: Record<Exclude<HapticType, 'none'>, number | number[]>
 };
 
 /**
+ * Quick direct haptic trigger requested for core interactions
+ */
+export function triggerHaptic(duration = 50): void {
+  if (typeof navigator !== 'undefined' && navigator.vibrate) {
+    try {
+      navigator.vibrate(duration);
+    } catch {}
+  }
+  // Also invoke sensory engine for iOS & capacitor compatibility
+  try {
+    playHapticFeedback(duration > 40 ? 'medium' : 'light');
+  } catch {}
+}
+
+/**
  * Primary Haptic Feedback Trigger
  */
 export function playHapticFeedback(type: HapticType = 'light'): void {

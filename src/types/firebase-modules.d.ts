@@ -17,6 +17,10 @@ declare module '@firebase/auth' {
   export const sendSignInLinkToEmail: any;
   export const isSignInWithEmailLink: any;
   export const signInWithEmailLink: any;
+  export const createUserWithEmailAndPassword: any;
+  export const signInWithEmailAndPassword: any;
+  export const updateProfile: any;
+  export const signOut: any;
 }
 
 declare module '@firebase/firestore' {

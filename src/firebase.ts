@@ -81,6 +81,9 @@ try {
 
 try {
   if (appInstance) {
+    // University Campus Wi-Fi & Strict Egress Firewall Fallback:
+    // Forces Firestore to use HTTP long-polling over standard HTTPS port 443
+    // instead of WebSockets (wss://) which are blocked by Eduroam/UHP Settat/Fortinet firewalls.
     dbInstance = initializeFirestore(appInstance, {
       experimentalForceLongPolling: true,
       ignoreUndefinedProperties: true,

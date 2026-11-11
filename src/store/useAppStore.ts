@@ -44,7 +44,7 @@ import {
   calculateAvailableBalance,
   calculateGoalProgress,
 } from '../utils/calculations';
-import { playHapticFeedback } from '../utils/haptics';
+import { playHapticFeedback, triggerHaptic } from '../utils/haptics';
 import { migrateSubscription, migrateSubscriptions } from '../utils/subscriptions';
 import { hashPin, verifyPin, encryptBackup, decryptBackup } from '../utils/crypto';
 
@@ -351,7 +351,7 @@ export function makeInitialAccount(uid: string, name: string, email?: string): U
 }
 
 export function detectSystemLanguage(): Language {
-  if (typeof window === 'undefined' || !navigator) return 'ar';
+  if (typeof window === 'undefined' || !navigator) return 'en';
   const navLangs = navigator.languages?.length ? navigator.languages : [navigator.language || ''];
   for (const l of navLangs) {
     if (!l) continue;
@@ -360,7 +360,7 @@ export function detectSystemLanguage(): Language {
     if (lower.startsWith('fr')) return 'fr';
     if (lower.startsWith('en')) return 'en';
   }
-  return 'fr';
+  return 'en';
 }
 
 export function getInitialLanguage(): Language {
@@ -1343,6 +1343,7 @@ export const useAppStore = create<AppState>()(
 
         // ── UI Setters ──────────────────────────────────────────────
         setActiveScreen: (screen: ScreenId) => {
+          triggerHaptic(40);
           set((state: any) => {
             if (state.activeScreen === screen) return state;
             const history = [...(state.screenHistory || []), state.activeScreen];
@@ -1583,6 +1584,7 @@ export const useAppStore = create<AppState>()(
 
         // ── Transactions ────────────────────────────────────────────
         addTransaction: (tx: Transaction) => {
+          triggerHaptic(50);
           playHapticFeedback('success');
           const amt =
             typeof tx.amount === 'number' && !isNaN(tx.amount)
@@ -1770,6 +1772,7 @@ export const useAppStore = create<AppState>()(
           }));
         },
         toggleTaskDone: (id: string, date: string) => {
+          triggerHaptic(50);
           updateActive((a) => ({
             ...a,
             tasks: (a.tasks ?? []).map((t: TaskItem) => {
@@ -1790,6 +1793,7 @@ export const useAppStore = create<AppState>()(
 
         // ── Salat Tracking ───────────────────────────────────────────
         toggleSalatPrayer: (date: string, prayer: PrayerKey) => {
+          triggerHaptic(50);
           updateActive((a) => {
             const currentSalat = a.salatLogs ?? {};
             const dayPrayers = currentSalat[date] ?? [];

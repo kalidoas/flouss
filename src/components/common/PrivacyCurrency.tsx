@@ -45,7 +45,7 @@ export const PrivacyCurrency: React.FC<PrivacyCurrencyProps> = ({
     <span
       dir="ltr"
       style={{ unicodeBidi: 'isolate' }}
-      className={`tabular-nums inline-flex items-center whitespace-nowrap transition-[filter,opacity] duration-200 ${
+      className={`tabular-nums inline-flex items-center whitespace-nowrap shrink-0 flex-shrink-0 transition-[filter,opacity] duration-200 ${
         isHidden ? 'blur-md opacity-50 select-none pointer-events-none' : ''
       } ${className}`}
     >

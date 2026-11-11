@@ -68,19 +68,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
   return (
     <aside
       className={`hidden md:flex flex-col ${
-        collapsed ? 'w-14' : 'w-[248px] md:max-lg:w-14'
-      } transition-[width] duration-200 ease-out bg-surface border-r border-border-subtle shrink-0 justify-between select-none relative group/sidebar`}
+        collapsed ? 'w-14' : 'w-[240px] md:max-lg:w-14'
+      } transition-[width] duration-200 ease-out bg-[#08090E]/95 backdrop-blur-xl border-r border-white/[0.06] shrink-0 justify-between select-none relative group/sidebar z-20`}
     >
       <div className="flex flex-col h-full overflow-hidden">
         {/* Top Header: Workspace / Logo + Collapse Button */}
-        <div className="flex min-h-12 items-center justify-between border-b border-border-subtle p-2.5">
+        <div className="flex min-h-12 items-center justify-between border-b border-white/[0.06] p-2.5">
           {!collapsed ? (
             <div className="flex items-center justify-between w-full">
               <span className="md:max-lg:hidden"><Logo size="sm" showWordmark={true} /></span>
               <button
                 onClick={onToggleCollapse}
                 title={tCommon.collapseSidebar}
-                className="flex h-10 w-10 items-center justify-center rounded-control text-muted transition-colors hover:bg-surface-raised hover:text-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                className="flex h-9 w-9 items-center justify-center rounded-xl text-zinc-400 transition-colors hover:bg-white/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
               >
                 <PanelLeftClose className="w-4 h-4" />
               </button>
@@ -90,7 +90,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
               <button
                 onClick={onToggleCollapse}
                 title={tCommon.expandSidebar}
-                className="flex h-10 w-10 items-center justify-center rounded-control text-muted transition-colors hover:bg-surface-raised hover:text-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                className="flex h-9 w-9 items-center justify-center rounded-xl text-zinc-400 transition-colors hover:bg-white/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
               >
                 <PanelLeftOpen className="w-4 h-4" />
               </button>
@@ -103,7 +103,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
           {/* Financial Section */}
           <div>
             {!collapsed && (
-              <span className="mb-1 block px-2 text-[10px] font-semibold uppercase tracking-wider text-muted md:max-lg:hidden">
+              <span className="mb-1.5 block px-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-500 md:max-lg:hidden">
                 {t.financesSection}
               </span>
             )}
@@ -118,17 +118,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
                     aria-label={item.label}
                     title={collapsed ? item.label : undefined}
                     className={`relative w-full flex items-center ${
-                      collapsed ? 'justify-center px-0' : 'gap-2.5 px-2.5 md:max-lg:justify-center md:max-lg:px-0'
-                    } min-h-11 rounded-control text-xs transition-colors duration-150 z-10 ${
+                      collapsed ? 'justify-center px-0' : 'gap-2.5 px-3 md:max-lg:justify-center md:max-lg:px-0'
+                    } py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors duration-150 z-10 ${
                       isActive
-                        ? 'text-zinc-900 dark:text-white font-semibold'
-                        : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+                        ? 'text-white font-semibold'
+                        : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.03]'
                     }`}
                   >
                     {isActive && (
                       <motion.div
                         layoutId="sidebar-active-pill"
-                        className="absolute inset-0 bg-[#efeeea] dark:bg-[#282828] rounded-lg -z-10 shadow-xs"
+                        className="absolute inset-0 bg-white/[0.08] border border-white/[0.08] shadow-[0_0_16px_rgba(99,102,241,0.22)] rounded-xl -z-10"
                         transition={{
                           type: 'spring',
                           stiffness: 420,
@@ -138,10 +138,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
                       />
                     )}
                     <Icon
-                      className={`w-4 h-4 shrink-0 ${
+                      className={`w-4 h-4 shrink-0 transition-colors ${
                         isActive
-                          ? 'text-zinc-900 dark:text-white'
-                          : 'text-[#787774] dark:text-[#9b9a97]'
+                          ? 'text-indigo-300'
+                          : 'text-zinc-400'
                       }`}
                     />
                     {!collapsed && <span className="truncate md:max-lg:hidden">{item.label}</span>}
@@ -154,7 +154,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
           {/* Personal Section */}
           <div>
             {!collapsed && (
-              <span className="mb-1 block px-2 text-[10px] font-semibold uppercase tracking-wider text-muted md:max-lg:hidden">
+              <span className="mb-1.5 block px-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-500 md:max-lg:hidden">
                 {t.personalSection}
               </span>
             )}
@@ -169,17 +169,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
                     aria-label={item.label}
                     title={collapsed ? item.label : undefined}
                     className={`relative w-full flex items-center ${
-                      collapsed ? 'justify-center px-0' : 'gap-2.5 px-2.5 md:max-lg:justify-center md:max-lg:px-0'
-                    } min-h-11 rounded-control text-xs transition-colors duration-150 z-10 ${
+                      collapsed ? 'justify-center px-0' : 'gap-2.5 px-3 md:max-lg:justify-center md:max-lg:px-0'
+                    } py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors duration-150 z-10 ${
                       isActive
-                        ? 'text-zinc-900 dark:text-white font-semibold'
-                        : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+                        ? 'text-white font-semibold'
+                        : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.03]'
                     }`}
                   >
                     {isActive && (
                       <motion.div
                         layoutId="sidebar-active-pill"
-                        className="absolute inset-0 bg-[#efeeea] dark:bg-[#282828] rounded-lg -z-10 shadow-xs"
+                        className="absolute inset-0 bg-white/[0.08] border border-white/[0.08] shadow-[0_0_16px_rgba(99,102,241,0.22)] rounded-xl -z-10"
                         transition={{
                           type: 'spring',
                           stiffness: 420,
@@ -189,10 +189,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
                       />
                     )}
                     <Icon
-                      className={`w-4 h-4 shrink-0 ${
+                      className={`w-4 h-4 shrink-0 transition-colors ${
                         isActive
-                          ? 'text-zinc-900 dark:text-white'
-                          : 'text-[#787774] dark:text-[#9b9a97]'
+                          ? 'text-indigo-300'
+                          : 'text-zinc-400'
                       }`}
                     />
                     {!collapsed && <span className="truncate md:max-lg:hidden">{item.label}</span>}
@@ -203,23 +203,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
           </div>
 
           {/* Settings Tab */}
-          <div className="pt-2 border-t border-[#e3e2de] dark:border-[#2f2f2f]">
+          <div className="pt-2 border-t border-white/[0.06]">
             <button
               onClick={() => setActiveScreen('settings')}
               aria-label={t.settings}
               title={collapsed ? t.settings : undefined}
               className={`relative w-full flex items-center ${
-                collapsed ? 'justify-center px-0' : 'gap-2.5 px-2.5 md:max-lg:justify-center md:max-lg:px-0'
-              } min-h-11 rounded-control text-xs transition-colors duration-150 z-10 ${
+                collapsed ? 'justify-center px-0' : 'gap-2.5 px-3 md:max-lg:justify-center md:max-lg:px-0'
+              } py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors duration-150 z-10 ${
                 activeScreen === 'settings'
-                  ? 'text-zinc-900 dark:text-white font-semibold'
-                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+                  ? 'text-white font-semibold'
+                  : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.03]'
               }`}
             >
               {activeScreen === 'settings' && (
                 <motion.div
                   layoutId="sidebar-active-pill"
-                  className="absolute inset-0 bg-[#efeeea] dark:bg-[#282828] rounded-lg -z-10 shadow-xs"
+                  className="absolute inset-0 bg-white/[0.08] border border-white/[0.08] shadow-[0_0_16px_rgba(99,102,241,0.22)] rounded-xl -z-10"
                   transition={{
                     type: 'spring',
                     stiffness: 420,
@@ -229,10 +229,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
                 />
               )}
               <Settings
-                className={`w-4 h-4 shrink-0 ${
+                className={`w-4 h-4 shrink-0 transition-colors ${
                   activeScreen === 'settings'
-                    ? 'text-zinc-900 dark:text-white'
-                    : 'text-[#787774] dark:text-[#9b9a97]'
+                    ? 'text-indigo-300'
+                    : 'text-zinc-400'
                 }`}
               />
               {!collapsed && <span className="truncate md:max-lg:hidden">{t.settings}</span>}
@@ -242,31 +242,31 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
 
         {/* Bottom Profile Section (Single, authentic location for session profile) */}
         {activeAccount && (
-          <div className="flex items-center gap-1 border-t border-border-subtle p-2">
+          <div className="flex items-center gap-1 border-t border-white/[0.06] p-2">
             <button
               onClick={() => setIsProfileModalOpen(true)}
               aria-label={activeAccount.name}
               title={collapsed ? activeAccount.name : undefined}
-              className={`flex min-h-11 min-w-0 flex-1 items-center rounded-control p-1.5 text-start transition-colors hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+              className={`flex min-h-10 min-w-0 flex-1 items-center rounded-xl p-1.5 text-start transition-colors hover:bg-white/[0.05] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
                 collapsed ? 'justify-center' : 'justify-between gap-2 md:max-lg:justify-center'
               }`}
             >
               <div className="flex items-center gap-2 min-w-0">
                 <div
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white shadow-xs"
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white shadow-xs"
                   style={{ backgroundColor: activeAccount.avatarColor || '#37352f' }}
                 >
                   {activeAccount.name.charAt(0).toUpperCase()}
                 </div>
                 {!collapsed && (
                   <div className="min-w-0">
-                    <span className="block truncate text-xs font-semibold text-content md:max-lg:hidden">
+                    <span className="block truncate text-xs font-semibold text-zinc-200 md:max-lg:hidden">
                       {activeAccount.name}
                     </span>
                   </div>
                 )}
               </div>
-              {!collapsed && <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted md:max-lg:hidden" />}
+              {!collapsed && <ChevronDown className="h-3.5 w-3.5 shrink-0 text-zinc-500 md:max-lg:hidden" />}
             </button>
 
             {!collapsed && (
@@ -274,7 +274,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
                 onClick={() => logout()}
                 title={tCommon.logOut}
                 aria-label={tCommon.logOut}
-                className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-control text-muted transition-colors hover:bg-negative/10 hover:text-negative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent lg:flex"
+                className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-xl text-zinc-400 transition-colors hover:bg-rose-500/10 hover:text-rose-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 lg:flex"
               >
                 <LogOut className="w-3.5 h-3.5" />
               </button>

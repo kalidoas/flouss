@@ -20,6 +20,7 @@ import {
 } from '../utils/i18nHelpers';
 import { translations } from '../i18n/translations';
 import { Transaction, TaskItem, TaskCategory } from '../types';
+import { GlassMonthPicker } from '../components/common/GlassMonthPicker';
 import {
   BarChart,
   Bar,
@@ -281,39 +282,24 @@ export const StatsPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-[1400px] mx-auto space-y-6 sm:space-y-8 animate-page select-text pb-12">
+    <div className="max-w-[1280px] mx-auto space-y-6 animate-page select-text pb-12">
       {/* ── Page Header & Period Selector ── */}
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 border-b border-black/[0.06] dark:border-white/[0.06] pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-50">
         <div>
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-control bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 flex items-center justify-center font-bold shadow-xs">
-              <PieChartIcon className="w-5 h-5 stroke-[2]" />
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-content tracking-tight">
-              {t.title}
-            </h1>
-          </div>
-          <p className="text-xs sm:text-sm text-muted mt-1.5">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-white via-white to-indigo-200 bg-clip-text text-transparent">
+            {t.title}
+          </h1>
+          <p className="text-xs sm:text-sm text-zinc-400 mt-1">
             {t.subtitle}
           </p>
         </div>
 
-        <label className="relative self-start sm:self-auto">
-          <span className="sr-only">
-            {language === 'ar' ? 'اختر الشهر' : language === 'fr' ? 'Choisir le mois' : 'Choose month'}
-          </span>
-          <select
-            value={selectedMonth}
-            onChange={(event) => setSelectedMonth(event.target.value)}
-            className="min-w-52 rounded-control border border-black/[0.08] dark:border-white/[0.08] bg-white/90 dark:bg-zinc-900/90 px-3.5 py-2.5 text-xs font-semibold text-zinc-800 dark:text-zinc-100 outline-none shadow-xs hover:border-black/[0.15] dark:hover:border-white/[0.15] focus:ring-2 focus:ring-indigo-500/20 transition-all cursor-pointer"
-          >
-            {monthOptions.map((month) => (
-              <option key={month.value} value={month.value}>
-                {month.label}
-              </option>
-            ))}
-          </select>
-        </label>
+        <GlassMonthPicker
+          value={selectedMonth}
+          onChange={setSelectedMonth}
+          options={monthOptions}
+          ariaLabel={language === 'ar' ? 'اختر الشهر' : language === 'fr' ? 'Choisir le mois' : 'Choose month'}
+        />
       </div>
 
       {/* ── SECTION A: TOP 6 EXECUTIVE KPI SUMMARY CARDS (3x2 RESPONSIVE GRID) ── */}
@@ -373,109 +359,151 @@ export const StatsPage: React.FC = () => {
           isPositiveGood={true}
         />
 
-        <div className="rounded-card border border-border-subtle bg-surface p-4 shadow-xs">
-          <div className="flex items-center justify-between text-xs font-semibold text-muted"><span>{t.savingsRate}</span><Percent className="h-4 w-4 text-accent" /></div>
-          <div className="mt-2 text-2xl font-bold tabular-nums text-content">{savingsRate}%</div>
-          <p className="mt-1 text-caption text-muted">
-            {currentSavings > 0 ? <><MoneyText amount={currentSavings} /> {t.savedForGoals}</> : t.noSavingsThisMonth}
-          </p>
+        {/* 4. Savings Rate */}
+        <div
+          className="flex flex-col justify-between p-4 sm:p-5 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 overflow-hidden min-h-[142px] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_28px_-10px_rgba(0,0,0,0.5)] transition-all relative"
+          style={{ backgroundImage: 'radial-gradient(circle at 100% 0%, rgba(99,102,241,0.12), transparent 70%)' }}
+        >
+          <div className="flex items-center justify-between text-[11px] font-medium tracking-[0.14em] uppercase text-zinc-400">
+            <span>{t.savingsRate}</span>
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center border border-indigo-500/20 bg-indigo-500/10 text-indigo-400">
+              <Percent className="h-3.5 w-3.5 stroke-[2.4]" />
+            </div>
+          </div>
+          <div className="my-2">
+            <div className="text-2xl sm:text-3xl font-bold tracking-tight text-white tabular-nums">
+              {savingsRate}%
+            </div>
+          </div>
+          <div className="pt-2.5 mt-auto border-t border-white/[0.06] text-[11px] text-zinc-400 truncate">
+            {currentSavings > 0 ? (
+              <span className="flex items-center gap-1">
+                <MoneyText amount={currentSavings} /> {t.savedForGoals}
+              </span>
+            ) : (
+              <span>{t.noSavingsThisMonth}</span>
+            )}
+          </div>
         </div>
       </div>
 
-      <p className="-mt-3 text-xs leading-relaxed text-muted whitespace-normal break-words">
+      <p className="-mt-3 text-[11px] leading-relaxed text-zinc-500">
         {translations[language].summaryScopes.analytics}
       </p>
 
-      {/* ── SECTION B: SMART FINANCIAL & LIFESTYLE INSIGHTS (3-CARD GRID) ── */}
+      {/* ── SECTION B: SMART FINANCIAL & LIFESTYLE INSIGHTS (BALANCED BENTO PAIR) ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Top Spending Category Card */}
-        <div className="p-5 rounded-card bg-surface backdrop-blur-xl border border-border-subtle shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between text-xs text-muted mb-2">
-            <span className="font-semibold text-caption uppercase tracking-wider text-muted">
+        <div
+          className="p-5 sm:p-6 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_28px_-10px_rgba(0,0,0,0.5)] flex flex-col justify-between min-h-[170px] relative overflow-hidden"
+          style={{ backgroundImage: 'radial-gradient(circle at 100% 0%, rgba(244,63,94,0.12), transparent 70%)' }}
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-400">
               {t.topSpendingCategory}
             </span>
-            <div className="w-7 h-7 rounded-control bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center">
-              <ShoppingBag className="w-3.5 h-3.5" />
+            <div className="w-8 h-8 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center">
+              <ShoppingBag className="w-4 h-4 stroke-[2]" />
             </div>
           </div>
-          <div>
+
+          <div className="my-2">
             {topCategory ? (
-              <>
-                <div className="text-xl sm:text-2xl font-bold text-content truncate">
+              <div>
+                <div className="text-xl sm:text-2xl font-bold text-white tracking-tight truncate">
                   {(() => {
                     const cat = categories.find((c) => c.id === topCategory.id);
                     return cat ? getCategoryName(cat, language) : topCategory.name;
                   })()}
                 </div>
-                <p className="text-xs text-muted mt-1.5 flex items-center gap-1.5">
-                  <MoneyText
-                    amount={topCategory.amount}
-                    className="font-bold text-rose-600 dark:text-rose-400"
-                  />
-                  <span className="px-2 py-0.5 rounded-control bg-zinc-100 dark:bg-zinc-800 text-caption font-bold text-zinc-600 dark:text-zinc-300">
+                <div className="text-xs text-zinc-400 mt-2 flex items-center gap-2 flex-wrap">
+                  <span className="font-bold text-rose-400 text-sm tabular-nums">
+                    <MoneyText amount={topCategory.amount} />
+                  </span>
+                  <span className="px-2.5 py-0.5 rounded-full bg-rose-500/15 border border-rose-500/20 text-[11px] font-bold text-rose-300 tabular-nums">
                     {topCategory.percentage}% {isAr ? 'من المصاريف' : language === 'fr' ? 'du total' : 'of spending'}
                   </span>
-                </p>
-              </>
+                </div>
+              </div>
             ) : (
-              <div className="text-xs text-muted mt-2 font-medium">
+              <div className="text-xs text-zinc-500 font-medium">
                 {t.noExpensesRecorded}
               </div>
             )}
           </div>
+
+          <div className="pt-2.5 border-t border-white/[0.06] text-[11px] text-zinc-400">
+            {isAr ? 'الصنف الأكثر استهلاكاً لميزانيتك' : 'Catégorie ayant le plus gros impact'}
+          </div>
         </div>
 
         {/* Financial Health Status Card */}
-        <div className="p-5 rounded-card bg-surface backdrop-blur-xl border border-border-subtle shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between text-xs text-muted mb-2">
-            <span className="font-semibold text-caption uppercase tracking-wider text-muted">
+        <div
+          className="p-5 sm:p-6 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_28px_-10px_rgba(0,0,0,0.5)] flex flex-col justify-between min-h-[170px] relative overflow-hidden"
+          style={{ backgroundImage: currentIncome >= currentExpense ? 'radial-gradient(circle at 100% 0%, rgba(52,211,153,0.12), transparent 70%)' : 'radial-gradient(circle at 100% 0%, rgba(245,158,11,0.12), transparent 70%)' }}
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-400">
               {t.summary}
             </span>
-            <div className="w-7 h-7 rounded-control bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center">
-              <Award className="w-3.5 h-3.5" />
+            <div className={`w-8 h-8 rounded-xl border flex items-center justify-center ${currentIncome >= currentExpense ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-amber-500/10 border-amber-500/20 text-amber-400'}`}>
+              <Award className="w-4 h-4 stroke-[2]" />
             </div>
           </div>
-          <div>
-            <p className="text-sm font-semibold text-content">
+
+          <div className="my-2">
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${currentIncome >= currentExpense ? 'bg-emerald-500/15 border-emerald-500/25 text-emerald-300' : 'bg-amber-500/15 border-amber-500/25 text-amber-300'}`}>
+                {currentIncome >= currentExpense ? (isAr ? 'وضع مالي سليم' : 'Santé Excellente') : (isAr ? 'تنبيه عجز' : 'Attention Requise')}
+              </span>
+            </div>
+            <p className="text-sm font-semibold text-zinc-200 leading-snug">
               {currentIncome >= currentExpense
                 ? (isAr ? 'واصل ادخار جزء من فائضك هذا الشهر.' : language === 'fr' ? 'Continuez à épargner une part de votre solde positif.' : 'Keep saving part of this month’s surplus.')
                 : (isAr ? 'راجع مصروفاتك لتقليل العجز هذا الشهر.' : language === 'fr' ? 'Réduisez une dépense pour limiter le déficit du mois.' : 'Trim one expense to reduce this month’s shortfall.')}
             </p>
           </div>
+
+          <div className="pt-2.5 border-t border-white/[0.06] flex items-center justify-between text-[11px] text-zinc-400">
+            <span>{isAr ? 'معدل التوازن' : 'Équilibre flux'}</span>
+            <span className="font-semibold text-zinc-300 tabular-nums">
+              {currentIncome > 0 ? `${Math.min(100, Math.round((currentExpense / currentIncome) * 100))}% ${isAr ? 'مستهلك' : 'consommé'}` : '—'}
+            </span>
+          </div>
         </div>
       </div>
 
       {/* ── SECTION C: VISUAL CHARTS & BREAKDOWNS ── */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-stretch">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 items-stretch">
         {/* 1. Monthly income and expense trend */}
-        <div className="p-5 sm:p-6 h-full rounded-card bg-surface backdrop-blur-xl border border-border-subtle shadow-xs space-y-4">
+        <div className="p-5 sm:p-6 h-full rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_28px_-10px_rgba(0,0,0,0.5)] space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-content">
+              <h2 className="text-base font-bold text-white tracking-tight">
                 {t.incomeVsExpense}
               </h2>
-              <p className="text-xs text-muted mt-0.5">
+              <p className="text-xs text-zinc-400 mt-0.5">
                 {t.incomeVsExpenseSubtitle}
               </p>
             </div>
 
             {/* Minimalist Legend Pills */}
-            <div className="flex items-center gap-3 text-xs">
-              <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                <span className="text-zinc-600 dark:text-zinc-300 font-medium">
+            <div className="flex items-center gap-2.5 text-xs">
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.04] border border-white/[0.06]">
+                <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                <span className="text-zinc-300 font-medium text-[11px]">
                   {t.incomeLabel}
                 </span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
-                <span className="text-zinc-600 dark:text-zinc-300 font-medium">
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.04] border border-white/[0.06]">
+                <span className="w-2 h-2 rounded-full bg-rose-400" />
+                <span className="text-zinc-300 font-medium text-[11px]">
                   {t.expenseLabel}
                 </span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
-                <span className="text-zinc-600 dark:text-zinc-300 font-medium">
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.04] border border-white/[0.06]">
+                <span className="w-2 h-2 rounded-full bg-blue-400" />
+                <span className="text-zinc-300 font-medium text-[11px]">
                   {t.savingsLabel}
                 </span>
               </div>
@@ -492,17 +520,17 @@ export const StatsPage: React.FC = () => {
                 <CartesianGrid
                   strokeDasharray="4 4"
                   vertical={false}
-                  stroke="#71717a"
-                  opacity={0.12}
+                  stroke="#ffffff"
+                  opacity={0.06}
                 />
                 <XAxis
                   dataKey="label"
-                  tick={{ fontSize: 11, fill: '#a1a1aa' }}
+                  tick={{ fontSize: 11, fill: '#71717a' }}
                   axisLine={false}
                   tickLine={false}
                 />
                 <YAxis
-                  tick={{ fontSize: 10, fill: '#a1a1aa' }}
+                  tick={{ fontSize: 10, fill: '#71717a' }}
                   axisLine={false}
                   tickLine={false}
                   tickFormatter={(val) =>
@@ -521,12 +549,12 @@ export const StatsPage: React.FC = () => {
                   ]}
                   contentStyle={{
                     borderRadius: '16px',
-                    backgroundColor: 'rgba(24, 24, 27, 0.95)',
+                    backgroundColor: 'rgba(13, 14, 20, 0.95)',
                     border: '1px solid rgba(255, 255, 255, 0.1)',
-                    backdropFilter: 'blur(12px)',
+                    backdropFilter: 'blur(16px)',
                     color: '#fff',
                     fontSize: '12px',
-                    boxShadow: '0 10px 30px -10px rgba(0,0,0,0.5)',
+                    boxShadow: '0 16px 36px -10px rgba(0,0,0,0.6)',
                   }}
                 />
                 <Bar
@@ -553,25 +581,25 @@ export const StatsPage: React.FC = () => {
         </div>
 
         {/* 2. Category spending breakdown Donut & Progress list */}
-        <div className="p-5 sm:p-6 h-full rounded-card bg-surface backdrop-blur-xl border border-border-subtle shadow-xs space-y-4">
+        <div className="p-5 sm:p-6 h-full rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_28px_-10px_rgba(0,0,0,0.5)] space-y-4">
           <div>
-            <h2 className="text-base sm:text-lg font-bold text-content">
+            <h2 className="text-base font-bold text-white tracking-tight">
               {t.categoryBreakdown}
             </h2>
-            <p className="text-xs text-muted mt-0.5">
+            <p className="text-xs text-zinc-400 mt-0.5">
               {t.categoryBreakdownSubtitle}
             </p>
           </div>
 
           {breakdownToDisplay.length === 0 ? (
-            <div className="py-12 text-center text-xs text-muted">
+            <div className="py-12 text-center text-xs text-zinc-500">
               {t.noExpensesRecorded}
             </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
               {/* Donut Chart */}
               <div className="lg:col-span-5 flex flex-col items-center justify-center relative py-2">
-                <div className="w-60 h-60 sm:w-68 sm:h-68 relative flex items-center justify-center">
+                <div className="w-56 h-56 sm:w-64 sm:h-64 relative flex items-center justify-center">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Tooltip
@@ -581,11 +609,12 @@ export const StatsPage: React.FC = () => {
                         ]}
                         contentStyle={{
                           borderRadius: '14px',
-                          backgroundColor: 'rgba(24, 24, 27, 0.95)',
+                          backgroundColor: 'rgba(13, 14, 20, 0.95)',
                           border: '1px solid rgba(255, 255, 255, 0.1)',
-                          backdropFilter: 'blur(10px)',
+                          backdropFilter: 'blur(16px)',
                           color: '#fff',
                           fontSize: '11px',
+                          boxShadow: '0 16px 36px -10px rgba(0,0,0,0.6)',
                         }}
                       />
                       <Pie
@@ -594,8 +623,8 @@ export const StatsPage: React.FC = () => {
                         nameKey="name"
                         cx="50%"
                         cy="50%"
-                        innerRadius={68}
-                        outerRadius={96}
+                        innerRadius={65}
+                        outerRadius={92}
                         paddingAngle={3}
                         cornerRadius={6}
                         animationDuration={800}
@@ -613,21 +642,21 @@ export const StatsPage: React.FC = () => {
 
                   {/* Donut Center Totals */}
                   <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-                    <span className="text-caption font-semibold uppercase tracking-wider text-muted">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
                       {t.donutCenterTotal}
                     </span>
-                    <div className="text-base sm:text-lg font-extrabold text-content tabular-nums mt-0.5">
+                    <div className="text-base sm:text-lg font-bold text-white tabular-nums mt-0.5">
                       <MoneyText
                         amount={totalCategorySpent}
-                        className="font-extrabold text-content"
+                        className="font-bold text-white"
                       />
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Ranked Category List with Progress Bars - Fully visible, no vertical clipping */}
-              <div className="lg:col-span-7 space-y-3.5 pr-1">
+              {/* Ranked Category List with Progress Bars */}
+              <div className="lg:col-span-7 space-y-3 pr-1">
                 {breakdownToDisplay.map((item) => {
                   const cat = categories.find((c) => c.id === item.id);
                   const displayName = cat ? getCategoryName(cat, language) : item.name;
@@ -636,28 +665,28 @@ export const StatsPage: React.FC = () => {
                       <div className="flex items-center justify-between text-xs">
                         <div className="flex items-center gap-2">
                           <span
-                            className="w-2.5 h-2.5 rounded-full shrink-0 shadow-2xs"
+                            className="w-2.5 h-2.5 rounded-full shrink-0 shadow-xs"
                             style={{ backgroundColor: item.color }}
                           />
-                          <span className="font-bold text-content">
+                          <span className="font-semibold text-zinc-200">
                             {displayName}
                           </span>
                         </div>
 
                         <div className="flex items-center gap-2">
-                          <span className="text-muted text-caption font-semibold tabular-nums">
+                          <span className="text-zinc-500 text-[11px] font-medium tabular-nums">
                             {item.percentage}%
                           </span>
-                          <span className="font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">
+                          <span className="font-bold text-white tabular-nums">
                             <MoneyText
                               amount={item.amount}
-                              className="font-bold text-zinc-900 dark:text-zinc-100"
+                              className="font-bold text-white"
                             />
                           </span>
                         </div>
                       </div>
 
-                      <div className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-full h-2 overflow-hidden">
+                      <div className="w-full bg-white/[0.06] rounded-full h-1.5 overflow-hidden">
                         <div
                           className="h-full rounded-full transition-all duration-500 ease-out"
                           style={{
@@ -675,20 +704,20 @@ export const StatsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* ── SECTION D: TOP 5 EXPENSES & TOP INFLOWS (EXPANDED HORIZONTAL SPACE - NO TRUNCATION) ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* ── SECTION D: TOP 5 EXPENSES & TOP INFLOWS ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Top 5 Expenses (Outflows) - Grouped by Parent Category */}
-        <div className="p-5 sm:p-6 rounded-card bg-surface backdrop-blur-xl border border-border-subtle shadow-xs space-y-4">
+        <div className="p-5 sm:p-6 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_28px_-10px_rgba(0,0,0,0.5)] space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-control bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20 flex items-center justify-center shadow-xs">
+              <div className="w-8 h-8 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center justify-center">
                 <Flame className="w-4 h-4 stroke-[2]" />
               </div>
               <div>
-                <h2 className="text-base sm:text-lg font-bold text-content">
+                <h2 className="text-base font-bold text-white tracking-tight">
                   {t.topSpends}
                 </h2>
-                <p className="text-xs text-muted">
+                <p className="text-xs text-zinc-400">
                   {t.topSpendsSubtitle}
                 </p>
               </div>
@@ -696,52 +725,52 @@ export const StatsPage: React.FC = () => {
           </div>
 
           {top5ParentCategories.length === 0 ? (
-            <div className="py-8 text-center text-xs text-muted">
+            <div className="py-8 text-center text-xs text-zinc-500">
               {t.noTopSpends}
             </div>
           ) : (
-            <div className="space-y-2.5">
+            <div className="space-y-2">
               {top5ParentCategories.map((item, idx) => {
                 const cat = categories.find((c) => c.id === item.id);
                 const IconComp = cat ? getCategoryIcon(cat.icon) : ShoppingBag;
                 const catName = cat ? getCategoryName(cat, language) : item.name;
 
-                const rankColor =
+                const rankBg =
                   idx === 0
-                    ? 'bg-rose-500 text-white shadow-rose-500/20'
+                    ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
                     : idx === 1
-                    ? 'bg-amber-500 text-white shadow-amber-500/20'
+                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                     : idx === 2
-                    ? 'bg-indigo-500 text-white shadow-indigo-500/20'
-                    : 'bg-zinc-400 dark:bg-zinc-700 text-white shadow-zinc-500/20';
+                    ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
+                    : 'bg-white/[0.06] text-zinc-400 border border-white/[0.08]';
 
                 return (
                   <div
                     key={item.id}
-                    className="p-3.5 rounded-card bg-zinc-50 dark:bg-zinc-800/60 border border-black/[0.04] dark:border-white/[0.06] flex items-center justify-between gap-3 relative overflow-hidden group hover:border-black/[0.1] dark:hover:border-white/[0.12] transition-colors"
+                    className="p-3 rounded-2xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-between gap-3 relative overflow-hidden group hover:border-white/[0.12] hover:bg-white/[0.04] transition-all"
                   >
-                    <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex items-center gap-2.5 min-w-0">
                       {/* Rank Badge */}
                       <div
-                        className={`w-6 h-6 rounded-full flex items-center justify-center text-caption font-black shrink-0 shadow-xs ${rankColor}`}
+                        className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${rankBg}`}
                       >
                         {idx + 1}
                       </div>
 
                       {/* Category Icon */}
                       <div
-                        className="w-9 h-9 rounded-control flex items-center justify-center text-white shrink-0 shadow-xs"
+                        className="w-8 h-8 rounded-xl flex items-center justify-center text-white shrink-0 shadow-xs"
                         style={{ backgroundColor: getCategoryVisualColor(cat?.id || item.id) }}
                       >
-                        <IconComp className="w-4 h-4" />
+                        <IconComp className="w-4 h-4 stroke-[2]" />
                       </div>
 
                       <div className="min-w-0">
-                        <h4 className="text-xs sm:text-sm font-bold text-content break-words">
+                        <h4 className="text-xs sm:text-sm font-semibold text-zinc-200 truncate group-hover:text-white transition-colors">
                           {catName}
                         </h4>
-                        <div className="flex items-center gap-1.5 text-caption text-muted mt-0.5 flex-wrap">
-                          <span className="font-semibold text-zinc-600 dark:text-zinc-300 tabular-nums">
+                        <div className="flex items-center gap-1.5 text-[11px] text-zinc-400 mt-0.5 flex-wrap">
+                          <span className="font-semibold text-rose-400 tabular-nums">
                             {item.percentage}% {isAr ? 'من المصاريف' : 'du total'}
                           </span>
                           <span>•</span>
@@ -752,12 +781,12 @@ export const StatsPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="text-right shrink-0">
-                      <span className="text-sm sm:text-base font-extrabold text-rose-600 dark:text-rose-400 tabular-nums">
+                    <div className="text-end shrink-0">
+                      <span className="text-sm font-bold text-rose-400 tabular-nums">
                         <MoneyText
                           amount={Number(item.amount)}
-                          prefix="-"
-                          className="font-extrabold text-rose-600 dark:text-rose-400"
+                          prefix="− "
+                          className="font-bold text-rose-400"
                         />
                       </span>
                     </div>
@@ -769,17 +798,17 @@ export const StatsPage: React.FC = () => {
         </div>
 
         {/* Top 5 Inflows (Income) */}
-        <div className="p-5 sm:p-6 rounded-card bg-surface backdrop-blur-xl border border-border-subtle shadow-xs space-y-4">
+        <div className="p-5 sm:p-6 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_28px_-10px_rgba(0,0,0,0.5)] space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-control bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center justify-center shadow-xs">
+              <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center">
                 <ArrowUpRight className="w-4 h-4 stroke-[2]" />
               </div>
               <div>
-                <h2 className="text-base sm:text-lg font-bold text-content">
+                <h2 className="text-base font-bold text-white tracking-tight">
                   {t.topInflows || (isAr ? 'أكبر الواردات' : 'Top Inflows')}
                 </h2>
-                <p className="text-xs text-muted">
+                <p className="text-xs text-zinc-400">
                   {t.topInflowsSubtitle ||
                     (isAr ? 'أكبر المداخيل المسجلة هذا الشهر' : 'Top income transactions')}
                 </p>
@@ -788,44 +817,44 @@ export const StatsPage: React.FC = () => {
           </div>
 
           {top5Incomes.length === 0 ? (
-            <div className="py-8 text-center text-xs text-muted">
+            <div className="py-8 text-center text-xs text-zinc-500">
               {t.noInflows || (isAr ? 'لا توجد واردات مسجلة' : 'No income recorded')}
             </div>
           ) : (
-            <div className="space-y-2.5">
+            <div className="space-y-2">
               {top5Incomes.map((tx, idx) => {
                 const incomeTitle = getIncomeTransactionTitle(tx, incomeSources, language);
 
                 return (
                   <div
                     key={tx.id}
-                    className="p-3.5 rounded-card bg-zinc-50 dark:bg-zinc-800/60 border border-black/[0.04] dark:border-white/[0.06] flex items-center justify-between gap-3 relative overflow-hidden group hover:border-black/[0.1] dark:hover:border-white/[0.12] transition-colors"
+                    className="p-3 rounded-2xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-between gap-3 relative overflow-hidden group hover:border-white/[0.12] hover:bg-white/[0.04] transition-all"
                   >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-6 h-6 rounded-full flex items-center justify-center text-caption font-black shrink-0 shadow-xs bg-emerald-600 text-white">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                         {idx + 1}
                       </div>
 
-                      <div className="w-9 h-9 rounded-control flex items-center justify-center text-white shrink-0 shadow-xs bg-emerald-500">
+                      <div className="w-8 h-8 rounded-xl flex items-center justify-center text-emerald-300 bg-emerald-500/15 border border-emerald-500/25 shrink-0">
                         <Wallet className="w-4 h-4" />
                       </div>
 
                       <div className="min-w-0">
-                        <h4 className="text-xs sm:text-sm font-bold text-content break-words">
+                        <h4 className="text-xs sm:text-sm font-semibold text-zinc-200 truncate group-hover:text-white transition-colors">
                           {incomeTitle}
                         </h4>
-                        <div className="flex items-center gap-1.5 text-caption text-muted mt-0.5">
+                        <div className="flex items-center gap-1.5 text-[11px] text-zinc-400 mt-0.5">
                           <span className="tabular-nums">{formatDate(tx.date, language)}</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="text-right shrink-0">
-                      <span className="text-sm sm:text-base font-extrabold text-emerald-600 dark:text-emerald-400 tabular-nums">
+                    <div className="text-end shrink-0">
+                      <span className="text-sm font-bold text-emerald-400 tabular-nums">
                         <MoneyText
                           amount={Number(tx.amount)}
-                          prefix="+"
-                          className="font-extrabold text-emerald-600 dark:text-emerald-400"
+                          prefix="+ "
+                          className="font-bold text-emerald-400"
                         />
                       </span>
                     </div>

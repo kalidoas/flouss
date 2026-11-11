@@ -1,14 +1,15 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '../store/useAppStore';
-import { TaskItem, TaskCategory, TaskFrequency, PrayerKey, StudyModuleItem, GymWorkoutLog, ProgramTrack } from '../types';
+import { TaskItem, TaskSubItem, TaskCategory, TaskFrequency, PrayerKey, StudyModuleItem, GymWorkoutLog, ProgramTrack } from '../types';
 import { Modal } from '../components/common/Modal';
 import { Button } from '../components/common/Button';
 import { EmptyState } from '../components/common/EmptyState';
 import { translations } from '../i18n/translations';
 import { getProgramTrackTitle } from '../utils/i18nHelpers';
-import { playHapticFeedback } from '../utils/haptics';
+import { playHapticFeedback, triggerHaptic } from '../utils/haptics';
 import { GoogleCalendarAlarmModal } from '../components/common/GoogleCalendarAlarmModal';
+import { DropdownPortal } from '../components/common/DropdownPortal';
 import { UpcomingScheduleWidget } from '../components/meetings/UpcomingScheduleWidget';
 import confetti from 'canvas-confetti';
 import {
@@ -30,6 +31,8 @@ import {
   Sparkles,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
+  ChevronDown,
   TrendingUp,
   Award,
   Zap,
@@ -182,6 +185,92 @@ function formatISODate(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
+interface TaskActionDropdownProps {
+  task: TaskItem;
+  onAlarm: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+  alarmLabel: string;
+  editLabel: string;
+  deleteLabel: string;
+}
+
+const TaskActionDropdown: React.FC<TaskActionDropdownProps> = ({
+  task,
+  onAlarm,
+  onEdit,
+  onDelete,
+  alarmLabel,
+  editLabel,
+  deleteLabel,
+}) => {
+  const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
+  return (
+    <div className="relative shrink-0" onClick={(e) => e.stopPropagation()}>
+      <button
+        ref={triggerRef}
+        type="button"
+        aria-label="Task actions"
+        aria-expanded={open}
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpen((prev) => !prev);
+        }}
+        className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-muted hover:text-white hover:bg-white/[0.06] focus-visible:outline-none transition-colors"
+      >
+        <span className="text-base leading-none">⋯</span>
+      </button>
+
+      <DropdownPortal
+        isOpen={open}
+        onClose={() => setOpen(false)}
+        triggerRef={triggerRef}
+        align="end"
+        minWidth={176}
+        className="w-48 rounded-2xl border border-white/[0.12] bg-[#0E0F17]/95 backdrop-blur-2xl p-1.5 shadow-[0_16px_36px_-8px_rgba(0,0,0,0.8)]"
+      >
+        <div className="space-y-0.5">
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(false);
+              onAlarm();
+            }}
+            className="flex min-h-9 w-full items-center gap-2 rounded-xl px-3 text-start text-xs text-content hover:bg-white/[0.06] cursor-pointer"
+          >
+            <Bell className="h-3.5 w-3.5 text-indigo-400 shrink-0" />
+            <span className="truncate">{alarmLabel}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(false);
+              onEdit();
+            }}
+            className="flex min-h-9 w-full items-center gap-2 rounded-xl px-3 text-start text-xs text-content hover:bg-white/[0.06] cursor-pointer"
+          >
+            <Edit2 className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">{editLabel}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(false);
+              onDelete();
+            }}
+            className="flex min-h-9 w-full items-center gap-2 rounded-xl px-3 text-start text-xs text-rose-400 hover:bg-rose-500/10 cursor-pointer"
+          >
+            <Trash2 className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">{deleteLabel}</span>
+          </button>
+        </div>
+      </DropdownPortal>
+    </div>
+  );
+};
+
 export const TasksPage: React.FC = () => {
   const {
     tasks,
@@ -216,6 +305,9 @@ export const TasksPage: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<string>(todayStr);
   const [activeTab, setActiveTab] = useState<'daily' | 'month' | 'stats'>('daily');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
+  const [inlineSubTaskInput, setInlineSubTaskInput] = useState<Record<string, string>>({});
+  const [hoveredHeatmapDay, setHoveredHeatmapDay] = useState<{ dateStr: string; count: number } | null>(null);
 
   // Drill-down Modal State for Program Tracks
   const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
@@ -233,9 +325,35 @@ export const TasksPage: React.FC = () => {
   const [taskFrequency, setTaskFrequency] = useState<TaskFrequency>('daily');
   const [taskNotes, setTaskNotes] = useState('');
   const [taskScheduledDate, setTaskScheduledDate] = useState<string>(todayStr);
-  const [taskScheduledTime, setTaskScheduledTime] = useState<string>('10:00');
+  const [taskScheduledTime, setTaskScheduledTime] = useState<string>('');
   const [syncToCalendar, setSyncToCalendar] = useState<boolean>(false);
   const [isCalendarSaving, setIsCalendarSaving] = useState<boolean>(false);
+
+  // ── Task Category Filter Dropdown State (no horizontal scrollbar) ──
+  const [isTaskCategoryDropdownOpen, setIsTaskCategoryDropdownOpen] = useState(false);
+  const taskCategoryDropdownTriggerRef = useRef<HTMLButtonElement>(null);
+
+  // Dynamic Schedule Date Label logic: Today -> "Today", Today + 1 -> "Tomorrow", else Weekday name
+  const getScheduleDateLabel = (dateStr: string): string => {
+    const now = new Date();
+    const today = formatISODate(now);
+    const tomorrowDate = new Date(now);
+    tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+    const tomorrow = formatISODate(tomorrowDate);
+
+    if (dateStr === today) {
+      return language === 'ar' ? 'اليوم' : language === 'en' ? 'Today' : "Aujourd'hui";
+    }
+    if (dateStr === tomorrow) {
+      return language === 'ar' ? 'غداً' : language === 'en' ? 'Tomorrow' : 'Demain';
+    }
+
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const targetDate = new Date(year, month - 1, day);
+    const locale = language === 'ar' ? 'ar-MA' : language === 'en' ? 'en-US' : 'fr-FR';
+    const dayName = new Intl.DateTimeFormat(locale, { weekday: 'long' }).format(targetDate);
+    return dayName.charAt(0).toUpperCase() + dayName.slice(1);
+  };
 
   // ── Study Module Input State ──
   const [moduleTitle, setModuleTitle] = useState('');
@@ -433,6 +551,104 @@ export const TasksPage: React.FC = () => {
     return (programTracks || []).find((t) => t.id === selectedTrackId) || null;
   }, [programTracks, selectedTrackId]);
 
+  // ── GitHub-style Habit Heatmap (365 Days / 52 Weeks) ──
+  const heatmapData = useMemo(() => {
+    const today = new Date();
+    const days: {
+      dateStr: string;
+      date: Date;
+      count: number;
+      level: 0 | 1 | 2 | 3 | 4;
+      dayOfWeek: number;
+      monthName: string;
+      isToday: boolean;
+    }[] = [];
+
+    // Pre-build set of completed counts for fast lookup
+    const countsByDate = new Map<string, number>();
+    (tasks || []).forEach((t) => {
+      (t.completedDates || []).forEach((d) => {
+        countsByDate.set(d, (countsByDate.get(d) || 0) + 1);
+      });
+    });
+    Object.entries(salatLogs || {}).forEach(([d, prayers]) => {
+      if ((prayers || []).length === 5) {
+        countsByDate.set(d, (countsByDate.get(d) || 0) + 1);
+      }
+    });
+    (gymLogs || []).forEach((g) => {
+      if (g.date) {
+        countsByDate.set(g.date, (countsByDate.get(g.date) || 0) + 1);
+      }
+    });
+    (programTracks || []).forEach((tr) => {
+      (tr.subtasks || []).forEach((sub) => {
+        (sub.completedDates || []).forEach((d) => {
+          countsByDate.set(d, (countsByDate.get(d) || 0) + 1);
+        });
+      });
+    });
+
+    // 52 weeks ending today (364 days)
+    const totalDays = 52 * 7;
+    const startDate = new Date(today);
+    startDate.setDate(today.getDate() - totalDays + 1);
+
+    // Align startDate to Monday (1)
+    const startDay = startDate.getDay();
+    const diffToMon = startDay === 0 ? -6 : 1 - startDay;
+    startDate.setDate(startDate.getDate() + diffToMon);
+
+    const curr = new Date(startDate);
+    const locale = language === 'ar' ? 'ar-MA' : language === 'en' ? 'en-US' : 'fr-FR';
+
+    while (curr <= today || curr.getDay() !== 1) {
+      const dateStr = formatISODate(curr);
+      const count = countsByDate.get(dateStr) || 0;
+      let level: 0 | 1 | 2 | 3 | 4 = 0;
+      if (count >= 5) level = 4;
+      else if (count >= 3) level = 3;
+      else if (count >= 2) level = 2;
+      else if (count >= 1) level = 1;
+
+      days.push({
+        dateStr,
+        date: new Date(curr),
+        count,
+        level,
+        dayOfWeek: curr.getDay(),
+        monthName: curr.toLocaleDateString(locale, { month: 'short' }),
+        isToday: dateStr === todayStr,
+      });
+
+      curr.setDate(curr.getDate() + 1);
+      if (curr > today && curr.getDay() === 1) break;
+    }
+
+    // Group into weeks
+    const weeks: (typeof days)[] = [];
+    let currentWeek: typeof days = [];
+    days.forEach((d) => {
+      currentWeek.push(d);
+      if (currentWeek.length === 7) {
+        weeks.push(currentWeek);
+        currentWeek = [];
+      }
+    });
+    if (currentWeek.length > 0) {
+      weeks.push(currentWeek);
+    }
+
+    let totalCompletions = 0;
+    let maxCountInDay = 0;
+    days.forEach((d) => {
+      totalCompletions += d.count;
+      if (d.count > maxCountInDay) maxCountInDay = d.count;
+    });
+
+    return { weeks, days, totalCompletions, maxCountInDay };
+  }, [tasks, salatLogs, gymLogs, programTracks, language, todayStr]);
+
   const handleToggleSalat = (prayer: PrayerKey) => {
     playHapticFeedback('success');
     toggleSalatPrayer(selectedDate, prayer);
@@ -525,6 +741,113 @@ export const TasksPage: React.FC = () => {
     }
   };
 
+  const getQuickChips = (task: TaskItem): string[] => {
+    const title = (task.title || '').toLowerCase();
+    if (title.includes('salat') || title.includes('prayer') || title.includes('صلاة')) {
+      return language === 'ar'
+        ? ['الوضوء', 'أذكار ما بعد الصلاة', 'سنة راتبة', 'قراءة وجه قرآن']
+        : ['Ablution (Wudu)', 'Dhikr & Dua', 'Sunnah Prayer', 'Read 1 Page Quran'];
+    }
+    if (title.includes('gym') || title.includes('workout') || title.includes('تدريب') || title.includes('رياضة')) {
+      return language === 'ar'
+        ? ['إحماء 10 د', 'تمرين أولي', 'تمرين ثانوي', 'إطالة بعد التمرين']
+        : ['10m Warmup', 'Primary Compound', 'Accessory Superset', 'Post-stretch'];
+    }
+    if (title.includes('english') || title.includes('study') || title.includes('دراسة') || title.includes('لغة')) {
+      return language === 'ar'
+        ? ['حفظ 5 كلمات', 'استماع بودكاست 15 د', 'قراءة مقال', 'مراجعة التكرار المتباعد']
+        : ['5 New Vocabulary', '15m Podcast Listening', '1 Article Read', 'Anki SRS Review'];
+    }
+    if (title.includes('code') || title.includes('program') || title.includes('تطوير') || title.includes('برمجة')) {
+      return language === 'ar'
+        ? ['كتابة اختبار الوحدة', 'إصلاح الخلل', 'مراجعة الكود', 'توثيق الميزة']
+        : ['Write Unit Test', 'Fix Edge Case', 'PR Review', 'Docs / Changelog'];
+    }
+    return language === 'ar'
+      ? ['تحضير المتطلبات', 'التركيز 25 دقيقة (بومودورو)', 'مراجعة وتأكيد الإنجاز']
+      : ['Prepare Materials', '25m Deep Pomodoro', 'Final Review & Wrap-up'];
+  };
+
+  const handleAddInlineSubTask = (taskId: string, title: string) => {
+    const trimmed = title.trim();
+    if (!trimmed) return;
+    const task = tasks.find((t) => t.id === taskId);
+    if (!task) return;
+    const currentSubtasks = task.subtasks || [];
+    const newSubItem: TaskSubItem = {
+      id: `sub_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      title: trimmed,
+      completed: false,
+    };
+    const updatedSubtasks = [...currentSubtasks, newSubItem];
+    updateTask(taskId, { subtasks: updatedSubtasks });
+    setInlineSubTaskInput((prev) => ({ ...prev, [taskId]: '' }));
+    playHapticFeedback('light');
+  };
+
+  const handleToggleInlineSubTask = (taskId: string, subId: string) => {
+    const task = tasks.find((t) => t.id === taskId);
+    if (!task) return;
+    const currentSubtasks = task.subtasks || [];
+    const updatedSubtasks = currentSubtasks.map((s) =>
+      s.id === subId ? { ...s, completed: !s.completed } : s
+    );
+    const allDone = updatedSubtasks.length > 0 && updatedSubtasks.every((s) => s.completed);
+    const anyUndone = updatedSubtasks.some((s) => !s.completed);
+    const completedDates = task.completedDates || [];
+    const isCompletedToday = completedDates.includes(selectedDate);
+
+    let nextDates = completedDates;
+    if (allDone && !isCompletedToday) {
+      nextDates = [...completedDates, selectedDate];
+      playHapticFeedback('success');
+      confetti({
+        particleCount: 70,
+        spread: 60,
+        origin: { y: 0.6 },
+      });
+      showToast({
+        message: language === 'ar'
+          ? `🎉 اكتملت جميع المهام الفرعية لـ "${task.title}" (+15 XP)!`
+          : `🎉 All sub-tasks completed for "${task.title}" (+15 XP)!`,
+      });
+    } else if (anyUndone && isCompletedToday) {
+      nextDates = completedDates.filter((d) => d !== selectedDate);
+    }
+
+    updateTask(taskId, {
+      subtasks: updatedSubtasks,
+      completedDates: nextDates,
+    });
+    playHapticFeedback('selection');
+  };
+
+  const handleDeleteInlineSubTask = (taskId: string, subId: string) => {
+    const task = tasks.find((t) => t.id === taskId);
+    if (!task) return;
+    const currentSubtasks = task.subtasks || [];
+    const updatedSubtasks = currentSubtasks.filter((s) => s.id !== subId);
+    updateTask(taskId, { subtasks: updatedSubtasks });
+    playHapticFeedback('light');
+  };
+
+  const handleManualTaskToggle = (task: TaskItem) => {
+    const completedDates = task.completedDates || [];
+    const isCompleted = completedDates.includes(selectedDate);
+    const subtasks = task.subtasks || [];
+    const willBeCompleted = !isCompleted;
+
+    const nextSubtasks = subtasks.map((s) => ({
+      ...s,
+      completed: willBeCompleted,
+    }));
+
+    handleToggle(task.id);
+    if (subtasks.length > 0) {
+      updateTask(task.id, { subtasks: nextSubtasks });
+    }
+  };
+
   const handleOpenAdd = () => {
     setEditingTask(null);
     setTaskTitle('');
@@ -532,11 +855,17 @@ export const TasksPage: React.FC = () => {
     setTaskFrequency('daily');
     setTaskNotes('');
     setTaskScheduledDate(selectedDate || todayStr);
-    setTaskScheduledTime('10:00');
+    setTaskScheduledTime('');
     setSyncToCalendar(false);
     setIsCalendarSaving(false);
     setIsModalOpen(true);
   };
+
+  useEffect(() => {
+    const handleNewTask = () => handleOpenAdd();
+    window.addEventListener('flouss:open-add-task', handleNewTask);
+    return () => window.removeEventListener('flouss:open-add-task', handleNewTask);
+  }, [selectedDate, todayStr]);
 
   const handleOpenEdit = (task: TaskItem) => {
     setEditingTask(task);
@@ -545,7 +874,7 @@ export const TasksPage: React.FC = () => {
     setTaskFrequency(task.frequency);
     setTaskNotes(task.notes || '');
     setTaskScheduledDate(task.scheduledDate || selectedDate || todayStr);
-    setTaskScheduledTime(task.scheduledTime || '10:00');
+    setTaskScheduledTime(task.scheduledTime || '');
     setSyncToCalendar(Boolean(task.addToGoogleCalendar || task.googleCalendarEventId));
     setIsCalendarSaving(false);
     setIsModalOpen(true);
@@ -629,8 +958,9 @@ export const TasksPage: React.FC = () => {
       calendarEventId = undefined;
     }
 
-    const scheduledDateTime = taskScheduledDate && taskScheduledTime
-      ? `${taskScheduledDate}T${taskScheduledTime}`
+    const cleanTime = taskScheduledTime.trim() ? taskScheduledTime.trim() : undefined;
+    const scheduledDateTime = taskScheduledDate && cleanTime
+      ? `${taskScheduledDate}T${cleanTime}`
       : undefined;
 
     if (editingTask) {
@@ -640,7 +970,7 @@ export const TasksPage: React.FC = () => {
         frequency: taskFrequency,
         notes: taskNotes.trim() || undefined,
         scheduledDate: taskScheduledDate,
-        scheduledTime: taskScheduledTime,
+        scheduledTime: cleanTime,
         scheduledDateTime,
         addToGoogleCalendar: syncToCalendar,
         googleCalendarEventId: calendarEventId,
@@ -653,7 +983,7 @@ export const TasksPage: React.FC = () => {
         frequency: taskFrequency,
         notes: taskNotes.trim() || undefined,
         scheduledDate: taskScheduledDate,
-        scheduledTime: taskScheduledTime,
+        scheduledTime: cleanTime,
         scheduledDateTime,
         addToGoogleCalendar: syncToCalendar,
         googleCalendarEventId: calendarEventId,
@@ -673,7 +1003,7 @@ export const TasksPage: React.FC = () => {
             <h1 className="text-2xl sm:text-3xl font-bold text-content tracking-tight">
               {tTask.title}
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-caption font-semibold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+            <span className="px-2.5 py-0.5 rounded-full text-caption font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">
               {tTask.badge}
             </span>
           </div>
@@ -684,383 +1014,318 @@ export const TasksPage: React.FC = () => {
 
         <div className="flex items-center gap-2">
           <Button
-            onClick={() => setIsAddTrackModalOpen(true)}
+            onClick={handleOpenAdd}
             variant="primary"
             icon={<Plus className="w-4 h-4 stroke-[2.5]" />}
-          >
-            <span>{tTask.addProgram}</span>
-          </Button>
-
-          <Button
-            onClick={handleOpenAdd}
-            variant="secondary"
-            icon={<ListTodo className="w-4 h-4 stroke-[2]" />}
           >
             <span>{tTask.newTask}</span>
           </Button>
         </div>
       </div>
 
-      {/* Hero Progress Card: Apple HIG Surface */}
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="rounded-card p-6 sm:p-7 bg-surface backdrop-blur-2xl border border-border-subtle shadow-[0_8px_32px_0_rgba(0,0,0,0.06),inset_0_1px_0_0_rgba(255,255,255,0.8)] dark:shadow-[0_12px_40px_0_rgba(0,0,0,0.45),inset_0_1px_0_0_rgba(255,255,255,0.08)] space-y-5"
-      >
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-muted text-xs font-medium">
-              <Sparkles className="w-3.5 h-3.5 text-blue-500" />
+      {/* Unified Gamified Command HUD (2-Column Bento Grid) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Left Column: Progress %, XP & Streak Strip */}
+        <div className="zawa-bento zawa-spotlight p-5 flex flex-col justify-between space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-xs font-semibold text-zinc-400">
+              <Sparkles className="w-4 h-4 text-indigo-400" />
               <span>{tTask.todayProgress}</span>
               <span>•</span>
-              <span className="font-mono tabular-nums">
-                {selectedDate === todayStr ? (language === 'ar' ? 'اليوم' : language === 'en' ? 'Today' : "Aujourd'hui") : selectedDate}
+              <span className="font-mono text-white tabular-nums">
+                {getScheduleDateLabel(selectedDate)}
               </span>
             </div>
 
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl sm:text-5xl font-bold tracking-tight text-content tabular-nums">
+            <span className="text-xs font-bold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-1 rounded-full tabular-nums">
+              {dailyStats.completed} / {dailyStats.total} {tTask.completedDays}
+            </span>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-baseline justify-between">
+              <span className="text-4xl sm:text-5xl font-black tracking-tight text-white tabular-nums">
                 {dailyStats.percentage}%
               </span>
-              <span className="text-xs text-muted tabular-nums">
-                ({dailyStats.completed} / {dailyStats.total} {tTask.completedDays})
+              <span className="text-xs text-muted">
+                {dailyStats.percentage === 100
+                  ? (language === 'ar' ? '🎉 اكتملت جميع المهام!' : '🎉 All tasks done!')
+                  : `${dailyStats.total - dailyStats.completed} ${language === 'ar' ? 'مهام متبقية' : 'tasks remaining'}`}
               </span>
             </div>
 
-            {/* Progress bar */}
-            <div className="w-full sm:w-80 h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden p-0.5">
+            {/* Glowing progress track */}
+            <div className="w-full h-2.5 bg-white/[0.06] rounded-full overflow-hidden p-0.5">
               <div
-                className="h-full bg-blue-600 rounded-full transition-all duration-500 ease-out shadow-xs"
+                className="h-full bg-gradient-to-r from-indigo-500 to-indigo-400 rounded-full transition-all duration-500 ease-out shadow-[0_0_12px_rgba(99,102,241,0.5)]"
                 style={{ width: `${dailyStats.percentage}%` }}
               />
             </div>
           </div>
 
-          {/* Compact progress strip */}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-control border border-border-subtle bg-surface-raised/60 px-3 py-2 text-xs">
-            <span className="font-bold text-content"><Trophy className="me-1 inline h-3.5 w-3.5 text-amber-500" />Lv {gamificationStats.level} · {gamificationStats.totalXP} {tTask.xpPoints}</span>
-            <span className="text-muted">{gamificationStats.progressPercent}% {tTask.xpNextLevel}</span>
-            <span className="text-muted"><Flame className="me-1 inline h-3.5 w-3.5 text-amber-500" />{overallStreak} {tTask.streakDays}</span>
-            <span className="text-muted"><TrendingUp className="me-1 inline h-3.5 w-3.5 text-emerald-500" />{tTask.monthAverage} {monthStats.rate}%</span>
+          {/* Gamified metric chips */}
+          <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-white/[0.06] text-xs">
+            <span className="inline-flex items-center gap-1 font-bold text-zinc-200 bg-white/[0.04] border border-white/[0.08] px-2.5 py-1 rounded-full">
+              <Trophy className="w-3.5 h-3.5 text-amber-400" />
+              <span>Lv {gamificationStats.level} · {gamificationStats.totalXP} {tTask.xpPoints}</span>
+            </span>
+
+            <span className="inline-flex items-center gap-1 text-muted bg-white/[0.03] px-2 py-1 rounded-full">
+              {gamificationStats.progressPercent}% {tTask.xpNextLevel}
+            </span>
+
+            {overallStreak > 0 && (
+              <span className="inline-flex items-center gap-1 font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-1 rounded-full tabular-nums">
+                <Flame className="w-3.5 h-3.5 text-amber-400" />
+                <span>{overallStreak} {tTask.streakDays}</span>
+              </span>
+            )}
+
+            <span className="inline-flex items-center gap-1 text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-full tabular-nums">
+              <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+              <span>{tTask.monthAverage} {monthStats.rate}%</span>
+            </span>
           </div>
         </div>
-      </motion.div>
 
-      {/* Date Strip Navigator: Apple Segmented Pill Container */}
-      <div className="bg-surface backdrop-blur-xl rounded-card p-2.5 sm:p-3 border border-border-subtle shadow-xs flex items-center justify-between gap-2 overflow-x-auto">
-        <button
-          onClick={() => {
-            const d = new Date(selectedDate);
-            d.setDate(d.getDate() - 1);
-            setSelectedDate(formatISODate(d));
-          }}
-          className="p-2 rounded-control text-muted hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-          title={language === 'ar' ? 'اليوم السابق' : language === 'en' ? 'Previous day' : 'Jour précédent'}
-        >
-          <ChevronLeft className="w-5 h-5" />
-        </button>
+        {/* Right Column: 7-Day Week Selector with Glowing Indigo Active Day Pill */}
+        <div className="zawa-bento zawa-spotlight p-4 flex flex-col justify-between">
+          <div className="flex items-center justify-between pb-2 border-b border-white/[0.06]">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted">
+              {language === 'ar' ? 'أسبوع المهمة' : 'Week Schedule'}
+            </span>
 
-        <div className="flex items-center gap-2 overflow-x-auto py-1">
-          {dateStrip.map((item) => {
-            const isSelected = item.dateStr === selectedDate;
-            return (
+            <div className="flex items-center gap-1.5">
               <button
-                key={item.dateStr}
-                onClick={() => setSelectedDate(item.dateStr)}
-                className={`flex flex-col items-center justify-center min-w-[54px] py-2 px-2.5 rounded-card transition-all ${
-                  isSelected
-                    ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30 font-bold scale-105'
-                    : 'bg-zinc-50 dark:bg-zinc-800/60 text-zinc-600 dark:text-muted hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                type="button"
+                onClick={() => {
+                  const [y, m, d] = selectedDate.split('-').map(Number);
+                  const dt = new Date(y, m - 1, d);
+                  dt.setDate(dt.getDate() - 1);
+                  setSelectedDate(formatISODate(dt));
+                }}
+                className="p-1 rounded-lg text-muted hover:text-white hover:bg-white/[0.06] transition-colors cursor-pointer"
+                title={language === 'ar' ? 'اليوم السابق' : 'Previous day'}
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSelectedDate(todayStr)}
+                title={selectedDate !== todayStr ? (language === 'ar' ? 'الرجوع إلى اليوم' : 'Jump to Today') : undefined}
+                className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full capitalize transition-colors ${
+                  selectedDate === todayStr
+                    ? 'text-indigo-400 bg-indigo-500/10'
+                    : 'text-zinc-300 hover:text-white bg-white/[0.06] hover:bg-white/[0.12] cursor-pointer'
                 }`}
               >
-                <span className="text-caption uppercase font-semibold tracking-wider opacity-80">
-                  {item.dayName}
-                </span>
-                <span className="text-base font-bold mt-0.5 tabular-nums">{item.dayNum}</span>
-                {item.isToday && (
-                  <span
-                    className={`w-1.5 h-1.5 rounded-full mt-1 ${
-                      isSelected ? 'bg-amber-300' : 'bg-blue-500'
-                    }`}
-                  />
-                )}
+                {getScheduleDateLabel(selectedDate)}
               </button>
-            );
-          })}
+
+              <button
+                type="button"
+                onClick={() => {
+                  const [y, m, d] = selectedDate.split('-').map(Number);
+                  const dt = new Date(y, m - 1, d);
+                  dt.setDate(dt.getDate() + 1);
+                  setSelectedDate(formatISODate(dt));
+                }}
+                className="p-1 rounded-lg text-muted hover:text-white hover:bg-white/[0.06] transition-colors cursor-pointer"
+                title={language === 'ar' ? 'اليوم التالي' : 'Next day'}
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* 7-Day Segmented Strip */}
+          <div className="grid grid-cols-7 gap-1.5 py-3">
+            {dateStrip.map((item) => {
+              const isSelected = item.dateStr === selectedDate;
+              return (
+                <button
+                  key={item.dateStr}
+                  type="button"
+                  onClick={() => setSelectedDate(item.dateStr)}
+                  className={`flex flex-col items-center justify-center py-2.5 px-1 rounded-2xl transition-all duration-200 ${
+                    isSelected
+                      ? 'bg-gradient-to-b from-indigo-500 to-indigo-600 text-white font-bold shadow-[0_0_20px_rgba(99,102,241,0.5)] scale-105'
+                      : 'bg-white/[0.03] hover:bg-white/[0.08] text-zinc-400 hover:text-white border border-white/[0.04]'
+                  }`}
+                >
+                  <span className="text-[10px] uppercase font-bold tracking-wider opacity-80">
+                    {item.dayName}
+                  </span>
+                  <span className="text-sm font-bold mt-0.5 tabular-nums">
+                    {item.dayNum}
+                  </span>
+                  {item.isToday && (
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full mt-1 ${
+                        isSelected ? 'bg-amber-300' : 'bg-indigo-400'
+                      }`}
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="text-[11px] text-muted text-center pt-1 border-t border-white/[0.06]">
+            {language === 'ar' ? 'حدد أي يوم لعرض وتحديث المهام' : 'Select any day to inspect & check off tasks'}
+          </div>
         </div>
-
-        <button
-          onClick={() => {
-            const d = new Date(selectedDate);
-            d.setDate(d.getDate() + 1);
-            setSelectedDate(formatISODate(d));
-          }}
-          className="p-2 rounded-control text-muted hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-          title={language === 'ar' ? 'اليوم التالي' : language === 'en' ? 'Next day' : 'Jour suivant'}
-        >
-          <ChevronRight className="w-5 h-5" />
-        </button>
-
-        {selectedDate !== todayStr && (
-          <button
-            onClick={() => setSelectedDate(todayStr)}
-            className="text-xs font-semibold text-blue-600 dark:text-blue-400 px-3 py-1.5 rounded-control bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 transition-colors shrink-0"
-          >
-            {language === 'ar' ? 'اليوم' : language === 'en' ? 'Today' : "Aujourd'hui"}
-          </button>
-        )}
       </div>
 
-      {/* Navigation Sub-Tabs */}
-      <div className="flex items-center gap-2 border-b border-border-subtle pb-2">
-        <button
-          onClick={() => setActiveTab('daily')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-control text-xs font-semibold transition-all ${
-            activeTab === 'daily'
-              ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs'
-              : 'text-zinc-600 dark:text-muted hover:bg-zinc-100 dark:hover:bg-zinc-800'
-          }`}
-        >
-          <ListTodo className="w-4 h-4" />
-          <span>{tTask.todayList}</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('month')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-control text-xs font-semibold transition-all ${
-            activeTab === 'month'
-              ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs'
-              : 'text-zinc-600 dark:text-muted hover:bg-zinc-100 dark:hover:bg-zinc-800'
-          }`}
-        >
-          <Calendar className="w-4 h-4" />
-          <span>{tTask.monthlyMatrix}</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('stats')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-control text-xs font-semibold transition-all ${
-            activeTab === 'stats'
-              ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs'
-              : 'text-zinc-600 dark:text-muted hover:bg-zinc-100 dark:hover:bg-zinc-800'
-          }`}
-        >
-          <BarChart2 className="w-4 h-4" />
-          <span>{tTask.statsTab}</span>
-        </button>
-      </div>
-
-      {/* Category Pills Filter */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-        <button
-          onClick={() => setSelectedCategory('all')}
-          className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors shrink-0 ${
-            selectedCategory === 'all'
-              ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900'
-              : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-muted hover:bg-zinc-200'
-          }`}
-        >
-          {tTask.all} (<span className="tabular-nums">{tasks.length}</span>)
-        </button>
-        {Object.entries(CATEGORY_CONFIG).map(([catKey, conf]) => (
+      {/* Sleek Single-Row Glass Toolbar */}
+      <div className="zawa-bento p-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        {/* Left: View Switcher */}
+        <div className="flex items-center gap-1.5 shrink-0">
           <button
-            key={catKey}
-            onClick={() => setSelectedCategory(catKey)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors shrink-0 ${
-              selectedCategory === catKey
-                ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900'
-                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-muted hover:bg-zinc-200'
+            type="button"
+            onClick={() => setActiveTab('daily')}
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
+              activeTab === 'daily'
+                ? 'bg-white text-zinc-950 font-bold shadow-xs'
+                : 'text-zinc-400 hover:text-white hover:bg-white/[0.06]'
             }`}
           >
-            <span>{conf.icon}</span>
-            <span>{conf[language] || conf.fr}</span>
+            <ListTodo className="w-3.5 h-3.5" />
+            <span>{tTask.todayList}</span>
           </button>
-        ))}
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('month')}
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
+              activeTab === 'month'
+                ? 'bg-white text-zinc-950 font-bold shadow-xs'
+                : 'text-zinc-400 hover:text-white hover:bg-white/[0.06]'
+            }`}
+          >
+            <Calendar className="w-3.5 h-3.5" />
+            <span>{tTask.matrixTitle}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('stats')}
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
+              activeTab === 'stats'
+                ? 'bg-white text-zinc-950 font-bold shadow-xs'
+                : 'text-zinc-400 hover:text-white hover:bg-white/[0.06]'
+            }`}
+          >
+            <BarChart2 className="w-3.5 h-3.5" />
+            <span>{tTask.statsTab}</span>
+          </button>
+        </div>
+
+        {/* Right: Custom Glass Task Category Popover (No horizontal scrollbar) */}
+        <div className="relative inline-block shrink-0">
+          <button
+            ref={taskCategoryDropdownTriggerRef}
+            type="button"
+            aria-expanded={isTaskCategoryDropdownOpen}
+            onClick={() => setIsTaskCategoryDropdownOpen((prev) => !prev)}
+            className="flex items-center gap-2 rounded-full border border-white/[0.08] bg-black/40 px-3.5 py-1.5 text-xs font-semibold text-zinc-200 outline-none shadow-xs hover:border-white/[0.18] hover:bg-white/[0.04] transition-all cursor-pointer"
+          >
+            {selectedCategory !== 'all' && CATEGORY_CONFIG[selectedCategory as TaskCategory] ? (
+              <span>{CATEGORY_CONFIG[selectedCategory as TaskCategory].icon}</span>
+            ) : (
+              <ListTodo className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+            )}
+            <span className="truncate max-w-[130px]">
+              {selectedCategory === 'all'
+                ? `${tTask.all} (${tasks.length})`
+                : CATEGORY_CONFIG[selectedCategory as TaskCategory]?.[language] ||
+                  CATEGORY_CONFIG[selectedCategory as TaskCategory]?.fr ||
+                  selectedCategory}
+            </span>
+            <ChevronDown
+              className={`w-3.5 h-3.5 text-zinc-400 shrink-0 transition-transform duration-200 ${
+                isTaskCategoryDropdownOpen ? 'rotate-180 text-white' : ''
+              }`}
+            />
+          </button>
+
+          <DropdownPortal
+            isOpen={isTaskCategoryDropdownOpen}
+            onClose={() => setIsTaskCategoryDropdownOpen(false)}
+            triggerRef={taskCategoryDropdownTriggerRef}
+            align="end"
+            minWidth={210}
+            className="min-w-[210px] overflow-y-auto no-scrollbar rounded-2xl bg-[#12131C]/95 backdrop-blur-2xl border border-white/[0.12] p-1.5 shadow-[0_16px_36px_-8px_rgba(0,0,0,0.8)]"
+          >
+            <div className="space-y-0.5">
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedCategory('all');
+                  setIsTaskCategoryDropdownOpen(false);
+                }}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-start cursor-pointer ${
+                  selectedCategory === 'all'
+                    ? 'bg-white text-zinc-950 font-bold shadow-xs'
+                    : 'text-zinc-300 hover:text-white hover:bg-white/[0.06]'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <ListTodo className="w-3.5 h-3.5 opacity-60" />
+                  <span>{tTask.all}</span>
+                </div>
+                <span className="text-[11px] font-mono tabular-nums opacity-80">
+                  {tasks.length}
+                </span>
+              </button>
+
+              <div className="h-px bg-white/[0.06] my-1" />
+
+              {Object.entries(CATEGORY_CONFIG).map(([catKey, conf]) => {
+                const isSelected = selectedCategory === catKey;
+                const catCount = tasks.filter((t) => t.category === catKey).length;
+                return (
+                  <button
+                    key={catKey}
+                    type="button"
+                    onClick={() => {
+                      setSelectedCategory(catKey);
+                      setIsTaskCategoryDropdownOpen(false);
+                    }}
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-start cursor-pointer ${
+                      isSelected
+                        ? 'bg-white text-zinc-950 font-bold shadow-xs'
+                        : 'text-zinc-300 hover:text-white hover:bg-white/[0.06]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span>{conf.icon}</span>
+                      <span className="truncate">{conf[language] || conf.fr}</span>
+                    </div>
+                    <span className="text-[11px] font-mono tabular-nums opacity-80 shrink-0">
+                      {catCount}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </DropdownPortal>
+        </div>
       </div>
 
       {/* VIEW 1: DAILY TASKS (CHECK OFF VIEW) */}
       {activeTab === 'daily' && (
-        <div className="space-y-8">
-          {/* 1. BENTO GRID OF PROGRAM TRACKS */}
-          <div className="space-y-3.5">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-base sm:text-lg font-bold text-content tracking-tight flex items-center gap-2">
-                  <LayoutGrid className="w-5 h-5 text-blue-600" />
-                  <span>{tTask.title}</span>
-                </h2>
-                <p className="text-xs text-muted">
-                  {language === 'ar'
-                    ? 'اضغط على أي بطاقة لفتح التفاصيل وإضافة المهام الفرعية مباشرة'
-                    : language === 'en'
-                    ? 'Click any card to open detail view & add sub-tasks inline'
-                    : 'Cliquez sur une carte pour ouvrir le suivi détaillé et ajouter des sous-tâches'}
-                </p>
-              </div>
-
-              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
-                {(programTracks ?? []).length} {language === 'ar' ? 'برامج' : language === 'en' ? 'programs' : 'programmes'}
-              </span>
-            </div>
-
-            {/* Apple Bento Grid Container */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {(programTracks ?? []).map((track) => {
-                const isSalat = track.type === 'salat';
-                const isGym = track.type === 'gym';
-                const isStudy = track.type === 'study';
-
-                // Salat calculation
-                const salatDone = selectedDatePrayers.length;
-                const salatPercent = Math.round((salatDone / 5) * 100);
-
-                // Subtasks calculation
-                const subtasks = track.subtasks ?? [];
-                const subtasksDone = subtasks.filter((s) => (s.completedDates ?? []).includes(selectedDate)).length;
-                const subtasksPercent = subtasks.length > 0 ? Math.round((subtasksDone / subtasks.length) * 100) : 0;
-
-                // Gym calculation
-                const gymToday = (gymLogs ?? []).find((g) => g.date === selectedDate);
-
-                // Study calculation
-                const studyDone = (studyModules ?? []).filter((m) => m.completed).length;
-                const studyTotal = (studyModules ?? []).length;
-                const studyPercent = studyTotal > 0 ? Math.round((studyDone / studyTotal) * 100) : 0;
-
-                return (
-                  <motion.div
-                    key={track.id}
-                    onClick={() => setSelectedTrackId(track.id)}
-                    whileHover={{ y: -3, transition: { type: 'spring', stiffness: 350, damping: 25 } }}
-                    whileTap={{ scale: 0.98 }}
-                    className="group relative cursor-pointer rounded-card p-5 bg-surface backdrop-blur-2xl border border-border-subtle shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:shadow-[0_8px_30px_0_rgba(0,0,0,0.3)] hover:border-black/[0.14] dark:hover:border-white/[0.18] transition-all flex flex-col justify-between min-h-[175px]"
-                  >
-                    {/* Top Row: Prominent Frosted Icon & XP Badge */}
-                    <div className="flex items-start justify-between gap-3">
-                      <div
-                        className="w-12 h-12 rounded-card flex items-center justify-center text-2xl shadow-xs transition-transform group-hover:scale-105 shrink-0"
-                        style={{
-                          backgroundColor: `${track.color || '#3b82f6'}18`,
-                          border: `1px solid ${track.color || '#3b82f6'}30`,
-                        }}
-                      >
-                        {track.icon || '🎯'}
-                      </div>
-
-                      <div className="flex items-center gap-1.5">
-                        {isSalat ? (
-                          <span className="text-caption font-black px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25">
-                            +50 XP (Max)
-                          </span>
-                        ) : isGym ? (
-                          <span className="text-caption font-black px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/25">
-                            +40 XP
-                          </span>
-                        ) : isStudy ? (
-                          <span className="text-caption font-black px-2.5 py-0.5 rounded-full bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/25">
-                            +30 XP
-                          </span>
-                        ) : (
-                          <span className="text-caption font-black px-2.5 py-0.5 rounded-full bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/25">
-                            +10 XP
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Middle: Title & Quick Preview */}
-                    <div className="my-3">
-                      <h3 className="font-bold text-base sm:text-lg text-content tracking-tight truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                        {getProgramTrackTitle(track, language)}
-                      </h3>
-
-                      <p className="text-xs text-muted mt-1 line-clamp-1">
-                        {isSalat
-                          ? (language === 'ar' ? '5 صلوات يومية (الحد الأقصى للنقاط)' : language === 'en' ? '5 daily prayers (maximum score)' : '5 prières quotidiennes (score maximal)')
-                          : isGym
-                          ? (gymToday ? `✓ ${gymToday.muscleGroups}` : (tTask.gymSubtitle || 'Journal des séances'))
-                          : isStudy
-                          ? (`${studyDone} / ${studyTotal} ${tTask.completedModules || 'modules'}`)
-                          : subtasks.length > 0
-                          ? subtasks.map((s) => s.title).join(' • ')
-                          : (tTask.noSubtasks || 'Cliquez pour ajouter des sous-tâches')}
-                      </p>
-                    </div>
-
-                    {/* Bottom: Fluid Progress Bar & Open Trigger */}
-                    <div className="space-y-2 pt-2 border-t border-border-subtle">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="font-semibold text-zinc-600 dark:text-muted tabular-nums">
-                          {isSalat ? (
-                            `${salatDone} / 5`
-                          ) : isGym ? (
-                            gymToday ? tTask.doneTodayStatus : tTask.notDoneTodayStatus
-                          ) : isStudy ? (
-                            `${studyDone} / ${studyTotal}`
-                          ) : (
-                            `${subtasksDone} / ${subtasks.length}`
-                          )}
-                        </span>
-
-                        <span className="text-caption font-bold text-blue-600 dark:text-blue-400 flex items-center gap-0.5 opacity-90 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all">
-                          <span>{tTask.openProgram}</span>
-                          <ChevronRight className="w-3.5 h-3.5" />
-                        </span>
-                      </div>
-
-                      <div className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-full h-1.5 overflow-hidden">
-                        <div
-                          className="h-full rounded-full transition-all duration-500 ease-out"
-                          style={{
-                            width: `${
-                              isSalat
-                                ? salatPercent
-                                : isGym
-                                ? gymToday ? 100 : 0
-                                : isStudy
-                                ? studyPercent
-                                : subtasksPercent
-                            }%`,
-                            backgroundColor: track.color || '#3b82f6',
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
-
-              {/* Add New Program Track Card */}
-              <motion.div
-                onClick={() => setIsAddTrackModalOpen(true)}
-                whileHover={{ y: -3, transition: { type: 'spring', stiffness: 350, damping: 25 } }}
-                whileTap={{ scale: 0.98 }}
-                className="cursor-pointer rounded-card p-5 border-2 border-dashed border-zinc-200 dark:border-zinc-800 hover:border-blue-500/50 dark:hover:border-blue-500/50 transition-all flex flex-col items-center justify-center text-center min-h-[175px] group bg-zinc-50/50 dark:bg-zinc-900/30"
-              >
-                <div className="w-12 h-12 rounded-card bg-zinc-100 dark:bg-zinc-800 text-muted group-hover:text-blue-600 group-hover:bg-blue-50 dark:group-hover:bg-blue-950/40 flex items-center justify-center mb-3 transition-colors">
-                  <Plus className="w-6 h-6 stroke-[2]" />
-                </div>
-                <span className="font-bold text-sm text-content group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                  {tTask.addProgram}
-                </span>
-                <span className="text-caption text-muted mt-0.5">
-                  {tTask.createSkill}
-                </span>
-              </motion.div>
-            </div>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-muted flex items-center gap-2">
+              <ListTodo className="w-3.5 h-3.5 text-indigo-400" />
+              <span>{tTask.todayList} ({filteredTasks.length})</span>
+            </h3>
+            <span className="text-xs text-muted">
+              {language === 'ar' ? 'اضغط لتوسيع المهام الفرعية' : language === 'en' ? 'Click card to expand sub-tasks' : 'Cliquez pour ouvrir les sous-tâches'}
+            </span>
           </div>
-
-          {/* 4. DAILY ROUTINES / CUSTOM TASKS LIST */}
-          <div className="space-y-3 pt-2">
-            {duplicateSuggestions.length > 0 && <p className="rounded-control border border-border-subtle bg-surface-raised px-3 py-2 text-xs leading-relaxed text-muted">
-              {language === 'ar' ? 'قد تكون هذه المهام متشابهة؛ اجمعها فقط إذا أردت: ' : language === 'fr' ? 'Ces tâches pourraient être regroupées si vous le souhaitez : ' : 'These tasks may be grouped if you choose: '}
-              <span className="font-semibold text-content">{duplicateSuggestions.join(' · ')}</span>
-            </p>}
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500">
-                {tTask.todayList} ({filteredTasks.length})
-              </h3>
-            </div>
 
             {filteredTasks.length === 0 ? (
               <EmptyState
@@ -1075,103 +1340,328 @@ export const TasksPage: React.FC = () => {
                 }
               />
             ) : (
-              filteredTasks.map((task) => {
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-3.5">
+              {filteredTasks.map((task) => {
                 const isCompleted = (task.completedDates || []).includes(selectedDate);
                 const streak = calculateStreak(task);
                 const conf = CATEGORY_CONFIG[task.category] || CATEGORY_CONFIG.other;
+                const subtasks = task.subtasks || [];
+                const completedSubtasks = subtasks.filter((s) => s.completed);
+                const subtasksCount = subtasks.length;
+                const completedCount = completedSubtasks.length;
+                const hasSubtasks = subtasksCount > 0;
+                const percent = hasSubtasks
+                  ? Math.round((completedCount / subtasksCount) * 100)
+                  : isCompleted
+                  ? 100
+                  : 0;
+                const isExpanded = expandedTaskId === task.id;
+                const chips = getQuickChips(task);
 
                 return (
                   <motion.div
                     key={task.id}
-                    whileHover={{ y: -1 }}
-                    className={`group flex items-center justify-between p-4 rounded-card border transition-all duration-200 ${
+                    layout
+                    onClick={() => setExpandedTaskId((prev) => (prev === task.id ? null : task.id))}
+                    className={`zawa-bento zawa-spotlight p-4 cursor-pointer transition-all duration-300 ${
                       isCompleted
-                        ? 'bg-emerald-500/10 dark:bg-emerald-950/20 border-emerald-500/20 shadow-xs'
-                        : 'bg-surface backdrop-blur-xl border-border-subtle shadow-xs hover:border-black/[0.12] dark:hover:border-white/[0.14]'
+                        ? 'border-emerald-500/30 bg-[#0B0C12]/95 shadow-[0_0_24px_-6px_rgba(16,185,129,0.2)]'
+                        : 'hover:border-white/[0.18]'
                     }`}
                   >
-                    <div className="flex items-center gap-3.5 min-w-0">
-                      {/* The Check Button */}
-                      <button
-                        onClick={() => handleToggle(task.id)}
-                        className={`w-9 h-9 rounded-control flex items-center justify-center transition-transform active:scale-90 shrink-0 ${
-                          isCompleted
-                            ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
-                            : 'bg-zinc-100 dark:bg-zinc-800 text-muted hover:text-zinc-600 hover:bg-zinc-200 dark:hover:bg-zinc-700'
-                        }`}
-                        aria-label="Toggle task"
-                      >
-                        {isCompleted ? (
-                          <CheckCircle2 className="w-6 h-6 stroke-[2.5]" />
-                        ) : (
-                          <Circle className="w-6 h-6 stroke-[1.8]" />
-                        )}
-                      </button>
-
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span
-                            onClick={() => handleOpenEdit(task)}
-                            className={`font-semibold text-sm tracking-tight truncate cursor-pointer hover:underline ${
-                              isCompleted
-                                ? 'line-through text-muted dark:text-zinc-500'
-                                : 'text-content'
-                            }`}
-                          >
-                            {task.title}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-2 mt-1">
-                          <span
-                            className={`inline-flex items-center gap-1 text-caption font-semibold px-2 py-0.5 rounded-full border ${conf.bg} ${conf.color} ${conf.border}`}
-                          >
-                            <span>{conf.icon}</span>
-                            <span>{conf[language] || conf.fr}</span>
-                          </span>
-
-                          <span className="text-caption text-muted">
-                            {FREQUENCY_LABELS[task.frequency]?.[language] ||
-                              FREQUENCY_LABELS[task.frequency]?.fr}
-                          </span>
-
-                          {streak > 0 && (
-                            <span className="inline-flex items-center gap-0.5 text-caption font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded-full tabular-nums">
-                              🔥 {streak} j
-                            </span>
+                    {/* Main Row */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-3.5 min-w-0 flex-1">
+                        {/* Dynamic SVG Circular Progress Ring */}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleManualTaskToggle(task);
+                          }}
+                          className="relative w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-transform active:scale-90 mt-0.5"
+                          title={isCompleted ? 'Mark incomplete' : 'Mark complete'}
+                        >
+                          {hasSubtasks ? (
+                            <div className="relative w-10 h-10 flex items-center justify-center">
+                              <svg className="w-10 h-10 -rotate-90 transform" viewBox="0 0 36 36">
+                                <circle
+                                  cx="18"
+                                  cy="18"
+                                  r="14"
+                                  fill="none"
+                                  stroke="rgba(255, 255, 255, 0.08)"
+                                  strokeWidth="3"
+                                />
+                                <circle
+                                  cx="18"
+                                  cy="18"
+                                  r="14"
+                                  fill="none"
+                                  stroke={isCompleted ? '#10b981' : '#6366f1'}
+                                  strokeWidth="3"
+                                  strokeDasharray="88"
+                                  strokeDashoffset={88 - (88 * percent) / 100}
+                                  strokeLinecap="round"
+                                  className="transition-all duration-300"
+                                />
+                              </svg>
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                {isCompleted ? (
+                                  <CheckCircle2 className="w-5 h-5 text-emerald-400 stroke-[2.5]" />
+                                ) : (
+                                  <span className="text-[10px] font-bold text-indigo-400 tabular-nums">
+                                    {completedCount}/{subtasksCount}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          ) : isCompleted ? (
+                            <div className="w-9 h-9 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center shadow-[0_0_16px_rgba(16,185,129,0.4)]">
+                              <CheckCircle2 className="w-5 h-5 stroke-[2.5]" />
+                            </div>
+                          ) : (
+                            <div className="w-9 h-9 rounded-full bg-white/[0.03] text-zinc-500 border border-white/[0.12] hover:border-white/[0.25] flex items-center justify-center">
+                              <Circle className="w-5 h-5 stroke-[1.8]" />
+                            </div>
                           )}
+                        </button>
 
-                          {task.scheduledTime && (
-                            <span className="inline-flex items-center gap-1 text-caption font-semibold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded-full tabular-nums">
-                              <Clock className="w-2.5 h-2.5" />
-                              <span>{task.scheduledTime}</span>
-                              {task.addToGoogleCalendar && <Bell className="w-2.5 h-2.5 text-blue-500 animate-pulse" />}
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span
+                              className={`font-semibold text-sm tracking-tight ${
+                                isCompleted
+                                  ? 'line-through text-muted'
+                                  : 'text-content font-bold'
+                              }`}
+                            >
+                              {task.title}
                             </span>
-                          )}
 
-                          <span className="text-caption font-bold text-muted tabular-nums">
-                            +15 XP
-                          </span>
+                            {hasSubtasks && (
+                              <span
+                                className={`text-[11px] font-bold px-2 py-0.5 rounded-full border tabular-nums ${
+                                  isCompleted
+                                    ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/25'
+                                    : 'bg-indigo-500/15 text-indigo-400 border-indigo-500/25'
+                                }`}
+                              >
+                                {completedCount} / {subtasksCount}
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                            <span
+                              className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full border ${conf.bg} ${conf.color} ${conf.border}`}
+                            >
+                              <span>{conf.icon}</span>
+                              <span>{conf[language] || conf.fr}</span>
+                            </span>
+
+                            <span className="text-[11px] text-muted">
+                              {FREQUENCY_LABELS[task.frequency]?.[language] ||
+                                FREQUENCY_LABELS[task.frequency]?.fr}
+                            </span>
+
+                            {streak > 0 && (
+                              <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded-full tabular-nums">
+                                🔥 {streak} j
+                              </span>
+                            )}
+
+                            {Boolean(task.scheduledTime && task.scheduledTime.trim() !== '') && (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-400 bg-indigo-500/10 px-1.5 py-0.5 rounded-full tabular-nums">
+                                <Clock className="w-2.5 h-2.5" />
+                                <span>{task.scheduledTime}</span>
+                                {task.addToGoogleCalendar && <Bell className="w-2.5 h-2.5 text-indigo-400 animate-pulse" />}
+                              </span>
+                            )}
+
+                            <span className="text-[11px] font-bold text-muted tabular-nums">
+                              +15 XP
+                            </span>
+                          </div>
                         </div>
+                      </div>
+
+                      {/* Right controls: chevron & actions dropdown */}
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button
+                          type="button"
+                          className="p-1.5 rounded-lg text-muted hover:text-white transition-colors"
+                          aria-label="Toggle drawer"
+                        >
+                          {isExpanded ? (
+                            <ChevronUp className="w-4 h-4 text-indigo-400" />
+                          ) : (
+                            <ChevronDown className="w-4 h-4" />
+                          )}
+                        </button>
+
+                        <TaskActionDropdown
+                          task={task}
+                          alarmLabel={tTask.googleCalendarAlarmBtn}
+                          editLabel={tTask.editTask}
+                          deleteLabel={tCommon.delete}
+                          onAlarm={() => {
+                            setAlarmModalTaskTitle(task.title);
+                            setAlarmModalDescription(task.notes || '');
+                          }}
+                          onEdit={() => handleOpenEdit(task)}
+                          onDelete={() => {
+                            deleteTask(task.id);
+                            deleteCalendarEventByFloussId(task.id).catch(() => {});
+                          }}
+                        />
                       </div>
                     </div>
 
-                    {/* Actions */}
-                    <details className="relative shrink-0 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 transition-opacity">
-                      <summary aria-label={language === 'ar' ? 'إجراءات المهمة' : language === 'fr' ? 'Actions de tâche' : 'Task actions'} className="flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-control text-muted hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
-                        <span className="text-xl leading-none">⋯</span>
-                      </summary>
-                      <div className="absolute end-0 top-full z-20 mt-1 w-44 rounded-card border border-border-subtle bg-surface p-1 shadow-lg">
-                        <button type="button" onClick={() => { setAlarmModalTaskTitle(task.title); setAlarmModalDescription(task.notes || ''); }} className="flex min-h-11 w-full items-center gap-2 rounded-control px-3 text-start text-xs text-content hover:bg-surface-raised"><Bell className="h-4 w-4" />{tTask.googleCalendarAlarmBtn}</button>
-                        <button type="button" onClick={() => handleOpenEdit(task)} className="flex min-h-11 w-full items-center gap-2 rounded-control px-3 text-start text-xs text-content hover:bg-surface-raised"><Edit2 className="h-4 w-4" />{tTask.editTask}</button>
-                        <button type="button" onClick={() => { deleteTask(task.id); deleteCalendarEventByFloussId(task.id).catch(() => {}); }} className="flex min-h-11 w-full items-center gap-2 rounded-control px-3 text-start text-xs text-negative hover:bg-negative/10"><Trash2 className="h-4 w-4" />{tCommon.delete}</button>
-                      </div>
-                    </details>
+                    {/* Inline Sub-Tasks Workspace Drawer */}
+                    <AnimatePresence>
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.2 }}
+                          onClick={(e) => e.stopPropagation()}
+                          className="mt-4 pt-3.5 border-t border-white/[0.08] space-y-3"
+                        >
+                          {/* Drawer Header & Mini Progress Bar */}
+                          {hasSubtasks && (
+                            <div className="space-y-1.5">
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="font-semibold text-zinc-300">
+                                  {language === 'ar' ? 'تقدم المهام الفرعية' : 'Sub-tasks Progress'}
+                                </span>
+                                <span className="font-mono text-indigo-400 font-bold tabular-nums">
+                                  {completedCount} / {subtasksCount} ({percent}%)
+                                </span>
+                              </div>
+                              <div className="w-full h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+                                <div
+                                  className={`h-full rounded-full transition-all duration-300 ${
+                                    isCompleted
+                                      ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]'
+                                      : 'bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]'
+                                  }`}
+                                  style={{ width: `${percent}%` }}
+                                />
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Sub-tasks list */}
+                          {hasSubtasks && (
+                            <div className="space-y-1.5 pt-1">
+                              {subtasks.map((sub) => (
+                                <div
+                                  key={sub.id}
+                                  className={`flex items-center justify-between px-3 py-2 rounded-xl border transition-all ${
+                                    sub.completed
+                                      ? 'bg-emerald-500/10 border-emerald-500/20 text-muted'
+                                      : 'bg-white/[0.03] border-white/[0.06] text-zinc-200 hover:bg-white/[0.06]'
+                                  }`}
+                                >
+                                  <button
+                                    type="button"
+                                    onClick={() => handleToggleInlineSubTask(task.id, sub.id)}
+                                    className="flex items-center gap-2.5 text-xs text-start min-w-0 flex-1"
+                                  >
+                                    <div
+                                      className={`w-4 h-4 rounded-md flex items-center justify-center transition-all ${
+                                        sub.completed
+                                          ? 'bg-emerald-500 text-white shadow-xs'
+                                          : 'border border-white/20 hover:border-white/40'
+                                      }`}
+                                    >
+                                      {sub.completed && <Check className="w-3 h-3 stroke-[3]" />}
+                                    </div>
+                                    <span
+                                      className={`truncate ${
+                                        sub.completed ? 'line-through text-muted' : 'font-medium'
+                                      }`}
+                                    >
+                                      {sub.title}
+                                    </span>
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteInlineSubTask(task.id, sub.id)}
+                                    className="p-1 text-zinc-500 hover:text-rose-400 transition-colors ml-2"
+                                    title="Delete sub-task"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* 1-Tap Smart Contextual Quick-Chips */}
+                          <div className="pt-1 space-y-1.5">
+                            <span className="text-[11px] font-semibold text-muted uppercase tracking-wider block">
+                              {language === 'ar' ? '⚡ اقتراحات سريعة بنقرة واحدة' : '⚡ 1-Tap Quick Suggestions'}
+                            </span>
+                            <div className="flex flex-wrap gap-1.5">
+                              {chips.map((chip) => (
+                                <button
+                                  key={chip}
+                                  type="button"
+                                  onClick={() => handleAddInlineSubTask(task.id, chip)}
+                                  className="rounded-full bg-white/[0.04] hover:bg-white/[0.1] border border-white/[0.08] text-xs px-2.5 py-1 text-zinc-300 active:scale-95 transition-all"
+                                >
+                                  + {chip}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Custom Add Sub-Task Input */}
+                          <div className="flex items-center gap-2 pt-1">
+                            <input
+                              type="text"
+                              value={inlineSubTaskInput[task.id] || ''}
+                              onChange={(e) =>
+                                setInlineSubTaskInput((prev) => ({
+                                  ...prev,
+                                  [task.id]: e.target.value,
+                                }))
+                              }
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  handleAddInlineSubTask(task.id, inlineSubTaskInput[task.id] || '');
+                                }
+                              }}
+                              placeholder={
+                                language === 'ar'
+                                  ? '+ أضف مهمة فرعية (Enter)...'
+                                  : '+ Add sub-task (press Enter)...'
+                              }
+                              className="flex-1 bg-white/[0.04] border border-white/[0.08] focus:border-indigo-500/60 text-xs px-3.5 py-2 rounded-xl text-white placeholder-zinc-500 outline-none transition-all"
+                            />
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleAddInlineSubTask(task.id, inlineSubTaskInput[task.id] || '')
+                              }
+                              className="rounded-xl bg-white text-zinc-950 font-semibold px-3 py-2 text-xs hover:bg-zinc-200 active:scale-95 transition-all shrink-0"
+                            >
+                              {language === 'ar' ? 'إضافة' : language === 'en' ? 'Add' : 'Ajouter'}
+                            </button>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </motion.div>
                 );
-              })
-            )}
-          </div>
+              })}
+            </div>
+          )}
 
           {/* 7-Day Google Calendar & Meetings Integration */}
           <div className="pt-2">
@@ -1180,90 +1670,151 @@ export const TasksPage: React.FC = () => {
         </div>
       )}
 
-      {/* VIEW 2: MONTHLY MATRIX / PROGRAM (TRACK ENTIRE MONTH) */}
+      {/* VIEW 2: GITHUB-STYLE HABIT CONTRIBUTION HEATMAP (365-DAY / 52 WEEKS) */}
       {activeTab === 'month' && (
-        <div className="bg-surface backdrop-blur-2xl rounded-card p-5 border border-border-subtle shadow-xs space-y-5">
-          <div className="flex items-center justify-between">
-            <h3 className="font-bold text-base text-content flex items-center gap-2 tracking-tight">
-              <Calendar className="w-5 h-5 text-blue-600" />
-              <span>{tTask.matrixTitle}</span>
-              <span className="text-xs font-medium text-muted">({currentMonthStr})</span>
-            </h3>
-            <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-full tabular-nums">
-              {monthDaysCount} {tTask.daysInMonth}
-            </span>
+        <div className="zawa-bento p-5 border border-white/[0.08] shadow-2xl space-y-5">
+          {/* Heatmap Header & High-Density Stats */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 className="font-bold text-base text-white flex items-center gap-2.5 tracking-tight">
+                <Sparkles className="w-5 h-5 text-emerald-400" />
+                <span>
+                  {language === 'ar'
+                    ? 'خريطة المساهمات وإنجاز العادات'
+                    : language === 'fr'
+                    ? 'Carte d’activité & Habitudes (GitHub Style)'
+                    : 'Habit Contribution Heatmap'}
+                </span>
+                <span className="text-xs font-mono font-medium text-zinc-400">
+                  (52 {language === 'ar' ? 'أسبوعاً' : 'semaines'})
+                </span>
+              </h3>
+              <p className="text-xs text-zinc-400 mt-0.5">
+                {language === 'ar'
+                  ? 'سجل التزامك اليومي بالروتين والصلوات والرياضة على مدار 365 يوماً'
+                  : 'Historique de régularité sur les 365 derniers jours (Salat, Gym, Routines)'}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs font-bold tabular-nums">
+                <Zap className="w-3.5 h-3.5" />
+                <span>{heatmapData.totalCompletions} {language === 'ar' ? 'إنجازاً' : 'actions'}</span>
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-400 text-xs font-bold tabular-nums">
+                <Flame className="w-3.5 h-3.5" />
+                <span>{overallStreak} {language === 'ar' ? 'أيام متتالية' : 'j de série'}</span>
+              </span>
+            </div>
           </div>
 
-          <div className="overflow-x-auto pb-2 scrollbar-thin scroll-smooth">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="border-b border-border-subtle text-muted font-semibold">
-                  <th className={`sticky ${language === 'ar' ? 'right-0' : 'left-0'} z-20 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md py-2.5 px-3 min-w-[140px] max-w-[180px] shadow-[1px_0_0_0_rgba(0,0,0,0.06)] dark:shadow-[1px_0_0_0_rgba(255,255,255,0.08)]`}>
-                    {tTask.taskRoutine}
-                  </th>
-                  {Array.from({ length: monthDaysCount }, (_, i) => i + 1).map((day) => {
-                    const dayStr = `${currentMonthStr}-${String(day).padStart(2, '0')}`;
-                    const isToday = dayStr === todayStr;
-                    return (
-                      <th
-                        key={day}
-                        className={`text-center py-2 px-1 min-w-[28px] tabular-nums ${
-                          isToday
-                            ? 'text-blue-600 font-bold bg-blue-500/10 rounded-t'
-                            : ''
-                        }`}
-                      >
-                        {day}
-                      </th>
-                    );
-                  })}
-                  <th className="py-2 px-3 text-right">{tTask.score}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-black/[0.04] dark:divide-white/[0.04]">
-                {tasks.map((task) => {
-                  const completedSet = new Set(task.completedDates || []);
-                  let taskCountInMonth = 0;
-
+          {/* GitHub-style Contribution Matrix Container */}
+          <div className="overflow-x-auto pb-3 pt-1 scrollbar-thin">
+            <div className="min-w-max space-y-2 select-none">
+              {/* Month Markers Row */}
+              <div className="flex items-center gap-1 text-[10px] font-mono text-zinc-400 ps-7">
+                {heatmapData.weeks.map((week, wIdx) => {
+                  const firstDay = week[0];
+                  const showMonth = firstDay && (wIdx === 0 || firstDay.date.getDate() <= 7);
                   return (
-                    <tr
-                      key={task.id}
-                      className="hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors"
-                    >
-                      <td className={`sticky ${language === 'ar' ? 'right-0' : 'left-0'} z-10 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md py-3 px-3 font-semibold text-content truncate max-w-[180px] min-w-[140px] shadow-[1px_0_0_0_rgba(0,0,0,0.06)] dark:shadow-[1px_0_0_0_rgba(255,255,255,0.08)]`}>
-                        {task.title}
-                      </td>
-
-                      {Array.from({ length: monthDaysCount }, (_, i) => i + 1).map((day) => {
-                        const dayStr = `${currentMonthStr}-${String(day).padStart(2, '0')}`;
-                        const isDone = completedSet.has(dayStr);
-                        if (isDone) taskCountInMonth++;
-
-                        return (
-                          <td key={day} className="text-center py-2 px-0.5">
-                            <button
-                              onClick={() => toggleTaskCompletion(task.id, dayStr)}
-                              className={`w-5 h-5 rounded-control mx-auto flex items-center justify-center transition-all ${
-                                isDone
-                                  ? 'bg-blue-600 text-white font-bold text-caption'
-                                  : 'bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 text-transparent'
-                              }`}
-                              title={`${task.title} - ${dayStr}`}
-                            >
-                              ✓
-                            </button>
-                          </td>
-                        );
-                      })}
-
-                      <td className="py-3 px-3 text-right font-bold text-blue-600 dark:text-blue-400 tabular-nums">
-                        {taskCountInMonth}/{monthDaysCount}
-                      </td>
-                    </tr>
+                    <div key={wIdx} className="w-3.5 text-center shrink-0">
+                      {showMonth ? firstDay.monthName : ''}
+                    </div>
                   );
                 })}
-              </tbody>
-            </table>
+              </div>
+
+              {/* Grid: 7 Rows (Mon - Sun) across 52+ Week Columns */}
+              <div className="flex gap-2">
+                {/* Day of Week Labels (Mon, Wed, Fri) */}
+                <div className="flex flex-col justify-between text-[9px] font-mono text-zinc-400 py-0.5 shrink-0 w-5">
+                  <span>{language === 'ar' ? 'اثن' : 'Lun'}</span>
+                  <span>{language === 'ar' ? 'أرب' : 'Mer'}</span>
+                  <span>{language === 'ar' ? 'جمع' : 'Ven'}</span>
+                  <span>{language === 'ar' ? 'أحد' : 'Dim'}</span>
+                </div>
+
+                {/* Heatmap Columns */}
+                <div className="flex gap-1">
+                  {heatmapData.weeks.map((week, wIdx) => (
+                    <div key={wIdx} className="flex flex-col gap-1 shrink-0">
+                      {week.map((day) => {
+                        const levelClass =
+                          day.level === 4
+                            ? 'bg-emerald-400 border-emerald-300 shadow-[0_0_8px_rgba(52,211,153,0.45)]'
+                            : day.level === 3
+                            ? 'bg-emerald-500/80 border-emerald-500/90'
+                            : day.level === 2
+                            ? 'bg-emerald-500/50 border-emerald-500/55'
+                            : day.level === 1
+                            ? 'bg-emerald-500/25 border-emerald-500/30'
+                            : 'bg-white/[0.04] border-white/[0.05] hover:border-white/20';
+
+                        return (
+                          <button
+                            key={day.dateStr}
+                            type="button"
+                            onClick={() => {
+                              triggerHaptic(40);
+                              setSelectedDate(day.dateStr);
+                              setActiveTab('daily');
+                            }}
+                            onMouseEnter={() =>
+                              setHoveredHeatmapDay({ dateStr: day.dateStr, count: day.count })
+                            }
+                            onMouseLeave={() => setHoveredHeatmapDay(null)}
+                            title={`${day.dateStr}: ${day.count} ${
+                              language === 'ar' ? 'مهام منجزة' : 'habitudes complétées'
+                            }`}
+                            className={`w-3.5 h-3.5 rounded-[3.5px] border transition-all cursor-pointer ${levelClass} ${
+                              day.isToday ? 'ring-1.5 ring-indigo-400 ring-offset-1 ring-offset-[#0B0C12]' : ''
+                            } hover:scale-125 active:scale-95 duration-150`}
+                          />
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Heatmap Status Inspector & Legend */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 border-t border-white/[0.06] text-xs">
+            <div className="text-zinc-400 flex items-center gap-2">
+              {hoveredHeatmapDay ? (
+                <span className="font-medium text-white flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="tabular-nums font-mono text-emerald-300 font-bold">
+                    {hoveredHeatmapDay.count}
+                  </span>
+                  <span>
+                    {language === 'ar'
+                      ? `عادة منجزة يوم ${hoveredHeatmapDay.dateStr}`
+                      : `habitude(s) le ${hoveredHeatmapDay.dateStr}`}
+                  </span>
+                </span>
+              ) : (
+                <span className="text-zinc-500">
+                  {language === 'ar'
+                    ? 'اضغط على أي مربع للتنقل وتفقد مهام ذلك اليوم'
+                    : 'Cliquez sur une case pour ouvrir les tâches de cette journée'}
+                </span>
+              )}
+            </div>
+
+            {/* Heatmap Scale Legend */}
+            <div className="flex items-center gap-1.5 text-[11px] font-medium text-zinc-400">
+              <span>{language === 'ar' ? 'أقل' : 'Moins'}</span>
+              <div className="flex items-center gap-1">
+                <span className="w-3 h-3 rounded-[3px] bg-white/[0.04] border border-white/[0.05]" />
+                <span className="w-3 h-3 rounded-[3px] bg-emerald-500/25 border border-emerald-500/30" />
+                <span className="w-3 h-3 rounded-[3px] bg-emerald-500/50 border border-emerald-500/55" />
+                <span className="w-3 h-3 rounded-[3px] bg-emerald-500/80 border border-emerald-500/90" />
+                <span className="w-3 h-3 rounded-[3px] bg-emerald-400 border border-emerald-300 shadow-[0_0_6px_rgba(52,211,153,0.5)]" />
+              </div>
+              <span>{language === 'ar' ? 'أكثر' : 'Plus'}</span>
+            </div>
           </div>
         </div>
       )}
@@ -1271,9 +1822,9 @@ export const TasksPage: React.FC = () => {
       {/* VIEW 3: STATS & EVALUATIONS */}
       {activeTab === 'stats' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-surface backdrop-blur-2xl rounded-card p-5 border border-border-subtle shadow-xs space-y-4">
-            <h3 className="font-bold text-base text-content flex items-center gap-2 tracking-tight">
-              <Award className="w-5 h-5 text-amber-500" />
+          <div className="zawa-bento p-5 border border-white/[0.08] shadow-2xl space-y-4">
+            <h3 className="font-bold text-base text-white flex items-center gap-2 tracking-tight">
+              <Award className="w-5 h-5 text-amber-400" />
               <span>{tTask.monthAverage}</span>
             </h3>
 
@@ -1287,14 +1838,14 @@ export const TasksPage: React.FC = () => {
                 return (
                   <div key={task.id} className="space-y-1.5">
                     <div className="flex items-center justify-between text-xs font-semibold">
-                      <span className="text-content">{task.title}</span>
-                      <span className="text-emerald-600 dark:text-emerald-400 tabular-nums">
+                      <span className="text-zinc-200">{task.title}</span>
+                      <span className="text-emerald-400 font-mono tabular-nums">
                         {completedInMonth} / {monthDaysCount} j ({percentage}%)
                       </span>
                     </div>
-                    <div className="w-full h-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
+                    <div className="w-full h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
                       <div
-                        className="h-full bg-emerald-500 rounded-full transition-all duration-300"
+                        className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-300 shadow-[0_0_8px_rgba(16,185,129,0.4)]"
                         style={{ width: `${percentage}%` }}
                       />
                     </div>
@@ -1410,7 +1961,7 @@ export const TasksPage: React.FC = () => {
                   type="date"
                   value={taskScheduledDate}
                   onChange={(e) => setTaskScheduledDate(e.target.value)}
-                  className="w-full px-3 py-2 rounded-control bg-surface border border-zinc-200 dark:border-zinc-700 text-content text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full min-w-[140px] px-4 py-2 rounded-xl bg-surface border border-zinc-200 dark:border-white/10 text-content text-xs font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
 
@@ -1496,11 +2047,7 @@ export const TasksPage: React.FC = () => {
         isOpen={Boolean(selectedTrackId && activeTrack)}
         onClose={() => setSelectedTrackId(null)}
         title={getProgramTrackTitle(activeTrack, language)}
-        subtitle={
-          selectedDate === todayStr
-            ? (language === 'ar' ? 'اليوم' : language === 'en' ? 'Today' : "Aujourd'hui")
-            : selectedDate
-        }
+        subtitle={getScheduleDateLabel(selectedDate)}
         maxWidth="lg"
       >
         {activeTrack && (

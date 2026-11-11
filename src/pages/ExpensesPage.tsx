@@ -7,12 +7,15 @@ import { EmptyState } from '../components/common/EmptyState';
 import { MoneyText } from '../components/common/PrivacyCurrency';
 import { AddExpenseModal } from '../components/transactions/AddExpenseModal';
 import { translations } from '../i18n/translations';
-import { formatMAD, formatDate, getCurrentMonthStr } from '../utils/formatters';
+import { formatMAD, formatDate, getCurrentMonthStr, formatMonthYear } from '../utils/formatters';
 import { selectFinancialSummary } from '../utils/calculations';
 import { getCategoryVisualColor } from '../utils/categoryColor';
 import { getCategoryIcon } from '../utils/icons';
 import { getCategoryName, getSubCategoryName, translateCategoryText } from '../utils/i18nHelpers';
 import { Transaction } from '../types';
+import { GlassMonthPicker } from '../components/common/GlassMonthPicker';
+import { GlassCategoryPicker } from '../components/common/GlassCategoryPicker';
+import { SwipeRow } from '../components/common/SwipeRow';
 import {
   TrendingDown,
   Plus,
@@ -142,167 +145,147 @@ export const ExpensesPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-4 sm:space-y-5 animate-page select-text pb-8">
+    <div className="max-w-[1280px] mx-auto space-y-5 animate-page select-text pb-8">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-control bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20 flex items-center justify-center font-bold">
-              <TrendingDown className="w-4 h-4 stroke-[2]" />
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-content tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-white via-white to-rose-200 bg-clip-text text-transparent">
               {t.title}
             </h1>
           </div>
-          <p className="text-xs sm:text-sm text-muted mt-1">
+          <p className="text-xs sm:text-sm text-zinc-400 mt-1">
             {t.subtitle}
           </p>
         </div>
 
-        <Button
-          variant="primary"
-          icon={<Plus className="w-4 h-4 stroke-[2]" />}
+        <button
+          type="button"
           onClick={() => setIsAddExpenseOpen(true)}
-          className="bg-rose-600 hover:bg-rose-700 text-white border-rose-600 shadow-xs self-start sm:self-auto"
+          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-white text-zinc-950 font-semibold px-5 py-2 text-sm shadow-sm hover:bg-zinc-200 transition-all active:scale-[0.98] self-start sm:self-auto"
         >
-          {t.addExpense}
-        </Button>
+          <Plus className="w-4 h-4 stroke-[2.5]" />
+          <span>{t.addExpense}</span>
+        </button>
       </div>
 
-      {/* KPI Highlight Cards */}
+      {/* KPI Highlight Cards with Crimson Glow */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Total Expenses Card */}
-        <div className="p-4 sm:p-5 rounded-card bg-surface backdrop-blur-xl border border-border-subtle shadow-xs flex items-center justify-between">
+        <div
+          className="rounded-2xl bg-white/5 p-5 sm:p-6 backdrop-blur-xl border border-white/10 relative overflow-hidden shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] flex items-center justify-between"
+          style={{ backgroundImage: 'radial-gradient(circle at 100% 0%, rgba(244,63,94,0.15), transparent 70%)' }}
+        >
           <div>
-            <span className="text-caption font-semibold text-muted uppercase tracking-wider block">
+            <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-400 block mb-1.5">
               {t.totalExpenses}
             </span>
-            <div className="text-2xl sm:text-3xl font-extrabold text-rose-600 dark:text-rose-400 tabular-nums mt-0.5">
+            <div className="text-3xl sm:text-4xl font-bold text-rose-400 tracking-tight tabular-nums">
               <MoneyText
                 amount={totalExpenseAmount}
                 prefix="-"
-                className="font-extrabold text-rose-600 dark:text-rose-400"
+                className="font-bold text-rose-400"
               />
             </div>
+            <p className="text-xs text-zinc-500 mt-1.5 font-medium">
+              {viewScope === 'month' ? formatMonthYear(selectedMonth, language) : (language === 'ar' ? 'كل الأوقات' : 'Toutes les périodes')}
+            </p>
           </div>
-          <div className="w-11 h-11 rounded-card bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 flex items-center justify-center">
-            <ArrowDownRight className="w-6 h-6 stroke-[2]" />
+          <div className="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center justify-center shrink-0">
+            <TrendingDown className="w-6 h-6 stroke-[2]" />
           </div>
         </div>
 
         {/* Total Operations Count Card */}
-        <div className="p-4 sm:p-5 rounded-card bg-surface backdrop-blur-xl border border-border-subtle shadow-xs flex items-center justify-between">
+        <div
+          className="rounded-2xl bg-white/5 p-5 sm:p-6 backdrop-blur-xl border border-white/10 relative overflow-hidden shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] flex items-center justify-between"
+          style={{ backgroundImage: 'radial-gradient(circle at 100% 0%, rgba(99,102,241,0.12), transparent 70%)' }}
+        >
           <div>
-            <span className="text-caption font-semibold text-muted uppercase tracking-wider block">
+            <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-400 block mb-1.5">
               {t.transactionsCount}
             </span>
-            <div className="text-2xl sm:text-3xl font-extrabold text-content tabular-nums mt-0.5">
+            <div className="text-3xl sm:text-4xl font-bold text-white tracking-tight tabular-nums">
               {filteredExpenses.length}
             </div>
+            <p className="text-xs text-zinc-500 mt-1.5 font-medium">
+              {language === 'ar' ? 'عملية مسجلة' : 'opérations enregistrées'}
+            </p>
           </div>
-          <div className="w-11 h-11 rounded-card bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 flex items-center justify-center shrink-0">
             <Receipt className="w-6 h-6 stroke-[2]" />
           </div>
         </div>
       </div>
 
-      <p className="-mt-3 text-xs leading-relaxed text-muted whitespace-normal break-words">
+      <p className="-mt-1 text-[11px] leading-relaxed text-zinc-500">
         {translations[language].summaryScopes.expenses}
       </p>
 
       {/* Filter and Search Bar */}
-      <div className="p-4 rounded-card bg-surface backdrop-blur-xl border border-border-subtle shadow-xs space-y-3">
-        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
-          {/* Scope Toggle: This Month vs All Time */}
-          <div className="flex flex-wrap items-center gap-2 self-start">
-          <div className="inline-flex rounded-control p-1 bg-zinc-100 dark:bg-zinc-800/80 border border-black/[0.04] dark:border-white/[0.06] shrink-0">
-            <button
-              onClick={() => setViewScope('month')}
-              className={`px-3 py-1.5 rounded-control text-xs font-semibold transition-all ${
-                viewScope === 'month'
-                  ? 'bg-white dark:bg-zinc-700 text-content shadow-2xs'
-                  : 'text-zinc-500 hover:text-zinc-900 dark:text-muted dark:hover:text-white'
-              }`}
-            >
-              {t.filterThisMonth}
-            </button>
-            <button
-              onClick={() => setViewScope('all')}
-              className={`px-3 py-1.5 rounded-control text-xs font-semibold transition-all ${
-                viewScope === 'all'
-                  ? 'bg-white dark:bg-zinc-700 text-content shadow-2xs'
-                  : 'text-zinc-500 hover:text-zinc-900 dark:text-muted dark:hover:text-white'
-              }`}
-            >
-              {t.filterAll}
-            </button>
-          </div>
-          {viewScope === 'month' && (
-            <label className="relative">
-              <Calendar className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
-              <select
-                aria-label={language === 'ar' ? 'اختر الشهر' : language === 'fr' ? 'Choisir le mois' : 'Choose month'}
-                value={selectedMonth}
-                onChange={(event) => setSelectedMonth(event.target.value)}
-                className="appearance-none pl-8 pr-3 py-2 rounded-control text-xs font-semibold bg-surface text-zinc-800 dark:text-zinc-100 border border-black/[0.07] dark:border-white/[0.08] outline-none focus:ring-2 focus:ring-rose-500/20"
+      <div className="relative z-50 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 p-3 sm:p-4 shadow-xl">
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+          {/* Scope Toggle: This Month vs All Time + Month Picker + Category Popover */}
+          <div className="flex flex-wrap items-center gap-2 relative z-50">
+            <div className="inline-flex rounded-full p-1 bg-white/[0.04] border border-white/[0.06] shrink-0">
+              <button
+                onClick={() => setViewScope('month')}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                  viewScope === 'month'
+                    ? 'bg-white text-zinc-950 shadow-xs'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
               >
-                {monthOptions.map((month) => <option key={month.value} value={month.value}>{month.label}</option>)}
-              </select>
-            </label>
-          )}
+                {t.filterThisMonth}
+              </button>
+              <button
+                onClick={() => setViewScope('all')}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                  viewScope === 'all'
+                    ? 'bg-white text-zinc-950 shadow-xs'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                {t.filterAll}
+              </button>
+            </div>
+
+            {viewScope === 'month' && (
+              <GlassMonthPicker
+                value={selectedMonth}
+                onChange={setSelectedMonth}
+                options={monthOptions}
+                ariaLabel={language === 'ar' ? 'اختر الشهر' : language === 'fr' ? 'Choisir le mois' : 'Choose month'}
+              />
+            )}
+
+            {/* Custom Glass Category Popover (No horizontal scrolling pills) */}
+            <GlassCategoryPicker
+              categories={categories}
+              selectedCategoryId={selectedCategoryId}
+              onChange={setSelectedCategoryId}
+              language={language}
+              allLabel={t.allCategories}
+            />
           </div>
 
           {/* Search Input */}
-          <div className="relative flex-1 max-w-md">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+          <div className="relative flex-1 max-w-sm">
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
             <input
               type="text"
               placeholder={t.searchPlaceholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3.5 py-1.5 rounded-control text-xs bg-zinc-100 dark:bg-zinc-800/80 text-content border border-transparent focus:border-rose-500/40 focus:ring-2 focus:ring-rose-500/10 outline-none transition-all placeholder:text-muted"
+              className="w-full pl-8 pr-3.5 py-1.5 rounded-full text-xs bg-black/40 text-white border border-white/[0.08] focus:border-rose-500/40 focus:ring-2 focus:ring-rose-500/10 outline-none transition-all placeholder:text-zinc-500"
             />
           </div>
-        </div>
-
-        {/* Category Filter Chips */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-0.5 no-scrollbar">
-          <button
-            onClick={() => setSelectedCategoryId('all')}
-            className={`px-2.5 py-1 rounded-control text-xs font-semibold whitespace-nowrap transition-colors shrink-0 ${
-              selectedCategoryId === 'all'
-                ? 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/30'
-                : 'bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 dark:text-muted'
-            }`}
-          >
-            {t.allCategories}
-          </button>
-          {categories.map((cat) => {
-            const isSelected = selectedCategoryId === cat.id;
-            return (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedCategoryId(cat.id)}
-                className={`px-2.5 py-1 rounded-control text-xs font-medium whitespace-nowrap transition-colors shrink-0 flex items-center gap-1.5 ${
-                  isSelected
-                    ? 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/30 font-semibold'
-                    : 'bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 dark:text-muted'
-                }`}
-              >
-                <span
-                  className="w-2 h-2 rounded-full shrink-0"
-                  style={{ backgroundColor: getCategoryVisualColor(cat.id) }}
-                />
-                <span>{getCategoryName(cat, language)}</span>
-              </button>
-            );
-          })}
         </div>
       </div>
 
       {/* Date-Grouped Expenses List */}
       {groupedByDate.length === 0 ? (
-        <div className="p-8 rounded-card bg-surface backdrop-blur-xl border border-border-subtle text-center">
+        <div className="p-8 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 text-center">
           <EmptyState
             title={t.noExpensesFound}
             description={t.noExpensesYet}
@@ -316,36 +299,43 @@ export const ExpensesPage: React.FC = () => {
                 {t.addExpense}
               </Button>
             }
-            icon={<ShoppingBag className="w-8 h-8 text-rose-500" />}
+            icon={<ShoppingBag className="w-8 h-8 text-rose-400" />}
           />
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {groupedByDate.map(([dateKey, items]) => {
             const dayTotal = selectFinancialSummary(items).expenses;
-            const dateLabel = formatDate(dateKey, language);
+            const todayKey = new Date().toISOString().slice(0, 10);
+            const yesterdayKey = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+            let dateLabel = formatDate(dateKey, language);
+            if (dateKey === todayKey) {
+              dateLabel = language === 'ar' ? 'اليوم' : language === 'fr' ? "Aujourd'hui" : 'Today';
+            } else if (dateKey === yesterdayKey) {
+              dateLabel = language === 'ar' ? 'أمس' : language === 'fr' ? 'Hier' : 'Yesterday';
+            }
 
             return (
-              <div key={dateKey} className="space-y-2.5">
+              <div key={dateKey} className="space-y-2">
                 {/* Date Group Header */}
                 <div className="flex items-center justify-between px-1">
                   <div className="flex items-center gap-2">
-                    <Calendar className="w-3.5 h-3.5 text-muted" />
-                    <span className="text-xs font-bold text-content">
+                    <Calendar className="w-3.5 h-3.5 text-zinc-400" />
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-400">
                       {dateLabel}
                     </span>
-                    <span className="text-caption text-muted font-medium">
+                    <span className="text-[11px] text-zinc-500 font-medium">
                       ({items.length})
                     </span>
                   </div>
 
-                  <span className="text-xs font-bold text-rose-600 dark:text-rose-400 tabular-nums">
-                    <MoneyText amount={dayTotal} prefix="-" />
+                  <span className="text-xs font-bold text-rose-400 tabular-nums">
+                    - <MoneyText amount={dayTotal} />
                   </span>
                 </div>
 
                 {/* Day's Expenses Cards */}
-                <div className="rounded-card bg-surface backdrop-blur-xl border border-border-subtle divide-y divide-black/[0.04] dark:divide-white/[0.05] overflow-hidden shadow-xs">
+                <div className="rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 divide-y divide-white/[0.05] overflow-hidden shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">
                   {items.map((tx) => {
                     const cat = categories.find((c) => c.id === tx.categoryId);
                     const subCat = cat?.subcategories?.find((s) => s.id === tx.subCategoryId);
@@ -370,58 +360,60 @@ export const ExpensesPage: React.FC = () => {
                     const itemName = translatedNote || subCatName || catName;
 
                     return (
-                      <motion.div
+                      <SwipeRow
                         key={tx.id}
-                        initial={{ opacity: 0, y: 4 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="p-3.5 sm:p-4 flex items-center justify-between gap-3 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors group"
+                        onDelete={() => handleDelete(tx)}
+                        onEdit={() => setIsAddExpenseOpen(true)}
                       >
-                        {/* Left: Category Icon & Item Details */}
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div
-                            className="w-10 h-10 rounded-control flex items-center justify-center text-white shrink-0 shadow-xs"
-                            style={{ backgroundColor: getCategoryVisualColor(cat?.id) }}
-                          >
-                            <IconComp className="w-5 h-5" />
-                          </div>
+                        <div
+                          className="p-3.5 sm:p-4 flex items-center justify-between gap-3 hover:bg-white/[0.02] transition-colors group"
+                        >
+                          {/* Left: Category Icon & Item Details */}
+                          <div className="flex items-center gap-3 min-w-0 flex-1">
+                            <div
+                              className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shrink-0 shadow-xs group-hover:scale-105 transition-transform"
+                              style={{ backgroundColor: getCategoryVisualColor(cat?.id) }}
+                            >
+                              <IconComp className="w-5 h-5" />
+                            </div>
 
-                          <div className="min-w-0">
-                            <h4 className="text-sm font-bold text-content truncate">
-                              {itemName}
-                            </h4>
+                            <div className="min-w-0 flex-1">
+                              <h4 className="text-sm font-semibold text-zinc-100 truncate group-hover:text-white transition-colors">
+                                {itemName}
+                              </h4>
 
-                            <div className="mt-1">
-                              <span className="inline-flex max-w-full rounded-full bg-surface-raised px-2 py-0.5 text-[10px] font-medium text-muted truncate">
-                                {catName}
-                              </span>
+                              <div className="mt-0.5">
+                                <span className="inline-flex max-w-full rounded-full bg-white/[0.04] border border-white/[0.06] px-2 py-0.5 text-[10px] font-medium text-zinc-400 truncate">
+                                  {catName}
+                                </span>
+                              </div>
                             </div>
                           </div>
-                        </div>
 
-                        {/* Right: Amount & Quick Delete */}
-                        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-                          <span className="hidden sm:flex items-center gap-1 text-caption text-muted tabular-nums">
-                            <Clock className="w-3 h-3" />{exactTime}
-                          </span>
-                          <span className="text-base sm:text-lg font-bold text-rose-600 dark:text-rose-400 tabular-nums">
-                            <MoneyText
-                              amount={Number(tx.amount)}
-                              prefix="-"
-                              className="font-bold text-rose-600 dark:text-rose-400"
-                            />
-                          </span>
+                          {/* Right: Amount & Quick Delete */}
+                          <div className="flex items-center gap-2 sm:gap-3 shrink-0 flex-shrink-0 whitespace-nowrap">
+                            <span className="hidden sm:flex items-center gap-1 text-[11px] text-zinc-500 tabular-nums">
+                              <Clock className="w-3 h-3" />{exactTime}
+                            </span>
+                            <span className="text-sm sm:text-base font-bold text-rose-400 tabular-nums shrink-0 flex-shrink-0 whitespace-nowrap">
+                              <MoneyText
+                                amount={Number(tx.amount)}
+                                prefix="-"
+                                className="font-bold text-rose-400 shrink-0 flex-shrink-0 whitespace-nowrap"
+                              />
+                            </span>
 
-                          <button
-                            onClick={() => handleDelete(tx)}
-                            className="p-1.5 rounded-control text-zinc-300 hover:text-rose-600 dark:text-zinc-600 dark:hover:text-rose-400 hover:bg-rose-500/10 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
-                            title={tCommon.delete}
-                            aria-label={tCommon.delete}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                            <button
+                              onClick={() => handleDelete(tx)}
+                              className="p-1.5 rounded-lg text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                              title={tCommon.delete}
+                              aria-label={tCommon.delete}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
-                      </motion.div>
+                      </SwipeRow>
                     );
                   })}
                 </div>

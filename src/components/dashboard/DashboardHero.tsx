@@ -41,15 +41,21 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
 
   return (
     <>
-      <Card padding="lg" className="group relative overflow-hidden border-white/[0.09] bg-[#111317] shadow-[0_18px_52px_rgba(0,0,0,.26)]" style={{ backgroundImage: 'radial-gradient(ellipse at 0% 0%, rgba(10,132,255,.19), transparent 56%)' }}>
-        <div className="relative z-10 flex flex-wrap items-start justify-between gap-5">
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-[#A1A1A6]">{t.totalBalance}</p>
-            <div className="mt-2 flex min-w-0 items-center gap-2">
+      <div
+        data-spotlight="true"
+        className="spotlight-card group relative overflow-hidden rounded-2xl bg-white/5 p-4 sm:p-5 backdrop-blur-xl border border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)]"
+        style={{ backgroundImage: 'radial-gradient(ellipse 75% 65% at 0% 0%, rgba(99,102,241,0.18), transparent 70%)' }}
+      >
+        <div className="relative z-10 flex flex-col gap-3">
+          <div className="min-w-0">
+            <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-400">
+              — {t.totalBalance}
+            </p>
+            <div className="mt-1 flex min-w-0 items-center gap-2">
               <MoneyText
                 amount={summary.balance}
-                className="min-w-0 max-w-full text-[clamp(1.8rem,8vw,4rem)] font-semibold leading-none tracking-[-.045em] text-[#F5F5F7]"
-                currencyClassName="text-[.38em] font-medium tracking-normal text-[#A1A1A6]"
+                className="min-w-0 max-w-full text-2xl sm:text-3xl font-bold tracking-tight tabular-nums text-white"
+                currencyClassName="text-[.45em] font-medium tracking-normal text-zinc-400 ms-1.5"
               />
               {isCurrentMonth && (
                 <button
@@ -57,45 +63,74 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
                   onClick={() => setAdjustOpen(true)}
                   aria-label={tWallet.adjustBalance}
                   title={tWallet.adjustBalance}
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[#A1A1A6] opacity-100 transition hover:bg-white/[0.07] hover:text-[#F5F5F7] focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A84FF] sm:opacity-0 sm:group-hover:opacity-100"
+                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-zinc-400 opacity-90 transition hover:bg-white/[0.08] hover:text-white focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 active:scale-95 duration-200"
                 >
-                  <Pencil className="h-4 w-4" />
+                  <Pencil className="h-3 w-3" />
                 </button>
               )}
             </div>
-            {dailyInsight && <p className="mt-3 flex flex-wrap items-center gap-x-1.5 text-sm text-[#A1A1A6]">
-              <span>{t.about}</span><MoneyText amount={dailyInsight.amountPerDay} className="font-semibold text-[#F5F5F7]" />
-              <span>{t.perDay}; {dailyInsight.daysLeft} {t.daysLeft}</span>
-            </p>}
-            <span className={`mt-3 inline-flex min-h-8 items-center gap-1.5 rounded-full border px-2.5 text-xs font-semibold ${deltaPositive ? 'border-[#30D158]/25 bg-[#30D158]/10 text-[#30D158]' : 'border-[#FF6961]/25 bg-[#FF453A]/10 text-[#FF6961]'}`}>
-              {deltaPositive ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
-              {delta > 0 ? '+' : ''}{deltaPercent}% {t.deltaThisMonth}
-            </span>
+
+            <div className="mt-2.5 flex flex-wrap items-center gap-2">
+              {dailyInsight && (
+                <div className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] px-2.5 py-0.5 text-xs font-medium text-zinc-300">
+                  <span className="text-zinc-400">{t.about}</span>
+                  <MoneyText amount={dailyInsight.amountPerDay} className="font-semibold text-white tabular-nums" />
+                  <span className="text-zinc-400">/ {t.perDay.replace('/', '').trim()}</span>
+                  <span className="text-zinc-500">·</span>
+                  <span className="text-zinc-400">{dailyInsight.daysLeft} {t.daysLeft}</span>
+                </div>
+              )}
+
+              <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${deltaPositive ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400' : 'border-rose-500/20 bg-rose-500/10 text-rose-400'}`}>
+                {deltaPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                {delta > 0 ? '+' : ''}{deltaPercent}% {t.deltaThisMonth}
+              </span>
+            </div>
           </div>
 
-          <div className="grid w-full grid-cols-3 gap-2 sm:w-auto sm:min-w-[320px]">
-            <button type="button" onClick={() => quickAdd('income')} className="flex min-h-11 items-center justify-center gap-1.5 rounded-control border border-[#30D158]/20 bg-[#30D158]/10 px-2 text-xs font-semibold text-[#30D158] transition hover:bg-[#30D158]/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A84FF]">
-              <ArrowUpRight className="h-4 w-4 shrink-0" /><span className="truncate">{tCommon.addIncome}</span>
+          {/* Compact Glass Pill Action Buttons */}
+          <div className="flex flex-wrap items-center gap-1.5 pt-1">
+            <button
+              type="button"
+              onClick={() => quickAdd('income')}
+              className="inline-flex min-h-8 items-center justify-center gap-1.5 rounded-full bg-white/5 hover:bg-emerald-500/15 border border-white/10 hover:border-emerald-500/30 px-3 py-1 text-xs font-medium text-zinc-200 hover:text-emerald-300 backdrop-blur-xl hover:shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all duration-300 active:scale-[0.98] cursor-pointer"
+            >
+              <ArrowUpRight className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+              <span>{tCommon.addIncome}</span>
             </button>
-            <button type="button" onClick={() => quickAdd('expense')} className="flex min-h-11 items-center justify-center gap-1.5 rounded-control border border-[#FF453A]/20 bg-[#FF453A]/10 px-2 text-xs font-semibold text-[#FF6961] transition hover:bg-[#FF453A]/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A84FF]">
-              <ArrowDownRight className="h-4 w-4 shrink-0" /><span className="truncate">{tCommon.addExpense}</span>
+            <button
+              type="button"
+              onClick={() => quickAdd('expense')}
+              className="inline-flex min-h-8 items-center justify-center gap-1.5 rounded-full bg-white/5 hover:bg-rose-500/15 border border-white/10 hover:border-rose-500/30 px-3 py-1 text-xs font-medium text-zinc-200 hover:text-rose-300 backdrop-blur-xl hover:shadow-[0_0_15px_rgba(244,63,94,0.3)] transition-all duration-300 active:scale-[0.98] cursor-pointer"
+            >
+              <ArrowDownRight className="h-3.5 w-3.5 text-rose-400 shrink-0" />
+              <span>{tCommon.addExpense}</span>
             </button>
-            <button type="button" onClick={() => setContributionOpen(true)} className="flex min-h-11 items-center justify-center gap-1.5 rounded-control border border-[#0A84FF]/25 bg-[#0A84FF]/10 px-2 text-xs font-semibold text-[#66B2FF] transition hover:bg-[#0A84FF]/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A84FF]">
-              <PiggyBank className="h-4 w-4 shrink-0" /><span className="truncate">{tWallet.saveGoal}</span>
+            <button
+              type="button"
+              onClick={() => setContributionOpen(true)}
+              className="inline-flex min-h-8 items-center justify-center gap-1.5 rounded-full bg-white/5 hover:bg-indigo-500/15 border border-white/10 hover:border-indigo-500/30 px-3 py-1 text-xs font-medium text-zinc-200 hover:text-indigo-300 backdrop-blur-xl hover:shadow-[0_0_15px_rgba(139,92,246,0.3)] transition-all duration-300 active:scale-[0.98] cursor-pointer"
+            >
+              <PiggyBank className="h-3.5 w-3.5 text-indigo-400 shrink-0" />
+              <span>{tWallet.saveGoal}</span>
             </button>
           </div>
         </div>
-        <BalanceSparkline
-          initialBalance={initialBalance}
-          transactions={transactions}
-          selectedMonth={selectedMonth}
-          currentMonth={currentMonth}
-          language={language}
-          chartLabel={t.chartBalanceTrend}
-          balanceLabel={t.totalBalance}
-          changeLabel={t.dailyChange}
-        />
-      </Card>
+
+        {/* Embedded Sparkline with Zero Wasted Padding */}
+        <div className="-mx-4 -mb-4 sm:-mx-5 sm:-mb-5 mt-2">
+          <BalanceSparkline
+            initialBalance={initialBalance}
+            transactions={transactions}
+            selectedMonth={selectedMonth}
+            currentMonth={currentMonth}
+            language={language}
+            chartLabel={t.chartBalanceTrend}
+            balanceLabel={t.totalBalance}
+            changeLabel={t.dailyChange}
+          />
+        </div>
+      </div>
       <AdjustBalanceModal isOpen={adjustOpen} onClose={() => setAdjustOpen(false)} currentBalance={summary.balance} />
       <AddContributionModal isOpen={contributionOpen} onClose={() => setContributionOpen(false)} />
     </>

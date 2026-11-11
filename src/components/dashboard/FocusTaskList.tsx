@@ -39,6 +39,7 @@ export const FocusTaskList: React.FC = () => {
   } = useAppStore();
 
   const tFocus = translations[language].focusList;
+  const tDashboard = translations[language].dashboard;
   const isAr = language === 'ar';
 
   const [newTaskText, setNewTaskText] = useState('');
@@ -307,50 +308,58 @@ export const FocusTaskList: React.FC = () => {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             onSubmit={handleAddTask}
-            className="p-3.5 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-black/[0.05] dark:border-white/[0.08] space-y-3 overflow-hidden shadow-xs"
+            className="p-3.5 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 space-y-3 overflow-hidden shadow-xs"
           >
-            <input
-              type="text"
-              required
-              autoFocus
-              value={newTaskText}
-              onChange={(e) => setNewTaskText(e.target.value)}
-              placeholder={tFocus.placeholder}
-              className="w-full text-xs font-medium px-3.5 py-2.5 rounded-xl border border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white placeholder:text-zinc-400 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-            />
+            <div className="flex flex-col gap-1.5">
+              <input
+                type="text"
+                required
+                autoFocus
+                value={newTaskText}
+                onChange={(e) => setNewTaskText(e.target.value)}
+                placeholder={tFocus.placeholder}
+                className="w-full text-xs font-medium px-3.5 py-2.5 rounded-xl border border-white/10 bg-zinc-900 text-white placeholder:text-zinc-500 outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all"
+              />
+            </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-              <div className="flex items-center gap-2">
+            <div className="flex flex-col gap-3 text-xs">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-2.5">
                 {/* Priority Selector */}
-                <select
-                  value={newPriority}
-                  onChange={(e) => setNewPriority(e.target.value as 'urgent' | 'normal')}
-                  className="text-xs font-semibold px-2.5 py-1.5 rounded-xl border border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white outline-none"
-                >
-                  <option value="normal">{tFocus.normalPriority}</option>
-                  <option value="urgent">{tFocus.urgentPriority}</option>
-                </select>
+                <div className="flex flex-col gap-1">
+                  <span className="text-[11px] font-medium text-zinc-400">{tFocus.normalPriority || 'Priority'}</span>
+                  <select
+                    value={newPriority}
+                    onChange={(e) => setNewPriority(e.target.value as 'urgent' | 'normal')}
+                    className="text-xs font-semibold px-3 py-2 rounded-xl border border-white/10 bg-zinc-900 text-white outline-none cursor-pointer"
+                  >
+                    <option value="normal">{tFocus.normalPriority}</option>
+                    <option value="urgent">{tFocus.urgentPriority}</option>
+                  </select>
+                </div>
 
                 {/* Due Date */}
-                <input
-                  type="date"
-                  value={newDueDate}
-                  onChange={(e) => setNewDueDate(e.target.value)}
-                  className="text-xs px-2.5 py-1.5 rounded-xl border border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white outline-none"
-                />
+                <div className="flex flex-col gap-1 flex-1 min-w-[140px]">
+                  <span className="text-[11px] font-medium text-zinc-400">{tDashboard.dueDate}</span>
+                  <input
+                    type="date"
+                    value={newDueDate}
+                    onChange={(e) => setNewDueDate(e.target.value)}
+                    className="min-w-[140px] text-xs px-4 py-2 rounded-xl border border-white/10 bg-zinc-900 text-white outline-none font-mono"
+                  />
+                </div>
               </div>
 
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center justify-end gap-2 pt-1">
                 <button
                   type="button"
                   onClick={() => setIsAdding(false)}
-                  className="px-3 py-1.5 rounded-xl text-xs text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+                  className="px-4 py-2 rounded-full text-xs text-zinc-400 hover:text-white transition-colors cursor-pointer"
                 >
                   {tFocus.cancel}
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs transition-colors"
+                  className="px-5 py-2 rounded-full bg-white text-zinc-950 font-bold text-xs hover:bg-zinc-200 hover:shadow-[0_0_15px_rgba(139,92,246,0.3)] transition-all duration-300 cursor-pointer"
                 >
                   {tFocus.save}
                 </button>

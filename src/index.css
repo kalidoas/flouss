@@ -33,15 +33,15 @@
 
   .dark {
     color-scheme: dark;
-    --color-canvas: #0b0b0f;
-    --color-surface: #131318;
-    --color-surface-raised: #1a1a21;
-    --color-border: rgba(255, 255, 255, 0.07);
-    --color-content: #f2f2f5;
+    --color-canvas: #050505;
+    --color-surface: rgba(255, 255, 255, 0.05);
+    --color-surface-raised: rgba(255, 255, 255, 0.08);
+    --color-border: rgba(255, 255, 255, 0.10);
+    --color-content: #ffffff;
     --color-muted: #a1a1aa;
-    --color-accent: #5b91ff;
-    --color-positive: #34b78f;
-    --color-negative: #f06478;
+    --color-accent: #8b5cf6;
+    --color-positive: #34d399;
+    --color-negative: #fb7185;
   }
 
   body {
@@ -49,13 +49,20 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -webkit-tap-highlight-color: transparent;
-    background-color: var(--color-canvas);
+    background-color: #050505;
     color: var(--color-content);
   }
 
   .dark body, body.dark {
-    background-color: var(--color-canvas);
+    background-color: #050505;
     color: var(--color-content);
+  }
+
+  /* Zawaq Typography: Headings */
+  h1, h2, h3, h4, h5, h6 {
+    color: #ffffff;
+    font-weight: 500;
+    letter-spacing: -0.025em;
   }
 
   /* Arabic typography support */
@@ -90,14 +97,14 @@
   input[type="button"],
   input[type="submit"],
   input[type="reset"] {
-    transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1),
-                filter 0.18s ease,
-                background-color 0.18s ease;
+    transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1),
+                filter 0.2s ease,
+                background-color 0.2s ease;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* 2. Default Active Scale (.97) */
+  /* 2. Default Active Scale (.95) */
   button:active:not(:disabled):not([aria-disabled="true"]),
   a[href]:active,
   [role="button"]:active:not([aria-disabled="true"]),
@@ -108,7 +115,7 @@
   input[type="button"]:active:not(:disabled),
   input[type="submit"]:active:not(:disabled),
   input[type="reset"]:active:not(:disabled) {
-    transform: scale(0.97);
+    transform: scale(0.95);
   }
 
   /* 3. Tab Items Active Scale (.92) */
@@ -298,6 +305,17 @@
   background: rgba(255, 255, 255, 0.25);
 }
 
+/* Eliminate horizontal scrollbars across all browsers */
+.no-scrollbar::-webkit-scrollbar,
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar,
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* Page load animation */
 @keyframes fadeInPage {
   from {
@@ -312,4 +330,96 @@
 
 .animate-page {
   animation: fadeInPage 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Cosmic Living Aurora Animations */
+@keyframes auroraBreathe {
+  0%, 100% {
+    transform: translate(-50%, 0) scale(1);
+    opacity: 0.65;
+  }
+  50% {
+    transform: translate(-50%, -15px) scale(1.08);
+    opacity: 0.85;
+  }
+}
+
+@keyframes auroraDrift {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translate(-20px, 15px) scale(1.12);
+    opacity: 0.75;
+  }
+}
+
+.animate-aurora-breathe {
+  animation: auroraBreathe 14s ease-in-out infinite;
+}
+
+.animate-aurora-drift {
+  animation: auroraDrift 18s ease-in-out infinite;
+}
+
+/* Zawa9 Bento Card & Spotlight Utilities */
+.zawa-bento {
+  position: relative;
+  background-color: rgba(11, 12, 18, 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.zawa-bento:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
+}
+
+/* Zawa9 Interactive Follow-Cursor Spotlight Hover */
+.spotlight-card,
+[data-spotlight="true"] {
+  --x: -9999px;
+  --y: -9999px;
+  position: relative;
+}
+
+.spotlight-card::before,
+[data-spotlight="true"]::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(400px circle at var(--x, -9999px) var(--y, -9999px), rgba(124, 58, 237, 0.15), rgba(99, 102, 241, 0.05) 20%, transparent 40%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 1;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .spotlight-card:hover::before,
+  [data-spotlight="true"]:hover::before {
+    opacity: 1;
+  }
+}
+
+.zawa-spotlight::after {
+  content: '';
+  position: absolute;
+  inset-inline: 2rem;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(129, 140, 248, 0.65), transparent);
+  pointer-events: none;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.zawa-bento:hover.zawa-spotlight::after,
+.zawa-spotlight:hover::after {
+  opacity: 1;
 }

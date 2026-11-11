@@ -85,7 +85,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
               playHapticFeedback('light');
               onClose();
             }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-md cursor-pointer"
+            className="fixed inset-0 bg-[#050505]/80 backdrop-blur-2xl cursor-pointer"
           />
 
           {/* Bottom Sheet Card */}
@@ -100,29 +100,29 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             dragElastic={{ top: 0, bottom: 0.6 }}
             onDragEnd={handleDragEnd}
             transition={springs.sheet}
-            className={`relative w-full max-w-md ${maxHeight} overflow-hidden bg-white/95 dark:bg-zinc-900/95 backdrop-blur-2xl text-zinc-900 dark:text-white rounded-t-[2.25rem] shadow-2xl border-t border-black/10 dark:border-white/15 flex flex-col z-10 safe-area-bottom pb-safe pb-8 ${className}`}
+            className={`relative w-full max-w-md ${maxHeight} overflow-hidden bg-[#0A0A0C]/95 backdrop-blur-2xl text-white rounded-t-[2.25rem] shadow-[0_-10px_40px_rgba(0,0,0,0.8)] border-t border-white/10 flex flex-col z-10 safe-area-bottom pb-safe pb-8 ${className}`}
           >
             {/* Grabber Bar */}
             {showGrabber && (
               <div className="pt-3 pb-1 flex justify-center cursor-grab active:cursor-grabbing touch-none select-none">
                 <motion.div
                   whileTap={{ scaleX: 1.15, scaleY: 0.85 }}
-                  className="w-10 h-1.5 rounded-full bg-zinc-300 dark:bg-zinc-700"
+                  className="w-10 h-1.5 rounded-full bg-white/20"
                 />
               </div>
             )}
 
             {/* Header (optional) */}
             {(title || subtitle) && (
-              <div className="px-6 py-3 flex items-center justify-between border-b border-black/[0.06] dark:border-white/[0.08] shrink-0">
+              <div className="px-6 py-3 flex items-center justify-between border-b border-white/10 shrink-0">
                 <div className="min-w-0 pr-4">
                   {title && (
-                    <h3 className="font-bold text-base text-zinc-900 dark:text-white tracking-tight truncate">
+                    <h3 className="font-medium text-base text-white tracking-tight truncate">
                       {title}
                     </h3>
                   )}
                   {subtitle && (
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 truncate">
+                    <p className="text-xs text-zinc-400 mt-0.5 truncate">
                       {subtitle}
                     </p>
                   )}
@@ -134,7 +134,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
                     playHapticFeedback('light');
                     onClose();
                   }}
-                  className="p-1.5 rounded-full text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                  className="p-1.5 rounded-full text-zinc-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
                   aria-label="Fermer"
                 >
                   <X className="w-4 h-4" />

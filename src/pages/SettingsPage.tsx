@@ -37,7 +37,6 @@ import {
   Calendar,
   FileSpreadsheet,
   Users,
-  Compass,
   Smartphone,
   CheckCircle2,
   Bell,
@@ -88,7 +87,6 @@ export const SettingsPage: React.FC = () => {
     activeAccountId,
     firebaseUser,
     hideBalance,
-    startTour,
     showToast,
     notificationSettings,
     updateNotificationSettings,
@@ -542,79 +540,6 @@ export const SettingsPage: React.FC = () => {
               {t.enablePin}
             </Button>
           )}
-        </div>
-      </Card>
-
-      {/* Guided Walkthrough Tour */}
-      <Card padding="md">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-md bg-[#2383e2]/10 text-[#2383e2] flex items-center justify-center shrink-0">
-              <Compass className="w-4 h-4" />
-            </div>
-            <div>
-              <h3 className="text-xs font-semibold text-[#37352f] dark:text-[#ecebed]">
-                t('guidedTour')
-              </h3>
-              <p className="text-xs text-[#787774] dark:text-[#9b9a97]">
-                {language === 'ar'
-                  ? 'استكشف لوحة التحكم، المهام، الديون، وضع الخصوصية والملاحظات خطوة بخطوة'
-                  : 'Revisitez les fonctionnalités clés (Solde, Focus View, Dettes, Notes, Touche H)'}
-              </p>
-            </div>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => startTour()}
-            icon={<Compass className="w-3.5 h-3.5 text-[#2383e2]" />}
-          >
-            {language === 'ar' ? 'بدء الجولة' : 'Lancer'}
-          </Button>
-        </div>
-      </Card>
-
-      {/* iPhone App & Sync Guide */}
-      <Card padding="md">
-        <div className="flex items-start gap-3">
-          <div className="w-9 h-9 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
-            <Smartphone className="w-4 h-4" />
-          </div>
-          <div className="space-y-2 text-xs">
-            <div>
-              <h3 className="font-semibold text-[#37352f] dark:text-[#ecebed]">
-                t('iphoneAppPWAOfflineMode')
-              </h3>
-              <p className="text-[#787774] dark:text-[#9b9a97] mt-0.5 leading-normal">
-                {language === 'ar'
-                  ? 'يعمل التطبيق بدون أي اتصال بالإنترنت مع حفظ بياناتك بالكامل في الهاتف. للتثبيت على iPhone :'
-                  : 'Flouss fonctionne à 100% sans connexion Internet. Pour l’installer sur votre iPhone :'}
-              </p>
-            </div>
-
-            <ol className="list-decimal list-inside space-y-1 text-[#5f5e5b] dark:text-[#9b9a97] bg-[#fbfbfa] dark:bg-[#1a1a1a] p-2.5 rounded-md border border-[#e3e2de] dark:border-[#2f2f2f]">
-              <li>
-                {language === 'ar'
-                  ? 'افتح الرابط في Safari على جهاز iPhone'
-                  : 'Ouvrez le lien dans Safari sur votre iPhone'}
-              </li>
-              <li>
-                {language === 'ar'
-                  ? 'اضغط زر المشاركة بالأسفل (icône Partager ⎋)'
-                  : 'Appuyez sur le bouton Partager en bas de Safari (icône ⎋)'}
-              </li>
-              <li>
-                {language === 'ar'
-                  ? 'اختر « Sur l’écran d’accueil » (إضافة إلى الشاشة الرئيسية)'
-                  : 'Sélectionnez « Sur l’écran d’accueil »'}
-              </li>
-              <li>
-                {language === 'ar'
-                  ? 'للمزامنة مع الحاسوب : صدّر ملف JSON من زر التصدير بالأسفل واستورده على الحاسوب عند الرغبة.'
-                  : 'Pour synchroniser vos données avec votre PC : exportez la sauvegarde JSON et importez-la sur PC.'}
-              </li>
-            </ol>
-          </div>
         </div>
       </Card>
 

@@ -219,6 +219,12 @@ export interface FocusTask {
 export type TaskFrequency = 'daily' | 'weekdays' | 'weekends' | 'custom_days';
 export type TaskCategory = 'routine' | 'work' | 'study' | 'sport' | 'deen' | 'finance' | 'health' | 'other' | 'discipline' | 'running';
 
+export interface TaskSubItem {
+  id: string;
+  title: string;
+  completed: boolean;
+}
+
 export interface TaskItem {
   id: string;
   title: string;
@@ -239,6 +245,7 @@ export interface TaskItem {
   createdAt: string;
   isArchived?: boolean;
   completedDates: string[]; // List of YYYY-MM-DD
+  subtasks?: TaskSubItem[];
 }
 
 export type DebtType = 'lend' | 'borrow'; // 'lend' = on me doit, 'borrow' = je dois
@@ -306,6 +313,12 @@ export interface NotificationSettings {
   googleCalendarEmail?: string | null;
 }
 
+export interface NoteChecklistItem {
+  id: string;
+  text: string;
+  completed: boolean;
+}
+
 export interface NoteItem {
   id: string;
   title: string;
@@ -315,6 +328,7 @@ export interface NoteItem {
   category?: string;
   updatedAt: string;
   createdAt: string;
+  checklist?: NoteChecklistItem[];
 }
 
 export interface AccountRecord {

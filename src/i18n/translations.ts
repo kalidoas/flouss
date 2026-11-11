@@ -791,6 +791,14 @@ export const translations = {
       allFilter: "Tous",
       pendingFilter: "En attente",
       paidFilter: "Payés",
+      ofLoad: "de la charge",
+      monthlyPayment: "Paiement mensuel",
+      monthlyDebit: "Prélèvement mensuel",
+      defaultCategory: "Abonnement",
+      upcoming: "À venir",
+      todayDay: "Aujourd'hui : j.{day}",
+      dayNumber: "Jour {day}",
+      radarTitle: "Radar des charges mensuelles",
     },
 
     debts: {
@@ -1838,6 +1846,14 @@ export const translations = {
       allFilter: "الكل",
       pendingFilter: "في الانتظار",
       paidFilter: "المدفوعة",
+      ofLoad: "من العبء",
+      monthlyPayment: "الدفع الشهري",
+      monthlyDebit: "اقتطاع شهري",
+      defaultCategory: "اشتراك",
+      upcoming: "قادم",
+      todayDay: "اليوم: {day}",
+      dayNumber: "يوم {day}",
+      radarTitle: "رادار الاستحقاقات الشهري",
     },
 
     debts: {
@@ -2886,6 +2902,14 @@ export const translations = {
       allFilter: "All",
       pendingFilter: "Pending",
       paidFilter: "Paid",
+      ofLoad: "of load",
+      monthlyPayment: "Monthly payment",
+      monthlyDebit: "Monthly debit",
+      defaultCategory: "Subscription",
+      upcoming: "Upcoming",
+      todayDay: "Today: day {day}",
+      dayNumber: "Day {day}",
+      radarTitle: "Monthly Bill Radar & Timeline",
     },
 
     debts: {

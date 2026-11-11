@@ -1,39 +1,61 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import { RotateCcw, X } from 'lucide-react';
 import { translations } from '../../i18n/translations';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export const Toast: React.FC = () => {
   const { activeToast, clearToast, language } = useAppStore();
 
-  if (!activeToast) return null;
+  // Strict 4,000ms auto-dismiss timer on every toast
+  useEffect(() => {
+    if (!activeToast) return;
+    const timer = setTimeout(() => {
+      clearToast();
+    }, 4000);
+
+    return () => clearTimeout(timer);
+  }, [activeToast, clearToast]);
 
   return (
-    <div role="status" aria-live="polite" className="fixed bottom-20 md:bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-3 rounded-card bg-surface-raised text-content shadow-lg border border-border-subtle animate-in slide-in-from-bottom-5 duration-200 max-w-sm w-[calc(100%-2rem)]">
-      <span className="text-xs font-semibold flex-1 truncate">
-        {activeToast.message}
-      </span>
-
-      {activeToast.onAction && (
-        <button
-          onClick={() => {
-            activeToast.onAction?.();
-            clearToast();
-          }}
-          className="min-h-11 px-3 rounded-control bg-accent hover:brightness-95 text-white font-semibold text-xs flex items-center gap-1 shrink-0 transition-colors"
+    <AnimatePresence>
+      {activeToast && (
+        <motion.div
+          key="global-toast"
+          initial={{ opacity: 0, y: 16, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 12, scale: 0.96 }}
+          transition={{ duration: 0.2, ease: 'easeOut' }}
+          role="status"
+          aria-live="polite"
+          className="fixed bottom-20 md:bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-3 rounded-2xl bg-[#12131C]/95 text-white shadow-[0_20px_50px_rgba(0,0,0,0.8)] border border-white/[0.12] backdrop-blur-2xl max-w-sm w-[calc(100%-2rem)]"
         >
-          <RotateCcw className="w-3.5 h-3.5" />
-          <span>{activeToast.actionText || translations[language].common.undo}</span>
-        </button>
-      )}
+          <span className="text-xs font-semibold flex-1 truncate text-zinc-100">
+            {activeToast.message}
+          </span>
 
-      <button
-        onClick={clearToast}
-        aria-label={translations[language].common.close}
-        className="p-1 rounded-lg text-slate-400 hover:text-white dark:hover:text-slate-900 transition-colors shrink-0"
-      >
-        <X className="w-4 h-4" />
-      </button>
-    </div>
+          {activeToast.onAction && (
+            <button
+              onClick={() => {
+                activeToast.onAction?.();
+                clearToast();
+              }}
+              className="min-h-8 px-2.5 rounded-full bg-white text-zinc-950 font-bold text-xs flex items-center gap-1.5 shrink-0 hover:bg-zinc-200 transition-colors cursor-pointer"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>{activeToast.actionText || translations[language].common.undo}</span>
+            </button>
+          )}
+
+          <button
+            onClick={clearToast}
+            aria-label={translations[language].common.close}
+            className="p-1 rounded-lg text-zinc-400 hover:text-white transition-colors shrink-0 cursor-pointer"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };

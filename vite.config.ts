@@ -25,7 +25,20 @@ export default defineConfig({
   define: {
     __BUILD_SHA__: JSON.stringify(getBuildSha()),
   },
+  build: {
+    // Cross-Browser & Campus Wi-Fi legacy compatibility for Safari iOS 14+ and older Android Chrome
+    target: 'es2020',
+    cssTarget: 'chrome80',
+    sourcemap: false,
+    chunkSizeWarningLimit: 3000,
+  },
+  preview: {
+    // Normalizes preview port towards standard HTTPS/HTTP deployment defaults
+    port: 443,
+    strictPort: false,
+  },
   server: {
     port: 3000,
+    host: true,
   },
 });

@@ -187,13 +187,18 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
 
   return (
     <>
-      <SwipeRow onDelete={handleSwipeDelete}>
+      <SwipeRow
+        onDelete={handleSwipeDelete}
+        onEdit={() => {
+          window.dispatchEvent(new CustomEvent('flouss:edit-transaction', { detail: { transaction } }));
+        }}
+      >
         <div
           data-press="row"
           className="group interactive-row flex items-center justify-between p-2.5 sm:p-3 rounded-control bg-surface border border-border-subtle hover:bg-surface-raised transition-colors"
         >
           {/* Left: Icon & Names */}
-          <div className="flex items-center gap-2.5 min-w-0">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
             <div
               className="w-8 h-8 rounded-control flex items-center justify-center text-white shrink-0"
               style={{ backgroundColor: details.color }}
@@ -201,24 +206,24 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
               <IconComp className="w-4 h-4" />
             </div>
 
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 min-w-0">
-                <h4 className="min-w-0 flex-1 text-xs sm:text-sm font-medium text-content whitespace-normal break-words">
+                <h4 className="min-w-0 flex-1 text-xs sm:text-sm font-medium text-content truncate">
                   {details.title}
                 </h4>
                 <span
                   title={transaction.type === 'adjustment' ? translations[language].summaryScopes.adjustment : undefined}
-                  className={`shrink-0 whitespace-nowrap text-caption font-medium px-1.5 py-0.5 rounded-control border ${details.badgeBg} ${transaction.type === 'adjustment' ? 'bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/30' : ''}`}
+                  className={`shrink-0 flex-shrink-0 whitespace-nowrap text-caption font-medium px-1.5 py-0.5 rounded-control border ${details.badgeBg} ${transaction.type === 'adjustment' ? 'bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/30' : ''}`}
                 >
                   {details.badgeText}
                 </span>
               </div>
               <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-caption text-muted mt-0.5">
-                <span className="shrink-0 whitespace-nowrap">{formatDateTime(transaction.date, language)}</span>
+                <span className="shrink-0 flex-shrink-0 whitespace-nowrap">{formatDateTime(transaction.date, language)}</span>
                 {transaction.note && (
                   <>
-                    <span className="shrink-0">•</span>
-                    <span className="min-w-0 whitespace-normal break-words text-muted">
+                    <span className="shrink-0 flex-shrink-0">•</span>
+                    <span className="min-w-0 truncate text-muted">
                       {translateCategoryText(transaction.note, language) || transaction.note}
                     </span>
                   </>
@@ -228,11 +233,11 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
           </div>
 
           {/* Right: Amount & Delete action */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-2">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0 flex-shrink-0 whitespace-nowrap ml-2">
             <MoneyText
               amount={transaction.type === 'adjustment' ? Math.abs(transaction.amount) : transaction.amount}
               prefix={details.amountPrefix}
-              className={`text-xs sm:text-sm font-semibold ${details.amountClass}`}
+              className={`shrink-0 flex-shrink-0 whitespace-nowrap text-xs sm:text-sm font-semibold ${details.amountClass}`}
             />
 
             <button

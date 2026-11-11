@@ -80,10 +80,10 @@ export const BalanceSparkline: React.FC<Props> = ({
 
   return (
     <div className="relative mt-4 border-t border-white/10 pt-3">
-      <div className="pointer-events-none absolute top-2 z-10 rounded-xl border border-white/10 bg-[#15171c]/95 px-3 py-2 text-xs shadow-lg backdrop-blur-sm" style={{ insetInlineStart: (coordinate?.x || 0) / dimensions.width < 0.68 ? `${Math.max(1, ((coordinate?.x || 0) / dimensions.width) * 100)}%` : undefined, insetInlineEnd: (coordinate?.x || 0) / dimensions.width >= 0.68 ? '0' : undefined }}>
-        <p className="mb-1 text-[10px] text-[#A1A1A6]">{tooltipDate}</p>
-        <p className="font-semibold text-[#F5F5F7]"><span className="sr-only">{balanceLabel}: </span><MoneyText amount={point?.balance || 0} /></p>
-        <p className="text-[10px] text-[#A1A1A6]"><span>{changeLabel}: </span><MoneyText amount={point?.change || 0} showSign /></p>
+      <div className="pointer-events-none absolute top-2 z-10 rounded-xl border border-white/10 bg-zinc-900/95 px-3 py-2 text-xs shadow-xl backdrop-blur-md" style={{ insetInlineStart: (coordinate?.x || 0) / dimensions.width < 0.68 ? `${Math.max(1, ((coordinate?.x || 0) / dimensions.width) * 100)}%` : undefined, insetInlineEnd: (coordinate?.x || 0) / dimensions.width >= 0.68 ? '0' : undefined }}>
+        <p className="mb-1 text-[10px] text-zinc-400">{tooltipDate}</p>
+        <p className="font-semibold text-white"><span className="sr-only">{balanceLabel}: </span><MoneyText amount={point?.balance || 0} /></p>
+        <p className="text-[10px] text-zinc-400"><span>{changeLabel}: </span><MoneyText amount={point?.change || 0} showSign /></p>
       </div>
       <svg
         viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
@@ -107,7 +107,7 @@ export const BalanceSparkline: React.FC<Props> = ({
           const direction = event.key === 'ArrowRight' ? 1 : -1;
           setActiveIndex(Math.max(0, Math.min(points.length - 1, safeIndex + direction)));
         }}
-        className="h-28 w-full touch-pan-y outline-none focus-visible:rounded-control focus-visible:ring-2 focus-visible:ring-[#0A84FF]"
+        className="h-24 w-full touch-pan-y outline-none focus-visible:rounded-control focus-visible:ring-2 focus-visible:ring-[#0A84FF]"
       >
         <defs>
           <linearGradient id="balance-sparkline-fill" x1="0" y1="0" x2="0" y2="1">

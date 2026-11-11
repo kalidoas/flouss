@@ -75,7 +75,7 @@ export const Modal: React.FC<ModalProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-md"
+            className="fixed inset-0 bg-[#050505]/80 backdrop-blur-2xl cursor-pointer"
             onClick={onClose}
           />
 
@@ -85,20 +85,20 @@ export const Modal: React.FC<ModalProps> = ({
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-            className={`relative w-full ${maxWidthStyles[maxWidth]} bg-white/95 dark:bg-zinc-900/95 backdrop-blur-3xl rounded-3xl shadow-[0_24px_70px_rgba(0,0,0,0.35)] border border-black/[0.08] dark:border-white/[0.12] overflow-hidden z-10 max-h-[85vh] sm:max-h-[88vh] flex flex-col`}
+            className={`relative w-full ${maxWidthStyles[maxWidth]} bg-[#0A0A0C]/95 backdrop-blur-2xl rounded-3xl shadow-[0_24px_70px_rgba(0,0,0,0.7)] border border-white/10 overflow-hidden z-10 max-h-[85vh] sm:max-h-[88vh] flex flex-col text-white`}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
             {(title || subtitle) && (
-              <div className="px-6 py-4.5 flex items-start justify-between border-b border-black/[0.06] dark:border-white/[0.08] shrink-0">
+              <div className="px-6 py-4.5 flex items-start justify-between border-b border-white/10 shrink-0">
                 <div>
                   {title && (
-                    <h3 className="text-base font-bold text-zinc-900 dark:text-white tracking-tight">
+                    <h3 className="text-base font-medium text-white tracking-tight">
                       {title}
                     </h3>
                   )}
                   {subtitle && (
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                    <p className="text-xs text-zinc-400 mt-0.5">
                       {subtitle}
                     </p>
                   )}
@@ -106,7 +106,7 @@ export const Modal: React.FC<ModalProps> = ({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="p-1.5 rounded-xl text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                  className="p-1.5 rounded-full text-zinc-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
                   aria-label="Fermer"
                 >
                   <X className="w-4 h-4 stroke-[2.2]" />

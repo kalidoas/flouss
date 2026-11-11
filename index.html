@@ -24,6 +24,55 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
+    <!-- Campus Wi-Fi & Legacy Browser Polyfills (iOS 14+, Safari 14, Android Chrome 80+) -->
+    <script>
+      (function() {
+        try {
+          if (typeof globalThis === 'undefined') {
+            window.globalThis = window;
+          }
+          if (!Array.prototype.at) {
+            Array.prototype.at = function(n) {
+              n = Math.trunc(n) || 0;
+              if (n < 0) n += this.length;
+              if (n < 0 || n >= this.length) return undefined;
+              return this[n];
+            };
+          }
+          if (!String.prototype.at) {
+            String.prototype.at = function(n) {
+              n = Math.trunc(n) || 0;
+              if (n < 0) n += this.length;
+              if (n < 0 || n >= this.length) return undefined;
+              return this[n];
+            };
+          }
+          if (!Object.hasOwn) {
+            Object.hasOwn = function(obj, prop) {
+              return Object.prototype.hasOwnProperty.call(obj, prop);
+            };
+          }
+          if (!Promise.allSettled) {
+            Promise.allSettled = function(promises) {
+              return Promise.all(
+                promises.map(function(p) {
+                  return Promise.resolve(p).then(
+                    function(value) { return { status: 'fulfilled', value: value }; },
+                    function(reason) { return { status: 'rejected', reason: reason }; }
+                  );
+                })
+              );
+            };
+          }
+          if (typeof queueMicrotask === 'undefined') {
+            window.queueMicrotask = function(cb) {
+              Promise.resolve().then(cb);
+            };
+          }
+        } catch (e) {}
+      })();
+    </script>
+
     <!-- Theme Initialization Script (Prevents flash and ensures dark class on <html>) -->
     <script>
       (function() {
