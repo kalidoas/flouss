@@ -16,21 +16,13 @@ import {
   Mail,
   ArrowRight,
   ShieldCheck,
-  CheckCircle2,
-  RotateCcw,
   Lock,
-  Smartphone,
   User,
   AlertCircle,
   Eye,
   EyeOff,
   KeyRound,
   ArrowLeft,
-  Fingerprint,
-  ScanFace,
-  Sparkles,
-  ChevronDown,
-  ChevronUp,
 } from 'lucide-react';
 import { triggerHaptic } from '../../utils/haptics';
 import {
@@ -57,7 +49,7 @@ export const isInAppBrowser = (): boolean => {
 const ERROR_MESSAGES: Record<string, { ar: string; fr: string; en: string }> = {
   'auth/unauthorized-domain': {
     ar: 'هذا النطاق غير مرخّص في Firebase. أضف نطاقك إلى Authorized domains في Firebase Console.',
-    fr: 'Ce domaine n’est pas autorisé dans Firebase. Ajoutez votre domaine dans Firebase Console.',
+    fr: "Ce domaine n'est pas autorisé dans Firebase. Ajoutez votre domaine dans Firebase Console.",
     en: 'This domain is not authorized in Firebase Console.',
   },
   'auth/invalid-api-key': {
@@ -151,7 +143,7 @@ const getFriendlyAuthError = (err: any, language: 'ar' | 'fr' | 'en') => {
     }
   }
 
-  return rawMsg || (language === 'ar' ? 'حدث خطأ في المصادقة' : 'Erreur d’authentification');
+  return rawMsg || (language === 'ar' ? 'حدث خطأ في المصادقة' : "Erreur d'authentification");
 };
 
 export const Login: React.FC = () => {
@@ -164,9 +156,6 @@ export const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [showPasswordFallback, setShowPasswordFallback] = useState(false);
-  const [loadingPasskey, setLoadingPasskey] = useState(false);
-  const [loadingMagicLink, setLoadingMagicLink] = useState(false);
 
   // OTP Verification state
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
@@ -253,99 +242,6 @@ export const Login: React.FC = () => {
       mounted = false;
     };
   }, [isAr, langKey, language, showToast]);
-
-  // Handle Passkeys / WebAuthn FaceID & TouchID stub
-  const handlePasskeySignIn = async () => {
-    setError(null);
-    triggerHaptic(50);
-    setLoadingPasskey(true);
-
-    try {
-      if (typeof window !== 'undefined' && window.PublicKeyCredential) {
-        await window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable?.();
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, 750));
-      triggerHaptic(60);
-
-      showToast({
-        message: isAr
-          ? 'تم التحقق بنجاح عبر FaceID / TouchID (Passkeys)!'
-          : language === 'en'
-          ? 'FaceID / TouchID verified successfully via Passkeys!'
-          : 'Vérifié avec succès via FaceID / TouchID (Passkeys) !',
-      });
-
-      if (email.trim()) {
-        try {
-          await signInWithEmailAndPassword(auth, email.trim(), password || 'FloussPasskey2026!');
-        } catch {
-          try {
-            await createUserWithEmailAndPassword(auth, email.trim(), 'FloussPasskey2026!');
-          } catch {}
-        }
-      }
-    } catch (err: any) {
-      setError({
-        code: 'auth/passkey-cancelled',
-        message: isAr
-          ? 'تم إلغاء المصادقة البيومترية أو لم يتم العثور على مفتاح مرور مسجل.'
-          : 'Authentification biométrique annulée ou non enregistrée.',
-      });
-    } finally {
-      setLoadingPasskey(false);
-    }
-  };
-
-  // Handle Send Magic Link flow
-  const handleSendMagicLink = async () => {
-    if (!email.trim() || !email.includes('@')) {
-      setError({
-        code: 'auth/invalid-email',
-        message: isAr
-          ? 'يرجى إدخال بريد إلكتروني صحيح أولاً لإرسال الرابط السحري'
-          : 'Veuillez saisir une adresse email valide pour recevoir le lien magique',
-      });
-      return;
-    }
-
-    setError(null);
-    triggerHaptic(50);
-    setLoadingMagicLink(true);
-
-    try {
-      const otpCode = generateCryptographicOtp();
-      const cleanEmail = email.trim();
-      const userName = fullName.trim() || cleanEmail.split('@')[0];
-
-      await storePendingOtpSession(cleanEmail, otpCode, {
-        fullName: userName,
-        mode: activeTab,
-      });
-
-      setDevOtpCode(otpCode);
-
-      await sendVerificationCodeEmail(cleanEmail, userName, otpCode);
-
-      showToast({
-        message: isAr
-          ? 'تم إرسال الرابط السحري ورمز الدخول إلى بريدك الإلكتروني!'
-          : language === 'en'
-          ? 'Magic link & access code sent to your email!'
-          : 'Lien magique et code envoyés sur votre email !',
-      });
-
-      setIsVerifyingOtp(true);
-      setOtpTimer(60);
-    } catch (err: any) {
-      setError({
-        code: 'auth/magic-link-error',
-        message: getFriendlyAuthError(err, langKey),
-      });
-    } finally {
-      setLoadingMagicLink(false);
-    }
-  };
 
   // Handle Google Sign-In
   const handleGoogleSignIn = async () => {
@@ -661,7 +557,7 @@ export const Login: React.FC = () => {
         }}
       />
 
-      <div className="w-full max-w-md flex flex-col items-center gap-6 p-6 sm:p-8 rounded-[28px] bg-[#0D0E14]/90 backdrop-blur-2xl border border-white/[0.08] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_24px_50px_-12px_rgba(0,0,0,0.8)] relative z-10">
+      <div className="w-full max-w-md flex flex-col items-center gap-5 p-6 sm:p-8 rounded-[28px] bg-[#0D0E14]/90 backdrop-blur-2xl border border-white/[0.08] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_24px_50px_-12px_rgba(0,0,0,0.8)] relative z-10">
         {/* Branding & Logo */}
         <div className="flex flex-col items-center gap-2 text-center">
           <Logo size="lg" showWordmark={true} />
@@ -698,7 +594,7 @@ export const Login: React.FC = () => {
               <p className="text-xs font-mono font-semibold text-indigo-300">{email}</p>
             </div>
 
-            {/* Dev Mode Fallback Banner (active when EmailJS credentials are unconfigured or in dev) */}
+            {/* Dev Mode Fallback Banner */}
             {(!import.meta.env.VITE_EMAILJS_SERVICE_ID || devOtpCode) && (
               <div className="flex items-center justify-between gap-2 p-3 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs animate-in fade-in">
                 <div className="flex items-center gap-2 min-w-0">
@@ -884,8 +780,9 @@ export const Login: React.FC = () => {
               <div className="flex-1 h-px bg-white/[0.08]" />
             </div>
 
-            {/* Email + Password Form */}
+            {/* ── Clean Email + Password Form (Primary default flow) ── */}
             <form onSubmit={handleInitiateEmailAuth} className="w-full space-y-3.5">
+              {/* Full Name (signup only) */}
               {activeTab === 'signup' && (
                 <div>
                   <label className="block text-[11px] font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">
@@ -897,13 +794,14 @@ export const Login: React.FC = () => {
                       type="text"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      placeholder="Ex: Khalid"
+                      placeholder={isAr ? 'مثال: خالد' : 'Ex: Khalid'}
                       className="w-full text-xs pl-10 pr-3.5 py-2.5 rounded-xl border border-white/[0.08] bg-white/[0.03] text-white placeholder:text-zinc-500 focus:border-indigo-400 focus:bg-white/[0.06] focus:outline-none transition-all"
                     />
                   </div>
                 </div>
               )}
 
+              {/* Email */}
               <div>
                 <label className="block text-[11px] font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">
                   {isAr ? 'البريد الإلكتروني' : 'Adresse Email'}
@@ -921,109 +819,50 @@ export const Login: React.FC = () => {
                 </div>
               </div>
 
-              {/* Primary Flow 1: Send Magic Link */}
+              {/* Password */}
+              <div>
+                <label className="block text-[11px] font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">
+                  {isAr ? 'كلمة المرور' : 'Mot de passe'}
+                </label>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    autoComplete={activeTab === 'signup' ? 'new-password' : 'current-password'}
+                    className="w-full text-xs pl-10 pr-10 py-2.5 rounded-xl border border-white/[0.08] bg-white/[0.03] text-white placeholder:text-zinc-500 focus:border-indigo-400 focus:bg-white/[0.06] focus:outline-none transition-all"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 p-1 cursor-pointer"
+                  >
+                    {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Primary Submit Button */}
               <button
-                type="button"
-                onClick={handleSendMagicLink}
-                disabled={loadingMagicLink}
+                type="submit"
+                disabled={loadingAuth}
                 className="w-full py-3 px-4 rounded-full bg-white text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 hover:bg-zinc-200 transition-all shadow-[0_0_20px_rgba(255,255,255,0.25)] active:scale-95 duration-200 cursor-pointer disabled:opacity-50"
               >
-                {loadingMagicLink ? (
+                {loadingAuth ? (
                   <div className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <>
-                    <Sparkles className="w-4 h-4 text-indigo-600 shrink-0" />
                     <span>
-                      {isAr
-                        ? 'إرسال الرابط السحري عبر البريد'
-                        : 'Envoyer le lien magique par email'}
+                      {activeTab === 'signup'
+                        ? isAr ? 'إنشاء الحساب' : language === 'en' ? 'Create Account' : 'Créer un compte'
+                        : isAr ? 'تسجيل الدخول' : language === 'en' ? 'Sign In' : 'Se connecter'}
                     </span>
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
               </button>
-
-              {/* Primary Flow 2: WebAuthn Passkeys (FaceID / TouchID) */}
-              <button
-                type="button"
-                onClick={handlePasskeySignIn}
-                disabled={loadingPasskey}
-                className="w-full py-3 px-4 rounded-full bg-gradient-to-r from-indigo-500/15 via-purple-500/15 to-indigo-500/15 hover:from-indigo-500/25 hover:to-purple-500/25 border border-indigo-500/35 text-indigo-200 hover:text-white font-bold text-xs flex items-center justify-center gap-2.5 transition-all shadow-[0_0_20px_rgba(99,102,241,0.2)] active:scale-95 duration-200 cursor-pointer"
-              >
-                {loadingPasskey ? (
-                  <div className="w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <>
-                    <Fingerprint className="w-4 h-4 text-indigo-400 shrink-0 stroke-[2.2]" />
-                    <span>
-                      {isAr
-                        ? 'تسجيل الدخول عبر FaceID / TouchID (Passkeys)'
-                        : 'Connexion FaceID / TouchID (Passkeys)'}
-                    </span>
-                  </>
-                )}
-              </button>
-
-              {/* Secondary Option: Password Fallback */}
-              <div className="pt-2 border-t border-white/[0.06]">
-                <button
-                  type="button"
-                  onClick={() => setShowPasswordFallback(!showPasswordFallback)}
-                  className="w-full flex items-center justify-between text-xs text-zinc-400 hover:text-zinc-200 py-1.5 transition-colors cursor-pointer"
-                >
-                  <span className="flex items-center gap-1.5">
-                    <KeyRound className="w-3.5 h-3.5" />
-                    <span>
-                      {isAr
-                        ? 'استخدام كلمة المرور كخيار بديل'
-                        : 'Utiliser un mot de passe classique (Option secondaire)'}
-                    </span>
-                  </span>
-                  {showPasswordFallback ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                </button>
-
-                {showPasswordFallback && (
-                  <div className="mt-2 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
-                    <div className="relative">
-                      <Lock className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                      <input
-                        type={showPassword ? 'text' : 'password'}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="••••••••"
-                        autoComplete={activeTab === 'signup' ? 'new-password' : 'current-password'}
-                        className="w-full text-xs pl-10 pr-10 py-2.5 rounded-xl border border-white/[0.08] bg-white/[0.03] text-white placeholder:text-zinc-500 focus:border-indigo-400 focus:bg-white/[0.06] focus:outline-none transition-all"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 p-1 cursor-pointer"
-                      >
-                        {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                      </button>
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={loadingAuth}
-                      className="w-full py-2.5 px-4 rounded-full bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.09] text-zinc-200 font-semibold text-xs flex items-center justify-center gap-2 transition-all active:scale-95 duration-200 cursor-pointer"
-                    >
-                      {loadingAuth ? (
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      ) : (
-                        <>
-                          <span>
-                            {activeTab === 'signup'
-                              ? isAr ? 'إنشاء حساب بكلمة المرور' : 'Créer compte avec mot de passe'
-                              : isAr ? 'دخول بكلمة المرور' : 'Connexion mot de passe'}
-                          </span>
-                          <ArrowRight className="w-3.5 h-3.5" />
-                        </>
-                      )}
-                    </button>
-                  </div>
-                )}
-              </div>
             </form>
           </>
         )}

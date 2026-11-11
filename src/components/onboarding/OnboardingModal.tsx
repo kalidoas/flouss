@@ -153,8 +153,8 @@ export const OnboardingModal: React.FC = () => {
               <h2 className="text-base font-bold text-[#37352f] dark:text-[#ecebed]">
                 {pinStep === 'create'
                   ? isAr
-                    ? 'حدد رمز PIN السري لحماية حسابك (4 أرقام)'
-                    : 'Définissez votre code PIN secret (4 chiffres)'
+                    ? '🎉 مرحباً بك في مساحة عملك — قم بإنشاء رمز PIN'
+                    : '🎉 Bienvenue dans votre espace — Créez votre code PIN (4 chiffres)'
                   : isAr
                   ? 'أكد رمز PIN السري'
                   : 'Confirmez votre code PIN'}
@@ -162,7 +162,7 @@ export const OnboardingModal: React.FC = () => {
               <p className="text-xs text-[#787774] dark:text-[#9b9a97] mt-1 leading-relaxed">
                 {isAr
                   ? 'سيُطلب هذا الرمز عند تسجيل الدخول لحماية خصوصية بياناتك المالية.'
-                  : 'Ce code protège l’accès à vos finances après la connexion.'}
+                  : 'Ce code protège l’accès à vos finances lors de vos prochaines connexions.'}
               </p>
             </div>
 

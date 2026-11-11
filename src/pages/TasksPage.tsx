@@ -1708,8 +1708,87 @@ export const TasksPage: React.FC = () => {
             </div>
           </div>
 
+
           {/* GitHub-style Contribution Matrix Container */}
-          <div className="overflow-x-auto pb-3 pt-1 scrollbar-thin">
+          {/* Mobile: Monthly Calendar View | Desktop: Full 52-week heatmap */}
+
+          {/* ── MOBILE: Current-Month Calendar Grid (7-col, fully contained) ── */}
+          <div className="block md:hidden w-full">
+            <div className="w-full">
+              {/* Day-of-week header */}
+              <div className="grid grid-cols-7 gap-1 mb-1">
+                {(language === 'ar'
+                  ? ['ح', 'ن', 'ث', 'ر', 'خ', 'ج', 'س']
+                  : language === 'fr'
+                  ? ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
+                  : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+                ).map((d) => (
+                  <div key={d} className="text-center text-[9px] font-mono text-zinc-500 pb-1">
+                    {d}
+                  </div>
+                ))}
+              </div>
+              {/* Build current-month calendar */}
+              {(() => {
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = now.getMonth();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                // Monday=0 offset
+                const firstDayOfMonth = new Date(year, month, 1);
+                const startOffset = (firstDayOfMonth.getDay() + 6) % 7; // Mon=0
+                const cells: (number | null)[] = [];
+                for (let i = 0; i < startOffset; i++) cells.push(null);
+                for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+                // Pad to full weeks
+                while (cells.length % 7 !== 0) cells.push(null);
+
+                return (
+                  <div className="grid grid-cols-7 gap-1">
+                    {cells.map((day, idx) => {
+                      if (day === null) return <div key={`empty-${idx}`} />;
+                      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                      const dayData = heatmapData.days?.find((d: any) => d.dateStr === dateStr);
+                      const level = dayData?.level || 0;
+                      const isToday = dateStr === new Date().toISOString().slice(0, 10);
+                      const levelClass =
+                        level === 4
+                          ? 'bg-emerald-400 border-emerald-300 shadow-[0_0_6px_rgba(52,211,153,0.4)]'
+                          : level === 3
+                          ? 'bg-emerald-500/80 border-emerald-500/90'
+                          : level === 2
+                          ? 'bg-emerald-500/50 border-emerald-500/55'
+                          : level === 1
+                          ? 'bg-emerald-500/25 border-emerald-500/30'
+                          : 'bg-white/[0.04] border-white/[0.05]';
+                      return (
+                        <button
+                          key={dateStr}
+                          type="button"
+                          onClick={() => {
+                            triggerHaptic(40);
+                            setSelectedDate(dateStr);
+                            setActiveTab('daily');
+                          }}
+                          title={`${dateStr}: ${dayData?.count || 0} ${language === 'ar' ? 'مهام' : 'habitudes'}`}
+                          className={`aspect-square w-full rounded-lg border flex items-center justify-center transition-all cursor-pointer ${levelClass} ${
+                            isToday ? 'ring-2 ring-indigo-400 ring-offset-1 ring-offset-[#0B0C12]' : ''
+                          } active:scale-90 duration-150`}
+                        >
+                          <span className={`text-[9px] font-bold ${level > 0 ? 'text-white' : 'text-zinc-500'} ${isToday ? 'text-indigo-300' : ''}`}>
+                            {day}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+
+          {/* ── DESKTOP: Full 52-week GitHub-style heatmap ── */}
+          <div className="hidden md:block overflow-x-auto pb-3 pt-1 scrollbar-thin">
             <div className="min-w-max space-y-2 select-none">
               {/* Month Markers Row */}
               <div className="flex items-center gap-1 text-[10px] font-mono text-zinc-400 ps-7">

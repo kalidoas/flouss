@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── GLOBAL: Lock horizontal overflow to prevent mobile page wobble ── */
+html,
+body,
+#root {
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
+}
+
 @layer base {
   :root {
     --safe-area-top: env(safe-area-inset-top, 0px);

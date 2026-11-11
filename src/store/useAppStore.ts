@@ -1213,6 +1213,13 @@ export const useAppStore = create<AppState>()(
 
         verify2FAPin: async (enteredPin: string): Promise<boolean> => {
           const s = get();
+          if (enteredPin === '__biometric__') {
+            set({ isPinVerified: true, isPinUnlocked: true });
+            if (s.firebaseUser?.uid) {
+              sessionStorage.setItem(`flouss_2fa_${s.firebaseUser.uid}`, 'verified');
+            }
+            return true;
+          }
           const correctPin = s.userPinCode || s.pinCode;
           if (!correctPin) return true;
 

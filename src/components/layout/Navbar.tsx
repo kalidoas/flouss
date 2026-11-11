@@ -115,7 +115,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onQuickAdd }) => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="fixed bottom-[88px] left-1/2 -translate-x-1/2 z-[105] w-[92%] max-w-sm rounded-[28px] bg-[#0D0E14]/95 backdrop-blur-2xl border border-white/10 p-3.5 shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_0_0_rgba(255,255,255,0.1)]"
+              className="fixed bottom-[88px] left-1/2 -translate-x-1/2 z-[105] w-[calc(100vw-2rem)] max-w-sm rounded-[28px] bg-[#0D0E14]/95 backdrop-blur-2xl border border-white/10 p-3.5 shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_0_0_rgba(255,255,255,0.1)]"
             >
               <div className="grid grid-cols-2 gap-2.5">
                 {/* Action 1: Add Expense */}

@@ -366,7 +366,7 @@ export const ExpensesPage: React.FC = () => {
                         onEdit={() => setIsAddExpenseOpen(true)}
                       >
                         <div
-                          className="p-3.5 sm:p-4 flex items-center justify-between gap-3 hover:bg-white/[0.02] transition-colors group"
+                          className="p-3.5 sm:p-4 flex items-center justify-between gap-3 hover:bg-white/[0.02] transition-colors group w-full min-w-0"
                         >
                           {/* Left: Category Icon & Item Details */}
                           <div className="flex items-center gap-3 min-w-0 flex-1">

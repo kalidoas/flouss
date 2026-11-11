@@ -39,6 +39,7 @@ export const App: React.FC = () => {
   const userPinCode = useAppStore((s) => s.userPinCode);
   const verify2FAPin = useAppStore((s) => s.verify2FAPin);
   const logout = useAppStore((s) => s.logout);
+  const setPinCode = useAppStore((s) => s.setPinCode);
 
   // Listen to Firebase authentication state changes once on mount
   useEffect(() => {
@@ -155,7 +156,8 @@ export const App: React.FC = () => {
     return <Login />;
   }
 
-  // 3. 2FA Step: If a PIN is configured for this account, verify PIN before granting access to dashboard
+  // 3. 2FA Step: Only if user ALREADY HAS a PIN configured, verify before granting access
+  //    NEW USERS (userPinCode === null) skip this screen entirely
   if (userPinCode && !isPinVerified) {
     return (
       <PinAuthScreen
@@ -163,6 +165,9 @@ export const App: React.FC = () => {
         language={language}
         onVerify={verify2FAPin}
         onLogout={logout}
+        onPinCreated={async (pin) => {
+          await useAppStore.getState().setPinCode(pin);
+        }}
       />
     );
   }

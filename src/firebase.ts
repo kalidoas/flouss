@@ -127,7 +127,7 @@ export const isFirebaseConfigured = Boolean(
 
 export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
-googleProvider.addScope('https://www.googleapis.com/auth/calendar.events');
+// Only use default basic scopes (email + profile) — no sensitive calendar scopes
 
 export const firebaseError: string | null = initError ? initError.message : null;
 

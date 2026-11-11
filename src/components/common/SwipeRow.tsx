@@ -125,7 +125,7 @@ export const SwipeRow: React.FC<SwipeRowProps> = ({
         onDragEnd={handleDragEnd}
         style={{ x }}
         transition={springs.snappy}
-        className="relative z-10 touch-pan-y bg-[#0D0E14] will-change-transform"
+        className="relative z-10 touch-pan-y bg-[#0D0E14] will-change-transform w-full min-w-0"
       >
         {children}
       </motion.div>

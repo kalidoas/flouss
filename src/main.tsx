@@ -1,7 +1,8 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import React, { Component, ErrorInfo, ReactNode, useState, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import { MotionConfig } from 'framer-motion';
 import App from './App';
+import { PrivacyPage, TermsPage } from './LegalPages';
 import './index.css';
 import { initGlobalHaptics } from './utils/haptics';
 
@@ -12,6 +13,38 @@ initGlobalHaptics();
 if (typeof document !== 'undefined') {
   document.addEventListener('touchstart', () => {}, { passive: true });
 }
+
+function getPublicLegalPage(pathname: string): React.ReactElement | null {
+  const cleanPath = pathname.replace(/\/+$/, '').toLowerCase();
+  if (cleanPath === '/privacy') {
+    return <PrivacyPage />;
+  }
+  if (cleanPath === '/terms') {
+    return <TermsPage />;
+  }
+  return null;
+}
+
+const RootEntry: React.FC = () => {
+  const [currentPath, setCurrentPath] = useState(() =>
+    typeof window !== 'undefined' ? window.location.pathname : '/'
+  );
+
+  useEffect(() => {
+    const handlePopState = () => {
+      setCurrentPath(window.location.pathname);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const legalPage = getPublicLegalPage(currentPath);
+  if (legalPage) {
+    return legalPage;
+  }
+
+  return <App />;
+};
 
 interface Props {
   children: ReactNode;
@@ -112,7 +145,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <RootErrorBoundary>
       <MotionConfig reducedMotion="user">
-        <App />
+        <RootEntry />
       </MotionConfig>
     </RootErrorBoundary>
   </React.StrictMode>

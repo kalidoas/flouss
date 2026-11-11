@@ -186,7 +186,10 @@ export const Header: React.FC = () => {
   );
 
   return (
-    <header className="sticky top-0 z-30 border-b border-white/[0.06] bg-[#06070A]/90 px-3 py-2 backdrop-blur-2xl sm:px-4 lg:px-8">
+    <header
+      className="sticky top-0 z-30 border-b border-white/[0.06] bg-[#06070A]/90 backdrop-blur-2xl px-3 py-2 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-4 lg:px-8"
+      style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}
+    >
       <div className="mx-auto flex min-h-11 max-w-[1280px] items-center justify-between gap-2 sm:gap-3">
         {/* ── Start Section: Hamburger (always top-left LTR, top-right RTL) + Back Button (only on child views) ── */}
         <div className="flex items-center gap-1.5 shrink-0">

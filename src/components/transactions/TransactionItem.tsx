@@ -195,7 +195,7 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
       >
         <div
           data-press="row"
-          className="group interactive-row flex items-center justify-between p-2.5 sm:p-3 rounded-control bg-surface border border-border-subtle hover:bg-surface-raised transition-colors"
+          className="group interactive-row flex items-center justify-between p-2.5 sm:p-3 rounded-control bg-surface border border-border-subtle hover:bg-surface-raised transition-colors w-full min-w-0"
         >
           {/* Left: Icon & Names */}
           <div className="flex items-center gap-2.5 min-w-0 flex-1">
@@ -233,17 +233,17 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
           </div>
 
           {/* Right: Amount & Delete action */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0 flex-shrink-0 whitespace-nowrap ml-2">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0 flex-shrink-0 whitespace-nowrap ms-2">
             <MoneyText
               amount={transaction.type === 'adjustment' ? Math.abs(transaction.amount) : transaction.amount}
               prefix={details.amountPrefix}
-              className={`shrink-0 flex-shrink-0 whitespace-nowrap text-xs sm:text-sm font-semibold ${details.amountClass}`}
+              className={`shrink-0 flex-shrink-0 whitespace-nowrap text-xs sm:text-sm font-semibold tabular-nums ${details.amountClass}`}
             />
 
             <button
               onClick={() => setShowDeleteConfirm(true)}
               title={t.deleteTransactionTitle}
-              className="opacity-0 group-hover:opacity-100 focus:opacity-100 p-1 rounded text-muted hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+              className="opacity-0 group-hover:opacity-100 focus:opacity-100 p-1 rounded text-muted hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
               aria-label={tCommon.delete}
             >
               <Trash2 className="w-3.5 h-3.5" />
