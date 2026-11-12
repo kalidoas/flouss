@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 
 export const IncomePage: React.FC = () => {
-  const { incomeSources, transactions, hideBalance, language } = useAppStore();
+  const { incomeSources = [], transactions = [], hideBalance, language } = useAppStore();
   const t = translations[language].income;
 
   const [isAddIncomeOpen, setIsAddIncomeOpen] = useState(false);
@@ -33,7 +33,7 @@ export const IncomePage: React.FC = () => {
   const [prefilledSourceId, setPrefilledSourceId] = useState<string | undefined>();
 
   // Filter only income transactions
-  const allIncomeTransactions = transactions.filter((tx: Transaction) => tx.type === 'income');
+  const allIncomeTransactions = (transactions || []).filter((tx: Transaction) => tx?.type === 'income');
 
   // Income transactions filtered by month and source
   const filteredIncomeTransactions = allIncomeTransactions.filter((tx: Transaction) => {

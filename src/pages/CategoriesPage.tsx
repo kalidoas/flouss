@@ -57,7 +57,9 @@ const itemVariants: Variants = {
 };
 
 export const CategoriesPage: React.FC = () => {
-  const { categories, transactions, language, updateCategory } = useAppStore();
+  const { categories = [], transactions = [], language, updateCategory } = useAppStore();
+  const catList = categories || [];
+  const txList = transactions || [];
   const tCat = translations[language].categories;
   const currentMonth = getCurrentMonthStr();
 
@@ -84,10 +86,10 @@ export const CategoriesPage: React.FC = () => {
     let totalSpent = 0;
     const catSpentMap: Record<string, number> = {};
 
-    (transactions || []).forEach((tx) => {
-      if (tx.type === 'expense' && tx.categoryId && isTransactionInMonth(tx.date, currentMonth)) {
-        totalSpent += tx.amount;
-        catSpentMap[tx.categoryId] = (catSpentMap[tx.categoryId] || 0) + tx.amount;
+    txList.forEach((tx) => {
+      if (tx?.type === 'expense' && tx?.categoryId && isTransactionInMonth(tx?.date, currentMonth)) {
+        totalSpent += tx.amount || 0;
+        catSpentMap[tx.categoryId] = (catSpentMap[tx.categoryId] || 0) + (tx.amount || 0);
       }
     });
 
@@ -100,20 +102,20 @@ export const CategoriesPage: React.FC = () => {
       }
     });
 
-    const topCategory = categories.find((c) => c.id === topCatId) || null;
-    const activeGoals = categories.filter((c) => c.isGoal && !c.isArchived);
+    const topCategory = catList.find((c) => c.id === topCatId) || null;
+    const activeGoals = catList.filter((c) => c.isGoal && !c.isArchived);
 
     return {
       totalSpent,
       topCategory,
       topCatAmount,
       activeGoalsCount: activeGoals.length,
-      activeCategoriesCount: categories.filter((c) => !c.isArchived).length,
+      activeCategoriesCount: catList.filter((c) => !c.isArchived).length,
     };
-  }, [categories, transactions, currentMonth]);
+  }, [catList, txList, currentMonth]);
 
   // Filter categories
-  const filteredCategories = categories.filter((cat: Category) => {
+  const filteredCategories = catList.filter((cat: Category) => {
     // Tab filter
     if (activeTab === 'archived') {
       if (!cat.isArchived) return false;

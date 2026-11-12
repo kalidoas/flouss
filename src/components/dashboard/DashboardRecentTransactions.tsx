@@ -12,10 +12,10 @@ import { translations } from '../../i18n/translations';
 
 interface Props { transactions: Transaction[]; onViewAll: () => void; }
 
-export const DashboardRecentTransactions: React.FC<Props> = ({ transactions, onViewAll }) => {
-  const { categories, incomeSources, language, setActiveScreen } = useAppStore();
+export const DashboardRecentTransactions: React.FC<Props> = ({ transactions = [], onViewAll }) => {
+  const { categories = [], incomeSources = [], language, setActiveScreen } = useAppStore();
   const t = translations[language].dashboard;
-  const recent = transactions.slice(0, 5);
+  const recent = (transactions || []).slice(0, 5);
 
   return (
     <div

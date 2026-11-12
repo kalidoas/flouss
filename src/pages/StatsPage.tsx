@@ -227,17 +227,17 @@ export const StatsPage: React.FC = () => {
 
   // 6-Month rolling trend
   const monthlyStats = useMemo(() => {
-    return getMonthlyStats(transactions, 6, language);
+    return getMonthlyStats(transactions || [], 6, language);
   }, [transactions, language]);
 
   // Filtered transactions for active month
   const currentMonthTx = useMemo(() => {
     return (transactions || []).filter((tx: Transaction) =>
-      isTransactionInMonth(tx.date, selectedMonth)
+      isTransactionInMonth(tx?.date, selectedMonth)
     );
   }, [transactions, selectedMonth]);
   const currentSummary = useMemo(
-    () => selectFinancialSummary(transactions, { month: selectedMonth }),
+    () => selectFinancialSummary(transactions || [], { month: selectedMonth }),
     [transactions, selectedMonth]
   );
   const currentIncome = currentSummary.income;
@@ -251,7 +251,7 @@ export const StatsPage: React.FC = () => {
 
   // Category spending breakdown for active month
   const categoryBreakdownData = useMemo(() => {
-    return getCategorySpendingBreakdown(categories, transactions, selectedMonth, language);
+    return getCategorySpendingBreakdown(categories || [], transactions || [], selectedMonth, language);
   }, [categories, transactions, selectedMonth, language]);
 
   const breakdownToDisplay = categoryBreakdownData.breakdown;

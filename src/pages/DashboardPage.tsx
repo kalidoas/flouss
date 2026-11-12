@@ -12,31 +12,33 @@ import { DashboardRecentTransactions } from '../components/dashboard/DashboardRe
 import { DashboardAiWidget } from '../components/dashboard/DashboardAiWidget';
 import { selectDashboardFinancials } from '../utils/calculations';
 import { getNetPresentation } from '../utils/dashboard';
-import { isTransactionInMonth } from '../utils/formatters';
+import { isTransactionInMonth, getCurrentMonthStr } from '../utils/formatters';
 import { translations } from '../i18n/translations';
 import { useDashboardHeader } from '../components/layout/DashboardHeaderContext';
 
 export const DashboardPage: React.FC = () => {
-  const { initialBalance, transactions, categories, subscriptions = [], language, setActiveScreen } = useAppStore();
+  const { initialBalance = null, transactions = [], categories = [], subscriptions = [], language, setActiveScreen } = useAppStore();
+  const txList = transactions || [];
   const [showDetails, setShowDetails] = useState(false);
   const t = translations[language].dashboard;
   const { selectedMonth } = useDashboardHeader();
+  const safeMonth = selectedMonth || getCurrentMonthStr();
   const summary = useMemo(
-    () => selectDashboardFinancials(initialBalance, transactions, selectedMonth),
-    [initialBalance, transactions, selectedMonth]
+    () => selectDashboardFinancials(initialBalance, txList, safeMonth),
+    [initialBalance, txList, safeMonth]
   );
   const selectedTransactions = useMemo(
-    () => transactions.filter((transaction) => isTransactionInMonth(transaction.date, selectedMonth)),
-    [transactions, selectedMonth]
+    () => txList.filter((transaction) => isTransactionInMonth(transaction?.date, safeMonth)),
+    [txList, safeMonth]
   );
-  const incomeCount = selectedTransactions.filter((transaction) => transaction.type === 'income').length;
-  const expenseCount = selectedTransactions.filter((transaction) => transaction.type === 'expense').length;
+  const incomeCount = selectedTransactions.filter((transaction) => transaction?.type === 'income').length;
+  const expenseCount = selectedTransactions.filter((transaction) => transaction?.type === 'expense').length;
   const netPresentation = getNetPresentation(summary.net);
   const netCaption = t[netPresentation.caption];
   const netColor = netPresentation.tone === 'positive' ? 'text-positive' : netPresentation.tone === 'negative' ? 'text-negative' : 'text-muted';
-  const recentTransactions = useMemo(() => [...transactions]
-    .sort((a, b) => (Date.parse(b.date) || Date.parse(b.createdAt) || 0) - (Date.parse(a.date) || Date.parse(a.createdAt) || 0))
-    .slice(0, 5), [transactions]);
+  const recentTransactions = useMemo(() => [...txList]
+    .sort((a, b) => (Date.parse(b?.date) || Date.parse(b?.createdAt) || 0) - (Date.parse(a?.date) || Date.parse(a?.createdAt) || 0))
+    .slice(0, 5), [txList]);
 
   const statItems = [
     { key: 'income', label: t.incomeThisMonth, count: t.incomeCount.replace('{count}', String(incomeCount)), value: summary.income, color: 'text-positive', sign: true, prefix: '' },

@@ -20,15 +20,18 @@ import { selectFinancialSummary } from '../utils/calculations';
 import { StyledSelect } from '../components/common/StyledSelect';
 
 export const HistoryPage: React.FC = () => {
-  const { initialBalance, transactions, categories, incomeSources, hideBalance, language } = useAppStore();
+  const { initialBalance = null, transactions = [], categories = [], incomeSources = [], hideBalance, language } = useAppStore();
+  const txList = transactions || [];
+  const catList = categories || [];
+  const srcList = incomeSources || [];
   const t = translations[language].history;
 
   const handleExportExcel = () => {
     exportToExcel({
       initialBalance,
-      transactions,
-      categories,
-      incomeSources,
+      transactions: txList,
+      categories: catList,
+      incomeSources: srcList,
       language,
     });
   };
@@ -40,11 +43,11 @@ export const HistoryPage: React.FC = () => {
 
   // Month list
   const availableMonths: string[] = Array.from(
-    new Set(transactions.map((tx: Transaction) => getTransactionMonth(tx.date)))
+    new Set(txList.map((tx: Transaction) => getTransactionMonth(tx?.date)))
   ).filter(Boolean).sort((a: string, b: string) => b.localeCompare(a));
 
   // Filter transactions
-  const filteredTransactions = transactions.filter((tx: Transaction) => {
+  const filteredTransactions = txList.filter((tx: Transaction) => {
     // Type filter
     if (typeFilter !== 'all' && tx.type !== typeFilter) return false;
 
@@ -61,9 +64,9 @@ export const HistoryPage: React.FC = () => {
     // Search query
     if (search.trim()) {
       const q = search.toLowerCase();
-      const cat = categories.find((c: Category) => c.id === tx.categoryId);
+      const cat = catList.find((c: Category) => c.id === tx.categoryId);
       const subCat = cat?.subcategories?.find((s) => s.id === tx.subCategoryId);
-      const src = incomeSources.find((s: IncomeSource) => s.id === tx.sourceId);
+      const src = srcList.find((s: IncomeSource) => s.id === tx.sourceId);
       const subSrc = src?.subcategories?.find((s) => s.id === tx.incomeSubSourceId);
 
       const matchNote = tx.note?.toLowerCase().includes(q) ?? false;

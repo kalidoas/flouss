@@ -18,16 +18,18 @@ interface Props {
   onOpenBudgets: () => void;
 }
 
-export const DashboardSpendingCard: React.FC<Props> = ({ categories, transactions, selectedMonth, totalExpense, language, onOpenBudgets }) => {
+export const DashboardSpendingCard: React.FC<Props> = ({ categories = [], transactions = [], selectedMonth, totalExpense, language, onOpenBudgets }) => {
   const t = translations[language].dashboard;
-  const [mode, setMode] = useState<'spending' | 'budget'>(categories.some((category) => Number(category.monthlyBudget) > 0) ? 'budget' : 'spending');
+  const catList = categories || [];
+  const txList = transactions || [];
+  const [mode, setMode] = useState<'spending' | 'budget'>(catList.some((category) => Number(category?.monthlyBudget) > 0) ? 'budget' : 'spending');
   const totals = useMemo(() => {
     const map = new Map<string, number>();
-    transactions.forEach((transaction) => {
+    txList.forEach((transaction) => {
       if (transaction.type !== 'expense' || !transaction.categoryId || !isTransactionInMonth(transaction.date, selectedMonth)) return;
       map.set(transaction.categoryId, (map.get(transaction.categoryId) || 0) + Number(transaction.amount || 0));
     });
-    return categories
+    return catList
       .filter((category) => !category.isArchived && !category.isGoal && (map.get(category.id) || 0) > 0)
       .map((category) => ({ category, spent: map.get(category.id) || 0, budget: Number(category.monthlyBudget) || 0 }))
       .sort((a, b) => b.spent - a.spent);

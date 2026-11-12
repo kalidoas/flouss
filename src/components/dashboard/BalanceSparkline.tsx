@@ -23,23 +23,23 @@ interface Props {
 
 export const buildBalanceSeries = (
   initialBalance: number | null,
-  transactions: Transaction[],
+  transactions: Transaction[] = [],
   selectedMonth: string,
   currentMonth: string,
   now = new Date()
 ): BalancePoint[] => {
-  const [year, month] = selectedMonth.split('-').map(Number);
-  const daysInMonth = new Date(year, month, 0).getDate();
-  const visibleDays = selectedMonth === currentMonth ? Math.max(1, now.getDate()) : daysInMonth;
-  const [currentYear, currentMonthNum] = selectedMonth.split('-').map(Number);
-  const priorDate = new Date(currentYear, currentMonthNum - 2, 1);
+  const safeMonth = selectedMonth || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const [year, month] = safeMonth.split('-').map(Number);
+  const daysInMonth = new Date(year || now.getFullYear(), month || now.getMonth() + 1, 0).getDate();
+  const visibleDays = safeMonth === currentMonth ? Math.max(1, now.getDate()) : daysInMonth;
+  const priorDate = new Date(year || now.getFullYear(), (month || 1) - 2, 1);
   const priorMonth = `${priorDate.getFullYear()}-${String(priorDate.getMonth() + 1).padStart(2, '0')}`;
-  let balance = selectDashboardFinancials(initialBalance, transactions, priorMonth).balance;
+  let balance = selectDashboardFinancials(initialBalance, transactions || [], priorMonth).balance;
   const points: BalancePoint[] = [];
 
   for (let day = 1; day <= visibleDays; day += 1) {
-    const date = `${selectedMonth}-${String(day).padStart(2, '0')}`;
-    const dailyTransactions = transactions.filter((transaction) => transaction.date?.slice(0, 10) === date);
+    const date = `${safeMonth}-${String(day).padStart(2, '0')}`;
+    const dailyTransactions = (transactions || []).filter((transaction) => transaction?.date?.slice(0, 10) === date);
     const change = selectFinancialSummary(dailyTransactions).net;
     balance = Math.round((balance + change) * 100) / 100;
     points.push({ date, balance, change });

@@ -9,12 +9,13 @@ import { translations } from '../../i18n/translations';
 
 interface Props { subscriptions: SubscriptionItem[]; language: Language; onOpen: () => void; now?: Date; }
 
-export const DashboardBillsCard: React.FC<Props> = ({ subscriptions, language, onOpen, now = new Date() }) => {
+export const DashboardBillsCard: React.FC<Props> = ({ subscriptions = [], language, onOpen, now = new Date() }) => {
   const t = translations[language].dashboard;
+  const list = subscriptions || [];
   const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const todayStart = Date.parse(`${todayKey}T00:00:00`);
-  const activeCount = subscriptions.filter((subscription) => !subscription.endDate || subscription.endDate >= todayKey).length;
-  const dueItems = subscriptions
+  const activeCount = list.filter((subscription) => !subscription.endDate || subscription.endDate >= todayKey).length;
+  const dueItems = list
     .filter((subscription) => !subscription.endDate || subscription.endDate >= todayKey)
     .map((subscription) => {
       const dueDate = subscription.nextDueDate || calculateNextDueDate(subscription, now);

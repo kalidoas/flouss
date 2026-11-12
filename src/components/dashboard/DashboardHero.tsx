@@ -14,24 +14,26 @@ import { ArrowDownRight, ArrowUpRight, Pencil, PiggyBank, TrendingDown, Trending
 interface Props { selectedMonth: string; }
 
 export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
-  const { initialBalance, transactions, language } = useAppStore();
+  const { initialBalance = null, transactions = [], language } = useAppStore();
+  const txList = transactions || [];
   const [adjustOpen, setAdjustOpen] = useState(false);
   const [contributionOpen, setContributionOpen] = useState(false);
   const t = translations[language].dashboard;
   const tCommon = translations[language].common;
   const tWallet = translations[language].walletCard;
   const currentMonth = getCurrentMonthStr();
+  const safeMonth = selectedMonth || currentMonth;
   const today = new Date();
-  const isCurrentMonth = selectedMonth === currentMonth;
+  const isCurrentMonth = safeMonth === currentMonth;
   const summary = useMemo(
-    () => selectDashboardFinancials(initialBalance, transactions, selectedMonth),
-    [initialBalance, transactions, selectedMonth]
+    () => selectDashboardFinancials(initialBalance, txList, safeMonth),
+    [initialBalance, txList, safeMonth]
   );
   const series = useMemo(
-    () => buildBalanceSeries(initialBalance, transactions, selectedMonth, currentMonth, today),
-    [initialBalance, transactions, selectedMonth, currentMonth]
+    () => buildBalanceSeries(initialBalance, txList, safeMonth, currentMonth, today),
+    [initialBalance, txList, safeMonth, currentMonth]
   );
-  const dailyInsight = getDailyRateInsight(summary.balance, selectedMonth, today);
+  const dailyInsight = getDailyRateInsight(summary.balance, safeMonth, today);
   const openingBalance = series.length ? series[0].balance - series[0].change : 0;
   const delta = summary.balance - openingBalance;
   const deltaPercent = openingBalance !== 0 ? Math.round((delta / Math.abs(openingBalance)) * 100) : 0;
