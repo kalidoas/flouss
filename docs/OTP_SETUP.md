@@ -1,90 +1,113 @@
-# Email OTP Verification Setup Guide
+# Email OTP Verification & Deployment Guide (Coolify on Azure VM)
 
-This guide documents the serverless 6-digit email OTP verification system for Flouss on Vercel.
-
----
-
-## 1. Required Environment Variables
-
-Add the following environment variables in your Vercel Dashboard (`Settings > Environment Variables`) and locally in `.env.local`:
-
-| Variable | Description | Example / Format |
-|---|---|---|
-| `FIREBASE_SERVICE_ACCOUNT` | Firebase Admin Service Account JSON credentials (or base64-encoded string). | `{"type":"service_account","project_id":"flouss-live",...}` |
-| `RESEND_API_KEY` | API Key from Resend for transactional email dispatch. | `re_123456789abcdef` |
-| `RESEND_FROM` | Verified sender address (optional, defaults to `Flouss <notifications@flouss.live>`). | `Flouss <notifications@flouss.live>` |
-
-### How to generate `FIREBASE_SERVICE_ACCOUNT`:
-1. Go to the [Firebase Console](https://console.firebase.google.com).
-2. Navigate to **Project Settings** > **Service accounts**.
-3. Click **Generate new private key**.
-4. Download the JSON file and paste its contents directly into `FIREBASE_SERVICE_ACCOUNT` in Vercel.
+This guide documents the architecture, configuration, and deployment procedures for Flouss on an **Azure VM managed via Coolify (Docker)** at **https://flouss.live**.
 
 ---
 
-## 2. Resend DNS Records (`flouss.live`)
+## 1. System Architecture
 
-To send emails from `@flouss.live` with high deliverability (avoiding spam filters), add the following DNS records in your domain registrar / DNS provider (e.g. Cloudflare, Namecheap, Vercel Domains):
+Flouss is deployed as two decoupled Docker containers on your Azure VM via Coolify:
 
-### 1. DKIM (DomainKeys Identified Mail)
-- **Type**: `TXT`
-- **Name**: `resend._domainkey` (or as provided in Resend dashboard)
-- **Value**: `k=rsa; p=...`
+1. **Frontend (`flouss-frontend`)**:
+   - Multi-stage Docker build: compiles React + Vite with `VITE_API_URL`.
+   - Served via lightweight Nginx Alpine with SPA routing (`try_files $uri /index.html`), gzip compression, and security headers (HSTS, X-Content-Type-Options, Referrer-Policy).
+   - Domain: `https://flouss.live`
 
-### 2. SPF (Sender Policy Framework)
-- **Type**: `TXT`
-- **Name**: `@` (or `bounces.flouss.live`)
-- **Value**: `v=spf1 include:amazonses.com ~all`
-
-### 3. DMARC
-- **Type**: `TXT`
-- **Name**: `_dmarc`
-- **Value**: `v=DMARC1; p=none; rua=mailto:dmarc-reports@flouss.live`
-
-### 4. MX Record (for bounce handling)
-- **Type**: `MX`
-- **Name**: `bounces`
-- **Value**: `feedback-smtp.us-east-1.amazonses.com`
-- **Priority**: `10`
+2. **Backend OTP Service (`flouss-backend` in `/server`)**:
+   - Standalone Node/Express microservice.
+   - Verifies Firebase Auth ID tokens via `firebase-admin`.
+   - Stores salted SHA-256 hashes in Firestore `/otp/{uid}` (10 min expiry, 5 attempts max, 60s cooldown, max 5 sends/hour).
+   - Sends verification emails via Resend (`RESEND_API_KEY`) with an Obsidian/Zawaq dark-theme template.
+   - CORS restricted to `https://flouss.live` and configured origins.
+   - Health check endpoint at `GET /health`.
+   - Domain: `https://api.flouss.live` (or custom subdomain in Coolify).
 
 ---
 
-## 3. Serverless API Architecture
+## 2. Environment Variables: Build vs Runtime
 
-The system uses two endpoints located in `/api`:
+### A. Frontend Service (`/Dockerfile`) — **Build-Time Variable**
+In Coolify, under your Frontend application settings > **Environment Variables**:
 
-### `POST /api/send-otp`
-- **Auth**: Requires `Authorization: Bearer <Firebase_ID_Token>`
-- **Behavior**:
-  - Validates caller identity using Firebase Admin SDK.
-  - Rate limiting:
-    - 60-second cooldown between consecutive requests.
-    - Max 5 sends per hour per user.
-  - Generates a cryptographically random 6-digit code via `crypto.randomInt`.
-  - Computes `sha256(salt + code)`.
-  - Persists **only** the salt, hash, expiration (10 min), and attempt limit (5) in Firestore `/otp/{uid}`.
-  - Dispatches an Obsidian/Zawaq styled dark-theme email via Resend.
-  - **Never** exposes the plain code or hash in the HTTP response.
+| Variable | Scope | Description | Value |
+|---|---|---|---|
+| `VITE_API_URL` | **Build-time** (Check "Build Variable") | URL where the backend OTP service is reachable. | `https://api.flouss.live` |
 
-### `POST /api/verify-otp`
-- **Auth**: Requires `Authorization: Bearer <Firebase_ID_Token>`
-- **Body**: `{ "code": "123456" }`
-- **Behavior**:
-  - Validates caller identity.
-  - Checks expiration (10 minutes).
-  - Decrements `attemptsLeft` (max 5 attempts).
-  - Verifies hash using constant-time comparison (`crypto.timingSafeEqual`).
-  - Upon success:
-    - Marks `emailVerified: true` via `admin.auth().updateUser(uid, { emailVerified: true })`.
-    - Updates `users/{uid}/meta/profile` `{ emailVerified: true }`.
-    - Deletes `/otp/{uid}` so it cannot be reused.
-    - Returns `{ success: true }`.
+> [!IMPORTANT]
+> Because Vite bundles variables into client JavaScript during the `npm run build` step, `VITE_API_URL` must be provided as a **Build Variable** (or `ARG VITE_API_URL`). Never put secret keys (such as `FIREBASE_SERVICE_ACCOUNT` or `RESEND_API_KEY`) here.
 
 ---
 
-## 4. Firestore Security Rules
+### B. Backend OTP Service (`/server/Dockerfile`) — **Runtime Variables**
+In Coolify, under your Backend application settings (pointed to directory `/server`) > **Environment Variables**:
 
-Client read/write access to `/otp` is strictly blocked in `firestore.rules`:
+| Variable | Scope | Description | Example / Format |
+|---|---|---|---|
+| `FIREBASE_SERVICE_ACCOUNT` | Runtime | Firebase Admin Service Account credentials (raw JSON string or base64 encoded). | `{"type":"service_account","project_id":"flouss-live",...}` |
+| `RESEND_API_KEY` | Runtime | Resend API key for sending emails. | `re_123456789abcdef` |
+| `RESEND_FROM` | Runtime | Verified email sender address. | `Flouss <notifications@flouss.live>` |
+| `ALLOWED_ORIGIN` | Runtime | Allowed CORS origin(s) (comma-separated if multiple). | `https://flouss.live` |
+| `PORT` | Runtime | Internal container listen port (defaults to 3000). | `3000` |
+| `NODE_ENV` | Runtime | Node environment mode. | `production` |
+
+---
+
+## 3. Coolify Configuration on Azure VM
+
+### Step 1: Create Applications in Coolify
+1. **Frontend App**:
+   - **Repository**: Your GitHub repository
+   - **Build Pack**: `Dockerfile`
+   - **Base Directory**: `/`
+   - **Domains**: `https://flouss.live`
+   - **Port Expose**: `80`
+   - **Build Variable**: `VITE_API_URL=https://api.flouss.live`
+
+2. **Backend App**:
+   - **Repository**: Same GitHub repository
+   - **Build Pack**: `Dockerfile`
+   - **Base Directory**: `/server`
+   - **Domains**: `https://api.flouss.live`
+   - **Port Expose**: `3000`
+   - **Runtime Variables**: Add `FIREBASE_SERVICE_ACCOUNT`, `RESEND_API_KEY`, `ALLOWED_ORIGIN=https://flouss.live`, `PORT=3000`.
+
+---
+
+## 4. DNS Configuration (Domain Registrar / Cloudflare)
+
+Point your domain to your Azure VM public IP address:
+
+| Type | Name | Content / Target | Proxy Status | Notes |
+|---|---|---|---|---|
+| `A` | `@` (or `flouss.live`) | `<AZURE_VM_PUBLIC_IP>` | DNS only / Proxied | Frontend entry point |
+| `A` | `api` (or `api.flouss.live`) | `<AZURE_VM_PUBLIC_IP>` | DNS only / Proxied | Backend OTP service |
+
+### Resend Email DNS Records (for `flouss.live`)
+Add in your DNS provider to authorize Resend to send emails from `@flouss.live`:
+
+1. **DKIM**: `TXT` record `resend._domainkey` with the public key provided in the Resend dashboard.
+2. **SPF**: `TXT` record with `v=spf1 include:amazonses.com ~all`.
+3. **DMARC**: `TXT` record `_dmarc` with `v=DMARC1; p=none; rua=mailto:dmarc-reports@flouss.live`.
+4. **MX**: `MX` record `bounces.flouss.live` pointing to `feedback-smtp.us-east-1.amazonses.com` (priority 10).
+
+---
+
+## 5. Firebase Authentication — Authorized Domains
+
+Google OAuth and Firebase Auth reject sign-in and token requests from unauthorized hosts.
+
+1. Open the [Firebase Console](https://console.firebase.google.com).
+2. Go to **Authentication** > **Settings** > **Authorized domains**.
+3. Add:
+   - `flouss.live`
+   - `api.flouss.live` (if applicable)
+   - Any staging domains or IP test hosts you use.
+
+---
+
+## 6. Firestore Security Rules
+
+Client access to `/otp` collection is strictly locked down:
 
 ```rules
 match /otp/{document=**} {
@@ -92,23 +115,25 @@ match /otp/{document=**} {
 }
 ```
 
-Only Vercel serverless functions using `firebase-admin` (bypassing security rules with service account privileges) can read or modify `/otp`.
+Only the standalone Node backend using `firebase-admin` service account privileges can create, read, and delete documents in `/otp`.
 
 ---
 
-## 5. Local Testing with Vercel CLI
+## 7. Local Testing
 
-Because `/api/*.ts` are Vercel Serverless Functions, use `vercel dev` rather than standalone `vite dev` to test both client and backend locally:
+To run both services locally on your development machine:
 
 ```bash
-# 1. Install Vercel CLI globally if not already installed
-npm install -g vercel
+# 1. Start backend server (port 3000)
+cd server
+npm run dev
 
-# 2. Pull environment variables from your Vercel project
-vercel env pull .env.local
-
-# 3. Start local development server (serves frontend + /api endpoints)
-vercel dev
+# 2. In another terminal, start frontend with VITE_API_URL pointed to local backend
+VITE_API_URL=http://localhost:3000 npm run dev
 ```
 
-During local development with standalone `npm run dev`, if `/api/send-otp` returns 404, the UI automatically offers a fallback button to send standard Firebase link verification.
+Test health check:
+```bash
+curl http://localhost:3000/health
+# Response: {"status":"ok","uptime":...,"timestamp":"..."}
+```

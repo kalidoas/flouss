@@ -1,6 +1,7 @@
 import { getApps, initializeApp, cert, App } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
-import { getFirestore } from 'firebase-admin/firestore';
+import { getAuth, Auth } from 'firebase-admin/auth';
+import { getFirestore, Firestore } from 'firebase-admin/firestore';
+import type { Request } from 'express';
 
 export function getFirebaseAdminApp(): App {
   const existingApps = getApps();
@@ -10,7 +11,7 @@ export function getFirebaseAdminApp(): App {
 
   const saEnv = process.env.FIREBASE_SERVICE_ACCOUNT;
   if (!saEnv) {
-    throw new Error('FIREBASE_SERVICE_ACCOUNT environment variable is not configured');
+    throw new Error('FIREBASE_SERVICE_ACCOUNT runtime environment variable is not configured');
   }
 
   let serviceAccount: any;
@@ -30,16 +31,16 @@ export function getFirebaseAdminApp(): App {
   });
 }
 
-export function getAdminAuth() {
+export function getAdminAuth(): Auth {
   return getAuth(getFirebaseAdminApp());
 }
 
-export function getAdminFirestore() {
+export function getAdminFirestore(): Firestore {
   return getFirestore(getFirebaseAdminApp());
 }
 
-export async function verifyAuthHeader(req: any): Promise<{ uid: string; email: string }> {
-  const authHeader = req.headers?.authorization || req.headers?.Authorization;
+export async function verifyAuthHeader(req: Request): Promise<{ uid: string; email: string }> {
+  const authHeader = req.headers.authorization;
   if (!authHeader || typeof authHeader !== 'string' || !authHeader.startsWith('Bearer ')) {
     const error: any = new Error('Missing or invalid Authorization header');
     error.status = 401;

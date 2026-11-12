@@ -32,6 +32,7 @@ export const EmailVerificationScreen: React.FC = () => {
   const [showLinkFallback, setShowLinkFallback] = useState(false);
 
   const email = firebaseUser?.email || auth.currentUser?.email || '';
+  const API_BASE = ((import.meta.env.VITE_API_URL as string | undefined) || '').replace(/\/+$/, '');
 
   // 60-second cooldown timer
   useEffect(() => {
@@ -73,7 +74,7 @@ export const EmailVerificationScreen: React.FC = () => {
       }
 
       const token = await user.getIdToken();
-      const res = await fetch('/api/send-otp', {
+      const res = await fetch(`${API_BASE}/api/send-otp`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -197,7 +198,7 @@ export const EmailVerificationScreen: React.FC = () => {
       }
 
       const token = await user.getIdToken();
-      const res = await fetch('/api/verify-otp', {
+      const res = await fetch(`${API_BASE}/api/verify-otp`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
