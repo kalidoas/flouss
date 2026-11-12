@@ -7,6 +7,7 @@ import { Layout } from './components/layout/Layout';
 import { OnboardingModal } from './components/onboarding/OnboardingModal';
 import { PinLockModal } from './components/auth/PinLockModal';
 import { PinAuthScreen } from './components/auth/PinAuthScreen';
+import { EmailVerificationScreen } from './components/auth/EmailVerificationScreen';
 import { GuidedTour } from './components/tour/GuidedTour';
 import { Toast } from './components/common/Toast';
 import { WelcomeModal } from './components/common/WelcomeModal';
@@ -27,7 +28,7 @@ import { calculateAvailableBalance } from './utils/calculations';
 import { AppleShimmerSkeleton } from './components/common/AppleShimmerSkeleton';
 
 export const App: React.FC = () => {
-  const isOnboarded = useAppStore((s) => s.isOnboarded);
+  const authGate = useAppStore((s) => s.authGate);
   const activeScreen = useAppStore((s) => s.activeScreen);
   const theme = useAppStore((s) => s.theme);
   const isDarkMode = useAppStore((s) => s.isDarkMode);
@@ -35,12 +36,8 @@ export const App: React.FC = () => {
   const pinEnabled = useAppStore((s) => s.pinEnabled);
   const isPinUnlocked = useAppStore((s) => s.isPinUnlocked);
   const firebaseUser = useAppStore((s) => s.firebaseUser);
-  const loadingAuth = useAppStore((s) => s.loadingAuth);
-  const isPinVerified = useAppStore((s) => s.isPinVerified);
-  const userPinCode = useAppStore((s) => s.userPinCode);
   const verify2FAPin = useAppStore((s) => s.verify2FAPin);
   const logout = useAppStore((s) => s.logout);
-  const setPinCode = useAppStore((s) => s.setPinCode);
 
   // Listen to Firebase authentication state changes once on mount
   useEffect(() => {
@@ -147,19 +144,28 @@ export const App: React.FC = () => {
     };
   }, []);
 
-  // 1. Loading Authentication & Firestore Profile (Apple Shimmer Skeleton)
-  if (loadingAuth) {
+  // 1. Loading Authentication & Firestore Profile (Neutral Apple Shimmer Skeleton)
+  if (authGate === 'loading') {
     return <AppleShimmerSkeleton />;
   }
 
-  // 2. Unauthenticated: Display Real Google Sign-in Screen
-  if (!firebaseUser) {
+  // 2. Unauthenticated: Display Login Screen
+  if (authGate === 'signedOut') {
     return <Login />;
   }
 
-  // 3. 2FA Step: Only if user ALREADY HAS a PIN configured, verify before granting access
-  //    NEW USERS (userPinCode === null) skip this screen entirely
-  if (userPinCode && !isPinVerified) {
+  // 3. Email Verification Gate (Email/password users only)
+  if (authGate === 'needsEmailVerif') {
+    return <EmailVerificationScreen />;
+  }
+
+  // 4. PIN Setup / Onboarding Gate (New users with no PIN)
+  if (authGate === 'needsPinSetup') {
+    return <OnboardingModal />;
+  }
+
+  // 5. Locked Gate (PIN required)
+  if (authGate === 'locked') {
     return (
       <PinAuthScreen
         user={firebaseUser}
@@ -167,15 +173,15 @@ export const App: React.FC = () => {
         onVerify={verify2FAPin}
         onLogout={logout}
         onPinCreated={async (pin) => {
-          await useAppStore.getState().setPinCode(pin);
+          await useAppStore.getState().setProfilePin(pin);
         }}
       />
     );
   }
 
-  // 4. Authenticated & PIN Verified: If user has not completed initial onboarding, show onboarding modal
-  if (!isOnboarded) {
-    return <OnboardingModal />;
+  // 6. Welcome Gate (Brand-new user first time after onboarding)
+  if (authGate === 'welcome') {
+    return <WelcomeModal />;
   }
 
   // 5. Main Application Screens

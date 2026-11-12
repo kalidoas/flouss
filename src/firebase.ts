@@ -1,6 +1,6 @@
-import { initializeApp, FirebaseApp, getApps, getApp } from '@firebase/app';
-import { getAuth, Auth, GoogleAuthProvider } from '@firebase/auth';
-import { initializeFirestore, getFirestore, Firestore } from '@firebase/firestore';
+import { initializeApp, FirebaseApp, getApps, getApp } from 'firebase/app';
+import { getAuth, Auth, GoogleAuthProvider, setPersistence, browserLocalPersistence } from 'firebase/auth';
+import { initializeFirestore, getFirestore, Firestore } from 'firebase/firestore';
 
 // Default project credentials guarantee production builds always connect to the verified Firebase project
 const DEFAULT_CONFIG = {
@@ -74,6 +74,12 @@ try {
 try {
   if (appInstance) {
     authInstance = getAuth(appInstance);
+    // Phase 3: Enforce browserLocalPersistence so signed-in session persists across reloads/restarts
+    try {
+      setPersistence(authInstance, browserLocalPersistence).catch((e: any) => {
+        console.warn('[Flouss Firebase] setPersistence notice:', e);
+      });
+    } catch {}
   }
 } catch (err: any) {
   console.warn('[Flouss Firebase] getAuth notice:', err?.message || err);

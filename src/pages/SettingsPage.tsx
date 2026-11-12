@@ -54,6 +54,14 @@ import {
 import { getRollingBackups, RollingBackupEntry } from '../utils/backup';
 import { decryptBackup } from '../utils/crypto';
 import { NotificationService } from '../services/notificationService';
+import { auth, db } from '../firebase';
+import {
+  EmailAuthProvider,
+  GoogleAuthProvider,
+  reauthenticateWithCredential,
+  reauthenticateWithPopup,
+} from 'firebase/auth';
+import { doc, deleteDoc } from 'firebase/firestore';
 import {
   disconnectGoogleCalendar,
   requestGoogleCalendarAuth,
@@ -90,6 +98,7 @@ export const SettingsPage: React.FC = () => {
     showToast,
     notificationSettings,
     updateNotificationSettings,
+    lockApp,
   } = useAppStore();
 
   const activeAccount =
@@ -163,6 +172,11 @@ export const SettingsPage: React.FC = () => {
 
   const [showResetModal, setShowResetModal] = useState(false);
   const [resetInputText, setResetInputText] = useState('');
+  const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
+  const [deleteInputText, setDeleteInputText] = useState('');
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteError, setDeleteError] = useState('');
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState<{ text: string; type: 'success' | 'error' } | null>(
     null
   );
@@ -392,6 +406,77 @@ export const SettingsPage: React.FC = () => {
     setResetInputText('');
   };
 
+  const handleDeleteAccount = async () => {
+    if (!auth.currentUser) return;
+    const isGoogle = auth.currentUser.providerData.some((p: any) => p.providerId === 'google.com');
+    const isPassword = auth.currentUser.providerData.some((p: any) => p.providerId === 'password');
+
+    if (
+      deleteInputText.trim().toUpperCase() !== 'SUPPRIMER' &&
+      deleteInputText.trim() !== 'حذف' &&
+      deleteInputText.trim().toUpperCase() !== 'DELETE'
+    ) {
+      setDeleteError(
+        language === 'ar'
+          ? 'يرجى كتابة كلمة "حذف" للتأكيد'
+          : 'Veuillez taper "SUPPRIMER" pour confirmer'
+      );
+      return;
+    }
+
+    if (isPassword && !deletePassword) {
+      setDeleteError(
+        language === 'ar'
+          ? 'يرجى إدخال كلمة المرور للتأكيد'
+          : 'Veuillez saisir votre mot de passe pour confirmer'
+      );
+      return;
+    }
+
+    setIsDeletingAccount(true);
+    setDeleteError('');
+
+    try {
+      if (isGoogle) {
+        await reauthenticateWithPopup(auth.currentUser, new GoogleAuthProvider());
+      } else if (isPassword && auth.currentUser.email) {
+        const credential = EmailAuthProvider.credential(auth.currentUser.email, deletePassword);
+        await reauthenticateWithCredential(auth.currentUser, credential);
+      }
+
+      const uid = auth.currentUser.uid;
+
+      try {
+        await deleteDoc(doc(db, 'users', uid, 'meta', 'profile'));
+      } catch (e) {}
+      try {
+        await deleteDoc(doc(db, 'users', uid));
+      } catch (e) {}
+
+      localStorage.removeItem(`flouss_user_${uid}`);
+      sessionStorage.removeItem(`flouss_2fa_${uid}`);
+      localStorage.removeItem(`flouss_welcome_${uid}`);
+      localStorage.removeItem('flouss_app_storage_v2');
+      localStorage.removeItem('flouss_theme');
+
+      await auth.currentUser.delete();
+      window.location.reload();
+    } catch (err: any) {
+      setIsDeletingAccount(false);
+      if (err?.code === 'auth/wrong-password' || err?.code === 'auth/invalid-credential') {
+        setDeleteError(language === 'ar' ? 'كلمة المرور غير صحيحة.' : 'Mot de passe incorrect.');
+      } else if (err?.code === 'auth/popup-closed-by-user') {
+        setDeleteError(
+          language === 'ar'
+            ? 'تم إلغاء عملية المصادقة مع Google'
+            : 'Authentification Google annulée.'
+        );
+      } else {
+        setDeleteError(err?.message || 'Erreur lors de la suppression du compte.');
+      }
+    }
+  };
+
   return (
     <div className="max-w-[1200px] mx-auto space-y-6 sm:space-y-8 animate-page">
       {/* Title */}
@@ -524,6 +609,14 @@ export const SettingsPage: React.FC = () => {
                 onClick={handleDisablePin}
               >
                 Désactiver le PIN
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => lockApp()}
+                icon={<Lock className="w-4 h-4" />}
+              >
+                {language === 'ar' ? 'قفل التطبيق الآن' : language === 'en' ? 'Lock app now' : "Verrouiller l'application"}
               </Button>
             </>
           ) : (
@@ -1204,8 +1297,8 @@ export const SettingsPage: React.FC = () => {
         </div>
       </Card>
 
-      {/* 5. Danger Zone: Reset App */}
-      <Card padding="lg" className="border-rose-200/80 dark:border-rose-900/50 bg-rose-50/20 dark:bg-rose-950/10">
+      {/* 5. Danger Zone: Reset App & Delete Account */}
+      <Card padding="lg" className="border-rose-500/20 bg-rose-500/5 space-y-5">
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="text-base font-extrabold text-rose-600 dark:text-rose-400 flex items-center gap-2">
@@ -1224,6 +1317,33 @@ export const SettingsPage: React.FC = () => {
             {t.resetApp}
           </Button>
         </div>
+
+        {firebaseUser && (
+          <div className="pt-4 border-t border-rose-500/15 flex items-start justify-between gap-4">
+            <div>
+              <h3 className="text-sm font-bold text-rose-600 dark:text-rose-400">
+                {translations[language].auth?.deleteAccount || 'Supprimer mon compte'}
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5 max-w-lg">
+                {translations[language].auth?.deleteAccountDesc ||
+                  'Supprime définitivement votre compte, vos transactions et toutes vos données de nos serveurs.'}
+              </p>
+            </div>
+
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={() => {
+                setDeleteInputText('');
+                setDeletePassword('');
+                setDeleteError('');
+                setShowDeleteAccountModal(true);
+              }}
+            >
+              {translations[language].auth?.deleteAccount || 'Supprimer mon compte'}
+            </Button>
+          </div>
+        )}
       </Card>
 
       {/* PIN Setup Modal */}
@@ -1312,6 +1432,86 @@ export const SettingsPage: React.FC = () => {
               onClick={handleConfirmReset}
             >
               {tCommon.delete}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Delete Account Modal */}
+      <Modal
+        isOpen={showDeleteAccountModal}
+        onClose={() => !isDeletingAccount && setShowDeleteAccountModal(false)}
+        title={translations[language].auth?.deleteAccount || 'Supprimer mon compte'}
+        maxWidth="sm"
+      >
+        <div className="space-y-4">
+          <div className="w-14 h-14 mx-auto rounded-3xl bg-rose-500/15 text-rose-500 border border-rose-500/20 flex items-center justify-center">
+            <AlertTriangle className="w-7 h-7" />
+          </div>
+
+          <div className="text-center space-y-1">
+            <p className="text-xs text-rose-500 font-semibold">
+              {language === 'ar'
+                ? 'تحذير : هذا الإجراء نهائي ولا يمكن التراجع عنه'
+                : 'Attention : cette action est définitive et irréversible.'}
+            </p>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              {translations[language].auth?.deleteAccountDesc ||
+                'Toutes vos données seront supprimées de nos serveurs.'}
+            </p>
+          </div>
+
+          {auth.currentUser?.providerData.some((p: any) => p.providerId === 'password') && (
+            <Input
+              label={translations[language].auth?.passwordLabel || 'Mot de passe'}
+              type="password"
+              placeholder="••••••••"
+              value={deletePassword}
+              onChange={(e) => setDeletePassword(e.target.value)}
+              disabled={isDeletingAccount}
+            />
+          )}
+
+          <div className="space-y-1.5">
+            <label className="text-xs text-slate-400">
+              {translations[language].auth?.deleteAccountConfirm || 'Tapez "SUPPRIMER" pour confirmer'}
+            </label>
+            <Input
+              placeholder={language === 'ar' ? 'حذف' : 'SUPPRIMER'}
+              value={deleteInputText}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDeleteInputText(e.target.value)}
+              disabled={isDeletingAccount}
+              className="text-center uppercase font-bold tracking-wider"
+            />
+          </div>
+
+          {deleteError && (
+            <p className="text-xs text-rose-500 text-center font-medium bg-rose-500/10 py-2 px-3 rounded-xl border border-rose-500/20">
+              {deleteError}
+            </p>
+          )}
+
+          <div className="flex gap-2 pt-2">
+            <Button
+              variant="secondary"
+              fullWidth
+              disabled={isDeletingAccount}
+              onClick={() => setShowDeleteAccountModal(false)}
+            >
+              {tCommon.cancel}
+            </Button>
+            <Button
+              variant="danger"
+              fullWidth
+              disabled={
+                isDeletingAccount ||
+                (deleteInputText.trim().toUpperCase() !== 'SUPPRIMER' &&
+                  deleteInputText.trim() !== 'حذف' &&
+                  deleteInputText.trim().toUpperCase() !== 'DELETE')
+              }
+              onClick={handleDeleteAccount}
+            >
+              {isDeletingAccount ? '...' : (translations[language].auth?.deleteAccount || tCommon.delete)}
             </Button>
           </div>
         </div>

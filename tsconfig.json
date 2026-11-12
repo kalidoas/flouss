@@ -8,6 +8,7 @@
 
     /* Bundler mode */
     "moduleResolution": "bundler",
+    "customConditions": ["browser"],
     "allowImportingTsExtensions": false,
     "resolveJsonModule": true,
     "isolatedModules": true,
@@ -17,7 +18,11 @@
     /* Paths */
     "baseUrl": ".",
     "paths": {
-      "react-router-dom": ["src/lib/react-router-dom.ts"]
+      "react-router-dom": ["src/lib/react-router-dom.ts"],
+      "firebase/auth": ["node_modules/@firebase/auth/dist/auth-public.d.ts"],
+      "@firebase/auth": ["node_modules/@firebase/auth/dist/auth-public.d.ts"],
+      "firebase/firestore": ["node_modules/@firebase/firestore/dist/index.d.ts"],
+      "@firebase/firestore": ["node_modules/@firebase/firestore/dist/index.d.ts"]
     },
 
     /* Linting */

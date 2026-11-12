@@ -1,6 +1,7 @@
 /**
  * Flouss Security & Cryptography Utilities
- * - Web Crypto SHA-256 PIN hashing with salt
+ * - PBKDF2 PIN hashing with per-user random salt (profile doc path)
+ * - Legacy SHA-256 PIN hashing with deterministic salt (backward compat)
  * - AES-GCM 256-bit Backup Encryption & Backward-Compatible Decryption
  */
 
@@ -8,7 +9,61 @@ const DEFAULT_PIN_SALT = 'flouss_pin_salt_v1';
 const DEFAULT_BACKUP_SECRET = 'flouss_backup_secure_vault_v1';
 
 /**
+ * Hash a 4-digit PIN using PBKDF2-SHA-256 with a random salt (base64url-encoded).
+ * This is the SECURE path used by the profile doc. The salt must be stored alongside
+ * the hash (never hardcode or derive it from uid).
+ */
+export async function hashPinPBKDF2(
+  pin: string,
+  saltBase64: string,
+  iterations: number = 100_000
+): Promise<string> {
+  if (typeof crypto === 'undefined' || !crypto.subtle) {
+    // Fallback: SHA-256 with salt (not ideal but functional without SubtleCrypto)
+    return hashPin(pin, saltBase64);
+  }
+  const pinBytes = new TextEncoder().encode(String(pin).trim());
+  // Decode base64url salt
+  const saltNorm = saltBase64.replace(/-/g, '+').replace(/_/g, '/');
+  const saltBin = atob(saltNorm);
+  const saltBytes = new Uint8Array(saltBin.length);
+  for (let i = 0; i < saltBin.length; i++) saltBytes[i] = saltBin.charCodeAt(i);
+
+  const keyMaterial = await crypto.subtle.importKey('raw', pinBytes, 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt: saltBytes, iterations, hash: 'SHA-256' },
+    keyMaterial,
+    256
+  );
+  return Array.from(new Uint8Array(bits))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+/**
+ * Verify a PIN using PBKDF2 against a stored hash and random salt.
+ * Used exclusively by the profile doc path.
+ */
+export async function verifyPinPBKDF2(
+  enteredPin: string,
+  storedHash: string,
+  saltBase64: string,
+  iterations: number = 100_000
+): Promise<boolean> {
+  const hash = await hashPinPBKDF2(enteredPin, saltBase64, iterations);
+  // Constant-time comparison (best effort in JS)
+  if (hash.length !== storedHash.length) return false;
+  let diff = 0;
+  for (let i = 0; i < hash.length; i++) {
+    diff |= hash.charCodeAt(i) ^ storedHash.charCodeAt(i);
+  }
+  return diff === 0;
+}
+
+/**
  * Hash a 4-digit PIN using SHA-256 with salt.
+ * @deprecated Use hashPinPBKDF2 for new PIN storage. This is kept for backward
+ * compatibility with PINs stored in the main account doc before Phase 1 migration.
  */
 export async function hashPin(pin: string, salt: string = DEFAULT_PIN_SALT): Promise<string> {
   const normalizedPin = String(pin).trim();

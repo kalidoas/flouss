@@ -4,39 +4,23 @@ import { translations } from '../../i18n/translations';
 import { Sparkles, TrendingUp, ArrowRight, X } from 'lucide-react';
 
 export const WelcomeModal: React.FC = () => {
-  const { firebaseUser, isOnboarded, language } = useAppStore();
-  const [isOpen, setIsOpen] = useState(false);
+  const { firebaseUser, language, markWelcomeSeen, authGate } = useAppStore();
   const t = translations[language].welcome;
   const isAr = language === 'ar';
 
-  useEffect(() => {
-    if (!firebaseUser?.uid || !isOnboarded) {
-      setIsOpen(false);
-      return;
-    }
-
-    const key = `flouss_welcome_${firebaseUser.uid}`;
-    const seen = localStorage.getItem(key);
-    if (!seen) {
-      setIsOpen(true);
-    }
-  }, [firebaseUser?.uid, isOnboarded]);
-
-  const markSeen = () => {
-    if (firebaseUser?.uid) {
-      localStorage.setItem(`flouss_welcome_${firebaseUser.uid}`, 'true');
-    }
-    setIsOpen(false);
+  const handleDismiss = async () => {
+    await markWelcomeSeen();
   };
 
-  const handleAddFirstIncome = () => {
-    markSeen();
+  const handleAddFirstIncome = async () => {
+    await markWelcomeSeen();
     setTimeout(() => {
       window.dispatchEvent(new CustomEvent('flouss:quick-add', { detail: { type: 'income' } }));
     }, 100);
   };
 
-  if (!isOpen) return null;
+  // Only render when in welcome authGate state or explicitly active
+  if (authGate !== 'welcome') return null;
 
   return (
     <div
@@ -54,7 +38,7 @@ export const WelcomeModal: React.FC = () => {
         {/* Close Button */}
         <button
           type="button"
-          onClick={markSeen}
+          onClick={handleDismiss}
           className="absolute top-4 right-4 rtl:right-auto rtl:left-4 p-1 rounded-full text-zinc-400 hover:text-white hover:bg-white/[0.08] transition-colors"
           aria-label="Close"
         >
@@ -88,7 +72,7 @@ export const WelcomeModal: React.FC = () => {
 
           <button
             type="button"
-            onClick={markSeen}
+            onClick={handleDismiss}
             className="w-full py-2.5 px-4 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] text-xs font-semibold text-zinc-300 hover:text-white transition-all cursor-pointer"
           >
             {t.dismiss}

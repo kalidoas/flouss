@@ -115,7 +115,7 @@
     <div id="root" class="h-full"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script>
-      // Clear old PWA service worker caches on localhost to prevent stale UI
+      // Service worker registration and auto-update handling
       if ('serviceWorker' in navigator) {
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
           navigator.serviceWorker.getRegistrations().then(function(registrations) {
@@ -128,6 +128,21 @@
               for (let name of names) caches.delete(name);
             });
           }
+        } else {
+          window.addEventListener('load', function() {
+            navigator.serviceWorker.register('/sw.js').then(function(reg) {
+              reg.onupdatefound = function() {
+                var installingWorker = reg.installing;
+                if (installingWorker) {
+                  installingWorker.onstatechange = function() {
+                    if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                      window.location.reload();
+                    }
+                  };
+                }
+              };
+            }).catch(function() {});
+          });
         }
       }
     </script>

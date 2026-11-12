@@ -46,17 +46,53 @@ import {
 } from '../utils/calculations';
 import { playHapticFeedback, triggerHaptic } from '../utils/haptics';
 import { migrateSubscription, migrateSubscriptions } from '../utils/subscriptions';
-import { hashPin, verifyPin, encryptBackup, decryptBackup } from '../utils/crypto';
+import { hashPin, verifyPin, hashPinPBKDF2, verifyPinPBKDF2, encryptBackup, decryptBackup } from '../utils/crypto';
+import {
+  loadUserProfile,
+  createUserProfile,
+  setProfilePin as setProfilePinService,
+  clearProfilePin as clearProfilePinService,
+  verifyProfilePin as verifyProfilePinService,
+  markWelcomeSeen as markWelcomeSeenService,
+  markEmailVerified as markEmailVerifiedService,
+  UserProfileDoc,
+} from '../services/userProfile';
 
 export { migrateSubscription, migrateSubscriptions, hashPin };
+
+/**
+ * Auth gate states — the single source of truth for which screen to render.
+ *
+ * loading          → neutral splash (profile + auth not yet resolved)
+ * signedOut        → Login form
+ * needsEmailVerif  → email/password user, email not yet verified
+ * needsPinSetup    → authenticated, no PIN set, needs onboarding
+ * locked           → authenticated, PIN set, PIN not yet verified this session
+ * welcome          → authenticated + verified + onboarded, first login ever
+ * app              → fully authenticated and ready
+ */
+export type AuthGateState =
+  | 'loading'
+  | 'signedOut'
+  | 'needsEmailVerif'
+  | 'needsPinSetup'
+  | 'locked'
+  | 'welcome'
+  | 'app';
 
 export interface AppState {
   // ── Auth & Session ──────────────────────────────────────────
   firebaseUser: any;
   loadingAuth: boolean;
-  isHydratedFromCloud: boolean; // NEW: strict hydration lock flag
+  /** Computed auth gate — single source of truth for which screen to show */
+  authGate: AuthGateState;
+  userProfile: UserProfileDoc | null;
+  isHydratedFromCloud: boolean;
   isPinVerified: boolean;
+  /** In-memory PIN hash (never cached to localStorage) */
   userPinCode: string | null;
+  /** True if user has dismissed the welcome screen this session */
+  hasSeenWelcome: boolean;
   isDemoMode: boolean;
   firestoreDisabled: boolean;
   syncStatus: 'connecting' | 'syncing' | 'synced' | 'error';
@@ -112,6 +148,14 @@ export interface AppState {
   initAuthSession: (user: any) => Promise<void>;
   verify2FAPin: (pin: string) => Promise<boolean> | boolean;
   setPinVerified: (verified: boolean) => void;
+  /** Mark welcome screen as seen (persists to Firestore + localStorage) */
+  markWelcomeSeen: () => Promise<void>;
+  /** Set a new PIN via the profile doc (PBKDF2 with random salt) */
+  setProfilePin: (rawPin: string) => Promise<void>;
+  /** Reload Firebase user to pick up emailVerified status */
+  reloadFirebaseUser: () => Promise<void>;
+  /** Lock application to require PIN/Face ID without signing out */
+  lockApp: () => void;
   logout: () => Promise<void>;
   syncToFirestore: () => Promise<void>;
   refreshFromFirestore: () => Promise<void>;
@@ -313,23 +357,32 @@ export function extractAccountState(account: UserAccount | null) {
       initialBalance: null,
       initialBalanceLockedAt: null,
       balance: 0,
-      categories: DEFAULT_CATEGORIES,
-      incomeSources: DEFAULT_INCOME_SOURCES,
+      categories: [],
+      incomeSources: [],
       transactions: [],
       recurringRules: [],
-      tasks: DEFAULT_TASKS,
-      focusTasks: DEFAULT_FOCUS_TASKS,
-      focusLists: DEFAULT_FOCUS_LISTS,
-      debts: DEFAULT_DEBTS,
-      subscriptions: DEFAULT_SUBSCRIPTIONS,
-      notes: DEFAULT_NOTES,
+      tasks: [],
+      focusTasks: [],
+      focusLists: [],
+      debts: [],
+      subscriptions: [],
+      notes: [],
       salatLogs: {},
-      studyModules: DEFAULT_STUDY_MODULES,
-      gymLogs: DEFAULT_GYM_LOGS,
-      programTracks: DEFAULT_PROGRAM_TRACKS,
+      studyModules: [],
+      gymLogs: [],
+      programTracks: [],
       pinEnabled: false,
       pinCode: null,
       recentNotes: [],
+      meetings: [],
+      notificationSettings: {
+        soundEnabled: true,
+        soundTone: 'chime' as const,
+        defaultBillLeadDays: 1,
+        defaultTaskLeadMinutes: [10, 0] as [number, number],
+        googleCalendarConnected: false,
+        googleCalendarEmail: null,
+      },
     };
   }
 
@@ -701,15 +754,40 @@ export function applyThemeToDOM(isDark: boolean): void {
   }
 }
 
+export function computeAuthGate(
+  user: any,
+  profile: UserProfileDoc | null,
+  isPinVerified: boolean,
+  hasSeenWelcome: boolean
+): AuthGateState {
+  if (!user) return 'signedOut';
+  if (!profile) return 'loading';
+
+  const isGoogle = user.providerData?.some((p: any) => p.providerId === 'google.com');
+  const isEmailVerified = Boolean(user.emailVerified || profile.emailVerified);
+
+  if (!isGoogle && !isEmailVerified) {
+    return 'needsEmailVerif';
+  }
+
+  if (!profile.hasPin) {
+    return 'needsPinSetup';
+  }
+
+  if (!isPinVerified) {
+    return 'locked';
+  }
+
+  if (!profile.hasSeenWelcome && !hasSeenWelcome) {
+    return 'welcome';
+  }
+
+  return 'app';
+}
+
 export const useAppStore = create<AppState>()(
   persist(
     (set, get) => {
-      const initialAccount = makeInitialAccount('default', 'Khalid');
-
-      // === ANTI-WIPE & HYDRATION GUARD INIT ===
-      // Track whether initial Firestore hydration has completed
-      let hydrationCompleted = false;
-
       // Helper to update active account and its reactive projections
       const updateActive = (
         updater: (acc: UserAccount) => UserAccount,
@@ -732,14 +810,16 @@ export const useAppStore = create<AppState>()(
           ...extracted,
         });
 
-        // Always save to localStorage immediately for instant offline safety
+        // Always save to localStorage immediately for instant offline safety (stripping PIN hash)
         const uid = s.firebaseUser?.uid || auth.currentUser?.uid;
         if (extracted.currentAccount) {
           try {
             if (uid) {
-              localStorage.setItem(`flouss_user_${uid}`, JSON.stringify(extracted.currentAccount));
+              const safeAccount = { ...extracted.currentAccount, pinCode: null };
+              localStorage.setItem(`flouss_user_${uid}`, JSON.stringify(safeAccount));
             }
             localStorage.removeItem('flouss_user_default');
+            localStorage.removeItem('flouss-store');
           } catch (e) {}
 
           if (uid) {
@@ -755,20 +835,23 @@ export const useAppStore = create<AppState>()(
       return {
         // ── Auth & Session ──────────────────────────────────────────
         firebaseUser: null,
+        userProfile: null as UserProfileDoc | null,
         loadingAuth: true,
-        isHydratedFromCloud: false, // NEW: starts false, set to true after first Firestore fetch completes
+        authGate: 'loading' as AuthGateState,
+        isHydratedFromCloud: false,
         isPinVerified: false,
         userPinCode: null,
+        hasSeenWelcome: false,
         isDemoMode: false,
         firestoreDisabled: false,
         syncStatus: 'connecting',
 
         // ── Multi-Account State ─────────────────────────────────────
-        accounts: [initialAccount],
-        activeAccountId: initialAccount.id,
+        accounts: [],
+        activeAccountId: null,
 
         // ── Active Account Reactive Fields ──────────────────────────
-        ...extractAccountState(initialAccount),
+        ...extractAccountState(null),
 
         // ── UI Preferences ──────────────────────────────────────────
         theme: 'dark' as ThemeMode,
@@ -780,7 +863,7 @@ export const useAppStore = create<AppState>()(
         screenHistory: [] as ScreenId[],
         navigationDirection: 'forward' as const,
         activeFocusListId: 'default',
-        isPinUnlocked: true,
+        isPinUnlocked: false,
         hideBalance: true, // Sensitive wealth blurred on startup by default (user requirement)
         isBalanceHidden: true,
         lastBackupDate: null,
@@ -800,15 +883,19 @@ export const useAppStore = create<AppState>()(
           if (!user) {
             try {
               localStorage.removeItem('flouss_user_default');
+              localStorage.removeItem('flouss-store');
             } catch (e) {}
 
             set({
               firebaseUser: null,
+              userProfile: null,
+              authGate: 'signedOut',
               loadingAuth: false,
               isHydratedFromCloud: false,
               isPinVerified: false,
               isPinUnlocked: false,
               userPinCode: null,
+              hasSeenWelcome: false,
               accounts: [],
               activeAccountId: null,
               ...extractAccountState(null),
@@ -818,21 +905,23 @@ export const useAppStore = create<AppState>()(
 
           // Clean Account Switching Isolation
           if (get().firebaseUser && get().firebaseUser.uid !== user.uid) {
-            console.log(`🔄 [Flouss] Switching user from ${get().firebaseUser.uid} to ${user.uid}. Resetting in-memory state.`);
             if (syncTimer) {
               clearTimeout(syncTimer);
               syncTimer = null;
             }
             try {
               localStorage.removeItem('flouss_user_default');
+              localStorage.removeItem('flouss-store');
             } catch (e) {}
             set({
               isHydratedFromCloud: false,
+              userProfile: null,
               accounts: [],
               activeAccountId: null,
               userPinCode: null,
               isPinVerified: false,
               isPinUnlocked: false,
+              hasSeenWelcome: false,
               ...extractAccountState(null),
             });
           }
@@ -843,11 +932,59 @@ export const useAppStore = create<AppState>()(
           set({
             firebaseUser: user,
             loadingAuth: true,
+            authGate: 'loading',
             isHydratedFromCloud: false,
           });
 
-          let firestorePin: string | null = null;
+          // 1. Load Profile document: users/{uid}/meta/profile
+          let profile = await loadUserProfile(uid);
+
+          // 2. Query Firestore main document users/{uid} directly
+          let snap: any = null;
+          try {
+            snap = await getDoc(userDocRef);
+          } catch (err: any) {
+            console.warn('[Flouss Cloud] Initial getDoc notice:', err?.message || err);
+          }
+
+          const cloudDocExists = Boolean(snap && snap.exists());
+          const cloudData = cloudDocExists ? snap.data() : null;
+          const isGoogleUser = user.providerData?.some((p: any) => p.providerId === 'google.com');
+
+          if (!profile) {
+            // Profile doc missing!
+            const existingPin = cloudData?.pinCode || cloudData?.account?.pinCode || null;
+            const hasExistingData = Boolean(
+              cloudData?.account ||
+              (cloudData?.transactions && cloudData.transactions.length > 0) ||
+              cloudData?.isOnboarded ||
+              existingPin
+            );
+
+            if (cloudDocExists && hasExistingData) {
+              // Existing owner account: preserve legacy data, mark hasSeenWelcome=true so owner is NOT forced through onboarding
+              profile = await createUserProfile(uid, {
+                emailVerified: Boolean(user.emailVerified || isGoogleUser),
+                hasPin: Boolean(existingPin),
+                pinHash: existingPin,
+                pinSalt: `${uid}:flouss_pin_salt_v1`,
+                hasSeenWelcome: true,
+              });
+            } else {
+              // Brand-new user: empty profile
+              profile = await createUserProfile(uid, {
+                emailVerified: Boolean(user.emailVerified || isGoogleUser),
+                hasPin: false,
+                pinHash: null,
+                pinSalt: null,
+                hasSeenWelcome: false,
+              });
+            }
+          }
+
+          let firestorePin: string | null = profile.pinHash;
           let resolvedAccount: UserAccount | null = null;
+          let shouldSyncRecoveredTransactions = false;
 
           let localAccount: UserAccount | null = null;
           try {
@@ -861,33 +998,14 @@ export const useAppStore = create<AppState>()(
             }
           } catch (e) {}
 
-          try {
-            localStorage.removeItem('flouss_user_default');
-          } catch (e) {}
-
-          if (localAccount) {
-            localAccount.subscriptions = migrateSubscriptions(localAccount.subscriptions ?? DEFAULT_SUBSCRIPTIONS);
-          }
-
-          // Query Firestore document users/{uid} directly
-          let snap: any = null;
-          try {
-            snap = await getDoc(userDocRef);
-          } catch (err: any) {
-            console.warn('[Flouss Cloud] Initial getDoc notice:', err?.message || err);
-          }
-
-          const cloudDocExists = Boolean(snap && snap.exists());
-          const cloudData = cloudDocExists ? snap.data() : null;
-          let shouldSyncRecoveredTransactions = false;
-
           if (cloudDocExists && cloudData) {
-            console.log(`☁️ [Flouss Cloud] Hydrating store from existing Firestore document users/${uid}...`);
             lastAppliedRemoteUpdatedAt = remoteTimestampMs(cloudData);
             const applied = applyRemoteAccount(uid, cloudData, user);
             if (applied) {
               resolvedAccount = applied.finalSyncedAccount;
-              firestorePin = applied.remotePin;
+              if (applied.remotePin && !firestorePin) {
+                firestorePin = applied.remotePin;
+              }
               if (localAccount) {
                 const deletedIds = new Set([
                   ...(resolvedAccount.deletedTransactionIds || []),
@@ -913,7 +1031,6 @@ export const useAppStore = create<AppState>()(
             }
           } else if (snap !== null && !snap.exists()) {
             // Completely NEW user registration! Start with a 100% EMPTY workspace.
-            console.log(`🆕 [Flouss Cloud] Brand new user registration: creating clean empty workspace for users/${uid}`);
             const freshAccount = makeInitialAccount(uid, user.displayName || 'Utilisateur', user.email || '');
             resolvedAccount = freshAccount;
             firestorePin = null;
@@ -926,8 +1043,6 @@ export const useAppStore = create<AppState>()(
                   email: user.email || null,
                   displayName: user.displayName || null,
                   photoURL: user.photoURL || null,
-                  pinCode: null,
-                  pinEnabled: false,
                   initialBalance: null,
                   balance: 0,
                   isOnboarded: false,
@@ -937,7 +1052,6 @@ export const useAppStore = create<AppState>()(
                 },
                 { merge: true }
               );
-              console.log(`🆕 [Flouss Cloud] Created initial document for users/${uid}`);
             } catch (err) {
               console.warn('[Flouss Cloud] Initial doc create notice:', err);
             }
@@ -954,10 +1068,8 @@ export const useAppStore = create<AppState>()(
               id: uid,
               balance: localBal,
             };
-            firestorePin = localAccount.pinCode ?? null;
           } else {
             resolvedAccount = makeInitialAccount(uid, user.displayName || 'Utilisateur', user.email || '');
-            firestorePin = null;
           }
 
           if (!resolvedAccount) {
@@ -970,23 +1082,31 @@ export const useAppStore = create<AppState>()(
             lastKnownTransactionsByUid.set(uid, Array.isArray(resolvedAccount.transactions) ? resolvedAccount.transactions : []);
           }
 
-          // Save hydrated account to local cache for fast offline access strictly scoped by uid
+          // Save hydrated account to local cache strictly scoped by uid, stripping PIN hash
           try {
-            localStorage.setItem(`flouss_user_${uid}`, JSON.stringify(resolvedAccount));
+            const safeAccount = { ...resolvedAccount, pinCode: null };
+            localStorage.setItem(`flouss_user_${uid}`, JSON.stringify(safeAccount));
             localStorage.removeItem('flouss_user_default');
+            localStorage.removeItem('flouss-store');
           } catch (e) {}
 
-          const hasPin = Boolean(firestorePin && firestorePin.trim().length > 0);
+          const hasPin = Boolean(profile.hasPin);
           const sessionVerified = sessionStorage.getItem(`flouss_2fa_${uid}`) === 'verified';
-          const isVerified = !hasPin || sessionVerified;
+          const isPinVerified = !hasPin || sessionVerified;
+          const hasSeenWelcome = Boolean(profile.hasSeenWelcome || localStorage.getItem(`flouss_welcome_${uid}`) === 'true');
+
+          const authGate = computeAuthGate(user, profile, isPinVerified, hasSeenWelcome);
 
           set({
             firebaseUser: user,
+            userProfile: profile,
+            authGate,
             accounts: [resolvedAccount],
             activeAccountId: uid,
-            userPinCode: hasPin ? firestorePin : null,
-            isPinVerified: isVerified,
-            isPinUnlocked: isVerified,
+            userPinCode: profile.pinHash,
+            isPinVerified,
+            isPinUnlocked: isPinVerified,
+            hasSeenWelcome,
             loadingAuth: false,
             isHydratedFromCloud: true,
             ...extractAccountState(resolvedAccount),
@@ -1008,10 +1128,7 @@ export const useAppStore = create<AppState>()(
                 const data = snap.data();
                 if (!data) return;
 
-                // Ignore out-of-order snapshots so the UI can never roll back to an
-                // older balance than the one already shown.
                 if (isStaleRemotePayload(data)) {
-                  console.log(`⏭️ [Flouss Cloud] Skipping stale snapshot for users/${uid}`);
                   return;
                 }
 
@@ -1025,11 +1142,10 @@ export const useAppStore = create<AppState>()(
                     return {
                       accounts: [finalSyncedAccount, ...otherAccounts],
                       activeAccountId: uid,
-                      userPinCode: remotePin,
+                      userPinCode: remotePin || state.userPinCode,
                       ...extractAccountState(finalSyncedAccount),
                     };
                   });
-                  console.log(`🔄 [Flouss Cloud] Real-time sync update received and applied from Firestore users/${uid}`);
                 }
               },
               (err: any) => {
@@ -1044,39 +1160,136 @@ export const useAppStore = create<AppState>()(
 
         verify2FAPin: async (enteredPin: string): Promise<boolean> => {
           const s = get();
-          if (enteredPin === '__biometric__') {
-            set({ isPinVerified: true, isPinUnlocked: true });
-            if (s.firebaseUser?.uid) {
-              sessionStorage.setItem(`flouss_2fa_${s.firebaseUser.uid}`, 'verified');
-            }
-            return true;
-          }
-          const correctPin = s.userPinCode || s.pinCode;
-          if (!correctPin) return true;
+          const uid = s.firebaseUser?.uid || auth.currentUser?.uid;
+          if (!uid) return false;
 
-          const uid = s.firebaseUser?.uid || auth.currentUser?.uid || 'default';
-          const salt = `${uid}:flouss_pin_salt_v1`;
-          const { isValid, needsUpgrade } = await verifyPin(enteredPin, correctPin, salt);
-          if (isValid) {
-            set({ isPinVerified: true, isPinUnlocked: true });
-            if (s.firebaseUser?.uid) {
-              sessionStorage.setItem(`flouss_2fa_${s.firebaseUser.uid}`, 'verified');
-            }
-            if (needsUpgrade) {
-              // Backward compatibility: automatically upgrade legacy PIN to UID-salted SHA-256 hash
-              try {
-                const hashed = await hashPin(enteredPin, salt);
-                await get().setPinCode(hashed);
-              } catch (e) {
-                console.warn('[Flouss Security] Failed to auto-upgrade legacy PIN:', e);
-              }
-            }
+          if (enteredPin === '__biometric__') {
+            sessionStorage.setItem(`flouss_2fa_${uid}`, 'verified');
+            set({
+              isPinVerified: true,
+              isPinUnlocked: true,
+              authGate: computeAuthGate(s.firebaseUser, s.userProfile, true, s.hasSeenWelcome),
+            });
             return true;
           }
+
+          const profile = s.userProfile || (await loadUserProfile(uid));
+          if (!profile || !profile.hasPin) {
+            sessionStorage.setItem(`flouss_2fa_${uid}`, 'verified');
+            set({
+              isPinVerified: true,
+              isPinUnlocked: true,
+              authGate: computeAuthGate(s.firebaseUser, profile, true, s.hasSeenWelcome),
+            });
+            return true;
+          }
+
+          // 1. Modern PBKDF2 verification with profile salt
+          if (profile.pinHash && profile.pinSalt) {
+            const isValid = await verifyPinPBKDF2(
+              enteredPin,
+              profile.pinHash,
+              profile.pinSalt,
+              profile.pinIterations || 100000
+            );
+            if (isValid) {
+              sessionStorage.setItem(`flouss_2fa_${uid}`, 'verified');
+              set({
+                isPinVerified: true,
+                isPinUnlocked: true,
+                authGate: computeAuthGate(s.firebaseUser, profile, true, s.hasSeenWelcome),
+              });
+              return true;
+            }
+          }
+
+          // 2. Backward compatibility: check legacy SHA-256 with UID salt
+          const legacySalt = `${uid}:flouss_pin_salt_v1`;
+          const correctPin = profile.pinHash || s.userPinCode || s.pinCode;
+          if (correctPin) {
+            const { isValid } = await verifyPin(enteredPin, correctPin, legacySalt);
+            if (isValid) {
+              sessionStorage.setItem(`flouss_2fa_${uid}`, 'verified');
+              // Automatically upgrade to PBKDF2 with random salt in profile
+              try {
+                await setProfilePinService(uid, enteredPin);
+                const updatedProfile = await loadUserProfile(uid);
+                set({ userProfile: updatedProfile, userPinCode: updatedProfile?.pinHash || null });
+              } catch (e) {
+                console.warn('[Flouss Security] Auto-upgrade PIN notice:', e);
+              }
+              set({
+                isPinVerified: true,
+                isPinUnlocked: true,
+                authGate: computeAuthGate(s.firebaseUser, s.userProfile, true, s.hasSeenWelcome),
+              });
+              return true;
+            }
+          }
+
           return false;
         },
 
         setPinVerified: (verified: boolean) => set({ isPinVerified: verified }),
+
+        markWelcomeSeen: async () => {
+          const uid = get().firebaseUser?.uid;
+          if (uid) {
+            await markWelcomeSeenService(uid);
+            localStorage.setItem(`flouss_welcome_${uid}`, 'true');
+          }
+          set((state: any) => {
+            const updatedProfile = state.userProfile ? { ...state.userProfile, hasSeenWelcome: true } : null;
+            return {
+              hasSeenWelcome: true,
+              userProfile: updatedProfile,
+              authGate: computeAuthGate(state.firebaseUser, updatedProfile, state.isPinVerified, true),
+            };
+          });
+        },
+
+        setProfilePin: async (rawPin: string) => {
+          const uid = get().firebaseUser?.uid;
+          if (!uid) return;
+          await setProfilePinService(uid, rawPin);
+          const updatedProfile = await loadUserProfile(uid);
+          sessionStorage.setItem(`flouss_2fa_${uid}`, 'verified');
+          set((state: any) => ({
+            userProfile: updatedProfile,
+            userPinCode: updatedProfile?.pinHash || null,
+            isPinVerified: true,
+            isPinUnlocked: true,
+            authGate: computeAuthGate(state.firebaseUser, updatedProfile, true, state.hasSeenWelcome),
+          }));
+        },
+
+        reloadFirebaseUser: async () => {
+          const u = auth.currentUser;
+          if (!u) return;
+          await u.reload();
+          const refreshedUser = auth.currentUser;
+          if (refreshedUser?.emailVerified && u.uid) {
+            await markEmailVerifiedService(u.uid);
+          }
+          const profile = await loadUserProfile(u.uid);
+          set((state: any) => ({
+            firebaseUser: refreshedUser,
+            userProfile: profile,
+            authGate: computeAuthGate(refreshedUser, profile, state.isPinVerified, state.hasSeenWelcome),
+          }));
+        },
+
+        lockApp: () => {
+          const uid = get().firebaseUser?.uid;
+          if (uid) {
+            sessionStorage.removeItem(`flouss_2fa_${uid}`);
+          }
+          set((state: any) => ({
+            isPinVerified: false,
+            isPinUnlocked: false,
+            authGate: state.firebaseUser ? 'locked' : 'signedOut',
+          }));
+        },
 
         logout: async () => {
           if (activeSnapshotUnsubscribe) {
@@ -1090,18 +1303,27 @@ export const useAppStore = create<AppState>()(
           const uid = get().firebaseUser?.uid;
           if (uid) {
             sessionStorage.removeItem(`flouss_2fa_${uid}`);
+            try {
+              localStorage.removeItem(`flouss_user_${uid}`);
+            } catch (e) {}
           }
           try {
             localStorage.removeItem('flouss_user_default');
+            localStorage.removeItem('flouss-store');
           } catch (e) {}
           try {
             await auth.signOut();
           } catch (e) {}
           set({
             firebaseUser: null,
+            userProfile: null,
+            authGate: 'signedOut',
+            loadingAuth: false,
+            isHydratedFromCloud: false,
             isPinVerified: false,
             isPinUnlocked: false,
             userPinCode: null,
+            hasSeenWelcome: false,
             accounts: [],
             activeAccountId: null,
             ...extractAccountState(null),
@@ -1287,6 +1509,15 @@ export const useAppStore = create<AppState>()(
           const salt = `${uid}:flouss_pin_salt_v1`;
           if (code && code.length === 4) {
             finalPin = await hashPin(code, salt);
+            if (s.firebaseUser?.uid) {
+              await setProfilePinService(s.firebaseUser.uid, code);
+              const updatedProfile = await loadUserProfile(s.firebaseUser.uid);
+              set({ userProfile: updatedProfile });
+            }
+          } else if (!code && s.firebaseUser?.uid) {
+            await clearProfilePinService(s.firebaseUser.uid);
+            const updatedProfile = await loadUserProfile(s.firebaseUser.uid);
+            set({ userProfile: updatedProfile });
           }
           updateActive((a) => ({
             ...a,
@@ -1306,13 +1537,14 @@ export const useAppStore = create<AppState>()(
           const activeId = s.activeAccountId || s.accounts[0]?.id;
           const currentAcc = s.accounts.find((a: UserAccount) => a.id === activeId) || s.accounts[0];
           const uid = s.firebaseUser?.uid || currentAcc?.id || 'default_user';
-          const salt = `${uid}:flouss_pin_salt_v1`;
 
-          const rawPin =
-            metadata?.pinCode && metadata.pinCode.length === 4
-              ? metadata.pinCode
-              : currentAcc?.pinCode ?? null;
-          const pin = rawPin && rawPin.length === 4 ? await hashPin(rawPin, salt) : rawPin;
+          let updatedProfile = s.userProfile;
+          if (metadata?.pinCode && metadata.pinCode.length === 4) {
+            await setProfilePinService(uid, metadata.pinCode);
+            updatedProfile = await loadUserProfile(uid);
+          }
+
+          const pinHash = updatedProfile?.pinHash || null;
 
           const updatedAccount: UserAccount = {
             ...(currentAcc ||
@@ -1323,8 +1555,8 @@ export const useAppStore = create<AppState>()(
             isOnboarded: true,
             name: metadata?.accountName || currentAcc?.name || 'Utilisateur',
             email: metadata?.email || currentAcc?.email || '',
-            pinCode: pin,
-            pinEnabled: !!pin,
+            pinCode: pinHash,
+            pinEnabled: !!pinHash,
           };
 
           const updatedAccounts =
@@ -1334,25 +1566,33 @@ export const useAppStore = create<AppState>()(
                 )
               : [updatedAccount];
 
-          // 1. Immediately persist to localStorage
+          // 1. Immediately persist to localStorage (stripping pinCode)
           try {
-            localStorage.setItem(`flouss_user_${uid}`, JSON.stringify(updatedAccount));
-            if (pin) {
+            const safeAccount = { ...updatedAccount, pinCode: null };
+            localStorage.setItem(`flouss_user_${uid}`, JSON.stringify(safeAccount));
+            if (pinHash) {
               sessionStorage.setItem(`flouss_2fa_${uid}`, 'verified');
             }
           } catch (e) {}
 
+          const hasSeenWelcome = Boolean(
+            updatedProfile?.hasSeenWelcome || localStorage.getItem(`flouss_welcome_${uid}`) === 'true'
+          );
+          const nextGate = computeAuthGate(s.firebaseUser, updatedProfile, true, hasSeenWelcome);
+
           // 2. Commit to store state immediately
           set({
+            userProfile: updatedProfile,
+            authGate: nextGate,
             accounts: updatedAccounts,
             activeAccountId: updatedAccount.id,
-            userPinCode: pin,
+            userPinCode: pinHash,
             isPinVerified: true,
             isPinUnlocked: true,
             ...extractAccountState(updatedAccount),
           });
 
-          // 3. Sync to Firestore directly (No artificial timeout!)
+          // 3. Sync to Firestore directly
           try {
             const userRef = doc(db, 'users', uid);
             await setDoc(
@@ -1361,8 +1601,6 @@ export const useAppStore = create<AppState>()(
                 uid,
                 email: updatedAccount.email || null,
                 displayName: updatedAccount.name || null,
-                pinCode: updatedAccount.pinCode ?? null,
-                pinEnabled: !!updatedAccount.pinCode,
                 initialBalance: amount,
                 balance: amount,
                 isOnboarded: true,
@@ -1371,7 +1609,6 @@ export const useAppStore = create<AppState>()(
               },
               { merge: true }
             );
-            console.log(`✅ [Flouss Cloud] lockInitialBalance saved to Firestore users/${uid}`);
           } catch (err: any) {
             console.error('❌ [Flouss Cloud] Error in lockInitialBalance Firestore write:', err);
           }
