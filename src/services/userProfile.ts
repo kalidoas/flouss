@@ -39,6 +39,8 @@ export interface UserProfileDoc {
   lockedUntil: number;
   /** True after the user has seen and dismissed the Welcome screen */
   hasSeenWelcome: boolean;
+  /** True after the user has completed or skipped the initial balance onboarding step */
+  hasSetInitialBalance?: boolean;
   /** True if this user has enrolled a biometric credential on at least one device */
   hasBiometricEnrolled: boolean;
   updatedAt?: any;
@@ -100,6 +102,7 @@ export async function createUserProfile(
     pinFailCount: 0,
     lockedUntil: 0,
     hasSeenWelcome: false,
+    hasSetInitialBalance: false,
     hasBiometricEnrolled: false,
     ...overrides,
   };
@@ -220,6 +223,16 @@ export async function markWelcomeSeen(uid: string): Promise<void> {
   // Also mirror to localStorage for instant read on next boot
   try {
     localStorage.setItem(`flouss_welcome_${uid}`, 'true');
+  } catch {}
+}
+
+/**
+ * Mark that the user has completed or skipped the initial balance onboarding step.
+ */
+export async function markInitialBalanceSet(uid: string): Promise<void> {
+  await updateUserProfile(uid, { hasSetInitialBalance: true });
+  try {
+    localStorage.setItem(`flouss_initial_balance_set_${uid}`, 'true');
   } catch {}
 }
 

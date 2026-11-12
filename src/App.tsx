@@ -5,6 +5,7 @@ import { onAuthStateChanged } from '@firebase/auth';
 import { Login } from './components/common/Login';
 import { Layout } from './components/layout/Layout';
 import { OnboardingModal } from './components/onboarding/OnboardingModal';
+import { InitialBalanceScreen } from './components/onboarding/InitialBalanceScreen';
 import { PinLockModal } from './components/auth/PinLockModal';
 import { PinAuthScreen } from './components/auth/PinAuthScreen';
 import { EmailVerificationScreen } from './components/auth/EmailVerificationScreen';
@@ -159,12 +160,7 @@ export const App: React.FC = () => {
     return <EmailVerificationScreen />;
   }
 
-  // 4. PIN Setup / Onboarding Gate (New users with no PIN)
-  if (authGate === 'needsPinSetup') {
-    return <OnboardingModal />;
-  }
-
-  // 5. Locked Gate (PIN required)
+  // 4. Locked Gate (PIN required)
   if (authGate === 'locked') {
     return (
       <PinAuthScreen
@@ -179,12 +175,17 @@ export const App: React.FC = () => {
     );
   }
 
-  // 6. Welcome Gate (Brand-new user first time after onboarding)
+  // 5. Welcome Gate (Brand-new user first time)
   if (authGate === 'welcome') {
     return <WelcomeModal />;
   }
 
-  // 5. Main Application Screens
+  // 6. Initial Balance Gate (Brand-new user right after welcome)
+  if (authGate === 'initialBalance') {
+    return <InitialBalanceScreen />;
+  }
+
+  // 7. Main Application Screens
   const renderScreen = () => {
     switch (activeScreen) {
       case 'dashboard':     return <DashboardPage />;
@@ -204,9 +205,7 @@ export const App: React.FC = () => {
 
   return (
     <>
-      {pinEnabled && !isPinUnlocked && <PinLockModal />}
       <Layout>{renderScreen()}</Layout>
-      <WelcomeModal />
       <GuidedTour />
       <Toast />
     </>

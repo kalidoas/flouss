@@ -10,6 +10,9 @@ import { DashboardSpendingCard } from '../components/dashboard/DashboardSpending
 import { DashboardBillsCard } from '../components/dashboard/DashboardBillsCard';
 import { DashboardRecentTransactions } from '../components/dashboard/DashboardRecentTransactions';
 import { DashboardAiWidget } from '../components/dashboard/DashboardAiWidget';
+import { ProtectWorkspacePinCard } from '../components/dashboard/ProtectWorkspacePinCard';
+import { AdjustBalanceModal } from '../components/dashboard/AdjustBalanceModal';
+import { Wallet, Pencil } from 'lucide-react';
 import { selectDashboardFinancials } from '../utils/calculations';
 import { getNetPresentation } from '../utils/dashboard';
 import { isTransactionInMonth, getCurrentMonthStr } from '../utils/formatters';
@@ -20,6 +23,7 @@ export const DashboardPage: React.FC = () => {
   const { initialBalance = null, transactions = [], categories = [], subscriptions = [], language, setActiveScreen } = useAppStore();
   const txList = transactions || [];
   const [showDetails, setShowDetails] = useState(false);
+  const [adjustBalanceOpen, setAdjustBalanceOpen] = useState(false);
   const t = translations[language].dashboard;
   const { selectedMonth } = useDashboardHeader();
   const safeMonth = selectedMonth || getCurrentMonthStr();
@@ -48,6 +52,52 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <div className="mx-auto max-w-[1280px] w-full pb-8 animate-page select-text">
+      {/* 1. Optional Dismissible PIN Protection Card */}
+      <ProtectWorkspacePinCard onConfigurePin={() => setActiveScreen('settings')} />
+
+      {/* 2. Empty Balance CTA for accounts who skipped initial balance */}
+      {txList.length === 0 && (initialBalance === null || initialBalance === 0) && (
+        <div className="spotlight-card rounded-2xl bg-gradient-to-r from-emerald-950/40 via-teal-950/20 to-zinc-900/40 p-4 sm:p-5 backdrop-blur-xl border border-emerald-500/20 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] relative overflow-hidden mb-4 animate-in fade-in duration-300">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0 shadow-sm shadow-emerald-500/20">
+                <Wallet className="w-5 h-5 stroke-[2.2]" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-white tracking-tight">
+                  {language === 'ar'
+                    ? 'ابدأ بتحديد رصيدك الحالي'
+                    : language === 'fr'
+                    ? 'Définissez votre solde de départ'
+                    : 'Set your starting balance'}
+                </h3>
+                <p className="text-xs text-zinc-400 mt-0.5">
+                  {language === 'ar'
+                    ? 'حدد المبلغ المتوفر لديك حالياً لبدء تتبع دقيق لأموالك.'
+                    : language === 'fr'
+                    ? 'Indiquez l’argent dont vous disposez pour démarrer un suivi précis.'
+                    : 'Enter what you currently have to kick off accurate tracking.'}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setAdjustBalanceOpen(true)}
+              className="inline-flex items-center gap-1.5 py-1.5 px-3.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-md shadow-emerald-600/30 active:scale-95 cursor-pointer shrink-0"
+            >
+              <Pencil className="w-3.5 h-3.5" />
+              <span>
+                {language === 'ar'
+                  ? 'تحديد الرصيد'
+                  : language === 'fr'
+                  ? 'Définir le solde'
+                  : 'Set balance'}
+              </span>
+            </button>
+          </div>
+        </div>
+      )}
+
       <div
         className="columns-1 md:columns-2 xl:columns-3 gap-4"
         dir={language === 'ar' ? 'rtl' : 'ltr'}
@@ -190,6 +240,12 @@ export const DashboardPage: React.FC = () => {
           />
         </div>
       </div>
+
+      <AdjustBalanceModal
+        isOpen={adjustBalanceOpen}
+        onClose={() => setAdjustBalanceOpen(false)}
+        currentBalance={summary.balance}
+      />
     </div>
   );
 };

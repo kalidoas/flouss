@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useAppStore } from '../store/useAppStore';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
@@ -50,9 +50,17 @@ import {
   ChevronRight,
   History,
   Archive,
+  ScanFace,
 } from 'lucide-react';
 import { getRollingBackups, RollingBackupEntry } from '../utils/backup';
-import { decryptBackup } from '../utils/crypto';
+import { decryptBackup, verifyPin } from '../utils/crypto';
+import {
+  isPlatformBiometricsAvailable,
+  isBiometricsEnrolled,
+  enrollPlatformBiometrics,
+  removePlatformBiometrics,
+} from '../utils/biometrics';
+import { verifyProfilePin } from '../services/userProfile';
 import { NotificationService } from '../services/notificationService';
 import { auth, db } from '../firebase';
 import {
@@ -99,6 +107,8 @@ export const SettingsPage: React.FC = () => {
     notificationSettings,
     updateNotificationSettings,
     lockApp,
+    userProfile,
+    userPinCode,
   } = useAppStore();
 
   const activeAccount =
@@ -183,8 +193,37 @@ export const SettingsPage: React.FC = () => {
 
   // PIN modal state
   const [showPinSetupModal, setShowPinSetupModal] = useState(false);
+  const [pinSetupMode, setPinSetupMode] = useState<'create' | 'change'>('create');
   const [newPin, setNewPin] = useState('');
+  const [confirmPin, setConfirmPin] = useState('');
   const [pinError, setPinError] = useState('');
+
+  // Disable PIN modal state
+  const [showDisablePinModal, setShowDisablePinModal] = useState(false);
+  const [currentPinInput, setCurrentPinInput] = useState('');
+  const [disablePinError, setDisablePinError] = useState('');
+  const [isVerifyingDisable, setIsVerifyingDisable] = useState(false);
+
+  // Biometrics state
+  const [biometricsAvailable, setBiometricsAvailable] = useState(false);
+  const [biometricsActive, setBiometricsActive] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    const checkBio = async () => {
+      const avail = await isPlatformBiometricsAvailable();
+      if (!mounted) return;
+      setBiometricsAvailable(avail);
+      if (avail && firebaseUser?.uid) {
+        const enrolled = await isBiometricsEnrolled(firebaseUser.uid);
+        if (mounted) setBiometricsActive(enrolled);
+      }
+    };
+    checkBio();
+    return () => {
+      mounted = false;
+    };
+  }, [firebaseUser?.uid, pinEnabled, userProfile?.hasPin]);
 
   // Haptics & Sensory Preferences State
   const [hapticsOn, setHapticsOn] = useState(() => isHapticsEnabled());
@@ -379,22 +418,150 @@ export const SettingsPage: React.FC = () => {
     }
   };
 
+  const handleToggleBiometrics = async () => {
+    if (!firebaseUser?.uid) return;
+    playHapticFeedback('selection');
+    if (!biometricsActive) {
+      const res = await enrollPlatformBiometrics(firebaseUser.uid, firebaseUser.email || undefined);
+      if (res.success) {
+        setBiometricsActive(true);
+        showToast({
+          message:
+            language === 'ar'
+              ? 'تم تفعيل بصمة الوجه / الإصبع بنجاح!'
+              : language === 'fr'
+              ? 'Face ID / Touch ID activé avec succès !'
+              : 'Face ID / Touch ID enabled successfully!',
+        });
+      } else {
+        showToast({
+          message: res.error || (language === 'ar' ? 'فشل تفعيل البصمة' : 'Échec de l’activation biométrique'),
+        });
+      }
+    } else {
+      removePlatformBiometrics(firebaseUser.uid);
+      setBiometricsActive(false);
+      showToast({
+        message:
+          language === 'ar'
+            ? 'تم تعطيل بصمة الوجه / الإصبع'
+            : language === 'fr'
+            ? 'Face ID / Touch ID désactivé'
+            : 'Face ID / Touch ID disabled',
+      });
+    }
+  };
+
   const handleSavePin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!/^\d{4}$/.test(newPin)) {
-      setPinError('Le code PIN doit comporter exactement 4 chiffres.');
+      setPinError(
+        language === 'ar'
+          ? 'يجب أن يتكون رمز PIN من 4 أرقام بالضبط.'
+          : language === 'fr'
+          ? 'Le code PIN doit comporter exactement 4 chiffres.'
+          : 'PIN code must be exactly 4 digits.'
+      );
       return;
     }
+    if (newPin !== confirmPin) {
+      setPinError(
+        language === 'ar'
+          ? 'الرمزان غير متطابقين.'
+          : language === 'fr'
+          ? 'Les codes PIN ne correspondent pas.'
+          : 'PIN codes do not match.'
+      );
+      return;
+    }
+
     await setPinCode(newPin);
     setShowPinSetupModal(false);
     setNewPin('');
+    setConfirmPin('');
     setPinError('');
-    setFeedbackMsg({ text: 'Code PIN enregistré avec succès !', type: 'success' });
+    showToast({
+      message:
+        pinSetupMode === 'create'
+          ? language === 'ar'
+            ? 'تم تفعيل رمز PIN بنجاح!'
+            : language === 'fr'
+            ? 'Code PIN activé avec succès !'
+            : 'PIN code enabled successfully!'
+          : language === 'ar'
+          ? 'تم تغيير رمز PIN بنجاح!'
+          : language === 'fr'
+          ? 'Code PIN modifié avec succès !'
+          : 'PIN code updated successfully!',
+    });
   };
 
-  const handleDisablePin = () => {
-    setPinCode(null);
-    setFeedbackMsg({ text: 'Code PIN désactivé.', type: 'success' });
+  const handleConfirmDisablePin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!/^\d{4}$/.test(currentPinInput)) {
+      setDisablePinError(
+        language === 'ar'
+          ? 'يجب أن يتكون رمز PIN من 4 أرقام.'
+          : language === 'fr'
+          ? 'Le code PIN doit comporter 4 chiffres.'
+          : 'PIN must be 4 digits.'
+      );
+      return;
+    }
+
+    setIsVerifyingDisable(true);
+    setDisablePinError('');
+
+    try {
+      const uid = firebaseUser?.uid;
+      let isValid = false;
+
+      if (uid && userProfile) {
+        const res = await verifyProfilePin(uid, userProfile, currentPinInput);
+        isValid = res.valid;
+      } else {
+        const correctPin = activeAccount?.pinCode || userPinCode;
+        if (correctPin) {
+          const res = await verifyPin(currentPinInput, correctPin, `${uid || 'default'}:flouss_pin_salt_v1`);
+          isValid = res.isValid;
+        } else {
+          isValid = true;
+        }
+      }
+
+      if (!isValid) {
+        setDisablePinError(
+          language === 'ar'
+            ? 'رمز PIN الحالي غير صحيح.'
+            : language === 'fr'
+            ? 'Code PIN actuel incorrect.'
+            : 'Incorrect current PIN.'
+        );
+        setIsVerifyingDisable(false);
+        return;
+      }
+
+      await setPinCode(null);
+      if (uid) {
+        removePlatformBiometrics(uid);
+      }
+      setBiometricsActive(false);
+      setShowDisablePinModal(false);
+      setCurrentPinInput('');
+      setDisablePinError('');
+      showToast({
+        message:
+          language === 'ar'
+            ? 'تم تعطيل رمز PIN بنجاح'
+            : language === 'fr'
+            ? 'Code PIN désactivé avec succès.'
+            : 'PIN disabled successfully.',
+      });
+    } catch (err: any) {
+      setDisablePinError(err?.message || 'Erreur lors de la désactivation');
+    } finally {
+      setIsVerifyingDisable(false);
+    }
   };
 
   const handleConfirmReset = () => {
@@ -596,7 +763,9 @@ export const SettingsPage: React.FC = () => {
                 variant="outline"
                 size="sm"
                 onClick={() => {
+                  setPinSetupMode('change');
                   setNewPin('');
+                  setConfirmPin('');
                   setPinError('');
                   setShowPinSetupModal(true);
                 }}
@@ -606,9 +775,13 @@ export const SettingsPage: React.FC = () => {
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={handleDisablePin}
+                onClick={() => {
+                  setCurrentPinInput('');
+                  setDisablePinError('');
+                  setShowDisablePinModal(true);
+                }}
               >
-                Désactiver le PIN
+                {language === 'ar' ? 'تعطيل رمز PIN' : language === 'en' ? 'Disable PIN' : 'Désactiver le PIN'}
               </Button>
               <Button
                 variant="outline"
@@ -624,7 +797,9 @@ export const SettingsPage: React.FC = () => {
               variant="primary"
               size="sm"
               onClick={() => {
+                setPinSetupMode('create');
                 setNewPin('');
+                setConfirmPin('');
                 setPinError('');
                 setShowPinSetupModal(true);
               }}
@@ -634,6 +809,45 @@ export const SettingsPage: React.FC = () => {
             </Button>
           )}
         </div>
+
+        {/* Biometrics Toggle (Only available when PIN is set and device supports platform authenticators) */}
+        {pinEnabled && biometricsAvailable && (
+          <div className="mt-5 pt-4 border-t border-slate-200 dark:border-white/5 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 flex items-center justify-center shrink-0">
+                <ScanFace className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                  {language === 'ar' ? 'بصمة الوجه / الإصبع (Face ID / Touch ID)' : 'Face ID / Touch ID'}
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-zinc-400">
+                  {language === 'ar'
+                    ? 'افتح مساحة عملك بسرعة وأمان عبر البصمة البيومترية لجهازك'
+                    : language === 'en'
+                    ? 'Unlock faster and securely with your device biometrics'
+                    : 'Déverrouillez plus rapidement avec la biométrie native de votre appareil'}
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              role="switch"
+              aria-checked={biometricsActive}
+              onClick={handleToggleBiometrics}
+              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                biometricsActive ? 'bg-purple-600' : 'bg-slate-200 dark:bg-zinc-800'
+              }`}
+            >
+              <span
+                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                  biometricsActive ? 'translate-x-5 rtl:-translate-x-5' : 'translate-x-0'
+                }`}
+              />
+            </button>
+          </div>
+        )}
       </Card>
 
       {/* OS-Level System Notifications & Google Calendar Alarm Engine */}
@@ -1346,17 +1560,41 @@ export const SettingsPage: React.FC = () => {
         )}
       </Card>
 
-      {/* PIN Setup Modal */}
+      {/* PIN Setup / Change Modal */}
       <Modal
         isOpen={showPinSetupModal}
         onClose={() => setShowPinSetupModal(false)}
-        title={t.setPinTitle}
-        subtitle="Choisissez un code à 4 chiffres à mémoriser"
+        title={
+          pinSetupMode === 'create'
+            ? language === 'ar'
+              ? 'تعيين رمز PIN جديد'
+              : language === 'fr'
+              ? 'Définir un code PIN'
+              : 'Set PIN code'
+            : language === 'ar'
+            ? 'تغيير رمز PIN'
+            : language === 'fr'
+            ? 'Changer le code PIN'
+            : 'Change PIN code'
+        }
+        subtitle={
+          language === 'ar'
+            ? 'أدخل رمزاً مكوناً من 4 أرقام وأكده'
+            : language === 'fr'
+            ? 'Saisissez et confirmez votre code à 4 chiffres'
+            : 'Enter and confirm your 4-digit code'
+        }
         maxWidth="sm"
       >
         <form onSubmit={handleSavePin} className="space-y-4">
           <Input
-            label="Nouveau code PIN (4 chiffres)"
+            label={
+              language === 'ar'
+                ? 'رمز PIN الجديد (4 أرقام)'
+                : language === 'fr'
+                ? 'Nouveau code PIN (4 chiffres)'
+                : 'New PIN code (4 digits)'
+            }
             type="password"
             maxLength={4}
             inputMode="numeric"
@@ -1366,8 +1604,28 @@ export const SettingsPage: React.FC = () => {
               setNewPin(e.target.value.replace(/\D/g, '').slice(0, 4));
               setPinError('');
             }}
-            error={pinError}
             autoFocus
+            className="text-center text-2xl tracking-[0.5em] font-bold"
+          />
+
+          <Input
+            label={
+              language === 'ar'
+                ? 'تأكيد رمز PIN'
+                : language === 'fr'
+                ? 'Confirmer le code PIN'
+                : 'Confirm PIN code'
+            }
+            type="password"
+            maxLength={4}
+            inputMode="numeric"
+            placeholder="••••"
+            value={confirmPin}
+            onChange={(e) => {
+              setConfirmPin(e.target.value.replace(/\D/g, '').slice(0, 4));
+              setPinError('');
+            }}
+            error={pinError}
             className="text-center text-2xl tracking-[0.5em] font-bold"
           />
 
@@ -1384,9 +1642,81 @@ export const SettingsPage: React.FC = () => {
               type="submit"
               variant="primary"
               fullWidth
-              disabled={newPin.length !== 4}
+              disabled={newPin.length !== 4 || confirmPin.length !== 4}
             >
               {tCommon.save}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Disable PIN Modal */}
+      <Modal
+        isOpen={showDisablePinModal}
+        onClose={() => setShowDisablePinModal(false)}
+        title={
+          language === 'ar'
+            ? 'تعطيل قفل PIN'
+            : language === 'fr'
+            ? 'Désactiver le code PIN'
+            : 'Disable PIN Lock'
+        }
+        subtitle={
+          language === 'ar'
+            ? 'يرجى إدخال رمز PIN الحالي لتأكيد التعطيل'
+            : language === 'fr'
+            ? 'Veuillez saisir votre code actuel pour désactiver le verrouillage'
+            : 'Please enter your current PIN to confirm disable'
+        }
+        maxWidth="sm"
+      >
+        <form onSubmit={handleConfirmDisablePin} className="space-y-4">
+          <Input
+            label={
+              language === 'ar'
+                ? 'رمز PIN الحالي (4 أرقام)'
+                : language === 'fr'
+                ? 'Code PIN actuel (4 chiffres)'
+                : 'Current PIN code (4 digits)'
+            }
+            type="password"
+            maxLength={4}
+            inputMode="numeric"
+            placeholder="••••"
+            value={currentPinInput}
+            onChange={(e) => {
+              setCurrentPinInput(e.target.value.replace(/\D/g, '').slice(0, 4));
+              setDisablePinError('');
+            }}
+            error={disablePinError}
+            autoFocus
+            className="text-center text-2xl tracking-[0.5em] font-bold"
+          />
+
+          <div className="flex gap-2.5 pt-2">
+            <Button
+              type="button"
+              variant="secondary"
+              fullWidth
+              onClick={() => setShowDisablePinModal(false)}
+            >
+              {tCommon.cancel}
+            </Button>
+            <Button
+              type="submit"
+              variant="danger"
+              fullWidth
+              disabled={currentPinInput.length !== 4 || isVerifyingDisable}
+            >
+              {isVerifyingDisable
+                ? language === 'ar'
+                  ? 'جاري التحقق...'
+                  : 'Vérification...'
+                : language === 'ar'
+                ? 'تعطيل PIN'
+                : language === 'fr'
+                ? 'Désactiver le PIN'
+                : 'Disable PIN'}
             </Button>
           </div>
         </form>

@@ -54,6 +54,7 @@ import {
   clearProfilePin as clearProfilePinService,
   verifyProfilePin as verifyProfilePinService,
   markWelcomeSeen as markWelcomeSeenService,
+  markInitialBalanceSet as markInitialBalanceSetService,
   markEmailVerified as markEmailVerifiedService,
   UserProfileDoc,
 } from '../services/userProfile';
@@ -66,18 +67,18 @@ export { migrateSubscription, migrateSubscriptions, hashPin };
  * loading          → neutral splash (profile + auth not yet resolved)
  * signedOut        → Login form
  * needsEmailVerif  → email/password user, email not yet verified
- * needsPinSetup    → authenticated, no PIN set, needs onboarding
  * locked           → authenticated, PIN set, PIN not yet verified this session
- * welcome          → authenticated + verified + onboarded, first login ever
+ * welcome          → authenticated + verified, brand-new account first time
+ * initialBalance   → brand-new account balance setup step
  * app              → fully authenticated and ready
  */
 export type AuthGateState =
   | 'loading'
   | 'signedOut'
   | 'needsEmailVerif'
-  | 'needsPinSetup'
   | 'locked'
   | 'welcome'
+  | 'initialBalance'
   | 'app';
 
 export interface AppState {
@@ -93,6 +94,8 @@ export interface AppState {
   userPinCode: string | null;
   /** True if user has dismissed the welcome screen this session */
   hasSeenWelcome: boolean;
+  /** True if user has completed or skipped the initial balance onboarding step */
+  hasSetInitialBalance: boolean;
   isDemoMode: boolean;
   firestoreDisabled: boolean;
   syncStatus: 'connecting' | 'syncing' | 'synced' | 'error';
@@ -150,6 +153,10 @@ export interface AppState {
   setPinVerified: (verified: boolean) => void;
   /** Mark welcome screen as seen (persists to Firestore + localStorage) */
   markWelcomeSeen: () => Promise<void>;
+  /** Complete initial balance onboarding step with a user-specified balance */
+  completeInitialBalance: (amount: number) => Promise<void>;
+  /** Skip initial balance onboarding step (leaves balance at 0) */
+  skipInitialBalance: () => Promise<void>;
   /** Set a new PIN via the profile doc (PBKDF2 with random salt) */
   setProfilePin: (rawPin: string) => Promise<void>;
   /** Reload Firebase user to pick up emailVerified status */
@@ -758,7 +765,8 @@ export function computeAuthGate(
   user: any,
   profile: UserProfileDoc | null,
   isPinVerified: boolean,
-  hasSeenWelcome: boolean
+  hasSeenWelcome: boolean,
+  hasSetInitialBalance?: boolean
 ): AuthGateState {
   if (!user) return 'signedOut';
   if (!profile) return 'loading';
@@ -770,16 +778,19 @@ export function computeAuthGate(
     return 'needsEmailVerif';
   }
 
-  if (!profile.hasPin) {
-    return 'needsPinSetup';
-  }
-
-  if (!isPinVerified) {
+  // If user has a PIN configured and hasn't unlocked yet this session
+  if (profile.hasPin && !isPinVerified) {
     return 'locked';
   }
 
+  // First-time welcome screen for brand-new users
   if (!profile.hasSeenWelcome && !hasSeenWelcome) {
     return 'welcome';
+  }
+
+  // First-time initial balance step for brand-new users
+  if (!profile.hasSetInitialBalance && !hasSetInitialBalance) {
+    return 'initialBalance';
   }
 
   return 'app';
@@ -842,6 +853,7 @@ export const useAppStore = create<AppState>()(
         isPinVerified: false,
         userPinCode: null,
         hasSeenWelcome: false,
+        hasSetInitialBalance: false,
         isDemoMode: false,
         firestoreDisabled: false,
         syncStatus: 'connecting',
@@ -969,6 +981,7 @@ export const useAppStore = create<AppState>()(
                 pinHash: existingPin,
                 pinSalt: `${uid}:flouss_pin_salt_v1`,
                 hasSeenWelcome: true,
+                hasSetInitialBalance: true,
               });
             } else {
               // Brand-new user: empty profile
@@ -978,6 +991,7 @@ export const useAppStore = create<AppState>()(
                 pinHash: null,
                 pinSalt: null,
                 hasSeenWelcome: false,
+                hasSetInitialBalance: false,
               });
             }
           }
@@ -1094,8 +1108,13 @@ export const useAppStore = create<AppState>()(
           const sessionVerified = sessionStorage.getItem(`flouss_2fa_${uid}`) === 'verified';
           const isPinVerified = !hasPin || sessionVerified;
           const hasSeenWelcome = Boolean(profile.hasSeenWelcome || localStorage.getItem(`flouss_welcome_${uid}`) === 'true');
+          const hasSetInitialBalance = Boolean(
+            profile.hasSetInitialBalance ||
+            localStorage.getItem(`flouss_initial_balance_set_${uid}`) === 'true' ||
+            (cloudDocExists && (cloudData?.isOnboarded || (cloudData?.transactions && cloudData.transactions.length > 0) || cloudData?.initialBalance !== null))
+          );
 
-          const authGate = computeAuthGate(user, profile, isPinVerified, hasSeenWelcome);
+          const authGate = computeAuthGate(user, profile, isPinVerified, hasSeenWelcome, hasSetInitialBalance);
 
           set({
             firebaseUser: user,
@@ -1107,6 +1126,7 @@ export const useAppStore = create<AppState>()(
             isPinVerified,
             isPinUnlocked: isPinVerified,
             hasSeenWelcome,
+            hasSetInitialBalance,
             loadingAuth: false,
             isHydratedFromCloud: true,
             ...extractAccountState(resolvedAccount),
@@ -1197,7 +1217,7 @@ export const useAppStore = create<AppState>()(
               set({
                 isPinVerified: true,
                 isPinUnlocked: true,
-                authGate: computeAuthGate(s.firebaseUser, profile, true, s.hasSeenWelcome),
+                authGate: computeAuthGate(s.firebaseUser, profile, true, s.hasSeenWelcome, s.hasSetInitialBalance),
               });
               return true;
             }
@@ -1221,7 +1241,7 @@ export const useAppStore = create<AppState>()(
               set({
                 isPinVerified: true,
                 isPinUnlocked: true,
-                authGate: computeAuthGate(s.firebaseUser, s.userProfile, true, s.hasSeenWelcome),
+                authGate: computeAuthGate(s.firebaseUser, s.userProfile, true, s.hasSeenWelcome, s.hasSetInitialBalance),
               });
               return true;
             }
@@ -1236,16 +1256,135 @@ export const useAppStore = create<AppState>()(
           const uid = get().firebaseUser?.uid;
           if (uid) {
             await markWelcomeSeenService(uid);
-            localStorage.setItem(`flouss_welcome_${uid}`, 'true');
+            try {
+              localStorage.setItem(`flouss_welcome_${uid}`, 'true');
+            } catch {}
           }
           set((state: any) => {
             const updatedProfile = state.userProfile ? { ...state.userProfile, hasSeenWelcome: true } : null;
+            const hasSetInitialBalance = Boolean(
+              state.hasSetInitialBalance ||
+              updatedProfile?.hasSetInitialBalance ||
+              (uid && localStorage.getItem(`flouss_initial_balance_set_${uid}`) === 'true')
+            );
             return {
               hasSeenWelcome: true,
               userProfile: updatedProfile,
-              authGate: computeAuthGate(state.firebaseUser, updatedProfile, state.isPinVerified, true),
+              authGate: computeAuthGate(state.firebaseUser, updatedProfile, state.isPinVerified, true, hasSetInitialBalance),
             };
           });
+        },
+
+        completeInitialBalance: async (amount: number) => {
+          const s = get();
+          const uid = s.firebaseUser?.uid;
+          if (!uid) return;
+
+          const activeId = s.activeAccountId || s.accounts[0]?.id;
+          const currentAcc = s.accounts.find((a: UserAccount) => a.id === activeId) || s.accounts[0];
+
+          const sanitizedAmount =
+            typeof amount === 'number' && !isNaN(amount) && amount >= 0
+              ? Math.round(amount * 100) / 100
+              : 0;
+
+          await markInitialBalanceSetService(uid);
+          const updatedProfile = await loadUserProfile(uid);
+
+          const updatedAccount: UserAccount = {
+            ...(currentAcc ||
+              makeInitialAccount(uid, s.firebaseUser?.displayName || 'Utilisateur', s.firebaseUser?.email || '')),
+            initialBalance: sanitizedAmount,
+            initialBalanceLockedAt: new Date().toISOString(),
+            balance: calculateAvailableBalance(sanitizedAmount, currentAcc?.transactions || []),
+            isOnboarded: true,
+          };
+
+          const updatedAccounts =
+            s.accounts.length > 0
+              ? s.accounts.map((a: UserAccount) => (a.id === updatedAccount.id ? updatedAccount : a))
+              : [updatedAccount];
+
+          try {
+            const safeAccount = { ...updatedAccount, pinCode: null };
+            localStorage.setItem(`flouss_user_${uid}`, JSON.stringify(safeAccount));
+            localStorage.setItem(`flouss_initial_balance_set_${uid}`, 'true');
+          } catch (e) {}
+
+          const hasSeenWelcome = Boolean(
+            updatedProfile?.hasSeenWelcome || localStorage.getItem(`flouss_welcome_${uid}`) === 'true'
+          );
+          const nextGate = computeAuthGate(
+            s.firebaseUser,
+            updatedProfile,
+            s.isPinVerified,
+            hasSeenWelcome,
+            true
+          );
+
+          set({
+            hasSetInitialBalance: true,
+            userProfile: updatedProfile,
+            authGate: nextGate,
+            accounts: updatedAccounts,
+            activeAccountId: updatedAccount.id,
+            ...extractAccountState(updatedAccount),
+          });
+
+          executeImmediateFirestoreSync(uid, updatedAccount);
+        },
+
+        skipInitialBalance: async () => {
+          const s = get();
+          const uid = s.firebaseUser?.uid;
+          if (!uid) return;
+
+          const activeId = s.activeAccountId || s.accounts[0]?.id;
+          const currentAcc = s.accounts.find((a: UserAccount) => a.id === activeId) || s.accounts[0];
+
+          await markInitialBalanceSetService(uid);
+          const updatedProfile = await loadUserProfile(uid);
+
+          const updatedAccount: UserAccount = {
+            ...(currentAcc ||
+              makeInitialAccount(uid, s.firebaseUser?.displayName || 'Utilisateur', s.firebaseUser?.email || '')),
+            initialBalance: null,
+            balance: 0,
+            isOnboarded: true,
+          };
+
+          const updatedAccounts =
+            s.accounts.length > 0
+              ? s.accounts.map((a: UserAccount) => (a.id === updatedAccount.id ? updatedAccount : a))
+              : [updatedAccount];
+
+          try {
+            const safeAccount = { ...updatedAccount, pinCode: null };
+            localStorage.setItem(`flouss_user_${uid}`, JSON.stringify(safeAccount));
+            localStorage.setItem(`flouss_initial_balance_set_${uid}`, 'true');
+          } catch (e) {}
+
+          const hasSeenWelcome = Boolean(
+            updatedProfile?.hasSeenWelcome || localStorage.getItem(`flouss_welcome_${uid}`) === 'true'
+          );
+          const nextGate = computeAuthGate(
+            s.firebaseUser,
+            updatedProfile,
+            s.isPinVerified,
+            hasSeenWelcome,
+            true
+          );
+
+          set({
+            hasSetInitialBalance: true,
+            userProfile: updatedProfile,
+            authGate: nextGate,
+            accounts: updatedAccounts,
+            activeAccountId: updatedAccount.id,
+            ...extractAccountState(updatedAccount),
+          });
+
+          executeImmediateFirestoreSync(uid, updatedAccount);
         },
 
         setProfilePin: async (rawPin: string) => {
@@ -1259,7 +1398,7 @@ export const useAppStore = create<AppState>()(
             userPinCode: updatedProfile?.pinHash || null,
             isPinVerified: true,
             isPinUnlocked: true,
-            authGate: computeAuthGate(state.firebaseUser, updatedProfile, true, state.hasSeenWelcome),
+            authGate: computeAuthGate(state.firebaseUser, updatedProfile, true, state.hasSeenWelcome, state.hasSetInitialBalance),
           }));
         },
 
@@ -1275,7 +1414,7 @@ export const useAppStore = create<AppState>()(
           set((state: any) => ({
             firebaseUser: refreshedUser,
             userProfile: profile,
-            authGate: computeAuthGate(refreshedUser, profile, state.isPinVerified, state.hasSeenWelcome),
+            authGate: computeAuthGate(refreshedUser, profile, state.isPinVerified, state.hasSeenWelcome, state.hasSetInitialBalance),
           }));
         },
 
@@ -1507,24 +1646,31 @@ export const useAppStore = create<AppState>()(
           const s = get();
           const uid = s.firebaseUser?.uid || auth.currentUser?.uid || 'default';
           const salt = `${uid}:flouss_pin_salt_v1`;
+          let updatedProfile = s.userProfile;
           if (code && code.length === 4) {
             finalPin = await hashPin(code, salt);
             if (s.firebaseUser?.uid) {
               await setProfilePinService(s.firebaseUser.uid, code);
-              const updatedProfile = await loadUserProfile(s.firebaseUser.uid);
-              set({ userProfile: updatedProfile });
+              updatedProfile = await loadUserProfile(s.firebaseUser.uid);
+              sessionStorage.setItem(`flouss_2fa_${s.firebaseUser.uid}`, 'verified');
             }
           } else if (!code && s.firebaseUser?.uid) {
             await clearProfilePinService(s.firebaseUser.uid);
-            const updatedProfile = await loadUserProfile(s.firebaseUser.uid);
-            set({ userProfile: updatedProfile });
+            updatedProfile = await loadUserProfile(s.firebaseUser.uid);
+            sessionStorage.removeItem(`flouss_2fa_${s.firebaseUser.uid}`);
           }
           updateActive((a) => ({
             ...a,
             pinCode: finalPin,
             pinEnabled: !!finalPin,
           }));
-          set({ userPinCode: finalPin, isPinUnlocked: true, isPinVerified: true });
+          set({
+            userProfile: updatedProfile,
+            userPinCode: finalPin,
+            isPinUnlocked: true,
+            isPinVerified: true,
+            authGate: computeAuthGate(s.firebaseUser, updatedProfile, true, s.hasSeenWelcome, s.hasSetInitialBalance),
+          });
           get().syncToFirestore();
         },
 
