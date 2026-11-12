@@ -35,6 +35,11 @@ service cloud.firestore {
       }
     }
 
+    // Deny all client access to /otp collection (serverless functions access via firebase-admin bypass rules)
+    match /otp/{document=**} {
+      allow read, write: if false;
+    }
+
     // Default deny all other collections
     match /{document=**} {
       allow read, write: if false;
