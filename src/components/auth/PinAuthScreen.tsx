@@ -64,6 +64,7 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
   const [firstPin, setFirstPin] = useState('');
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [lockout, setLockout] = useState(() => getPinLockoutStatus(user.uid));
 
   // Biometrics availability
@@ -90,7 +91,7 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
   // Physical keyboard listener for fast typing
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (lockout.isLocked) return;
+      if (lockout.isLocked || isSubmitting) return;
       if (mode === 'reauth_password') return;
       if (e.key >= '0' && e.key <= '9') {
         handleDigit(e.key);
@@ -104,10 +105,10 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [digits, lockout.isLocked, mode]);
+  }, [digits, isSubmitting, lockout.isLocked, mode]);
 
   const handleDigit = async (digit: string) => {
-    if (lockout.isLocked || digits.length >= 4) return;
+    if (lockout.isLocked || isSubmitting || digits.length >= 4) return;
     const nextDigits = [...digits, digit];
     setDigits(nextDigits);
     setError(false);
@@ -117,7 +118,27 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
       const pin = nextDigits.join('');
 
       if (mode === 'verify') {
-        const isValid = await onVerify(pin);
+        setIsSubmitting(true);
+        let isValid = false;
+        let verificationFailed = false;
+        try {
+          isValid = await onVerify(pin);
+        } catch (err) {
+          verificationFailed = true;
+          console.error('[Flouss Security] PIN verification failed:', err);
+          setDigits([]);
+          setError(true);
+          setErrorMessage(
+            isAr
+              ? 'تعذر التحقق من PIN. تحقق من الاتصال وحاول مجدداً.'
+              : isFr
+              ? 'Impossible de vérifier le PIN. Vérifiez votre connexion et réessayez.'
+              : 'Could not verify PIN. Check your connection and try again.'
+          );
+        } finally {
+          setIsSubmitting(false);
+        }
+        if (verificationFailed) return;
         if (isValid) {
           resetPinLockout(user.uid);
           setDigits([]);
@@ -483,8 +504,14 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
           <p className="text-xs text-zinc-400">{getSubtitle()}</p>
         </div>
 
-        {/* 4 PIN Dots */}
-        <div className="flex justify-center gap-3.5 py-2">
+        {/* PIN entry progress */}
+        <div className="flex justify-center items-center gap-3.5 py-2 min-h-8" aria-live="polite">
+          {isSubmitting ? (
+            <span className="inline-flex items-center gap-2 text-xs text-indigo-300">
+              <span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              {isAr ? 'جارٍ التحقق...' : isFr ? 'Vérification...' : 'Checking PIN...'}
+            </span>
+          ) : (
           {[0, 1, 2, 3].map((idx) => {
             const isFilled = digits.length > idx;
             return (
@@ -500,6 +527,7 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
               />
             );
           })}
+          )}
         </div>
 
         {/* Error / Lockout Messages */}
@@ -524,7 +552,7 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
             <button
               key={num}
               type="button"
-              disabled={lockout.isLocked}
+              disabled={lockout.isLocked || isSubmitting}
               onClick={() => handleDigit(num)}
               className={`h-11 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] active:scale-95 border border-white/[0.06] text-sm font-semibold text-white transition-all shadow-xs ${
                 lockout.isLocked ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'
@@ -537,7 +565,7 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
           {/* Clear Button */}
           <button
             type="button"
-            disabled={lockout.isLocked}
+            disabled={lockout.isLocked || isSubmitting}
             onClick={handleClear}
             className={`h-11 rounded-2xl text-xs font-medium text-zinc-400 hover:text-white hover:bg-white/[0.04] active:scale-95 flex items-center justify-center transition-all ${
               lockout.isLocked ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'
@@ -549,7 +577,7 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
           {/* Zero */}
           <button
             type="button"
-            disabled={lockout.isLocked}
+            disabled={lockout.isLocked || isSubmitting}
             onClick={() => handleDigit('0')}
             className={`h-11 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] active:scale-95 border border-white/[0.06] text-sm font-semibold text-white transition-all shadow-xs ${
               lockout.isLocked ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'
@@ -571,7 +599,7 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
           ) : (
             <button
               type="button"
-              disabled={lockout.isLocked}
+              disabled={lockout.isLocked || isSubmitting}
               onClick={handleDelete}
               className={`h-11 rounded-2xl text-xs font-medium text-zinc-400 hover:text-white hover:bg-white/[0.04] active:scale-95 flex items-center justify-center transition-all ${
                 lockout.isLocked ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'
