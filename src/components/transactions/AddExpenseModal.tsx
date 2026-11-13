@@ -14,7 +14,7 @@ import { getCategoryIcon } from '../../utils/icons';
 import { getCategoryVisualColor } from '../../utils/categoryColor';
 import { translations } from '../../i18n/translations';
 import { getCategoryName, getSubCategoryName } from '../../utils/i18nHelpers';
-import { AlertTriangle, ArrowDownRight, Tag, Check, RotateCcw } from 'lucide-react';
+import { AlertTriangle, ArrowDownRight, Tag, Check, RotateCcw, CalendarDays, Clock3 } from 'lucide-react';
 
 interface AddExpenseModalProps {
   isOpen: boolean;
@@ -125,11 +125,11 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
       title={t.transactionTitleExpense}
       subtitle={t.transactionSubtitleExpense}
       maxHeight="max-h-[88dvh]"
+      scrollable={false}
     >
       {/* Flex column ensures confirm button stays visible */}
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4 min-h-0">
-        {/* Scrollable body */}
-        <div className="flex-1 overflow-y-auto space-y-4 min-h-0">
+      <form onSubmit={handleSubmit} className="flex h-full min-h-0 flex-col gap-3">
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain pb-1">
           {/* Amount */}
           <div>
             <label className="block text-[11px] font-medium text-zinc-400 uppercase tracking-wider mb-1.5">
@@ -139,7 +139,6 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
               <input
                 type="text"
                 inputMode="decimal"
-                autoFocus
                 placeholder="0,00"
                 value={amountStr}
                 onChange={(e) => {
@@ -308,29 +307,29 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
           </div>
 
           {/* Date AND Time Pickers */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-[11px] font-medium text-zinc-400 uppercase tracking-wider mb-1.5">
-                {t.date}
-              </label>
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+            <label className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+              <span className="mb-1.5 flex items-center gap-2 text-[11px] font-semibold text-zinc-400">
+                <CalendarDays className="h-3.5 w-3.5 text-rose-300" /> {t.date}
+              </span>
               <input
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full text-xs font-mono py-2.5 px-3.5 rounded-xl border border-white/10 bg-white/5 text-white outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
+                className="min-h-11 w-full min-w-0 rounded-xl border border-white/10 bg-white/5 px-3 text-sm text-white outline-none transition-colors focus:border-rose-400 focus:ring-1 focus:ring-rose-400"
               />
-            </div>
-            <div>
-              <label className="block text-[11px] font-medium text-zinc-400 uppercase tracking-wider mb-1.5">
-                {t.time}
-              </label>
+            </label>
+            <label className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+              <span className="mb-1.5 flex items-center gap-2 text-[11px] font-semibold text-zinc-400">
+                <Clock3 className="h-3.5 w-3.5 text-rose-300" /> {t.time}
+              </span>
               <input
                 type="time"
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
-                className="w-full text-xs font-mono py-2.5 px-3.5 rounded-xl border border-white/10 bg-white/5 text-white outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
+                className="min-h-11 w-full min-w-0 rounded-xl border border-white/10 bg-white/5 px-3 text-sm text-white outline-none transition-colors focus:border-rose-400 focus:ring-1 focus:ring-rose-400"
               />
-            </div>
+            </label>
           </div>
 
           {/* Note with suggestions */}
@@ -369,7 +368,7 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
         </div>
 
         {/* Sticky Submit (always visible) */}
-        <div className="flex gap-2.5 pt-3 border-t border-white/[0.08] shrink-0">
+        <div className="flex shrink-0 gap-2.5 border-t border-white/[0.08] bg-[#0A0A0C]/95 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)]">
           <Button type="button" variant="secondary" fullWidth onClick={onClose}>
             {t.cancel}
           </Button>

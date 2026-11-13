@@ -14,6 +14,8 @@ export interface BottomSheetProps {
   maxHeight?: string;
   showGrabber?: boolean;
   className?: string;
+  /** Keep the sheet body fixed so forms can own a scroll area and a pinned footer. */
+  scrollable?: boolean;
 }
 
 export const BottomSheet: React.FC<BottomSheetProps> = ({
@@ -25,9 +27,34 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   maxHeight = 'max-h-[88vh]',
   showGrabber = true,
   className = '',
+  scrollable = true,
 }) => {
   const dragY = useMotionValue(0);
   const backdropOpacity = useTransform(dragY, [0, 300], [0.6, 0.1]);
+  const [viewport, setViewport] = React.useState({ height: 0, keyboardInset: 0 });
+
+  // iOS Safari can leave fixed sheets underneath its on-screen keyboard. Keep the
+  // bottom of the sheet aligned with the visible part of the screen while typing.
+  useEffect(() => {
+    if (!isOpen) return;
+    const updateViewport = () => {
+      const visualViewport = window.visualViewport;
+      const height = visualViewport?.height || window.innerHeight;
+      const keyboardInset = visualViewport
+        ? Math.max(0, window.innerHeight - visualViewport.offsetTop - visualViewport.height)
+        : 0;
+      setViewport({ height, keyboardInset });
+    };
+    updateViewport();
+    window.visualViewport?.addEventListener('resize', updateViewport);
+    window.visualViewport?.addEventListener('scroll', updateViewport);
+    window.addEventListener('resize', updateViewport);
+    return () => {
+      window.visualViewport?.removeEventListener('resize', updateViewport);
+      window.visualViewport?.removeEventListener('scroll', updateViewport);
+      window.removeEventListener('resize', updateViewport);
+    };
+  }, [isOpen]);
 
   // Lock body scroll while open & handle Escape key
   useEffect(() => {
@@ -73,6 +100,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
           role="dialog"
           aria-modal="true"
           className="fixed inset-0 z-[150] flex items-end justify-center pointer-events-auto"
+          style={{ paddingBottom: viewport.keyboardInset, boxSizing: 'border-box' }}
         >
           {/* Backdrop with drag-reactive opacity */}
           <motion.div
@@ -93,13 +121,18 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
-            style={{ y: dragY }}
             drag="y"
             dragDirectionLock
             dragConstraints={{ top: 0 }}
             dragElastic={{ top: 0, bottom: 0.6 }}
             onDragEnd={handleDragEnd}
             transition={springs.sheet}
+            style={{
+              y: dragY,
+              ...(viewport.height ? {
+                maxHeight: `${viewport.height * (Number(maxHeight.match(/(\d+(?:\.\d+)?)(?:d?vh)/)?.[1] || 88) / 100)}px`,
+              } : {}),
+            }}
             className={`relative w-full max-w-md ${maxHeight} overflow-hidden bg-[#0A0A0C]/95 backdrop-blur-2xl text-white rounded-t-[2.25rem] shadow-[0_-10px_40px_rgba(0,0,0,0.8)] border-t border-white/10 flex flex-col z-10 safe-area-bottom pb-safe pb-8 ${className}`}
           >
             {/* Grabber Bar */}
@@ -143,7 +176,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             )}
 
             {/* Scrollable Body Content */}
-            <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-4 overscroll-contain">
+            <div className={`flex-1 min-h-0 px-5 sm:px-6 py-4 ${scrollable ? 'overflow-y-auto overscroll-contain' : 'overflow-hidden flex flex-col'}`}>
               {children}
             </div>
           </motion.div>

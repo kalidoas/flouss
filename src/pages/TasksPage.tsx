@@ -195,6 +195,24 @@ function formatISODate(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
+function isScheduledOnDate(task: TaskItem, dateStr: string): boolean {
+  if (task.isArchived) return false;
+  const [year, month, day] = dateStr.split('-').map(Number);
+  const dayOfWeek = new Date(year, month - 1, day).getDay();
+  if (task.frequency === 'weekdays') return dayOfWeek >= 1 && dayOfWeek <= 5;
+  if (task.frequency === 'weekends') return dayOfWeek === 0 || dayOfWeek === 6;
+  if (task.frequency === 'custom_days') {
+    let selectedDays = task.selectedDaysOfWeek || [];
+    if (!selectedDays.length && task.scheduledDate) {
+      const [scheduledYear, scheduledMonth, scheduledDay] = task.scheduledDate.split('-').map(Number);
+      selectedDays = [new Date(scheduledYear, scheduledMonth - 1, scheduledDay).getDay()];
+    }
+    if (!selectedDays.length) selectedDays = [0, 1, 2, 3, 4, 5, 6];
+    return selectedDays.includes(dayOfWeek);
+  }
+  return true;
+}
+
 interface TaskActionDropdownProps {
   task: TaskItem;
   onAlarm: () => void;
@@ -400,22 +418,25 @@ export const TasksPage: React.FC = () => {
   const dateStrip = useMemo(() => {
     const [year, month, day] = selectedDate.split('-').map(Number);
     const curr = new Date(year, month - 1, day);
-    const days: { dateStr: string; dayName: string; dayNum: number; isToday: boolean }[] = [];
+    const days: { dateStr: string; dayName: string; dayNum: number; isToday: boolean; taskCount: number; completedCount: number }[] = [];
     const locale = language === 'ar' ? 'ar-MA' : language === 'en' ? 'en-US' : 'fr-FR';
     for (let i = -3; i <= 3; i++) {
       const d = new Date(curr);
       d.setDate(curr.getDate() + i);
       const str = formatISODate(d);
       const dayName = d.toLocaleDateString(locale, { weekday: 'short' });
+      const scheduledTasks = (tasks || []).filter((task) => isScheduledOnDate(task, str));
       days.push({
         dateStr: str,
         dayName,
         dayNum: d.getDate(),
         isToday: str === todayStr,
+        taskCount: scheduledTasks.length,
+        completedCount: scheduledTasks.filter((task) => (task.completedDates || []).includes(str)).length,
       });
     }
     return days;
-  }, [selectedDate, todayStr, language]);
+  }, [selectedDate, todayStr, language, tasks]);
 
   // Tasks applicable for selected day
   const filteredTasks = useMemo(() => {
@@ -423,19 +444,7 @@ export const TasksPage: React.FC = () => {
       if (task.isArchived) return false;
       if (selectedCategory !== 'all' && task.category !== selectedCategory) return false;
 
-      // Filter by frequency if needed
-      const [year, month, day] = selectedDate.split('-').map(Number);
-      const dayOfWeek = new Date(year, month - 1, day).getDay(); // 0 is Sunday, 6 is Saturday
-      if (task.frequency === 'weekdays' && (dayOfWeek === 0 || dayOfWeek === 6)) {
-        return false;
-      }
-      if (task.frequency === 'weekends' && dayOfWeek !== 0 && dayOfWeek !== 6) {
-        return false;
-      }
-      if (task.frequency === 'custom_days' && !(task.selectedDaysOfWeek || []).includes(dayOfWeek)) {
-        return false;
-      }
-      return true;
+      return isScheduledOnDate(task, selectedDate);
     });
   }, [tasks, selectedCategory, selectedDate]);
 
@@ -901,7 +910,17 @@ export const TasksPage: React.FC = () => {
     setTaskTitle(task.title);
     setTaskCategory(task.category);
     setTaskFrequency(task.frequency);
-    setSelectedDaysOfWeek(task.selectedDaysOfWeek || []);
+    const savedDays = task.selectedDaysOfWeek?.length ? task.selectedDaysOfWeek : null;
+    if (task.frequency === 'custom_days' && !savedDays) {
+      if (task.scheduledDate) {
+        const [year, month, day] = task.scheduledDate.split('-').map(Number);
+        setSelectedDaysOfWeek([new Date(year, month - 1, day).getDay()]);
+      } else {
+        setSelectedDaysOfWeek([0, 1, 2, 3, 4, 5, 6]);
+      }
+    } else {
+      setSelectedDaysOfWeek(savedDays || []);
+    }
     setTaskNotes(task.notes || '');
     setTaskScheduledDate(task.scheduledDate || selectedDate || todayStr);
     setTaskScheduledTime(task.scheduledTime || '');
@@ -1180,6 +1199,8 @@ export const TasksPage: React.FC = () => {
                   key={item.dateStr}
                   type="button"
                   onClick={() => setSelectedDate(item.dateStr)}
+                  aria-pressed={isSelected}
+                  aria-label={`${item.dayName} ${item.dayNum}: ${item.completedCount} / ${item.taskCount}`}
                   className={`flex flex-col items-center justify-center py-2.5 px-1 rounded-2xl transition-all duration-200 ${
                     isSelected
                       ? 'bg-gradient-to-b from-indigo-500 to-indigo-600 text-white font-bold shadow-[0_0_20px_rgba(99,102,241,0.5)] scale-105'
@@ -1191,6 +1212,11 @@ export const TasksPage: React.FC = () => {
                   </span>
                   <span className="text-sm font-bold mt-0.5 tabular-nums">
                     {item.dayNum}
+                  </span>
+                  <span className={`mt-1 text-[8px] font-semibold tabular-nums ${isSelected ? 'text-white/85' : 'text-muted'}`}>
+                    {item.taskCount > 0
+                      ? `${item.completedCount}/${item.taskCount}`
+                      : language === 'ar' ? 'راحة' : language === 'fr' ? 'Repos' : 'Off'}
                   </span>
                   {item.isToday && (
                     <span
@@ -2035,7 +2061,8 @@ export const TasksPage: React.FC = () => {
                   const frequency = e.target.value as TaskFrequency;
                   setTaskFrequency(frequency);
                   if (frequency === 'custom_days' && selectedDaysOfWeek.length === 0) {
-                    setSelectedDaysOfWeek([new Date().getDay()]);
+                    const [year, month, day] = selectedDate.split('-').map(Number);
+                    setSelectedDaysOfWeek([new Date(year, month - 1, day).getDay()]);
                   }
                 }}
                 className="w-full px-3 py-2 rounded-control bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-content text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
