@@ -512,7 +512,7 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
               {isAr ? 'جارٍ التحقق...' : isFr ? 'Vérification...' : 'Checking PIN...'}
             </span>
           ) : (
-          {[0, 1, 2, 3].map((idx) => {
+          [0, 1, 2, 3].map((idx) => {
             const isFilled = digits.length > idx;
             return (
               <div
@@ -526,7 +526,7 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
                 }`}
               />
             );
-          })}
+          })
           )}
         </div>
 
