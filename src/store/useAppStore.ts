@@ -1205,7 +1205,12 @@ export const useAppStore = create<AppState>()(
           }
 
           // 1. Modern PBKDF2 verification with profile salt
-          if (profile.pinHash && profile.pinSalt) {
+          // Old owner profiles stored a UID-derived SHA-256 salt in `pinSalt`.
+          // Only random 32-byte salts are encoded as 43-character base64url.
+          // Trying PBKDF2 with the legacy string throws before the SHA-256
+          // compatibility path can verify the PIN.
+          const hasModernPinSalt = Boolean(profile.pinSalt && /^[A-Za-z0-9_-]{43}$/.test(profile.pinSalt));
+          if (profile.pinHash && profile.pinSalt && hasModernPinSalt) {
             const isValid = await verifyPinPBKDF2(
               enteredPin,
               profile.pinHash,

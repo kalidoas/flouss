@@ -1,104 +1,105 @@
-import React, { useState } from 'react';
-import { Sparkles, ArrowRight, Zap, RefreshCw } from 'lucide-react';
+import React, { useMemo } from 'react';
+import { ArrowRight, Sparkles } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { triggerHaptic } from '../../utils/haptics';
 
+type Insight = {
+  message: Record<'ar' | 'fr' | 'en', string>;
+  tag: Record<'ar' | 'fr' | 'en', string>;
+  action: Record<'ar' | 'fr' | 'en', string>;
+  screen: 'expenses';
+  addExpense?: boolean;
+};
+
 export const DashboardAiWidget: React.FC = () => {
   const { language, transactions = [], setActiveScreen } = useAppStore();
-  const [insightIndex, setInsightIndex] = useState(0);
 
-  const insights = [
-    {
-      en: 'Watch out, high Fast Food spending this week — 28% higher than last week. Consider setting a daily lunch cap.',
-      fr: 'Attention, dépenses élevées en Fast Food cette semaine (+28%). Pensez à fixer un plafond repas.',
-      ar: 'انتبه، مصاريف الوجبات السريعة مرتفعة هذا الأسبوع بنسبة 28%. فكر في وضع حد يومي للغداء.',
-      tag: { en: 'Spending Alert', fr: 'Alerte Dépenses', ar: 'تنبيه إنفاق' },
-      action: { en: 'View Expenses', fr: 'Voir dépenses', ar: 'عرض المصاريف' },
-      screen: 'expenses' as const,
-    },
-    {
-      en: 'Great rhythm! You completed 100% of your morning habits 4 days in a row.',
-      fr: 'Excellent rythme ! 100% de vos habitudes matinales accomplies 4 jours d’affilée.',
-      ar: 'إيقاع رائع! أنجزت 100% من عاداتك الصباحية لـ 4 أيام متتالية.',
-      tag: { en: 'Habit Streak', fr: 'Série Positive', ar: 'سلسلة إنجاز' },
-      action: { en: 'Open Program', fr: 'Ouvrir programme', ar: 'فتح البرنامج' },
-      screen: 'tasks' as const,
-    },
-    {
-      en: 'Recurring subscription due in 3 days. Your projected end-of-month savings remain healthy.',
-      fr: 'Abonnement récurrent prélevé dans 3 jours. Votre prévision d’épargne reste optimale.',
-      ar: 'اشتراك دوري مستحق خلال 3 أيام. توقعاتك للادخار نهاية الشهر ممتازة.',
-      tag: { en: 'Cash Flow', fr: 'Trésorerie', ar: 'التدفق المالي' },
-      action: { en: 'Check Bills', fr: 'Vérifier factures', ar: 'مراجعة الفواتير' },
-      screen: 'subscriptions' as const,
-    },
-  ];
+  const insights = useMemo<Insight[]>(() => {
+    const now = new Date();
+    const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7));
+    const monthPrefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const expenses = transactions.filter((transaction) => transaction.type === 'expense');
+    const monthExpenses = expenses.filter((transaction) => transaction.date?.startsWith(monthPrefix));
+    const weekExpenses = expenses.filter((transaction) => {
+      const timestamp = Date.parse(transaction.date);
+      return Number.isFinite(timestamp) && timestamp >= weekStart.getTime();
+    });
 
-  const currentInsight = insights[insightIndex % insights.length];
+    if (transactions.length === 0) {
+      return [{
+        message: {
+          en: 'Your personal insights will appear here after you record a few transactions.',
+          fr: 'Vos résumés apparaîtront ici après quelques transactions.',
+          ar: 'غادي يبان ليك الملخص هنا من بعد ما تسجل شي معاملات.',
+        },
+        tag: { en: 'Getting started', fr: 'Pour commencer', ar: 'البداية' },
+        action: { en: 'Add first expense', fr: 'Ajouter une dépense', ar: 'زيد أول مصروف' },
+        screen: 'expenses',
+        addExpense: true,
+      }];
+    }
 
-  const handleNextInsight = () => {
-    triggerHaptic(40);
-    setInsightIndex((prev) => (prev + 1) % insights.length);
-  };
+    return [{
+      message: {
+        en: `You recorded ${weekExpenses.length} expense${weekExpenses.length === 1 ? '' : 's'} this week and ${monthExpenses.length} this month.`,
+        fr: `Vous avez enregistré ${weekExpenses.length} dépense${weekExpenses.length === 1 ? '' : 's'} cette semaine et ${monthExpenses.length} ce mois-ci.`,
+        ar: `سجلتي ${weekExpenses.length} مصروف هاد السيمانة و${monthExpenses.length} هاد الشهر.`,
+      },
+      tag: { en: 'Your activity', fr: 'Votre activité', ar: 'النشاط ديالك' },
+      action: { en: 'View expenses', fr: 'Voir les dépenses', ar: 'شوف المصاريف' },
+      screen: 'expenses',
+    }];
+  }, [transactions]);
+
+  const currentInsight = insights[0];
+  const locale = language === 'ar' || language === 'fr' || language === 'en' ? language : 'en';
 
   return (
-    <div
+    <section
       data-spotlight="true"
-      className="spotlight-card relative overflow-hidden rounded-2xl bg-white/5 p-4 backdrop-blur-xl border border-white/10 shadow-[0_0_24px_rgba(99,102,241,0.12),inset_0_1px_0_0_rgba(255,255,255,0.08)] group h-fit flex flex-col justify-between"
+      aria-label={locale === 'ar' ? 'ملخص نشاطك' : locale === 'fr' ? 'Résumé de votre activité' : 'Activity summary'}
+      className="spotlight-card relative flex h-fit flex-col justify-between overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-4 shadow-[0_0_24px_rgba(99,102,241,0.12),inset_0_1px_0_0_rgba(255,255,255,0.08)] backdrop-blur-xl group"
     >
-      {/* Animated Subtle Ambient Glow */}
-      <div className="absolute -top-12 -right-12 w-28 h-28 bg-indigo-500/15 rounded-full blur-2xl pointer-events-none group-hover:bg-indigo-500/25 transition-all duration-500" />
-      <div className="absolute -bottom-10 -left-10 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl pointer-events-none" />
+      <div className="pointer-events-none absolute -right-12 -top-12 h-28 w-28 rounded-full bg-indigo-500/15 blur-2xl transition-all duration-500 group-hover:bg-indigo-500/25" />
+      <div className="pointer-events-none absolute -bottom-10 -left-10 h-24 w-24 rounded-full bg-purple-500/10 blur-2xl" />
 
-      {/* Header Row */}
-      <div className="relative z-10 flex items-center justify-between gap-2 mb-2.5">
+      <div className="relative z-10 mb-2.5 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <div className="relative flex h-7 w-7 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 text-white shadow-[0_0_12px_rgba(99,102,241,0.5)]">
-            <Sparkles className="h-3.5 w-3.5 animate-pulse" />
+          <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 text-white shadow-[0_0_12px_rgba(99,102,241,0.5)]">
+            <Sparkles className="h-3.5 w-3.5" />
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold tracking-tight text-white">Flouss AI</span>
-            <span className="rounded-full bg-indigo-500/15 border border-indigo-500/30 px-2 py-0.2 text-[9px] font-extrabold uppercase tracking-widest text-indigo-300">
-              {currentInsight.tag[language] || currentInsight.tag.en}
+            <span className="text-xs font-bold tracking-tight text-white">Flouss Insights</span>
+            <span className="rounded-full border border-indigo-500/30 bg-indigo-500/15 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-widest text-indigo-300">
+              {currentInsight.tag[locale]}
             </span>
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={handleNextInsight}
-          title={language === 'ar' ? 'فكرة تالية' : 'Insight suivant'}
-          className="flex h-6 w-6 items-center justify-center rounded-lg text-zinc-400 hover:text-white hover:bg-white/[0.08] active:scale-95 transition-all"
-        >
-          <RefreshCw className="h-3 w-3" />
-        </button>
       </div>
 
-      {/* Dynamic Placeholder Insight Text */}
-      <div className="relative z-10 flex-1 flex flex-col justify-between">
-        <p className="text-xs text-zinc-300 leading-relaxed font-medium">
-          {currentInsight[language] || currentInsight.en}
-        </p>
-
-        {/* Action Button */}
-        <div className="mt-3 flex items-center justify-between pt-2 border-t border-white/[0.05]">
+      <div className="relative z-10 flex flex-1 flex-col justify-between">
+        <p className="text-xs font-medium leading-relaxed text-zinc-300">{currentInsight.message[locale]}</p>
+        <div className="mt-3 flex items-center justify-between border-t border-white/[0.05] pt-2">
           <button
             type="button"
             onClick={() => {
               triggerHaptic(40);
-              setActiveScreen(currentInsight.screen);
+              if (currentInsight.addExpense) {
+                window.dispatchEvent(new CustomEvent('flouss:quick-add', { detail: { type: 'expense' } }));
+              } else {
+                setActiveScreen(currentInsight.screen);
+              }
             }}
-            className="inline-flex items-center gap-1.5 text-[11px] font-bold text-indigo-400 hover:text-indigo-300 active:scale-95 duration-200 transition-all"
+            className="inline-flex min-h-8 items-center gap-1.5 text-[11px] font-bold text-indigo-400 transition-colors hover:text-indigo-300"
           >
-            <span>{currentInsight.action[language] || currentInsight.action.en}</span>
+            <span>{currentInsight.action[locale]}</span>
             <ArrowRight className="h-3 w-3 rtl:rotate-180" />
           </button>
-
-          <span className="text-[10px] text-zinc-400 font-mono">
-            Copilot • {insightIndex + 1}/{insights.length}
-          </span>
+          <span className="text-[10px] text-zinc-400">{locale === 'ar' ? 'ملخص من بياناتك' : locale === 'fr' ? 'Basé sur vos données' : 'Based on your data'}</span>
         </div>
       </div>
-    </div>
+    </section>
   );
 };

@@ -131,21 +131,33 @@ export const QuickAddSheet: React.FC<QuickAddSheetProps> = ({ isOpen, onClose, i
       maxHeight="max-h-[94dvh]"
       className="!p-0"
     >
-      <form onSubmit={submit} className="space-y-4 px-4 pb-[max(env(safe-area-inset-bottom),1rem)]" dir={isArabic ? 'rtl' : 'ltr'}>
+      <form onSubmit={submit} className="space-y-3 px-4 pb-[max(env(safe-area-inset-bottom),1rem)]" dir={isArabic ? 'rtl' : 'ltr'}>
         <div className="grid grid-cols-2 gap-2 rounded-control bg-surface-raised p-1">
           {(['expense', 'income'] as const).map((entryType) => (
             <button
               key={entryType}
               type="button"
               onClick={() => { setType(entryType); setSelectionId(''); setError(''); }}
-              className={`min-h-11 rounded-control px-3 text-sm font-semibold transition-colors ${type === entryType ? 'bg-surface text-content shadow-sm' : 'text-muted'}`}
+              className={`min-h-11 rounded-control px-3 text-sm font-bold transition-colors ${type === entryType
+                ? entryType === 'income' ? 'bg-emerald-500 text-white shadow-sm' : 'bg-rose-500 text-white shadow-sm'
+                : 'text-muted hover:bg-surface'}`}
             >
               {entryType === 'expense' ? t.addExpense : t.addIncome}
             </button>
           ))}
         </div>
 
-        <div className="flex items-center justify-between rounded-card border border-border-subtle bg-canvas px-4 py-3">
+        <div className="sticky top-0 z-20 -mx-5 flex items-center justify-between gap-3 border-b border-border-subtle bg-canvas/95 px-5 py-2 backdrop-blur-xl">
+          <div className="min-w-0">
+            <p className="text-[11px] font-medium text-muted">{t.amount}</p>
+            <p className="truncate text-lg font-bold tabular-nums text-content">{amount || '0.00'} <span className="text-xs font-medium text-muted">MAD</span></p>
+          </div>
+          <button type="submit" className={`flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-control px-5 font-bold text-white shadow-sm transition active:scale-[0.98] ${type === 'expense' ? 'bg-rose-500 hover:bg-rose-600' : 'bg-emerald-500 hover:bg-emerald-600'}`}>
+            <Check className="h-4 w-4" /> {t.save}
+          </button>
+        </div>
+
+        <div className="flex items-center justify-between rounded-card border border-border-subtle bg-surface px-4 py-2.5">
           <div>
             <p className="text-xs text-muted">{t.amount}</p>
             <p className="mt-1 flex items-baseline gap-2 text-3xl font-bold tabular-nums text-content">
@@ -157,13 +169,24 @@ export const QuickAddSheet: React.FC<QuickAddSheetProps> = ({ isOpen, onClose, i
           </button>
         </div>
 
-        <div className="grid grid-cols-3 gap-2" aria-label={t.amount}>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <label className="min-w-0 space-y-1 text-[11px] font-semibold text-muted">
+            {t.date} · {t.time}
+            <input type="datetime-local" value={dateTime} onChange={(e) => setDateTime(e.target.value)} className="min-h-11 w-full rounded-control border border-border-subtle bg-surface px-2 text-xs text-content" />
+          </label>
+          <label className="min-w-0 space-y-1 text-[11px] font-semibold text-muted">
+            {t.note}
+            <input value={note} onChange={(e) => setNote(e.target.value)} placeholder={type === 'expense' ? t.notePlaceholderExpense : t.notePlaceholderIncome} className="min-h-11 w-full rounded-control border border-border-subtle bg-surface px-3 text-xs text-content placeholder:text-muted" />
+          </label>
+        </div>
+
+        <div className="grid grid-cols-3 gap-1.5" aria-label={t.amount}>
           {['1','2','3','4','5','6','7','8','9','.','0','⌫'].map((key) => (
             <button
               key={key}
               type="button"
               onClick={() => key === '⌫' ? setAmount((current) => current.slice(0, -1)) : appendDigit(key)}
-              className="min-h-11 rounded-control border border-border-subtle bg-surface text-lg font-semibold text-content hover:bg-surface-raised active:scale-[0.98]"
+              className="min-h-10 rounded-control border border-border-subtle bg-surface text-base font-semibold text-content hover:bg-surface-raised active:scale-[0.98]"
             >{key}</button>
           ))}
         </div>
@@ -204,21 +227,7 @@ export const QuickAddSheet: React.FC<QuickAddSheetProps> = ({ isOpen, onClose, i
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <label className="space-y-1 text-xs font-medium text-muted">
-            {t.date} · {t.time}
-            <input type="datetime-local" value={dateTime} onChange={(e) => setDateTime(e.target.value)} className="min-h-11 w-full rounded-control border border-border-subtle bg-surface px-3 text-sm text-content" />
-          </label>
-          <label className="space-y-1 text-xs font-medium text-muted">
-            {t.note}
-            <input value={note} onChange={(e) => setNote(e.target.value)} placeholder={type === 'expense' ? t.notePlaceholderExpense : t.notePlaceholderIncome} className="min-h-11 w-full rounded-control border border-border-subtle bg-surface px-3 text-sm text-content placeholder:text-muted" />
-          </label>
-        </div>
-
         {error && <p role="alert" className="text-sm text-negative">{error}</p>}
-        <button type="submit" className={`flex min-h-12 w-full items-center justify-center gap-2 rounded-control font-semibold text-white ${type === 'expense' ? 'bg-negative' : 'bg-positive'}`}>
-          <Check className="h-4 w-4" /> {t.save}
-        </button>
       </form>
     </BottomSheet>
   );

@@ -156,6 +156,16 @@ const FREQUENCY_LABELS: Record<TaskFrequency, { fr: string; ar: string; en: stri
   custom_days: { fr: 'Jours choisis', ar: 'أيام محددة', en: 'Selected days' },
 };
 
+const WEEKDAY_OPTIONS = [
+  { value: 0, ar: 'أحد', fr: 'Dim', en: 'Sun' },
+  { value: 1, ar: 'إثن', fr: 'Lun', en: 'Mon' },
+  { value: 2, ar: 'ثلا', fr: 'Mar', en: 'Tue' },
+  { value: 3, ar: 'أرب', fr: 'Mer', en: 'Wed' },
+  { value: 4, ar: 'خمي', fr: 'Jeu', en: 'Thu' },
+  { value: 5, ar: 'جمع', fr: 'Ven', en: 'Fri' },
+  { value: 6, ar: 'سبت', fr: 'Sam', en: 'Sat' },
+];
+
 const GYM_CHIPS = ['Chest', 'Back', 'Arms', 'Shoulders', 'Legs', 'Push', 'Pull', 'Core'] as const;
 
 const GYM_CHIP_LABELS: Record<string, { ar: string; fr: string; en: string; icon: string }> = {
@@ -301,7 +311,7 @@ export const TasksPage: React.FC = () => {
   const tTask = translations[language].tasks;
   const tCommon = translations[language].common;
 
-  const todayStr = useMemo(() => formatISODate(new Date()), []);
+  const [todayStr, setTodayStr] = useState(() => formatISODate(new Date()));
   const [selectedDate, setSelectedDate] = useState<string>(todayStr);
   const [activeTab, setActiveTab] = useState<'daily' | 'month' | 'stats'>('daily');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -323,11 +333,24 @@ export const TasksPage: React.FC = () => {
   const [taskTitle, setTaskTitle] = useState('');
   const [taskCategory, setTaskCategory] = useState<TaskCategory>('routine');
   const [taskFrequency, setTaskFrequency] = useState<TaskFrequency>('daily');
+  const [selectedDaysOfWeek, setSelectedDaysOfWeek] = useState<number[]>([1, 2, 3, 4, 5]);
   const [taskNotes, setTaskNotes] = useState('');
   const [taskScheduledDate, setTaskScheduledDate] = useState<string>(todayStr);
   const [taskScheduledTime, setTaskScheduledTime] = useState<string>('');
   const [syncToCalendar, setSyncToCalendar] = useState<boolean>(false);
   const [isCalendarSaving, setIsCalendarSaving] = useState<boolean>(false);
+
+  // Keep the day selector correct if the app stays open across local midnight.
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      const nextToday = formatISODate(new Date());
+      if (nextToday !== todayStr) {
+        setTodayStr(nextToday);
+        setSelectedDate((selected) => selected === todayStr ? nextToday : selected);
+      }
+    }, 60_000);
+    return () => window.clearInterval(timer);
+  }, [todayStr]);
 
   // ── Task Category Filter Dropdown State (no horizontal scrollbar) ──
   const [isTaskCategoryDropdownOpen, setIsTaskCategoryDropdownOpen] = useState(false);
@@ -375,7 +398,8 @@ export const TasksPage: React.FC = () => {
 
   // Generate 7 days around selected date for quick navigation strip
   const dateStrip = useMemo(() => {
-    const curr = new Date(selectedDate);
+    const [year, month, day] = selectedDate.split('-').map(Number);
+    const curr = new Date(year, month - 1, day);
     const days: { dateStr: string; dayName: string; dayNum: number; isToday: boolean }[] = [];
     const locale = language === 'ar' ? 'ar-MA' : language === 'en' ? 'en-US' : 'fr-FR';
     for (let i = -3; i <= 3; i++) {
@@ -400,11 +424,15 @@ export const TasksPage: React.FC = () => {
       if (selectedCategory !== 'all' && task.category !== selectedCategory) return false;
 
       // Filter by frequency if needed
-      const dayOfWeek = new Date(selectedDate).getDay(); // 0 is Sunday, 6 is Saturday
+      const [year, month, day] = selectedDate.split('-').map(Number);
+      const dayOfWeek = new Date(year, month - 1, day).getDay(); // 0 is Sunday, 6 is Saturday
       if (task.frequency === 'weekdays' && (dayOfWeek === 0 || dayOfWeek === 6)) {
         return false;
       }
       if (task.frequency === 'weekends' && dayOfWeek !== 0 && dayOfWeek !== 6) {
+        return false;
+      }
+      if (task.frequency === 'custom_days' && !(task.selectedDaysOfWeek || []).includes(dayOfWeek)) {
         return false;
       }
       return true;
@@ -853,6 +881,7 @@ export const TasksPage: React.FC = () => {
     setTaskTitle('');
     setTaskCategory('routine');
     setTaskFrequency('daily');
+    setSelectedDaysOfWeek([1, 2, 3, 4, 5]);
     setTaskNotes('');
     setTaskScheduledDate(selectedDate || todayStr);
     setTaskScheduledTime('');
@@ -872,6 +901,7 @@ export const TasksPage: React.FC = () => {
     setTaskTitle(task.title);
     setTaskCategory(task.category);
     setTaskFrequency(task.frequency);
+    setSelectedDaysOfWeek(task.selectedDaysOfWeek || []);
     setTaskNotes(task.notes || '');
     setTaskScheduledDate(task.scheduledDate || selectedDate || todayStr);
     setTaskScheduledTime(task.scheduledTime || '');
@@ -968,6 +998,7 @@ export const TasksPage: React.FC = () => {
         title: taskTitle.trim(),
         category: taskCategory,
         frequency: taskFrequency,
+        selectedDaysOfWeek: taskFrequency === 'custom_days' ? selectedDaysOfWeek : undefined,
         notes: taskNotes.trim() || undefined,
         scheduledDate: taskScheduledDate,
         scheduledTime: cleanTime,
@@ -981,6 +1012,7 @@ export const TasksPage: React.FC = () => {
         title: taskTitle.trim(),
         category: taskCategory,
         frequency: taskFrequency,
+        selectedDaysOfWeek: taskFrequency === 'custom_days' ? selectedDaysOfWeek : undefined,
         notes: taskNotes.trim() || undefined,
         scheduledDate: taskScheduledDate,
         scheduledTime: cleanTime,
@@ -1089,7 +1121,7 @@ export const TasksPage: React.FC = () => {
         </div>
 
         {/* Right Column: 7-Day Week Selector with Glowing Indigo Active Day Pill */}
-        <div className="zawa-bento zawa-spotlight p-4 flex flex-col justify-between">
+        <div className="zawa-bento zawa-spotlight sticky top-2 z-30 p-4 flex flex-col justify-between bg-[#0D0E14]/95 backdrop-blur-2xl shadow-xl">
           <div className="flex items-center justify-between pb-2 border-b border-white/[0.06]">
             <span className="text-xs font-semibold uppercase tracking-wider text-muted">
               {language === 'ar' ? 'أسبوع المهمة' : 'Week Schedule'}
@@ -1999,7 +2031,13 @@ export const TasksPage: React.FC = () => {
               </label>
               <select
                 value={taskFrequency}
-                onChange={(e) => setTaskFrequency(e.target.value as TaskFrequency)}
+                onChange={(e) => {
+                  const frequency = e.target.value as TaskFrequency;
+                  setTaskFrequency(frequency);
+                  if (frequency === 'custom_days' && selectedDaysOfWeek.length === 0) {
+                    setSelectedDaysOfWeek([new Date().getDay()]);
+                  }
+                }}
                 className="w-full px-3 py-2 rounded-control bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-content text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
               >
                 {Object.entries(FREQUENCY_LABELS).map(([k, v]) => (
@@ -2010,6 +2048,30 @@ export const TasksPage: React.FC = () => {
               </select>
             </div>
           </div>
+
+          {taskFrequency === 'custom_days' && (
+            <fieldset className="rounded-card border border-border-subtle bg-surface p-3">
+              <legend className="px-1 text-xs font-semibold text-content">
+                {language === 'ar' ? 'اختار أيام التكرار' : language === 'fr' ? 'Choisissez les jours' : 'Choose repeat days'}
+              </legend>
+              <div className="grid grid-cols-7 gap-1.5">
+                {WEEKDAY_OPTIONS.map((day) => {
+                  const selected = selectedDaysOfWeek.includes(day.value);
+                  return (
+                    <button
+                      key={day.value}
+                      type="button"
+                      aria-pressed={selected}
+                      onClick={() => setSelectedDaysOfWeek((current) => selected
+                        ? current.length > 1 ? current.filter((value) => value !== day.value) : current
+                        : [...current, day.value].sort((a, b) => a - b))}
+                      className={`min-h-10 rounded-control border text-[10px] font-bold transition-colors ${selected ? 'border-indigo-500 bg-indigo-500 text-white' : 'border-border-subtle bg-canvas text-muted hover:text-content'}`}
+                    >{day[language]}</button>
+                  );
+                })}
+              </div>
+            </fieldset>
+          )}
 
           <div>
             <label className="block text-xs font-bold text-content mb-1.5">

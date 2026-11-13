@@ -7,7 +7,6 @@ import {
   GoogleAuthProvider,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  sendEmailVerification,
   sendPasswordResetEmail,
   updateProfile,
 } from 'firebase/auth';
@@ -276,9 +275,6 @@ export const Login: React.FC = () => {
             displayName: fullName.trim(),
           });
         } catch {}
-
-        // Send native Firebase email verification link
-        await sendEmailVerification(userCred.user);
 
         // Save non-sensitive hint
         localStorage.setItem(
