@@ -75,7 +75,7 @@ export const InitialBalanceScreen: React.FC = () => {
       />
 
       <div className="w-full max-w-md rounded-3xl bg-[#0D0E14]/95 border border-white/10 p-6 sm:p-8 text-center shadow-[0_24px_60px_rgba(0,0,0,0.8),inset_0_1px_0_0_rgba(255,255,255,0.1)] relative z-10 animate-in fade-in zoom-in-95 duration-300">
-        
+
         {/* Wallet Icon with subtle glow */}
         <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-tr from-indigo-500/20 to-emerald-500/20 border border-white/10 flex items-center justify-center text-emerald-400 mb-5 shadow-lg shadow-indigo-500/10">
           <Wallet className="w-8 h-8" />

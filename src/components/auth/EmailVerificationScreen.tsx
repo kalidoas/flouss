@@ -283,7 +283,7 @@ export const EmailVerificationScreen: React.FC = () => {
       />
 
       <div className="w-full max-w-md flex flex-col items-center gap-6 p-6 sm:p-8 rounded-[28px] bg-[#0D0E14]/95 backdrop-blur-2xl border border-white/[0.08] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_24px_50px_-12px_rgba(0,0,0,0.8)] relative z-10 text-center animate-in fade-in zoom-in-95 duration-200">
-        
+
         {/* Header Logo */}
         <Logo size="md" showWordmark={true} />
 

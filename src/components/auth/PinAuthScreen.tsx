@@ -472,7 +472,7 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
       />
 
       <div className="w-full max-w-sm flex flex-col items-center gap-4 p-6 sm:p-8 rounded-[28px] bg-[#0D0E14]/90 backdrop-blur-2xl border border-white/[0.08] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_24px_50px_-12px_rgba(0,0,0,0.8)] relative z-10 text-center">
-        
+
         {/* Logo */}
         <Logo size="md" showWordmark={true} />
 
