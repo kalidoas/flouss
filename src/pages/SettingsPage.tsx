@@ -310,9 +310,9 @@ export const SettingsPage: React.FC = () => {
     }
   };
 
-  const handleExportExcel = () => {
+  const handleExportExcel = async () => {
     try {
-      exportToExcel({
+      await exportToExcel({
         initialBalance,
         transactions,
         categories,

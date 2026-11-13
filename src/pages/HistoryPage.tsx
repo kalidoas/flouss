@@ -26,14 +26,18 @@ export const HistoryPage: React.FC = () => {
   const srcList = incomeSources || [];
   const t = translations[language].history;
 
-  const handleExportExcel = () => {
-    exportToExcel({
-      initialBalance,
-      transactions: txList,
-      categories: catList,
-      incomeSources: srcList,
-      language,
-    });
+  const handleExportExcel = async () => {
+    try {
+      await exportToExcel({
+        initialBalance,
+        transactions: txList,
+        categories: catList,
+        incomeSources: srcList,
+        language,
+      });
+    } catch (error) {
+      console.error('[Flouss Export] Excel export failed:', error);
+    }
   };
 
   const [search, setSearch] = useState('');

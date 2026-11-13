@@ -1,4 +1,3 @@
-import * as XLSX from 'xlsx';
 import { Category, IncomeSource, Language, Transaction } from '../types';
 import {
   calculateAvailableBalance,
@@ -20,13 +19,14 @@ interface ExcelExportParams {
   language?: Language;
 }
 
-export function exportToExcel({
+export async function exportToExcel({
   initialBalance,
   transactions,
   categories,
   incomeSources,
   language = 'fr',
-}: ExcelExportParams): void {
+}: ExcelExportParams): Promise<void> {
+  const XLSX = await import('xlsx');
   const wb = XLSX.utils.book_new();
 
   const balance = calculateAvailableBalance(initialBalance, transactions);
@@ -212,10 +212,11 @@ export function exportToExcel({
       { wch: 18 },
       { wch: 16 },
       { wch: 35 },
+      { wch: 20 },
     ];
   });
 
-  // Generate file and trigger browser download
+  // Generate the file and trigger browser download.
   const dateStr = getTodayDateStr();
   const filename = `flouss_export_${dateStr}.xlsx`;
   XLSX.writeFile(wb, filename);

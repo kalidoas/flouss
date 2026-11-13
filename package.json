@@ -12,19 +12,19 @@
     "check:i18n": "node scripts/check-i18n.mjs"
   },
   "dependencies": {
-    "@firebase/app": "^0.16.4",
-    "@firebase/auth": "^1.13.8",
-    "@firebase/firestore": "^4.19.0",
+    "@firebase/app": "^0.16.6",
+    "@firebase/auth": "^1.13.10",
+    "@firebase/firestore": "^4.20.0",
     "canvas-confetti": "^1.9.4",
     "clsx": "^2.1.1",
-    "firebase": "^13.1.0",
+    "firebase": "^13.3.0",
     "framer-motion": "^14.9.0",
     "lucide-react": "^1.16.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "recharts": "^2.15.1",
     "tailwind-merge": "^3.0.2",
-    "xlsx": "^0.18.5",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
     "zustand": "^5.0.3"
   },
   "devDependencies": {
@@ -41,5 +41,8 @@
     "vite": "^6.2.0",
     "vite-plugin-pwa": "^2.0.0",
     "vitest": "^5.0.5"
+  },
+  "overrides": {
+    "@grpc/grpc-js": "^1.13.6"
   }
 }
