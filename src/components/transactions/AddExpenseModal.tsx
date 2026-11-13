@@ -81,12 +81,6 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
     setError('');
   };
 
-  const handleQuickAddAmount = (addValue: number) => {
-    const current = parseFloat(amountStr.replace(/\s/g, '').replace(',', '.')) || 0;
-    setAmountStr((current + addValue).toString());
-    setError('');
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (numericAmount <= 0) {
@@ -152,20 +146,6 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
               </span>
             </div>
 
-            {/* Quick amount adder chips */}
-            <div className="flex gap-1.5 mt-2 flex-wrap">
-              {[10, 50, 100, 500].map((val) => (
-                <button
-                  key={val}
-                  type="button"
-                  onClick={() => handleQuickAddAmount(val)}
-                  className="rounded-full px-3 py-1 text-xs font-semibold bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 hover:text-white transition-all hover:shadow-[0_0_12px_rgba(168,85,247,0.2)] cursor-pointer"
-                >
-                  +{val}
-                </button>
-              ))}
-            </div>
-
             {error && <p className="text-xs font-medium text-rose-400 mt-1.5">{error}</p>}
           </div>
 
@@ -181,6 +161,32 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
               </div>
             </div>
           )}
+
+          {/* Date AND Time Pickers */}
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+            <label className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+              <span className="mb-1.5 flex items-center gap-2 text-[11px] font-semibold text-zinc-400">
+                <CalendarDays className="h-3.5 w-3.5 text-rose-300" /> {t.date}
+              </span>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="min-h-11 w-full min-w-0 rounded-xl border border-white/10 bg-white/5 px-3 text-sm text-white outline-none transition-colors focus:border-rose-400 focus:ring-1 focus:ring-rose-400"
+              />
+            </label>
+            <label className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+              <span className="mb-1.5 flex items-center gap-2 text-[11px] font-semibold text-zinc-400">
+                <Clock3 className="h-3.5 w-3.5 text-rose-300" /> {t.time}
+              </span>
+              <input
+                type="time"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                className="min-h-11 w-full min-w-0 rounded-xl border border-white/10 bg-white/5 px-3 text-sm text-white outline-none transition-colors focus:border-rose-400 focus:ring-1 focus:ring-rose-400"
+              />
+            </label>
+          </div>
 
           {/* ── DRILL-DOWN Category Picker ── */}
           <div>
@@ -268,7 +274,7 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
               </div>
             ) : (
               /* Category Grid (shown only when no category selected) */
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-52 overflow-y-auto p-1.5 rounded-2xl border border-white/10 bg-white/[0.02]">
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-40 overflow-y-auto p-1.5 rounded-2xl border border-white/10 bg-white/[0.02]">
                 {activeCategories.map((cat) => {
                   const IconComp = getCategoryIcon(cat.icon);
                   const isSelected = categoryId === cat.id;
@@ -304,32 +310,6 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
                 })}
               </div>
             )}
-          </div>
-
-          {/* Date AND Time Pickers */}
-          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-            <label className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.04] p-3">
-              <span className="mb-1.5 flex items-center gap-2 text-[11px] font-semibold text-zinc-400">
-                <CalendarDays className="h-3.5 w-3.5 text-rose-300" /> {t.date}
-              </span>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="min-h-11 w-full min-w-0 rounded-xl border border-white/10 bg-white/5 px-3 text-sm text-white outline-none transition-colors focus:border-rose-400 focus:ring-1 focus:ring-rose-400"
-              />
-            </label>
-            <label className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.04] p-3">
-              <span className="mb-1.5 flex items-center gap-2 text-[11px] font-semibold text-zinc-400">
-                <Clock3 className="h-3.5 w-3.5 text-rose-300" /> {t.time}
-              </span>
-              <input
-                type="time"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-                className="min-h-11 w-full min-w-0 rounded-xl border border-white/10 bg-white/5 px-3 text-sm text-white outline-none transition-colors focus:border-rose-400 focus:ring-1 focus:ring-rose-400"
-              />
-            </label>
           </div>
 
           {/* Note with suggestions */}
