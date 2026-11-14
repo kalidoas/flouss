@@ -11,6 +11,7 @@ import { playHapticFeedback, triggerHaptic } from '../utils/haptics';
 import { GoogleCalendarAlarmModal } from '../components/common/GoogleCalendarAlarmModal';
 import { DropdownPortal } from '../components/common/DropdownPortal';
 import { UpcomingScheduleWidget } from '../components/meetings/UpcomingScheduleWidget';
+import { GlassMonthPicker } from '../components/common/GlassMonthPicker';
 import confetti from 'canvas-confetti';
 import {
   createGoogleCalendarEvent,
@@ -52,6 +53,8 @@ import {
   Bell,
   Loader2,
 } from 'lucide-react';
+
+import { getCurrentMonthStr, formatDate } from '../utils/formatters';
 
 const CATEGORY_CONFIG: Record<
   TaskCategory,
@@ -336,6 +339,27 @@ export const TasksPage: React.FC = () => {
   const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
   const [inlineSubTaskInput, setInlineSubTaskInput] = useState<Record<string, string>>({});
   const [hoveredHeatmapDay, setHoveredHeatmapDay] = useState<{ dateStr: string; count: number } | null>(null);
+  const [selectedMatrixMonth, setSelectedMatrixMonth] = useState<string>(getCurrentMonthStr());
+  const [matrixDayDetail, setMatrixDayDetail] = useState<string | null>(null);
+
+  // Month options for Matrix month picker
+  const matrixMonthOptions = useMemo(() => {
+    const months = new Set(
+      (tasks || [])
+        .map((task) => task.createdAt.slice(0, 7))
+        .filter((month) => /^\d{4}-\d{2}$/.test(month))
+    );
+    months.add(getCurrentMonthStr());
+    const locale = language === 'ar' ? 'ar-MA' : language === 'fr' ? 'fr-FR' : 'en-US';
+    return Array.from(months)
+      .sort((a, b) => b.localeCompare(a))
+      .map((month) => ({
+        value: month,
+        label: new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(
+          new Date(Number(month.slice(0, 4)), Number(month.slice(5, 7)) - 1, 1)
+        ),
+      }));
+  }, [tasks, language]);
 
   // Drill-down Modal State for Program Tracks
   const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
@@ -583,6 +607,195 @@ export const TasksPage: React.FC = () => {
       totalStudyCount,
     };
   }, [salatLogs, programTracks, gymLogs, studyModules, tasks]);
+
+  // ── Monthly Habit Tracking Matrix Computations ──
+  const matrixHabits = useMemo(() => {
+    const habits: {
+      id: string;
+      label: string;
+      icon: string;
+      completedDates: string[];
+      subtasks?: { completedDates?: string[] }[];
+    }[] = [];
+
+    // Add each task as a habit row
+    (tasks || []).forEach((task) => {
+      if (!task.isArchived) {
+        habits.push({
+          id: task.id,
+          label: task.title,
+          icon: CATEGORY_CONFIG[task.category]?.icon || '⚡',
+          completedDates: task.completedDates || [],
+          subtasks: (task.subtasks || []).map((sub) => ({
+            completedDates: (sub as any).completedDates,
+          })),
+        });
+      }
+    });
+
+    // Add Salat as a habit row if any salat logs exist
+    const hasSalat = Object.values(salatLogs || {}).some((p) => (p || []).length > 0);
+    if (hasSalat) {
+      const salatCompletedDates = Object.entries(salatLogs || {})
+        .filter(([_, prayers]) => (prayers || []).length === 5)
+        .map(([date]) => date);
+      habits.push({
+        id: 'salat',
+        label: language === 'ar' ? 'الصلوات الخمس' : language === 'fr' ? 'Salat (5 prières)' : 'Salat (5 Prayers)',
+        icon: '🕌',
+        completedDates: salatCompletedDates,
+      });
+    }
+
+    // Add Gym as a habit row if any gym logs exist
+    const hasGym = (gymLogs || []).length > 0;
+    if (hasGym) {
+      const gymCompletedDates = (gymLogs || []).map((g) => g.date).filter(Boolean) as string[];
+      habits.push({
+        id: 'gym',
+        label: language === 'ar' ? 'الرياضة' : language === 'fr' ? 'Sport / Gym' : 'Gym / Workout',
+        icon: '🏋️',
+        completedDates: gymCompletedDates,
+      });
+    }
+
+    // Add Program Tracks as habit rows
+    (programTracks || []).forEach((track) => {
+      const trackCompletedDates = new Set<string>();
+      (track.subtasks || []).forEach((sub) => {
+        (sub.completedDates || []).forEach((d) => trackCompletedDates.add(d));
+      });
+      if (trackCompletedDates.size > 0) {
+        habits.push({
+          id: `track_${track.id}`,
+          label: track.title,
+          icon: track.icon,
+          completedDates: Array.from(trackCompletedDates),
+          subtasks: (track.subtasks || []).map((sub) => ({
+            completedDates: sub.completedDates,
+          })),
+        });
+      }
+    });
+
+    // Add Study modules as habit rows
+    (studyModules || []).forEach((mod) => {
+      if (mod.completed) {
+        habits.push({
+          id: `study_${mod.id}`,
+          label: mod.title,
+          icon: '📚',
+          completedDates: mod.completedAt ? [mod.completedAt.slice(0, 10)] : [],
+        });
+      }
+    });
+
+    return habits;
+  }, [tasks, salatLogs, gymLogs, programTracks, studyModules, language]);
+
+  const matrixDaysInMonth = useMemo(() => {
+    const [year, month] = selectedMatrixMonth.split('-').map(Number);
+    return new Date(year, month, 0).getDate();
+  }, [selectedMatrixMonth]);
+
+  const matrixDayTasks = useMemo(() => {
+    const byDate: Record<string, Record<string, any[]>> = {};
+    // Tasks
+    (tasks || []).forEach((task) => {
+      if (task.isArchived) return;
+      (task.completedDates || []).forEach((d) => {
+        if (d.startsWith(selectedMatrixMonth)) {
+          if (!byDate[d]) byDate[d] = {};
+          if (!byDate[d][task.id]) byDate[d][task.id] = [];
+          byDate[d][task.id].push({ id: task.id, title: task.title, categoryLabel: CATEGORY_CONFIG[task.category]?.[language] || task.category, completed: true });
+        }
+      });
+      // Also include scheduled but not completed for the day
+      const daysInMonth = matrixDaysInMonth;
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateStr = `${selectedMatrixMonth}-${String(day).padStart(2, '0')}`;
+        if (isScheduledOnDate(task, dateStr) && !(task.completedDates || []).includes(dateStr)) {
+          if (!byDate[dateStr]) byDate[dateStr] = {};
+          if (!byDate[dateStr][task.id]) byDate[dateStr][task.id] = [];
+          byDate[dateStr][task.id].push({ id: task.id, title: task.title, categoryLabel: CATEGORY_CONFIG[task.category]?.[language] || task.category, completed: false });
+        }
+      }
+    });
+    // Salat
+    Object.entries(salatLogs || {}).forEach(([dateStr, prayers]) => {
+      if (dateStr.startsWith(selectedMatrixMonth)) {
+        if (!byDate[dateStr]) byDate[dateStr] = {};
+        const completed = (prayers || []).length === 5;
+        byDate[dateStr].salat = [{
+          id: 'salat',
+          title: language === 'ar' ? 'الصلوات الخمس' : language === 'fr' ? 'Salat (5 prières)' : 'Salat (5 Prayers)',
+          categoryLabel: language === 'ar' ? 'صلاة' : 'Salat',
+          completed,
+        }];
+      }
+    });
+    // Gym
+    (gymLogs || []).forEach((g) => {
+      if (g.date && g.date.startsWith(selectedMatrixMonth)) {
+        if (!byDate[g.date]) byDate[g.date] = {};
+        byDate[g.date].gym = [{
+          id: 'gym',
+          title: language === 'ar' ? 'الرياضة' : language === 'fr' ? 'Sport / Gym' : 'Gym / Workout',
+          categoryLabel: language === 'ar' ? 'رياضة' : 'Sport',
+          completed: true,
+        }];
+      }
+    });
+    // Program track subtasks
+    (programTracks || []).forEach((track) => {
+      (track.subtasks || []).forEach((sub) => {
+        (sub.completedDates || []).forEach((d) => {
+          if (d.startsWith(selectedMatrixMonth)) {
+            if (!byDate[d]) byDate[d] = {};
+            const trackId = `track_${track.id}`;
+            if (!byDate[d][trackId]) byDate[d][trackId] = [];
+            byDate[d][trackId].push({
+              id: sub.id,
+              title: sub.title,
+              categoryLabel: track.title,
+              completed: true,
+            });
+          }
+        });
+      });
+    });
+    // Study modules
+    (studyModules || []).forEach((mod) => {
+      if (mod.completed && mod.completedAt && mod.completedAt.startsWith(selectedMatrixMonth)) {
+        const dateStr = mod.completedAt.slice(0, 10);
+        if (!byDate[dateStr]) byDate[dateStr] = {};
+        byDate[dateStr][`study_${mod.id}`] = [{
+          id: mod.id,
+          title: mod.title,
+          categoryLabel: language === 'ar' ? 'دراسة' : 'Study',
+          completed: true,
+        }];
+      }
+    });
+    // Flatten to array per date
+    const result: Record<string, any[]> = {};
+    Object.entries(byDate).forEach(([dateStr, byHabit]) => {
+      result[dateStr] = Object.values(byHabit).flat();
+    });
+    return result;
+  }, [tasks, salatLogs, gymLogs, programTracks, studyModules, selectedMatrixMonth, matrixDaysInMonth, language]);
+
+  const matrixStats = useMemo(() => {
+    let completedTotal = 0;
+    let taskDaysTotal = 0;
+    Object.values(matrixDayTasks).forEach((dayTasks) => {
+      dayTasks.forEach((t) => {
+        taskDaysTotal++;
+        if (t.completed) completedTotal++;
+      });
+    });
+    return { completedTotal, taskDaysTotal };
+  }, [matrixDayTasks]);
 
   const activeTrack = useMemo(() => {
     return (programTracks || []).find((t) => t.id === selectedTrackId) || null;
@@ -1280,7 +1493,8 @@ export const TasksPage: React.FC = () => {
           </button>
         </div>
 
-        {/* Right: Custom Glass Task Category Popover (No horizontal scrollbar) */}
+        {/* Right: Custom Glass Task Category Popover (No horizontal scrollbar) - hidden when Analytics/stats tab is active */}
+        {activeTab !== 'stats' && (
         <div className="relative inline-block shrink-0">
           <button
             ref={taskCategoryDropdownTriggerRef}
@@ -1370,6 +1584,7 @@ export const TasksPage: React.FC = () => {
             </div>
           </DropdownPortal>
         </div>
+        )}
       </div>
 
       {/* VIEW 1: DAILY TASKS (CHECK OFF VIEW) */}
@@ -1728,229 +1943,196 @@ export const TasksPage: React.FC = () => {
         </div>
       )}
 
-      {/* VIEW 2: GITHUB-STYLE HABIT CONTRIBUTION HEATMAP (365-DAY / 52 WEEKS) */}
+      {/* VIEW 2: MONTHLY HABIT TRACKING MATRIX (Habits as rows, days as columns) */}
       {activeTab === 'month' && (
         <div className="zawa-bento p-5 border border-white/[0.08] shadow-2xl space-y-5">
-          {/* Heatmap Header & High-Density Stats */}
+          {/* Header with Month Selector */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h3 className="font-bold text-base text-white flex items-center gap-2.5 tracking-tight">
-                <Sparkles className="w-5 h-5 text-emerald-400" />
+                <LayoutGrid className="w-5 h-5 text-emerald-400" />
                 <span>
                   {language === 'ar'
-                    ? 'خريطة المساهمات وإنجاز العادات'
+                    ? 'مصفوفة تتبع العادات الشهرية'
                     : language === 'fr'
-                    ? 'Carte d’activité & Habitudes (GitHub Style)'
-                    : 'Habit Contribution Heatmap'}
-                </span>
-                <span className="text-xs font-mono font-medium text-zinc-400">
-                  (52 {language === 'ar' ? 'أسبوعاً' : 'semaines'})
+                    ? 'Matrice de Suivi des Habitudes (Mensuel)'
+                    : 'Monthly Habit Tracking Matrix'}
                 </span>
               </h3>
               <p className="text-xs text-zinc-400 mt-0.5">
                 {language === 'ar'
-                  ? 'سجل التزامك اليومي بالروتين والصلوات والرياضة على مدار 365 يوماً'
-                  : 'Historique de régularité sur les 365 derniers jours (Salat, Gym, Routines)'}
+                  ? 'صفوف = عادات، أعمدة = أيام الشهر — اضغط على يوم لتفاصيل الإنجاز'
+                  : 'Rows = habits, columns = days — tap a day for completion details'}
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs font-bold tabular-nums">
-                <Zap className="w-3.5 h-3.5" />
-                <span>{heatmapData.totalCompletions} {language === 'ar' ? 'إنجازاً' : 'actions'}</span>
+            <GlassMonthPicker
+              value={selectedMatrixMonth}
+              onChange={setSelectedMatrixMonth}
+              options={matrixMonthOptions}
+              ariaLabel={language === 'ar' ? 'اختر الشهر للمصفوفة' : language === 'fr' ? 'Choisir le mois' : 'Choose month'}
+            />
+          </div>
+
+          {/* Legend & Stats */}
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-white/[0.06]">
+            <div className="flex items-center gap-3 text-xs text-zinc-400">
+              <span className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded bg-emerald-400" />
+                <span>{language === 'ar' ? 'مكتملة' : language === 'fr' ? 'Terminé' : 'Done'}</span>
               </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-400 text-xs font-bold tabular-nums">
-                <Flame className="w-3.5 h-3.5" />
-                <span>{overallStreak} {language === 'ar' ? 'أيام متتالية' : 'j de série'}</span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded bg-amber-500/80 border border-amber-500" />
+                <span>{language === 'ar' ? 'جزئية' : language === 'fr' ? 'Partielle' : 'Partial'}</span>
               </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded bg-white/[0.04] border border-white/[0.05]" />
+                <span>{language === 'ar' ? 'غير مكتملة' : language === 'fr' ? 'Non fait' : 'Not done'}</span>
+              </span>
+            </div>
+            <div className="flex items-center gap-3 text-xs text-zinc-500 font-mono tabular-nums">
+              <span>{matrixStats.completedTotal}/{matrixStats.taskDaysTotal} {language === 'ar' ? 'مهمة' : 'tasks'}</span>
             </div>
           </div>
 
+          {/* Matrix Table */}
+          <div className="overflow-x-auto overflow-y-auto max-h-[60vh]">
+            <table className="w-full min-w-max border-collapse text-[11px] font-mono">
+              <thead>
+                <tr className="sticky top-0 bg-black/40 backdrop-blur-sm border-b border-white/[0.08]">
+                  <th className="sticky left-0 z-10 w-28 px-2 py-1.5 text-left font-medium text-zinc-400 bg-black/40 border-r border-white/[0.06]">
+                    {language === 'ar' ? 'العادة / المهمة' : language === 'fr' ? 'Habitude / Tâche' : 'Habit / Task'}
+                  </th>
+                  {Array.from({ length: matrixDaysInMonth }, (_, i) => i + 1).map((day) => {
+                    const dateStr = `${selectedMatrixMonth}-${String(day).padStart(2, '0')}`;
+                    const dayOfWeek = new Date(Number(selectedMatrixMonth.slice(0,4)), Number(selectedMatrixMonth.slice(5,7)) - 1, day).getDay();
+                    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                    const isToday = dateStr === todayStr;
+                    const locale = language === 'ar' ? 'ar-MA' : language === 'fr' ? 'fr-FR' : 'en-US';
+                    const dayNameShort = new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(new Date(Number(selectedMatrixMonth.slice(0,4)), Number(selectedMatrixMonth.slice(5,7)) - 1, day));
+                    return (
+                      <th key={dateStr} className={`sticky top-0 w-8 min-w-[36px] px-1 py-1 text-center border-b border-white/[0.08] ${isWeekend ? 'text-zinc-500' : 'text-zinc-400'} ${isToday ? 'text-indigo-400 font-bold' : ''}`}>
+                        <div className="font-medium text-[10px]">{day}</div>
+                        <div className="text-[8px] uppercase opacity-60">{dayNameShort}</div>
+                      </th>
+                    );
+                  })}
+                </tr>
+              </thead>
+              <tbody>
+                {matrixHabits.map((habit) => (
+                  <tr key={habit.id} className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors">
+                    <td className="sticky left-0 z-10 w-28 px-2 py-1.5 text-left font-medium text-zinc-200 bg-black/40 border-r border-white/[0.06] truncate max-w-[120px]" title={habit.label}>
+                      <span className="flex items-center gap-1.5">
+                        <span>{habit.icon}</span>
+                        <span>{habit.label}</span>
+                      </span>
+                    </td>
+                    {Array.from({ length: matrixDaysInMonth }, (_, i) => i + 1).map((day) => {
+                      const dateStr = `${selectedMatrixMonth}-${String(day).padStart(2, '0')}`;
+                      const dayCompleted = habit.completedDates?.includes(dateStr);
+                      const dayPartial = habit.subtasks?.some((sub: any) => sub.completedDates?.includes(dateStr)) && !dayCompleted;
+                      const dayTasks = matrixDayTasks[dateStr] || [];
+                      const completedCount = dayTasks.filter((t: any) => t.completed).length;
+                      const totalCount = dayTasks.length;
+                      const isToday = dateStr === todayStr;
 
-          {/* GitHub-style Contribution Matrix Container */}
-          {/* Mobile: Monthly Calendar View | Desktop: Full 52-week heatmap */}
-
-          {/* ── MOBILE: Current-Month Calendar Grid (7-col, fully contained) ── */}
-          <div className="block md:hidden w-full">
-            <div className="w-full">
-              {/* Day-of-week header */}
-              <div className="grid grid-cols-7 gap-1 mb-1">
-                {(language === 'ar'
-                  ? ['ح', 'ن', 'ث', 'ر', 'خ', 'ج', 'س']
-                  : language === 'fr'
-                  ? ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
-                  : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-                ).map((d) => (
-                  <div key={d} className="text-center text-[9px] font-mono text-zinc-500 pb-1">
-                    {d}
-                  </div>
-                ))}
-              </div>
-              {/* Build current-month calendar */}
-              {(() => {
-                const now = new Date();
-                const year = now.getFullYear();
-                const month = now.getMonth();
-                const daysInMonth = new Date(year, month + 1, 0).getDate();
-                // Monday=0 offset
-                const firstDayOfMonth = new Date(year, month, 1);
-                const startOffset = (firstDayOfMonth.getDay() + 6) % 7; // Mon=0
-                const cells: (number | null)[] = [];
-                for (let i = 0; i < startOffset; i++) cells.push(null);
-                for (let d = 1; d <= daysInMonth; d++) cells.push(d);
-                // Pad to full weeks
-                while (cells.length % 7 !== 0) cells.push(null);
-
-                return (
-                  <div className="grid grid-cols-7 gap-1">
-                    {cells.map((day, idx) => {
-                      if (day === null) return <div key={`empty-${idx}`} />;
-                      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                      const dayData = heatmapData.days?.find((d: any) => d.dateStr === dateStr);
-                      const level = dayData?.level || 0;
-                      const isToday = dateStr === new Date().toISOString().slice(0, 10);
-                      const levelClass =
-                        level === 4
-                          ? 'bg-emerald-400 border-emerald-300 shadow-[0_0_6px_rgba(52,211,153,0.4)]'
-                          : level === 3
-                          ? 'bg-emerald-500/80 border-emerald-500/90'
-                          : level === 2
-                          ? 'bg-emerald-500/50 border-emerald-500/55'
-                          : level === 1
-                          ? 'bg-emerald-500/25 border-emerald-500/30'
-                          : 'bg-white/[0.04] border-white/[0.05]';
                       return (
-                        <button
-                          key={dateStr}
-                          type="button"
-                          onClick={() => {
-                            triggerHaptic(40);
-                            setSelectedDate(dateStr);
-                            setActiveTab('daily');
-                          }}
-                          title={`${dateStr}: ${dayData?.count || 0} ${language === 'ar' ? 'مهام' : 'habitudes'}`}
-                          className={`aspect-square w-full rounded-lg border flex items-center justify-center transition-all cursor-pointer ${levelClass} ${
-                            isToday ? 'ring-2 ring-indigo-400 ring-offset-1 ring-offset-[#0B0C12]' : ''
-                          } active:scale-90 duration-150`}
-                        >
-                          <span className={`text-[9px] font-bold ${level > 0 ? 'text-white' : 'text-zinc-500'} ${isToday ? 'text-indigo-300' : ''}`}>
-                            {day}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                );
-              })()}
-            </div>
-          </div>
-
-          {/* ── DESKTOP: Full 52-week GitHub-style heatmap ── */}
-          <div className="hidden md:block overflow-x-auto pb-3 pt-1 scrollbar-thin">
-            <div className="min-w-max space-y-2 select-none">
-              {/* Month Markers Row */}
-              <div className="flex items-center gap-1 text-[10px] font-mono text-zinc-400 ps-7">
-                {heatmapData.weeks.map((week, wIdx) => {
-                  const firstDay = week[0];
-                  const showMonth = firstDay && (wIdx === 0 || firstDay.date.getDate() <= 7);
-                  return (
-                    <div key={wIdx} className="w-3.5 text-center shrink-0">
-                      {showMonth ? firstDay.monthName : ''}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Grid: 7 Rows (Mon - Sun) across 52+ Week Columns */}
-              <div className="flex gap-2">
-                {/* Day of Week Labels (Mon, Wed, Fri) */}
-                <div className="flex flex-col justify-between text-[9px] font-mono text-zinc-400 py-0.5 shrink-0 w-5">
-                  <span>{language === 'ar' ? 'اثن' : 'Lun'}</span>
-                  <span>{language === 'ar' ? 'أرب' : 'Mer'}</span>
-                  <span>{language === 'ar' ? 'جمع' : 'Ven'}</span>
-                  <span>{language === 'ar' ? 'أحد' : 'Dim'}</span>
-                </div>
-
-                {/* Heatmap Columns */}
-                <div className="flex gap-1">
-                  {heatmapData.weeks.map((week, wIdx) => (
-                    <div key={wIdx} className="flex flex-col gap-1 shrink-0">
-                      {week.map((day) => {
-                        const levelClass =
-                          day.level === 4
-                            ? 'bg-emerald-400 border-emerald-300 shadow-[0_0_8px_rgba(52,211,153,0.45)]'
-                            : day.level === 3
-                            ? 'bg-emerald-500/80 border-emerald-500/90'
-                            : day.level === 2
-                            ? 'bg-emerald-500/50 border-emerald-500/55'
-                            : day.level === 1
-                            ? 'bg-emerald-500/25 border-emerald-500/30'
-                            : 'bg-white/[0.04] border-white/[0.05] hover:border-white/20';
-
-                        return (
+                        <td key={dateStr} className="w-8 min-w-[36px] px-1 py-1 text-center relative">
                           <button
-                            key={day.dateStr}
                             type="button"
                             onClick={() => {
                               triggerHaptic(40);
-                              setSelectedDate(day.dateStr);
-                              setActiveTab('daily');
+                              setMatrixDayDetail(dateStr);
                             }}
-                            onMouseEnter={() =>
-                              setHoveredHeatmapDay({ dateStr: day.dateStr, count: day.count })
-                            }
+                            onMouseEnter={() => setHoveredHeatmapDay({ dateStr, count: completedCount })}
                             onMouseLeave={() => setHoveredHeatmapDay(null)}
-                            title={`${day.dateStr}: ${day.count} ${
-                              language === 'ar' ? 'مهام منجزة' : 'habitudes complétées'
-                            }`}
-                            className={`w-3.5 h-3.5 rounded-[3.5px] border transition-all cursor-pointer ${levelClass} ${
-                              day.isToday ? 'ring-1.5 ring-indigo-400 ring-offset-1 ring-offset-[#0B0C12]' : ''
-                            } hover:scale-125 active:scale-95 duration-150`}
-                          />
-                        );
-                      })}
+                            className={`w-full h-full rounded transition-all cursor-pointer ${dayCompleted
+                              ? 'bg-emerald-400 text-white font-bold shadow-[0_0_6px_rgba(52,211,153,0.4)]'
+                              : dayPartial
+                              ? 'bg-amber-500/80 border border-amber-500 text-white'
+                              : 'bg-white/[0.04] border border-white/[0.05] text-zinc-500'} ${isToday ? 'ring-2 ring-indigo-400 ring-offset-1 ring-offset-[#0B0C12]' : ''}`}
+                            title={totalCount > 0
+                              ? `${formatDate(dateStr, language)}: ${dayTasks.map((t: any) => t.title).join(', ')} (${completedCount}/${totalCount} ${language === 'ar' ? 'مكتملة' : 'done'})`
+                              : `${formatDate(dateStr, language)}: ${language === 'ar' ? 'لا توجد مهام' : language === 'fr' ? 'Aucune tâche' : 'No tasks'}`}
+                          >
+                            {dayCompleted ? (
+                              <Check className="w-3.5 h-3.5 mx-auto stroke-[2.5]" />
+                            ) : dayPartial ? (
+                              <div className="w-2 h-2 rounded-full bg-white mx-auto" />
+                            ) : (
+                              <span className="text-[9px]">{day}</span>
+                            )}
+                          </button>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Inline Day Detail Panel */}
+          {matrixDayDetail && (
+            <div className="animate-in slide-in-from-bottom-2 duration-200 p-4 bg-white/[0.03] border border-white/[0.08] rounded-xl space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="font-bold text-white flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-indigo-400" />
+                  <span>{formatDate(matrixDayDetail, language)}</span>
+                </h4>
+                <button
+                  type="button"
+                  onClick={() => setMatrixDayDetail(null)}
+                  className="p-1 text-zinc-500 hover:text-white transition-colors"
+                  aria-label={language === 'ar' ? 'إغلاق' : language === 'fr' ? 'Fermer' : 'Close'}
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              {matrixDayTasks[matrixDayDetail]?.length > 0 ? (
+                <div className="space-y-2">
+                  {matrixDayTasks[matrixDayDetail]?.map((task: any) => (
+                    <div key={task.id} className="flex items-center justify-between p-2.5 rounded-lg bg-white/[0.02] border border-white/[0.06]">
+                      <div className="flex items-center gap-2.5">
+                        <span className={task.completed ? 'text-emerald-400' : 'text-zinc-500'}>
+                          {task.completed ? <CheckCircle2 className="w-4 h-4" /> : <Circle className="w-4 h-4" />}
+                        </span>
+                        <div>
+                          <div className="text-sm font-medium text-zinc-100">{task.title}</div>
+                          <div className="text-[11px] text-zinc-500">{task.categoryLabel}</div>
+                        </div>
+                      </div>
+                      <span className="text-[11px] font-mono tabular-nums text-zinc-400">
+                        {task.completed
+                          ? (language === 'ar' ? '✓ مكتملة' : language === 'fr' ? '✓ Terminé' : '✓ Done')
+                          : (language === 'ar' ? '○ معلقة' : language === 'fr' ? '○ En attente' : '○ Pending')}
+                      </span>
                     </div>
                   ))}
                 </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom Heatmap Status Inspector & Legend */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 border-t border-white/[0.06] text-xs">
-            <div className="text-zinc-400 flex items-center gap-2">
-              {hoveredHeatmapDay ? (
-                <span className="font-medium text-white flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="tabular-nums font-mono text-emerald-300 font-bold">
-                    {hoveredHeatmapDay.count}
-                  </span>
-                  <span>
-                    {language === 'ar'
-                      ? `عادة منجزة يوم ${hoveredHeatmapDay.dateStr}`
-                      : `habitude(s) le ${hoveredHeatmapDay.dateStr}`}
-                  </span>
-                </span>
               ) : (
-                <span className="text-zinc-500">
-                  {language === 'ar'
-                    ? 'اضغط على أي مربع للتنقل وتفقد مهام ذلك اليوم'
-                    : 'Cliquez sur une case pour ouvrir les tâches de cette journée'}
-                </span>
+                <p className="text-zinc-500 text-center py-2">
+                  {language === 'ar' ? 'لا توجد مهام مجدولة لهذا اليوم' : language === 'fr' ? 'Aucune tâche programmée pour ce jour' : 'No tasks scheduled for this day'}
+                </p>
               )}
             </div>
+          )}
 
-            {/* Heatmap Scale Legend */}
-            <div className="flex items-center gap-1.5 text-[11px] font-medium text-zinc-400">
-              <span>{language === 'ar' ? 'أقل' : 'Moins'}</span>
-              <div className="flex items-center gap-1">
-                <span className="w-3 h-3 rounded-[3px] bg-white/[0.04] border border-white/[0.05]" />
-                <span className="w-3 h-3 rounded-[3px] bg-emerald-500/25 border border-emerald-500/30" />
-                <span className="w-3 h-3 rounded-[3px] bg-emerald-500/50 border border-emerald-500/55" />
-                <span className="w-3 h-3 rounded-[3px] bg-emerald-500/80 border border-emerald-500/90" />
-                <span className="w-3 h-3 rounded-[3px] bg-emerald-400 border border-emerald-300 shadow-[0_0_6px_rgba(52,211,153,0.5)]" />
-              </div>
-              <span>{language === 'ar' ? 'أكثر' : 'Plus'}</span>
+          {/* Bottom Legend (weekday names) */}
+          <div className="pt-2 border-t border-white/[0.06] text-xs">
+            <div className="flex items-center gap-2 text-zinc-500 flex-wrap">
+              <span className="font-medium">{language === 'ar' ? 'أيام الأسبوع:' : language === 'fr' ? 'Jours:' : 'Weekdays:'}</span>
+              {(language === 'ar'
+                ? ['الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت', 'الأحد']
+                : language === 'fr'
+                ? ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche']
+                : ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+              ).map((d, i) => (
+                <span key={d} className={`px-2 py-0.5 rounded text-[10px] font-mono ${i >= 5 ? 'text-amber-400' : 'text-zinc-400'} bg-white/[0.03] border border-white/[0.05]`}>
+                  {d}
+                </span>
+              ))}
             </div>
           </div>
         </div>
