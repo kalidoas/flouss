@@ -3,6 +3,7 @@ import { useAppStore } from '../../store/useAppStore';
 import { Modal } from '../common/Modal';
 import { Button } from '../common/Button';
 import { Input } from '../common/Input';
+import { CustomDatePicker } from '../common/CustomDatePicker';
 import {
   getTodayDateStr,
   getCurrentTimeStr,
@@ -273,21 +274,15 @@ export const AddContributionModal: React.FC<AddContributionModalProps> = ({
           </div>
         )}
 
-        {/* Date AND Time */}
-        <div className="grid grid-cols-2 gap-3">
-          <Input
-            label={t.date}
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-          />
-          <Input
-            label={t.time}
-            type="time"
-            value={time}
-            onChange={(e) => setTime(e.target.value)}
-          />
-        </div>
+        {/* Reused Custom Date & Time Picker */}
+        <CustomDatePicker
+          label={`${t.date} & ${t.time}`}
+          value={date}
+          onChange={(d) => setDate(d)}
+          includeTime={true}
+          timeValue={time}
+          onTimeChange={(tm) => setTime(tm)}
+        />
 
         {/* Note */}
         <Input

@@ -5,6 +5,7 @@ import { ScreenId } from '../../types';
 import { translations } from '../../i18n/translations';
 import { Logo } from '../common/Logo';
 import { UserProfileModal } from '../profile/UserProfileModal';
+import { LogoutConfirmModal } from '../common/LogoutConfirmModal';
 import {
   LayoutDashboard,
   Tags,
@@ -29,9 +30,10 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse }) => {
-  const { activeScreen, setActiveScreen, accounts, activeAccountId, language, logout, firebaseUser } =
+  const { activeScreen, setActiveScreen, accounts, activeAccountId, language, firebaseUser } =
     useAppStore();
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   const t = translations[language].nav;
   const tCommon = translations[language].common;
@@ -69,18 +71,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
     <aside
       className={`hidden md:flex flex-col ${
         collapsed ? 'w-14' : 'w-[240px] md:max-lg:w-14'
-      } transition-[width] duration-200 ease-out bg-[#08090E]/95 backdrop-blur-xl border-r border-white/[0.06] shrink-0 justify-between select-none relative group/sidebar z-20`}
+      } transition-[width] duration-200 ease-out bg-surface/95 dark:bg-[#08090E]/95 backdrop-blur-xl border-r border-border-subtle dark:border-white/[0.06] text-content dark:text-white shrink-0 justify-between select-none relative group/sidebar z-20`}
     >
       <div className="flex flex-col h-full overflow-hidden">
         {/* Top Header: Workspace / Logo + Collapse Button */}
-        <div className="flex min-h-12 items-center justify-between border-b border-white/[0.06] p-2.5">
+        <div className="flex min-h-12 items-center justify-between border-b border-border-subtle dark:border-white/[0.06] p-2.5">
           {!collapsed ? (
             <div className="flex items-center justify-between w-full">
               <span className="md:max-lg:hidden"><Logo size="sm" showWordmark={true} /></span>
               <button
                 onClick={onToggleCollapse}
                 title={tCommon.collapseSidebar}
-                className="flex h-9 w-9 items-center justify-center rounded-xl text-zinc-400 transition-colors hover:bg-white/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                className="flex h-9 w-9 items-center justify-center rounded-xl text-muted hover:text-content hover:bg-surface-raised dark:text-zinc-400 dark:hover:bg-white/[0.06] dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
               >
                 <PanelLeftClose className="w-4 h-4" />
               </button>
@@ -90,7 +92,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
               <button
                 onClick={onToggleCollapse}
                 title={tCommon.expandSidebar}
-                className="flex h-9 w-9 items-center justify-center rounded-xl text-zinc-400 transition-colors hover:bg-white/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                className="flex h-9 w-9 items-center justify-center rounded-xl text-muted hover:text-content hover:bg-surface-raised dark:text-zinc-400 dark:hover:bg-white/[0.06] dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
               >
                 <PanelLeftOpen className="w-4 h-4" />
               </button>
@@ -260,23 +262,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
                 </div>
                 {!collapsed && (
                   <div className="min-w-0">
-                    <span className="block truncate text-xs font-semibold text-zinc-200 md:max-lg:hidden">
+                    <span className="block truncate text-xs font-semibold text-content dark:text-zinc-200 md:max-lg:hidden">
                       {activeAccount.name}
                     </span>
                   </div>
                 )}
               </div>
-              {!collapsed && <ChevronDown className="h-3.5 w-3.5 shrink-0 text-zinc-500 md:max-lg:hidden" />}
+              {!collapsed && <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted dark:text-zinc-500 md:max-lg:hidden" />}
             </button>
 
             {!collapsed && (
               <button
-                onClick={() => logout()}
+                onClick={() => setIsLogoutModalOpen(true)}
                 title={tCommon.logOut}
                 aria-label={tCommon.logOut}
-                className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-xl text-zinc-400 transition-colors hover:bg-rose-500/10 hover:text-rose-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 lg:flex"
+                className="hidden min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-xl text-muted dark:text-zinc-400 transition-colors hover:bg-rose-500/10 hover:text-rose-500 dark:hover:text-rose-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 lg:flex cursor-pointer"
               >
-                <LogOut className="w-3.5 h-3.5" />
+                <LogOut className="w-4 h-4" />
               </button>
             )}
           </div>
@@ -286,6 +288,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
       <UserProfileModal
         isOpen={isProfileModalOpen}
         onClose={() => setIsProfileModalOpen(false)}
+      />
+
+      <LogoutConfirmModal
+        isOpen={isLogoutModalOpen}
+        onClose={() => setIsLogoutModalOpen(false)}
       />
     </aside>
   );

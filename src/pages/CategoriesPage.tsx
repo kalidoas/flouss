@@ -268,16 +268,16 @@ export const CategoriesPage: React.FC = () => {
       </div>
 
       {/* Non-sticky Glass Toolbar: Filter Tabs + Search + Group Popover (No bleed-through or overlap) */}
-      <div className="rounded-2xl bg-white/5 p-3 sm:p-4 backdrop-blur-2xl border border-white/10 shadow-xl space-y-3">
+      <div className="rounded-2xl bg-surface p-3 sm:p-4 border border-border-subtle shadow-xs dark:bg-white/5 dark:backdrop-blur-2xl dark:border-white/10 space-y-3">
         <div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center justify-between">
           {/* Segmented Tab Control */}
-          <div className="flex flex-wrap items-center gap-1 p-1 bg-white/[0.04] backdrop-blur-md rounded-full border border-white/[0.06]">
+          <div className="flex flex-wrap items-center gap-1 p-1 bg-black/[0.04] dark:bg-white/[0.04] rounded-full border border-black/[0.06] dark:border-white/[0.06]">
             <button
               onClick={() => setActiveTab('all')}
               className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'all'
-                  ? 'bg-white text-zinc-950 shadow-xs'
-                  : 'text-zinc-400 hover:text-white'
+                  ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 shadow-xs'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
               }`}
             >
               <Layers className="w-3.5 h-3.5" />
@@ -294,8 +294,8 @@ export const CategoriesPage: React.FC = () => {
               onClick={() => setActiveTab('goals')}
               className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'goals'
-                  ? 'bg-white text-zinc-950 shadow-xs'
-                  : 'text-zinc-400 hover:text-white'
+                  ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 shadow-xs'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
               }`}
             >
               <Target className="w-3.5 h-3.5" />
@@ -312,8 +312,8 @@ export const CategoriesPage: React.FC = () => {
               onClick={() => setActiveTab('expenses')}
               className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'expenses'
-                  ? 'bg-white text-zinc-950 shadow-xs'
-                  : 'text-zinc-400 hover:text-white'
+                  ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 shadow-xs'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
               }`}
             >
               <ShoppingBag className="w-3.5 h-3.5" />
@@ -330,8 +330,8 @@ export const CategoriesPage: React.FC = () => {
               onClick={() => setActiveTab('archived')}
               className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'archived'
-                  ? 'bg-white text-zinc-950 shadow-xs'
-                  : 'text-zinc-400 hover:text-white'
+                  ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 shadow-xs'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
               }`}
             >
               <Archive className="w-3.5 h-3.5" />
@@ -354,7 +354,7 @@ export const CategoriesPage: React.FC = () => {
                 type="button"
                 aria-expanded={isGroupDropdownOpen}
                 onClick={() => setIsGroupDropdownOpen((prev) => !prev)}
-                className="flex items-center gap-2 rounded-full border border-white/[0.08] bg-black/40 px-3.5 py-1.5 text-xs font-semibold text-zinc-200 outline-none shadow-xs hover:border-white/[0.18] hover:bg-white/[0.04] transition-all cursor-pointer"
+                className="flex items-center gap-2 rounded-full border border-border-subtle bg-surface px-3.5 py-1.5 text-xs font-semibold text-content outline-none shadow-xs hover:border-black/15 dark:border-white/[0.08] dark:bg-black/40 dark:text-zinc-200 dark:hover:border-white/[0.18] transition-all cursor-pointer"
               >
                 {selectedGroup !== 'all' ? (
                   <span

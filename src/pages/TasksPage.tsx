@@ -5,6 +5,7 @@ import { TaskItem, TaskSubItem, TaskCategory, TaskFrequency, PrayerKey, StudyMod
 import { Modal } from '../components/common/Modal';
 import { Button } from '../components/common/Button';
 import { EmptyState } from '../components/common/EmptyState';
+import { CustomDatePicker } from '../components/common/CustomDatePicker';
 import { translations } from '../i18n/translations';
 import { getProgramTrackTitle } from '../utils/i18nHelpers';
 import { playHapticFeedback, triggerHaptic } from '../utils/haptics';
@@ -1046,11 +1047,11 @@ export const TasksPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto space-y-6 animate-page pb-20 select-text">
+    <div className="w-full min-w-0 max-w-[1200px] mx-auto space-y-6 animate-page pb-20 select-text @container">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 min-w-0 flex-wrap">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-2xl sm:text-3xl font-bold text-content tracking-tight">
               {tTask.title}
             </h1>
@@ -1063,7 +1064,7 @@ export const TasksPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <Button
             onClick={handleOpenAdd}
             variant="primary"
@@ -1075,7 +1076,7 @@ export const TasksPage: React.FC = () => {
       </div>
 
       {/* Unified Gamified Command HUD (2-Column Bento Grid) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 @2xl:grid-cols-2 gap-4 min-w-0">
         {/* Left Column: Progress %, XP & Streak Strip */}
         <div className="zawa-bento zawa-spotlight p-5 flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between">
@@ -1140,8 +1141,8 @@ export const TasksPage: React.FC = () => {
         </div>
 
         {/* Right Column: 7-Day Week Selector with Glowing Indigo Active Day Pill */}
-        <div className="zawa-bento zawa-spotlight sticky top-2 z-30 p-4 flex flex-col justify-between bg-[#0D0E14]/95 backdrop-blur-2xl shadow-xl">
-          <div className="flex items-center justify-between pb-2 border-b border-white/[0.06]">
+        <div className="zawa-bento zawa-spotlight sticky top-2 z-30 p-4 flex flex-col justify-between bg-surface dark:bg-[#0D0E14]/95 backdrop-blur-2xl shadow-sm dark:shadow-xl border border-border-subtle dark:border-white/10 text-content dark:text-white min-w-0">
+          <div className="flex items-center justify-between pb-2 border-b border-border-subtle dark:border-white/[0.06]">
             <span className="text-xs font-semibold uppercase tracking-wider text-muted">
               {language === 'ar' ? 'أسبوع المهمة' : 'Week Schedule'}
             </span>
@@ -1744,24 +1745,22 @@ export const TasksPage: React.FC = () => {
                     : 'Habit Contribution Heatmap'}
                 </span>
                 <span className="text-xs font-mono font-medium text-zinc-400">
-                  (52 {language === 'ar' ? 'أسبوعاً' : 'semaines'})
+                  (52 {tTask.weeks})
                 </span>
               </h3>
               <p className="text-xs text-zinc-400 mt-0.5">
-                {language === 'ar'
-                  ? 'سجل التزامك اليومي بالروتين والصلوات والرياضة على مدار 365 يوماً'
-                  : 'Historique de régularité sur les 365 derniers jours (Salat, Gym, Routines)'}
+                {tTask.heatmapDesc}
               </p>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs font-bold tabular-nums">
                 <Zap className="w-3.5 h-3.5" />
-                <span>{heatmapData.totalCompletions} {language === 'ar' ? 'إنجازاً' : 'actions'}</span>
+                <span>{heatmapData.totalCompletions} {tTask.heatmapCompletions}</span>
               </span>
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-400 text-xs font-bold tabular-nums">
                 <Flame className="w-3.5 h-3.5" />
-                <span>{overallStreak} {language === 'ar' ? 'أيام متتالية' : 'j de série'}</span>
+                <span>{overallStreak} {tTask.heatmapStreak}</span>
               </span>
             </div>
           </div>
@@ -1818,7 +1817,7 @@ export const TasksPage: React.FC = () => {
                           ? 'bg-emerald-500/50 border-emerald-500/55'
                           : level === 1
                           ? 'bg-emerald-500/25 border-emerald-500/30'
-                          : 'bg-white/[0.04] border-white/[0.05]';
+                          : 'bg-black/[0.04] border-black/[0.06] dark:bg-white/[0.04] dark:border-white/[0.05]';
                       return (
                         <button
                           key={dateStr}
@@ -1830,7 +1829,7 @@ export const TasksPage: React.FC = () => {
                           }}
                           title={`${dateStr}: ${dayData?.count || 0} ${language === 'ar' ? 'مهام' : 'habitudes'}`}
                           className={`aspect-square w-full rounded-lg border flex items-center justify-center transition-all cursor-pointer ${levelClass} ${
-                            isToday ? 'ring-2 ring-indigo-400 ring-offset-1 ring-offset-[#0B0C12]' : ''
+                            isToday ? 'ring-2 ring-indigo-400 ring-offset-1 ring-offset-surface dark:ring-offset-[#0B0C12]' : ''
                           } active:scale-90 duration-150`}
                         >
                           <span className={`text-[9px] font-bold ${level > 0 ? 'text-white' : 'text-zinc-500'} ${isToday ? 'text-indigo-300' : ''}`}>
@@ -1863,12 +1862,12 @@ export const TasksPage: React.FC = () => {
 
               {/* Grid: 7 Rows (Mon - Sun) across 52+ Week Columns */}
               <div className="flex gap-2">
-                {/* Day of Week Labels (Mon, Wed, Fri) */}
+                {/* Day of Week Labels (Mon, Wed, Fri, Sun) */}
                 <div className="flex flex-col justify-between text-[9px] font-mono text-zinc-400 py-0.5 shrink-0 w-5">
-                  <span>{language === 'ar' ? 'اثن' : 'Lun'}</span>
-                  <span>{language === 'ar' ? 'أرب' : 'Mer'}</span>
-                  <span>{language === 'ar' ? 'جمع' : 'Ven'}</span>
-                  <span>{language === 'ar' ? 'أحد' : 'Dim'}</span>
+                  <span>{tTask.heatmapMon}</span>
+                  <span>{tTask.heatmapWed}</span>
+                  <span>{tTask.heatmapFri}</span>
+                  <span>{tTask.heatmapSun}</span>
                 </div>
 
                 {/* Heatmap Columns */}
@@ -1885,7 +1884,7 @@ export const TasksPage: React.FC = () => {
                             ? 'bg-emerald-500/50 border-emerald-500/55'
                             : day.level === 1
                             ? 'bg-emerald-500/25 border-emerald-500/30'
-                            : 'bg-white/[0.04] border-white/[0.05] hover:border-white/20';
+                            : 'bg-black/[0.04] border-black/[0.06] hover:border-black/20 dark:bg-white/[0.04] dark:border-white/[0.05] dark:hover:border-white/20';
 
                         return (
                           <button
@@ -1900,11 +1899,9 @@ export const TasksPage: React.FC = () => {
                               setHoveredHeatmapDay({ dateStr: day.dateStr, count: day.count })
                             }
                             onMouseLeave={() => setHoveredHeatmapDay(null)}
-                            title={`${day.dateStr}: ${day.count} ${
-                              language === 'ar' ? 'مهام منجزة' : 'habitudes complétées'
-                            }`}
+                            title={`${day.dateStr}: ${day.count} ${tTask.heatmapCompletedHabits}`}
                             className={`w-3.5 h-3.5 rounded-[3.5px] border transition-all cursor-pointer ${levelClass} ${
-                              day.isToday ? 'ring-1.5 ring-indigo-400 ring-offset-1 ring-offset-[#0B0C12]' : ''
+                              day.isToday ? 'ring-1.5 ring-indigo-400 ring-offset-1 ring-offset-surface dark:ring-offset-[#0B0C12]' : ''
                             } hover:scale-125 active:scale-95 duration-150`}
                           />
                         );
@@ -1917,40 +1914,36 @@ export const TasksPage: React.FC = () => {
           </div>
 
           {/* Bottom Heatmap Status Inspector & Legend */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 border-t border-white/[0.06] text-xs">
-            <div className="text-zinc-400 flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 border-t border-border-subtle dark:border-white/[0.06] text-xs">
+            <div className="text-muted dark:text-zinc-400 flex items-center gap-2">
               {hoveredHeatmapDay ? (
-                <span className="font-medium text-white flex items-center gap-1.5">
+                <span className="font-medium text-content dark:text-white flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="tabular-nums font-mono text-emerald-300 font-bold">
+                  <span className="tabular-nums font-mono text-emerald-500 dark:text-emerald-300 font-bold">
                     {hoveredHeatmapDay.count}
                   </span>
                   <span>
-                    {language === 'ar'
-                      ? `عادة منجزة يوم ${hoveredHeatmapDay.dateStr}`
-                      : `habitude(s) le ${hoveredHeatmapDay.dateStr}`}
+                    {tTask.heatmapCompletionsOn} {hoveredHeatmapDay.dateStr}
                   </span>
                 </span>
               ) : (
-                <span className="text-zinc-500">
-                  {language === 'ar'
-                    ? 'اضغط على أي مربع للتنقل وتفقد مهام ذلك اليوم'
-                    : 'Cliquez sur une case pour ouvrir les tâches de cette journée'}
+                <span className="text-muted dark:text-zinc-500">
+                  {tTask.heatmapClickDay}
                 </span>
               )}
             </div>
 
             {/* Heatmap Scale Legend */}
-            <div className="flex items-center gap-1.5 text-[11px] font-medium text-zinc-400">
-              <span>{language === 'ar' ? 'أقل' : 'Moins'}</span>
+            <div className="flex items-center gap-1.5 text-[11px] font-medium text-muted dark:text-zinc-400">
+              <span>{tTask.heatmapLess}</span>
               <div className="flex items-center gap-1">
-                <span className="w-3 h-3 rounded-[3px] bg-white/[0.04] border border-white/[0.05]" />
+                <span className="w-3 h-3 rounded-[3px] bg-black/[0.04] border border-black/[0.06] dark:bg-white/[0.04] dark:border-white/[0.05]" />
                 <span className="w-3 h-3 rounded-[3px] bg-emerald-500/25 border border-emerald-500/30" />
                 <span className="w-3 h-3 rounded-[3px] bg-emerald-500/50 border border-emerald-500/55" />
                 <span className="w-3 h-3 rounded-[3px] bg-emerald-500/80 border border-emerald-500/90" />
                 <span className="w-3 h-3 rounded-[3px] bg-emerald-400 border border-emerald-300 shadow-[0_0_6px_rgba(52,211,153,0.5)]" />
               </div>
-              <span>{language === 'ar' ? 'أكثر' : 'Plus'}</span>
+              <span>{tTask.heatmapMore}</span>
             </div>
           </div>
         </div>
@@ -2120,30 +2113,15 @@ export const TasksPage: React.FC = () => {
               <span>{tTask.dateTimeLabel}</span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              <div>
-                <label className="block text-caption font-semibold text-muted mb-1">
-                  {tTask.datePickerLabel}
-                </label>
-                <input
-                  type="date"
-                  value={taskScheduledDate}
-                  onChange={(e) => setTaskScheduledDate(e.target.value)}
-                  className="w-full min-w-[140px] px-4 py-2 rounded-xl bg-surface border border-zinc-200 dark:border-white/10 text-content text-xs font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-caption font-semibold text-muted mb-1">
-                  {tTask.timePickerLabel}
-                </label>
-                <input
-                  type="time"
-                  value={taskScheduledTime}
-                  onChange={(e) => setTaskScheduledTime(e.target.value)}
-                  className="w-full px-3 py-2 rounded-control bg-surface border border-zinc-200 dark:border-zinc-700 text-content text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+            <div className="w-full">
+              <CustomDatePicker
+                label={tTask.datePickerLabel}
+                value={taskScheduledDate}
+                onChange={(d) => setTaskScheduledDate(d)}
+                includeTime={true}
+                timeValue={taskScheduledTime}
+                onTimeChange={(tm) => setTaskScheduledTime(tm)}
+              />
             </div>
 
             {/* Direct Instant Action Button: Add Alarm via Google Calendar */}

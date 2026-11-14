@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Modal } from '../common/Modal';
 import { Button } from '../common/Button';
+import { CustomDatePicker } from '../common/CustomDatePicker';
 import { useAppStore } from '../../store/useAppStore';
 import { formatRFC3339WithOffset, syncEntityToGoogleCalendar } from '../../services/googleCalendar';
 import { CalendarMeeting } from '../../types';
@@ -144,34 +145,18 @@ export const NewMeetingModal: React.FC<NewMeetingModalProps> = ({
         </div>
 
         {/* Date & Time */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1 flex items-center gap-1.5">
-              <Calendar className="w-3.5 h-3.5 text-blue-500" />
-              <span>{isAr ? 'التاريخ' : isEn ? 'Date' : 'Date'} *</span>
-            </label>
-            <input
-              type="date"
-              required
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-xs font-mono font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1 flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-blue-500" />
-              <span>{isAr ? 'الوقت' : isEn ? 'Time' : 'Heure'} *</span>
-            </label>
-            <input
-              type="time"
-              required
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-xs font-mono font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+        <div>
+          <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1 flex items-center gap-1.5">
+            <Calendar className="w-3.5 h-3.5 text-blue-500" />
+            <span>{isAr ? 'التاريخ والوقت' : isEn ? 'Date & Time' : 'Date & Heure'} *</span>
+          </label>
+          <CustomDatePicker
+            value={date}
+            onChange={(d) => setDate(d)}
+            timeValue={time}
+            onTimeChange={(t) => setTime(t)}
+            includeTime={true}
+          />
         </div>
 
         {/* Duration & Reminder lead */}

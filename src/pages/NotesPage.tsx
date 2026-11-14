@@ -231,15 +231,15 @@ export const NotesPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
               {tNote.title}
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-teal-500/10 text-teal-400 border border-teal-500/20 flex items-center gap-1">
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 flex items-center gap-1">
               <Lock className="w-3 h-3" />
               <span>{tNote.subtitle}</span>
             </span>
           </div>
-          <p className="text-xs sm:text-sm text-zinc-400 mt-1">
+          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1">
             {tNote.badge} • {(notes || []).length} {language === 'ar' ? 'ملاحظة مسجلة' : 'notes enregistrées'}
           </p>
         </div>
@@ -254,7 +254,7 @@ export const NotesPage: React.FC = () => {
       </div>
 
       {/* ── Command-Style Search & Tag Filters Bar ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-1.5 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-1.5 rounded-2xl bg-surface border border-border-subtle dark:bg-white/5 dark:backdrop-blur-xl dark:border-white/10">
         {/* Filter Tag Pills */}
         <div className="flex items-center gap-1 overflow-x-auto scrollbar-none">
           <button
@@ -262,8 +262,8 @@ export const NotesPage: React.FC = () => {
             onClick={() => setActiveTag('all')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 ${
               activeTag === 'all'
-                ? 'bg-white text-zinc-950 font-bold shadow-xs'
-                : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
+                ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 font-bold shadow-xs'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-black/[0.04] dark:hover:bg-white/[0.04]'
             }`}
           >
             {language === 'ar' ? 'الكل' : 'All'} ({(notes || []).length})
@@ -273,8 +273,8 @@ export const NotesPage: React.FC = () => {
             onClick={() => setActiveTag('pinned')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 ${
               activeTag === 'pinned'
-                ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold'
-                : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
+                ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 font-bold'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-black/[0.04] dark:hover:bg-white/[0.04]'
             }`}
           >
             📌 {language === 'ar' ? 'المثبتة' : 'Pinned'}
@@ -284,8 +284,8 @@ export const NotesPage: React.FC = () => {
             onClick={() => setActiveTag('checklists')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 ${
               activeTag === 'checklists'
-                ? 'bg-teal-500/20 text-teal-400 border border-teal-500/30 font-bold'
-                : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
+                ? 'bg-teal-500/20 text-teal-600 dark:text-teal-400 border border-teal-500/30 font-bold'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-black/[0.04] dark:hover:bg-white/[0.04]'
             }`}
           >
             ☑️ {language === 'ar' ? 'قوائم المهام' : 'Checklists'}
@@ -295,8 +295,8 @@ export const NotesPage: React.FC = () => {
             onClick={() => setActiveTag('motivation')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 ${
               activeTag === 'motivation'
-                ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold'
-                : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
+                ? 'bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30 font-bold'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-black/[0.04] dark:hover:bg-white/[0.04]'
             }`}
           >
             🔥 {language === 'ar' ? 'تحفيز' : 'Motivation'}
@@ -306,8 +306,8 @@ export const NotesPage: React.FC = () => {
             onClick={() => setActiveTag('ideas')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 ${
               activeTag === 'ideas'
-                ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 font-bold'
-                : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
+                ? 'bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-black/[0.04] dark:hover:bg-white/[0.04]'
             }`}
           >
             💡 {language === 'ar' ? 'أفكار' : 'Ideas'}
@@ -316,19 +316,19 @@ export const NotesPage: React.FC = () => {
 
         {/* Command Search Input */}
         <div className="relative w-full sm:w-72">
-          <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <Search className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={tNote.searchPlaceholder}
-            className="w-full pl-9 pr-3.5 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-indigo-500/60 focus:bg-white/[0.06] transition-all"
+            className="w-full pl-9 pr-3.5 py-1.5 rounded-xl bg-zinc-50 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.08] text-xs text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none focus:border-indigo-500/60 transition-all"
           />
           {search && (
             <button
               type="button"
               onClick={() => setSearch('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 dark:hover:text-white"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -430,7 +430,7 @@ export const NotesPage: React.FC = () => {
       >
         <form onSubmit={handleSaveNote} className="space-y-4 pt-2">
           <div>
-            <label className="block text-xs font-bold text-zinc-300 mb-1">
+            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
               {tNote.titleLabel}
             </label>
             <input
@@ -438,12 +438,12 @@ export const NotesPage: React.FC = () => {
               value={noteTitle}
               onChange={(e) => setNoteTitle(e.target.value)}
               placeholder={tNote.titlePlaceholder}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.09] text-white text-sm font-semibold focus:outline-none focus:border-indigo-500"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.09] text-zinc-900 dark:text-white text-sm font-semibold focus:outline-none focus:border-indigo-500"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-zinc-300 mb-1">
+            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
               {tNote.contentLabel}
             </label>
             <textarea
@@ -451,20 +451,20 @@ export const NotesPage: React.FC = () => {
               value={noteContent}
               onChange={(e) => setNoteContent(e.target.value)}
               placeholder={tNote.contentPlaceholder}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.09] text-white text-sm focus:outline-none focus:border-indigo-500 leading-relaxed"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.09] text-zinc-900 dark:text-white text-sm focus:outline-none focus:border-indigo-500 leading-relaxed"
             />
           </div>
 
           {/* Interactive Checklist Editor inside Modal */}
-          <div className="space-y-2 pt-1 border-t border-white/[0.06]">
-            <label className="block text-xs font-bold text-zinc-300">
+          <div className="space-y-2 pt-1 border-t border-black/[0.06] dark:border-white/[0.06]">
+            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300">
               ☑️ {language === 'ar' ? 'عناصر قائمة المهام (Checklist)' : 'Checklist Items'}
             </label>
             <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
               {modalChecklist.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center justify-between gap-2 bg-white/[0.03] border border-white/[0.06] rounded-xl px-3 py-1.5 text-xs text-zinc-200"
+                  className="flex items-center justify-between gap-2 bg-black/[0.03] dark:bg-white/[0.03] border border-black/[0.06] dark:border-white/[0.06] rounded-xl px-3 py-1.5 text-xs text-zinc-800 dark:text-zinc-200"
                 >
                   <button
                     type="button"
@@ -476,11 +476,11 @@ export const NotesPage: React.FC = () => {
                     className="flex items-center gap-2 flex-1 text-left"
                   >
                     {item.completed ? (
-                      <CheckSquare className="w-4 h-4 text-emerald-400" />
+                      <CheckSquare className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                     ) : (
-                      <Square className="w-4 h-4 text-zinc-500" />
+                      <Square className="w-4 h-4 text-zinc-400 dark:text-zinc-500" />
                     )}
-                    <span className={item.completed ? 'line-through text-zinc-500' : ''}>
+                    <span className={item.completed ? 'line-through text-zinc-400 dark:text-zinc-500' : ''}>
                       {item.text}
                     </span>
                   </button>
@@ -489,7 +489,7 @@ export const NotesPage: React.FC = () => {
                     onClick={() => {
                       setModalChecklist((prev) => prev.filter((c) => c.id !== item.id));
                     }}
-                    className="text-zinc-500 hover:text-rose-400 p-1"
+                    className="text-zinc-400 hover:text-rose-500 p-1"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -520,7 +520,7 @@ export const NotesPage: React.FC = () => {
                   }
                 }}
                 placeholder={language === 'ar' ? '+ إضافة بند للقائمة (Enter)...' : '+ Add checklist item (Enter)...'}
-                className="flex-1 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-xs text-white placeholder-zinc-500 outline-none focus:border-indigo-500"
+                className="flex-1 px-3 py-1.5 rounded-xl bg-zinc-50 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.08] text-xs text-zinc-900 dark:text-white placeholder-zinc-400 outline-none focus:border-indigo-500"
               />
               <button
                 type="button"
@@ -537,16 +537,16 @@ export const NotesPage: React.FC = () => {
                     setNewChecklistText('');
                   }
                 }}
-                className="px-3 py-1.5 rounded-xl bg-white text-zinc-950 font-bold text-xs hover:bg-zinc-200"
+                className="px-3 py-1.5 rounded-xl bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 font-bold text-xs hover:bg-zinc-800 dark:hover:bg-zinc-200"
               >
                 +
               </button>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-white/[0.06]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-black/[0.06] dark:border-white/[0.06]">
             <div>
-              <label className="block text-xs font-bold text-zinc-300 mb-1">
+              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
                 {tNote.categoryLabel}
               </label>
               <input
@@ -554,7 +554,7 @@ export const NotesPage: React.FC = () => {
                 value={noteCategory}
                 onChange={(e) => setNoteCategory(e.target.value)}
                 placeholder="Ex: Motivation, Ideas, Books..."
-                className="w-full px-3.5 py-2 rounded-xl bg-white/[0.04] border border-white/[0.09] text-white text-xs focus:outline-none focus:border-indigo-500"
+                className="w-full px-3.5 py-2 rounded-xl bg-zinc-50 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.09] text-zinc-900 dark:text-white text-xs focus:outline-none focus:border-indigo-500"
               />
               {/* Quick Category Chips */}
               <div className="flex flex-wrap gap-1 mt-1.5">
@@ -563,7 +563,7 @@ export const NotesPage: React.FC = () => {
                     key={tag}
                     type="button"
                     onClick={() => setNoteCategory(tag)}
-                    className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] text-zinc-400 border border-white/[0.06]"
+                    className="text-[10px] px-2 py-0.5 rounded-full bg-black/[0.04] hover:bg-black/[0.08] text-zinc-600 border border-black/[0.06] dark:bg-white/[0.04] dark:hover:bg-white/[0.08] dark:text-zinc-400 dark:border-white/[0.06]"
                   >
                     {tag}
                   </button>
@@ -572,7 +572,7 @@ export const NotesPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-zinc-300 mb-1">
+              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
                 {tNote.colorLabel}
               </label>
               <div className="flex items-center gap-2 pt-1.5">
@@ -582,7 +582,7 @@ export const NotesPage: React.FC = () => {
                     type="button"
                     onClick={() => setNoteColor(c)}
                     className={`w-6 h-6 rounded-full transition-transform ${
-                      noteColor === c ? 'scale-125 ring-2 ring-white ring-offset-2 ring-offset-[#0B0C12]' : ''
+                      noteColor === c ? 'scale-125 ring-2 ring-indigo-500 ring-offset-2 ring-offset-surface' : ''
                     }`}
                     style={{ backgroundColor: c }}
                   />
@@ -592,7 +592,7 @@ export const NotesPage: React.FC = () => {
           </div>
 
           {/* Prominent Action Button: Add Alarm via Google Calendar */}
-          <div className="pt-2 border-t border-white/[0.08]">
+          <div className="pt-2 border-t border-black/[0.08] dark:border-white/[0.08]">
             <button
               type="button"
               onClick={() => {
@@ -604,14 +604,14 @@ export const NotesPage: React.FC = () => {
                   updatedAt: new Date().toISOString(),
                 });
               }}
-              className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98]"
+              className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition-all active:scale-[0.98]"
             >
               <Bell className="w-4 h-4" />
               <span>{tNote.googleCalendarAlarmBtn}</span>
             </button>
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/[0.08]">
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-black/[0.08] dark:border-white/[0.08]">
             <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>
               {tNote.cancel}
             </Button>
@@ -675,7 +675,7 @@ const NoteBentoCard: React.FC<NoteBentoCardProps> = ({
     <motion.div
       layout
       whileHover={{ y: -2 }}
-      className="relative group bg-white/5 backdrop-blur-xl rounded-2xl p-5 border border-white/10 hover:border-white/20 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_16px_36px_-12px_rgba(0,0,0,0.6)] flex flex-col justify-between space-y-3 transition-all duration-300"
+      className="relative group bg-surface text-content border border-border-subtle shadow-xs dark:bg-white/5 dark:backdrop-blur-xl dark:border-white/10 dark:hover:border-white/20 dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_16px_36px_-12px_rgba(0,0,0,0.6)] rounded-2xl p-5 flex flex-col justify-between space-y-3 transition-all duration-300"
     >
       {/* Top subtle ambient glow line matching note color */}
       <div
@@ -690,12 +690,12 @@ const NoteBentoCard: React.FC<NoteBentoCardProps> = ({
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2.5 min-w-0 flex-1">
             <div
-              className="w-3 h-3 rounded-full shrink-0 shadow-sm"
+              className="w-3 h-3 rounded-full shrink-0 shadow-xs"
               style={{ backgroundColor: accentColor }}
             />
             <h4
               onClick={onEdit}
-              className="font-bold text-sm sm:text-base text-white tracking-tight truncate cursor-pointer hover:underline"
+              className="font-bold text-sm sm:text-base text-zinc-900 dark:text-white tracking-tight truncate cursor-pointer hover:underline"
             >
               {note.title}
             </h4>
@@ -710,8 +710,8 @@ const NoteBentoCard: React.FC<NoteBentoCardProps> = ({
             }}
             className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${
               note.isPinned
-                ? 'bg-amber-500/15 text-amber-400 border border-amber-500/35 shadow-[0_0_15px_rgba(245,158,11,0.25)]'
-                : 'text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.06] border border-transparent'
+                ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/35 shadow-xs'
+                : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-black/[0.04] dark:hover:bg-white/[0.06] border border-transparent'
             }`}
             title={note.isPinned ? 'Détacher' : 'Épingler'}
           >
@@ -723,7 +723,7 @@ const NoteBentoCard: React.FC<NoteBentoCardProps> = ({
         {note.content && (
           <p
             onClick={onEdit}
-            className="text-xs text-zinc-400 whitespace-pre-wrap leading-relaxed line-clamp-4 cursor-pointer hover:text-zinc-300 transition-colors selectable-text"
+            className="text-xs text-zinc-600 dark:text-zinc-400 whitespace-pre-wrap leading-relaxed line-clamp-4 cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-300 transition-colors selectable-text"
           >
             {note.content}
           </p>
@@ -731,16 +731,16 @@ const NoteBentoCard: React.FC<NoteBentoCardProps> = ({
 
         {/* ── Inline Interactive Checklist with Mini-Progress Bar ── */}
         {totalChecklist > 0 && (
-          <div className="space-y-2 pt-2 border-t border-white/[0.06]">
+          <div className="space-y-2 pt-2 border-t border-black/[0.06] dark:border-white/[0.06]">
             {/* Progress Bar */}
-            <div className="flex items-center justify-between text-[11px] text-zinc-400">
+            <div className="flex items-center justify-between text-[11px] text-zinc-500 dark:text-zinc-400">
               <span className="font-semibold flex items-center gap-1">
-                <CheckSquare className="w-3 h-3 text-teal-400" />
+                <CheckSquare className="w-3 h-3 text-teal-500 dark:text-teal-400" />
                 {completedChecklist}/{totalChecklist} {language === 'ar' ? 'مكتمل' : 'terminés'}
               </span>
-              <span className="tabular-nums font-bold text-white">{checklistProgress}%</span>
+              <span className="tabular-nums font-bold text-zinc-900 dark:text-white">{checklistProgress}%</span>
             </div>
-            <div className="w-full h-1 rounded-full bg-white/[0.06] overflow-hidden">
+            <div className="w-full h-1 rounded-full bg-black/[0.06] dark:bg-white/[0.06] overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-teal-500 to-emerald-400 rounded-full transition-all duration-300"
                 style={{ width: `${checklistProgress}%` }}
@@ -757,16 +757,16 @@ const NoteBentoCard: React.FC<NoteBentoCardProps> = ({
                     e.stopPropagation();
                     onToggleChecklistItem(item.id);
                   }}
-                  className="w-full flex items-center gap-2 p-1.5 rounded-lg text-left text-xs text-zinc-300 hover:bg-white/[0.04] transition-colors"
+                  className="w-full flex items-center gap-2 p-1.5 rounded-lg text-left text-xs text-zinc-700 dark:text-zinc-300 hover:bg-black/[0.04] dark:hover:bg-white/[0.04] transition-colors"
                 >
                   {item.completed ? (
-                    <CheckSquare className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <CheckSquare className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400 shrink-0" />
                   ) : (
-                    <Square className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+                    <Square className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500 shrink-0" />
                   )}
                   <span
                     className={`truncate text-xs ${
-                      item.completed ? 'line-through text-zinc-500' : 'text-zinc-200'
+                      item.completed ? 'line-through text-zinc-400 dark:text-zinc-500' : 'text-zinc-800 dark:text-zinc-200'
                     }`}
                   >
                     {item.text}
@@ -788,12 +788,12 @@ const NoteBentoCard: React.FC<NoteBentoCardProps> = ({
                   }
                 }}
                 placeholder={language === 'ar' ? '+ بند جديد...' : '+ New item...'}
-                className="flex-1 bg-white/[0.03] border border-white/[0.06] focus:border-teal-500/50 text-[11px] px-2.5 py-1 rounded-lg text-white placeholder-zinc-500 outline-none transition-all"
+                className="flex-1 bg-zinc-50 dark:bg-white/[0.03] border border-zinc-200 dark:border-white/[0.06] focus:border-teal-500/50 text-[11px] px-2.5 py-1 rounded-lg text-zinc-900 dark:text-white placeholder-zinc-400 outline-none transition-all"
               />
               <button
                 type="button"
                 onClick={onAddChecklistItem}
-                className="px-2 py-1 rounded-lg bg-white/[0.08] hover:bg-white/[0.15] text-[11px] font-bold text-white transition-all shrink-0"
+                className="px-2 py-1 rounded-lg bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-white/[0.08] dark:hover:bg-white/[0.15] text-[11px] font-bold dark:text-white transition-all shrink-0"
               >
                 +
               </button>
@@ -803,8 +803,8 @@ const NoteBentoCard: React.FC<NoteBentoCardProps> = ({
       </div>
 
       {/* ── Footer Row: Category Badge + Action Buttons ── */}
-      <div className="pt-3 border-t border-white/[0.06] flex items-center justify-between text-xs text-zinc-400">
-        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-zinc-300 truncate max-w-[120px]">
+      <div className="pt-3 border-t border-black/[0.06] dark:border-white/[0.06] flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
+        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-black/[0.04] border border-black/[0.06] text-zinc-700 dark:bg-white/[0.04] dark:border-white/[0.06] dark:text-zinc-300 truncate max-w-[120px]">
           {note.category || generalLabel}
         </span>
 
@@ -816,7 +816,7 @@ const NoteBentoCard: React.FC<NoteBentoCardProps> = ({
               e.stopPropagation();
               onSendToTasks();
             }}
-            className="p-1.5 rounded-lg text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 transition-colors"
+            className="p-1.5 rounded-lg text-amber-500 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 hover:bg-amber-500/10 transition-colors"
             title={language === 'ar' ? "⚡ إرسال إلى مهام اليوم" : "⚡ Envoyer aux tâches d'aujourd'hui"}
           >
             <Zap className="w-3.5 h-3.5 fill-amber-400/20" />
@@ -829,7 +829,7 @@ const NoteBentoCard: React.FC<NoteBentoCardProps> = ({
               e.stopPropagation();
               onAlarm();
             }}
-            className="p-1.5 rounded-lg text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 transition-colors"
+            className="p-1.5 rounded-lg text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 hover:bg-blue-500/10 transition-colors"
             title="Google Calendar"
           >
             <Bell className="w-3.5 h-3.5" />
@@ -842,7 +842,7 @@ const NoteBentoCard: React.FC<NoteBentoCardProps> = ({
               e.stopPropagation();
               onEdit();
             }}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-colors"
+            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-white hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors"
             title="Modifier"
           >
             <Edit2 className="w-3.5 h-3.5" />
@@ -855,7 +855,7 @@ const NoteBentoCard: React.FC<NoteBentoCardProps> = ({
               e.stopPropagation();
               onDelete();
             }}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+            className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-500 dark:hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
             title="Supprimer"
           >
             <Trash2 className="w-3.5 h-3.5" />

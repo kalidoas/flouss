@@ -106,7 +106,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <DashboardHeaderProvider>
-    <div className="flex h-screen w-full max-w-[100vw] overflow-x-hidden bg-[#050505] text-content font-sans relative">
+    <div className="flex h-screen w-full max-w-[100vw] overflow-x-hidden bg-canvas text-content font-sans relative">
       {/* Living Cosmic & Nebula Animated Starfield Background */}
       <CosmicBackground />
 
@@ -117,7 +117,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       <div className="flex-1 flex flex-col h-full min-w-0 max-w-full overflow-x-hidden relative z-10">
         <Header />
 
-        <main ref={mainRef} className="mx-auto max-w-[1280px] w-full flex-1 overflow-y-auto px-3.5 pb-28 pt-3 select-text sm:px-6 sm:pt-5 md:pb-8 lg:px-8 lg:pt-6 flex flex-col">
+        <main ref={mainRef} className="@container min-w-0 mx-auto max-w-[1280px] w-full flex-1 overflow-y-auto px-3.5 pb-28 pt-3 select-text sm:px-6 sm:pt-5 md:pb-8 lg:px-8 lg:pt-6 flex flex-col">
           {children}
         </main>
 

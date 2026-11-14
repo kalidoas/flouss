@@ -127,7 +127,7 @@ export const IncomePage: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsAddSourceOpen(true)}
-            className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-zinc-200 px-4 py-2 text-xs font-medium backdrop-blur-md transition-all active:scale-[0.98]"
+            className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-full bg-surface border border-border-subtle text-content hover:bg-black/[0.04] dark:bg-white/[0.04] dark:hover:bg-white/[0.08] dark:border-white/[0.08] dark:text-zinc-200 px-4 py-2 text-xs font-medium backdrop-blur-md transition-all active:scale-[0.98]"
           >
             <Layers className="w-3.5 h-3.5 text-zinc-400" />
             <span>{t.newSource}</span>
@@ -248,7 +248,7 @@ export const IncomePage: React.FC = () => {
           </summary>
           <div className="flex flex-wrap gap-2 border-t border-white/[0.06] py-3">
             {sourceStats.filter(({ count }) => count === 0).map(({ source }) => (
-              <button key={source.id} type="button" onClick={() => handleOpenAddForSource(source.id)} className="min-h-9 rounded-full border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06] px-3.5 text-xs text-zinc-300 transition-colors">
+              <button key={source.id} type="button" onClick={() => handleOpenAddForSource(source.id)} className="min-h-9 rounded-full border border-border-subtle bg-surface hover:bg-black/[0.04] text-zinc-700 dark:border-white/[0.08] dark:bg-white/[0.03] dark:hover:bg-white/[0.06] dark:text-zinc-300 px-3.5 text-xs transition-colors">
                 {getIncomeSourceName(source, language)}
               </button>
             ))}

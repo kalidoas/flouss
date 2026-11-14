@@ -4,6 +4,7 @@ import { useAppStore } from '../../store/useAppStore';
 import { Modal } from '../common/Modal';
 import { Button } from '../common/Button';
 import { Input } from '../common/Input';
+import { CustomDatePicker } from '../common/CustomDatePicker';
 import { IconPicker } from '../common/IconPicker';
 import { ColorPicker } from '../common/ColorPicker';
 import { getCategoryIcon } from '../../utils/icons';
@@ -434,11 +435,10 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
                 suffix="Mois"
               />
             ) : (
-              <Input
+              <CustomDatePicker
                 label={tCat.targetDateLabel || 'Date cible'}
-                type="date"
                 value={targetDate}
-                onChange={(e) => setTargetDate(e.target.value)}
+                onChange={(d) => setTargetDate(d)}
               />
             )}
 

@@ -28,14 +28,14 @@ export const Card: React.FC<CardProps> = ({
 
   const variantStyles = {
     default:
-      'relative overflow-hidden bg-white/5 backdrop-blur-xl border border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)]',
-    flat: 'relative overflow-hidden bg-white/5 backdrop-blur-xl border border-white/10',
+      'relative overflow-hidden bg-surface text-content border border-border-subtle shadow-xs dark:bg-white/5 dark:text-white dark:border-white/10 dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] backdrop-blur-xl',
+    flat: 'relative overflow-hidden bg-surface text-content border border-border-subtle dark:bg-white/5 dark:text-white dark:border-white/10 backdrop-blur-xl',
     bordered:
-      'relative overflow-hidden bg-white/5 backdrop-blur-xl border border-white/10 hover:border-indigo-500/40',
+      'relative overflow-hidden bg-surface text-content border border-border-subtle hover:border-accent/40 dark:bg-white/5 dark:text-white dark:border-white/10 dark:hover:border-indigo-500/40 backdrop-blur-xl',
   };
 
   const hoverStyle = hover
-    ? 'transition-all duration-300 hover:border-white/20 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.7)]'
+    ? 'transition-all duration-300 hover:border-black/15 hover:shadow-md dark:hover:border-white/20 dark:hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.7)]'
     : 'transition-all duration-300';
 
   const spotlightStyle = spotlight || hover

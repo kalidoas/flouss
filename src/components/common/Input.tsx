@@ -31,7 +31,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             id={inputId}
             aria-invalid={Boolean(error)}
             aria-describedby={error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined}
-            className={`w-full min-h-11 rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-zinc-500 transition-all outline-none
+            className={`w-full min-h-11 rounded-xl border border-border-subtle bg-surface text-content placeholder:text-muted dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-zinc-500 transition-all outline-none
               ${
                 isAmount
                   ? 'text-xl font-semibold py-2.5 px-3 tracking-tight'
@@ -41,8 +41,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
               ${suffix ? 'pr-14' : ''}
               ${
                 error
-                  ? 'border-rose-500/50 bg-rose-500/10 text-rose-300 focus:border-rose-500'
-                  : 'hover:border-white/20 focus:border-purple-500 focus:ring-1 focus:ring-purple-500'
+                  ? 'border-rose-500/50 bg-rose-500/10 text-rose-500 dark:text-rose-300 focus:border-rose-500'
+                  : 'hover:border-black/20 dark:hover:border-white/20 focus:border-accent focus:ring-1 focus:ring-accent'
               }
               ${className}
             `}

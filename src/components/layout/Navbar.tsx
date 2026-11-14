@@ -6,6 +6,7 @@ import { translations } from '../../i18n/translations';
 import { playHapticFeedback, triggerHaptic } from '../../utils/haptics';
 import { UserProfileModal } from '../profile/UserProfileModal';
 import { BottomSheet } from '../common/BottomSheet';
+import { LogoutConfirmModal } from '../common/LogoutConfirmModal';
 import {
   LayoutDashboard, TrendingDown, Plus, CheckSquare, BarChart3, Layers,
   TrendingUp, History, Settings, FileText, HandCoins, CreditCard, LogOut, User, Moon, Sun,
@@ -21,6 +22,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onQuickAdd }) => {
   const { activeScreen, setActiveScreen, language, setLanguage, logout, accounts, activeAccountId, firebaseUser, isDarkMode, toggleTheme } = useAppStore();
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isOmniFabOpen, setIsOmniFabOpen] = useState(false);
   const t = translations[language].nav;
   const tCommon = translations[language].common;
@@ -244,13 +246,14 @@ export const Navbar: React.FC<NavbarProps> = ({ onQuickAdd }) => {
             <button type="button" onClick={() => { setIsMoreMenuOpen(false); setIsProfileModalOpen(true); }} className="flex min-h-11 w-full items-center justify-between rounded-control border border-border-subtle bg-surface px-3 text-sm font-medium text-content">
               <span className="flex items-center gap-2"><span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-xs font-bold text-white">{activeAccount?.name?.charAt(0).toUpperCase() || 'U'}</span>{activeAccount?.name || 'Profile'}</span><User className="h-4 w-4 text-muted" />
             </button>
-            <button type="button" onClick={() => { playHapticFeedback('medium'); setIsMoreMenuOpen(false); logout(); }} className="flex min-h-11 w-full items-center justify-center gap-2 rounded-control border border-negative/30 bg-negative/10 px-3 text-sm font-semibold text-negative">
+            <button type="button" onClick={() => { playHapticFeedback('medium'); setIsMoreMenuOpen(false); setIsLogoutModalOpen(true); }} className="flex min-h-11 w-full items-center justify-center gap-2 rounded-control border border-negative/30 bg-negative/10 px-3 text-sm font-semibold text-negative cursor-pointer">
               <LogOut className="h-4 w-4" />{isAr ? 'تسجيل الخروج' : language === 'fr' ? 'Se déconnecter' : 'Log out'}
             </button>
           </div>
         </div>
       </BottomSheet>
       <UserProfileModal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)} />
+      <LogoutConfirmModal isOpen={isLogoutModalOpen} onClose={() => setIsLogoutModalOpen(false)} />
     </>
   );
 };

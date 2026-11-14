@@ -201,7 +201,7 @@ export const CosmicBackground: React.FC = () => {
 
   return (
     <div
-      className="pointer-events-none fixed inset-0 z-[-1] overflow-hidden bg-[#050505]"
+      className="hidden dark:block pointer-events-none fixed inset-0 z-[-1] overflow-hidden bg-[#050505]"
       aria-hidden="true"
     >
       {/* ── Fixed Ambient Radial Gradient Glow (Zawaq Signature) ── */}

@@ -4,6 +4,7 @@ import { useAppStore } from '../store/useAppStore';
 import { DebtItem, DebtType } from '../types';
 import { Modal } from '../components/common/Modal';
 import { Button } from '../components/common/Button';
+import { CustomDatePicker } from '../components/common/CustomDatePicker';
 import { EmptyState } from '../components/common/EmptyState';
 import { formatMAD } from '../utils/formatters';
 import { translations } from '../i18n/translations';
@@ -256,14 +257,14 @@ export const DebtsPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
               {tDebt.title}
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
               {tDebt.badge}
             </span>
           </div>
-          <p className="text-xs sm:text-sm text-zinc-400 mt-1">
+          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1">
             {tDebt.subtitle}
           </p>
         </div>
@@ -283,19 +284,19 @@ export const DebtsPage: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 p-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_16px_36px_-12px_rgba(0,0,0,0.6)] group hover:border-emerald-500/30 transition-all duration-300 after:absolute after:inset-x-8 after:bottom-0 after:h-[1px] after:bg-gradient-to-r after:from-transparent after:via-emerald-400/50 after:to-transparent"
+          className="relative overflow-hidden rounded-2xl bg-surface border border-border-subtle dark:bg-white/5 dark:border-white/10 p-5 shadow-xs dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_16px_36px_-12px_rgba(0,0,0,0.6)] group hover:border-emerald-500/30 transition-all duration-300"
         >
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
               {tDebt.theyOweMe}
             </span>
-            <div className="w-9 h-9 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.15)]">
+            <div className="w-9 h-9 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.15)]">
               <ArrowDownLeft className="w-4 h-4 stroke-[2.5]" />
             </div>
           </div>
           <MoneyText
             amount={summary.toCollect}
-            className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight tabular-nums block"
+            className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight tabular-nums block"
           />
           <span className="text-[11px] text-zinc-500 mt-1 block">
             {counts.lend} {counts.lend === 1 ? 'dossier en cours' : 'dossiers en cours'}
@@ -307,19 +308,19 @@ export const DebtsPage: React.FC = () => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
-          className="relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 p-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_16px_36px_-12px_rgba(0,0,0,0.6)] group hover:border-rose-500/30 transition-all duration-300 after:absolute after:inset-x-8 after:bottom-0 after:h-[1px] after:bg-gradient-to-r after:from-transparent after:via-rose-400/50 after:to-transparent"
+          className="relative overflow-hidden rounded-2xl bg-surface border border-border-subtle dark:bg-white/5 dark:border-white/10 p-5 shadow-xs dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_16px_36px_-12px_rgba(0,0,0,0.6)] group hover:border-rose-500/30 transition-all duration-300"
         >
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-rose-400 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-rose-600 dark:text-rose-400 uppercase tracking-wider">
               {tDebt.iOwe}
             </span>
-            <div className="w-9 h-9 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center shadow-[0_0_15px_rgba(244,63,94,0.15)]">
+            <div className="w-9 h-9 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 flex items-center justify-center shadow-[0_0_15px_rgba(244,63,94,0.15)]">
               <ArrowUpRight className="w-4 h-4 stroke-[2.5]" />
             </div>
           </div>
           <MoneyText
             amount={summary.toPay}
-            className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight tabular-nums block"
+            className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight tabular-nums block"
           />
           <span className="text-[11px] text-zinc-500 mt-1 block">
             {counts.borrow} {counts.borrow === 1 ? 'dossier en cours' : 'dossiers en cours'}
@@ -331,13 +332,13 @@ export const DebtsPage: React.FC = () => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 p-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_16px_36px_-12px_rgba(0,0,0,0.6)] group hover:border-indigo-500/30 transition-all duration-300 after:absolute after:inset-x-8 after:bottom-0 after:h-[1px] after:bg-gradient-to-r after:from-transparent after:via-indigo-400/50 after:to-transparent"
+          className="relative overflow-hidden rounded-2xl bg-surface border border-border-subtle dark:bg-white/5 dark:border-white/10 p-5 shadow-xs dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_16px_36px_-12px_rgba(0,0,0,0.6)] group hover:border-indigo-500/30 transition-all duration-300"
         >
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
               {tDebt.netBalance}
             </span>
-            <div className="w-9 h-9 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center shadow-[0_0_15px_rgba(99,102,241,0.15)]">
+            <div className="w-9 h-9 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 dark:text-indigo-400 flex items-center justify-center shadow-[0_0_15px_rgba(99,102,241,0.15)]">
               <Coins className="w-4 h-4 stroke-[2]" />
             </div>
           </div>
@@ -345,7 +346,7 @@ export const DebtsPage: React.FC = () => {
             amount={summary.net}
             showSign={true}
             className={`text-2xl sm:text-3xl font-extrabold tracking-tight tabular-nums block ${
-              summary.net >= 0 ? 'text-emerald-400' : 'text-rose-400'
+              summary.net >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
             }`}
           />
           <span className="text-[11px] text-zinc-500 mt-1 block">
@@ -355,7 +356,7 @@ export const DebtsPage: React.FC = () => {
       </div>
 
       {/* ── Single-Row Sleek Glass Toolbar (Filters & Search) ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-1.5 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-1.5 rounded-2xl bg-surface border border-border-subtle dark:bg-white/5 dark:backdrop-blur-xl dark:border-white/10">
         {/* Filter Pills */}
         <div className="flex flex-wrap items-center gap-1 no-scrollbar">
           <button
@@ -363,8 +364,8 @@ export const DebtsPage: React.FC = () => {
             onClick={() => setActiveTab('all')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 ${
               activeTab === 'all'
-                ? 'bg-white text-zinc-950 font-bold shadow-xs'
-                : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
+                ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 font-bold shadow-xs'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-black/[0.04] dark:hover:bg-white/[0.04]'
             }`}
           >
             {tDebt.all} ({counts.all})
@@ -374,8 +375,8 @@ export const DebtsPage: React.FC = () => {
             onClick={() => setActiveTab('lend')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 ${
               activeTab === 'lend'
-                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
+                ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-black/[0.04] dark:hover:bg-white/[0.04]'
             }`}
           >
             {tDebt.lent} ({counts.lend})
@@ -385,8 +386,8 @@ export const DebtsPage: React.FC = () => {
             onClick={() => setActiveTab('borrow')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 ${
               activeTab === 'borrow'
-                ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
-                : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
+                ? 'bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-black/[0.04] dark:hover:bg-white/[0.04]'
             }`}
           >
             {tDebt.borrowed} ({counts.borrow})
@@ -396,8 +397,8 @@ export const DebtsPage: React.FC = () => {
             onClick={() => setActiveTab('settled')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 ${
               activeTab === 'settled'
-                ? 'bg-white text-zinc-950 font-bold shadow-xs'
-                : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
+                ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 font-bold shadow-xs'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-black/[0.04] dark:hover:bg-white/[0.04]'
             }`}
           >
             {tDebt.settled} ({counts.settled})
@@ -406,13 +407,13 @@ export const DebtsPage: React.FC = () => {
 
         {/* Search Input */}
         <div className="relative w-full sm:w-72">
-          <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <Search className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={tDebt.searchPlaceholder}
-            className="w-full pl-9 pr-3.5 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-indigo-500/60 focus:bg-white/[0.06] transition-all"
+            className="w-full pl-9 pr-3.5 py-1.5 rounded-xl bg-zinc-50 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.08] text-xs text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none focus:border-indigo-500/60 transition-all"
           />
         </div>
       </div>
@@ -455,8 +456,8 @@ export const DebtsPage: React.FC = () => {
                 exit={{ opacity: 0, scale: 0.98 }}
                 className={`relative overflow-hidden rounded-2xl p-5 border transition-all duration-300 ${
                   debt.isSettled
-                    ? 'bg-white/5 border-white/[0.04] opacity-75'
-                    : 'bg-white/5 backdrop-blur-xl border-white/10 hover:border-white/20 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]'
+                    ? 'bg-surface/80 border-border-subtle opacity-75 dark:bg-white/5 dark:border-white/[0.04]'
+                    : 'bg-surface border-border-subtle hover:border-black/15 shadow-xs dark:bg-white/5 dark:backdrop-blur-xl dark:border-white/10 dark:hover:border-white/20 dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]'
                 }`}
               >
                 {/* Header Row */}
@@ -466,10 +467,10 @@ export const DebtsPage: React.FC = () => {
                     <div
                       className={`w-11 h-11 rounded-2xl flex items-center justify-center font-bold text-sm shrink-0 border ${
                         debt.isSettled
-                          ? 'bg-zinc-800/60 border-zinc-700/40 text-zinc-400'
+                          ? 'bg-zinc-100 dark:bg-zinc-800/60 border-zinc-200 dark:border-zinc-700/40 text-zinc-400'
                           : isLend
-                          ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.12)]'
-                          : 'bg-rose-500/10 border-rose-500/25 text-rose-400 shadow-[0_0_15px_rgba(244,63,94,0.12)]'
+                          ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-600 dark:text-emerald-400 shadow-xs'
+                          : 'bg-rose-500/10 border-rose-500/25 text-rose-600 dark:text-rose-400 shadow-xs'
                       }`}
                     >
                       {debt.personName.trim().charAt(0).toUpperCase()}
@@ -477,14 +478,14 @@ export const DebtsPage: React.FC = () => {
 
                     <div>
                       <div className="flex items-center gap-2">
-                        <h4 className="font-bold text-sm sm:text-base text-white tracking-tight">
+                        <h4 className="font-bold text-sm sm:text-base text-zinc-900 dark:text-white tracking-tight">
                           {debt.personName}
                         </h4>
                         <span
                           className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                             isLend
-                              ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20'
-                              : 'bg-rose-500/15 text-rose-400 border border-rose-500/20'
+                              ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                              : 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20'
                           }`}
                         >
                           {isLend ? tDebt.lent : tDebt.borrowed}
@@ -492,8 +493,8 @@ export const DebtsPage: React.FC = () => {
                       </div>
 
                       {debt.dueDate && (
-                        <div className="flex items-center gap-1.5 text-xs text-zinc-400 mt-0.5 tabular-nums">
-                          <Calendar className="w-3 h-3 text-zinc-500" />
+                        <div className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 tabular-nums">
+                          <Calendar className="w-3 h-3 text-zinc-400 dark:text-zinc-500" />
                           <span>
                             {tDebt.dueDateLabel} {debt.dueDate}
                           </span>
@@ -509,8 +510,8 @@ export const DebtsPage: React.FC = () => {
                       onClick={() => handleSettleToggle(debt)}
                       className={`p-2 rounded-xl transition-all ${
                         debt.isSettled
-                          ? 'text-emerald-400 bg-emerald-500/20 border border-emerald-500/30'
-                          : 'text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/10 border border-transparent'
+                          ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/20 border border-emerald-500/30'
+                          : 'text-zinc-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-500/10 border border-transparent'
                       }`}
                       title={debt.isSettled ? 'Annuler le règlement' : 'Marquer réglé'}
                     >
@@ -519,7 +520,7 @@ export const DebtsPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handleOpenEdit(debt)}
-                      className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-colors"
+                      className="p-2 rounded-xl text-zinc-400 hover:text-zinc-700 dark:hover:text-white hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors"
                       title={tDebt.editDebt}
                     >
                       <Edit2 className="w-3.5 h-3.5" />
@@ -527,7 +528,7 @@ export const DebtsPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => deleteDebt(debt.id)}
-                      className="p-2 rounded-xl text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                      className="p-2 rounded-xl text-zinc-400 hover:text-rose-500 dark:hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
                       title="Supprimer"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -536,13 +537,13 @@ export const DebtsPage: React.FC = () => {
                 </div>
 
                 {debt.notes && (
-                  <p className="text-xs text-zinc-400 mt-2.5 bg-white/[0.02] border border-white/[0.04] p-2.5 rounded-xl">
+                  <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-2.5 bg-black/[0.02] dark:bg-white/[0.02] border border-black/[0.04] dark:border-white/[0.04] p-2.5 rounded-xl">
                     {debt.notes}
                   </p>
                 )}
 
                 {/* Amount Row */}
-                <div className="flex items-end justify-between mt-4 pt-3 border-t border-white/[0.06]">
+                <div className="flex items-end justify-between mt-4 pt-3 border-t border-black/[0.06] dark:border-white/[0.06]">
                   <div>
                     <span className="text-[11px] text-zinc-500 uppercase font-semibold tracking-wider block">
                       {tDebt.remainingLabel}
@@ -551,10 +552,10 @@ export const DebtsPage: React.FC = () => {
                       amount={remaining}
                       className={`text-xl sm:text-2xl font-extrabold tracking-tight tabular-nums block ${
                         debt.isSettled
-                          ? 'text-zinc-500 line-through'
+                          ? 'text-zinc-400 line-through'
                           : isLend
-                          ? 'text-emerald-400'
-                          : 'text-rose-400'
+                          ? 'text-emerald-600 dark:text-emerald-400'
+                          : 'text-rose-600 dark:text-rose-400'
                       }`}
                     />
                   </div>
@@ -565,10 +566,10 @@ export const DebtsPage: React.FC = () => {
                     </span>
                     <MoneyText
                       amount={debt.totalAmount}
-                      className="text-sm font-semibold text-zinc-300 tabular-nums block"
+                      className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 tabular-nums block"
                     />
                     {debt.paidAmount > 0 && !debt.isSettled && (
-                      <span className="text-[11px] text-zinc-400 tabular-nums">
+                      <span className="text-[11px] text-zinc-500 dark:text-zinc-400 tabular-nums">
                         <MoneyText amount={debt.paidAmount} /> {tDebt.alreadyPaid}
                       </span>
                     )}
@@ -577,11 +578,11 @@ export const DebtsPage: React.FC = () => {
 
                 {/* Progress Bar */}
                 <div className="mt-3 space-y-1">
-                  <div className="flex items-center justify-between text-[11px] text-zinc-400">
+                  <div className="flex items-center justify-between text-[11px] text-zinc-500 dark:text-zinc-400">
                     <span>{tDebt.recoveryRate}</span>
-                    <span className="tabular-nums font-bold text-white">{progress}%</span>
+                    <span className="tabular-nums font-bold text-zinc-900 dark:text-white">{progress}%</span>
                   </div>
-                  <div className="w-full h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+                  <div className="w-full h-1.5 rounded-full bg-black/[0.06] dark:bg-white/[0.06] overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-300"
                       style={{ width: `${progress}%` }}
@@ -591,10 +592,10 @@ export const DebtsPage: React.FC = () => {
 
                 {/* ── 1-Tap Quick-Repay Chips & Inline Payment (User requirement) ── */}
                 {!debt.isSettled && (
-                  <div className="mt-3.5 pt-3 border-t border-white/[0.06] space-y-2">
+                  <div className="mt-3.5 pt-3 border-t border-black/[0.06] dark:border-white/[0.06] space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider flex items-center gap-1">
-                        <Zap className="w-3 h-3 text-amber-400" />
+                      <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider flex items-center gap-1">
+                        <Zap className="w-3 h-3 text-amber-500 dark:text-amber-400" />
                         {language === 'ar' ? 'سداد سريع بنقرة واحدة' : '1-Tap Quick Repay'}
                       </span>
                     </div>
@@ -605,7 +606,7 @@ export const DebtsPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => handleQuickPercentagePay(debt, 25)}
-                          className="px-2.5 py-1 rounded-xl bg-white/[0.04] hover:bg-white/[0.1] border border-white/[0.08] text-xs font-semibold text-zinc-200 active:scale-95 transition-all"
+                          className="px-2.5 py-1 rounded-xl bg-black/[0.04] dark:bg-white/[0.04] hover:bg-black/[0.08] dark:hover:bg-white/[0.1] border border-black/[0.08] dark:border-white/[0.08] text-xs font-semibold text-zinc-700 dark:text-zinc-200 active:scale-95 transition-all"
                         >
                           +25% ({formatMAD(quarter)})
                         </button>
@@ -616,7 +617,7 @@ export const DebtsPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => handleQuickPercentagePay(debt, 50)}
-                          className="px-2.5 py-1 rounded-xl bg-white/[0.04] hover:bg-white/[0.1] border border-white/[0.08] text-xs font-semibold text-zinc-200 active:scale-95 transition-all"
+                          className="px-2.5 py-1 rounded-xl bg-black/[0.04] dark:bg-white/[0.04] hover:bg-black/[0.08] dark:hover:bg-white/[0.1] border border-black/[0.08] dark:border-white/[0.08] text-xs font-semibold text-zinc-700 dark:text-zinc-200 active:scale-95 transition-all"
                         >
                           +50% ({formatMAD(half)})
                         </button>
@@ -626,7 +627,7 @@ export const DebtsPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleSettleToggle(debt)}
-                        className="px-2.5 py-1 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-xs font-semibold text-emerald-400 active:scale-95 transition-all flex items-center gap-1"
+                        className="px-2.5 py-1 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-xs font-semibold text-emerald-600 dark:text-emerald-400 active:scale-95 transition-all flex items-center gap-1"
                       >
                         <Sparkles className="w-3 h-3" />
                         {language === 'ar' ? 'تسوية 100%' : 'Settle 100%'}
@@ -656,12 +657,12 @@ export const DebtsPage: React.FC = () => {
                             ? 'مبلغ مخصص (Enter)...'
                             : 'Custom amount (press Enter)...'
                         }
-                        className="flex-1 bg-white/[0.04] border border-white/[0.08] focus:border-indigo-500/60 text-xs px-3 py-1.5 rounded-xl text-white placeholder-zinc-500 outline-none tabular-nums transition-all"
+                        className="flex-1 bg-zinc-50 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.08] focus:border-indigo-500/60 text-xs px-3 py-1.5 rounded-xl text-zinc-900 dark:text-white placeholder-zinc-400 outline-none tabular-nums transition-all"
                       />
                       <button
                         type="button"
                         onClick={() => handleInlineCustomPay(debt)}
-                        className="rounded-xl bg-white text-zinc-950 font-bold px-3 py-1.5 text-xs hover:bg-zinc-200 active:scale-95 transition-all shrink-0"
+                        className="rounded-xl bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 font-bold px-3 py-1.5 text-xs hover:bg-zinc-800 dark:hover:bg-zinc-200 active:scale-95 transition-all shrink-0"
                       >
                         {tDebt.recordPayment}
                       </button>
@@ -689,8 +690,8 @@ export const DebtsPage: React.FC = () => {
               onClick={() => setDebtType('lend')}
               className={`p-3.5 rounded-2xl border text-center transition-all ${
                 debtType === 'lend'
-                  ? 'bg-emerald-500/15 border-emerald-500/35 text-emerald-400 font-bold shadow-[0_0_20px_rgba(16,185,129,0.15)]'
-                  : 'bg-white/[0.03] border-white/[0.08] text-zinc-400 hover:text-white hover:bg-white/[0.06]'
+                  ? 'bg-emerald-500/15 border-emerald-500/35 text-emerald-600 dark:text-emerald-400 font-bold shadow-xs'
+                  : 'bg-black/[0.03] border-black/[0.08] text-zinc-600 hover:text-zinc-900 hover:bg-black/[0.06] dark:bg-white/[0.03] dark:border-white/[0.08] dark:text-zinc-400 dark:hover:text-white dark:hover:bg-white/[0.06]'
               }`}
             >
               <ArrowDownLeft className="w-5 h-5 mx-auto mb-1 stroke-[2.5]" />
@@ -702,8 +703,8 @@ export const DebtsPage: React.FC = () => {
               onClick={() => setDebtType('borrow')}
               className={`p-3.5 rounded-2xl border text-center transition-all ${
                 debtType === 'borrow'
-                  ? 'bg-rose-500/15 border-rose-500/35 text-rose-400 font-bold shadow-[0_0_20px_rgba(244,63,94,0.15)]'
-                  : 'bg-white/[0.03] border-white/[0.08] text-zinc-400 hover:text-white hover:bg-white/[0.06]'
+                  ? 'bg-rose-500/15 border-rose-500/35 text-rose-600 dark:text-rose-400 font-bold shadow-xs'
+                  : 'bg-black/[0.03] border-black/[0.08] text-zinc-600 hover:text-zinc-900 hover:bg-black/[0.06] dark:bg-white/[0.03] dark:border-white/[0.08] dark:text-zinc-400 dark:hover:text-white dark:hover:bg-white/[0.06]'
               }`}
             >
               <ArrowUpRight className="w-5 h-5 mx-auto mb-1 stroke-[2.5]" />
@@ -712,7 +713,7 @@ export const DebtsPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-zinc-300 mb-1">
+            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
               {tDebt.partyNameLabel} *
             </label>
             <input
@@ -721,13 +722,13 @@ export const DebtsPage: React.FC = () => {
               value={debtPerson}
               onChange={(e) => setDebtPerson(e.target.value)}
               placeholder={tDebt.partyNamePlaceholder}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.09] text-white text-sm focus:outline-none focus:border-indigo-500"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.09] text-zinc-900 dark:text-white text-sm focus:outline-none focus:border-indigo-500"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-zinc-300 mb-1">
+              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
                 {tDebt.totalAmountLabel} *
               </label>
               <input
@@ -737,12 +738,12 @@ export const DebtsPage: React.FC = () => {
                 value={debtTotal}
                 onChange={(e) => setDebtTotal(e.target.value)}
                 placeholder="0.00"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.09] text-white text-sm focus:outline-none focus:border-indigo-500 font-bold tabular-nums"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.09] text-zinc-900 dark:text-white text-sm focus:outline-none focus:border-indigo-500 font-bold tabular-nums"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-zinc-300 mb-1">
+              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
                 {tDebt.initialPaidLabel}
               </label>
               <input
@@ -751,25 +752,23 @@ export const DebtsPage: React.FC = () => {
                 value={debtPaid}
                 onChange={(e) => setDebtPaid(e.target.value)}
                 placeholder="0.00"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.09] text-white text-sm focus:outline-none focus:border-indigo-500 tabular-nums"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.09] text-zinc-900 dark:text-white text-sm focus:outline-none focus:border-indigo-500 tabular-nums"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-zinc-300 mb-1">
+            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
               {tDebt.dueDateOptional}
             </label>
-            <input
-              type="date"
+            <CustomDatePicker
               value={debtDueDate}
-              onChange={(e) => setDebtDueDate(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.09] text-white text-sm focus:outline-none focus:border-indigo-500 tabular-nums"
+              onChange={(d) => setDebtDueDate(d)}
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-zinc-300 mb-1">
+            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
               {tDebt.notesLabel}
             </label>
             <textarea
@@ -777,11 +776,11 @@ export const DebtsPage: React.FC = () => {
               value={debtNotes}
               onChange={(e) => setDebtNotes(e.target.value)}
               placeholder={tDebt.notesPlaceholder}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.09] text-white text-sm focus:outline-none focus:border-indigo-500"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.09] text-zinc-900 dark:text-white text-sm focus:outline-none focus:border-indigo-500"
             />
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-white/[0.08]">
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-black/[0.08] dark:border-white/[0.08]">
             <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>
               {tDebt.cancel}
             </Button>

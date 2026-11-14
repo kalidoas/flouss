@@ -223,17 +223,17 @@ export const ExpensesPage: React.FC = () => {
       </p>
 
       {/* Filter and Search Bar */}
-      <div className="relative z-50 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 p-3 sm:p-4 shadow-xl">
+      <div className="relative z-50 rounded-2xl bg-surface border border-border-subtle p-3 sm:p-4 shadow-xs dark:bg-white/5 dark:backdrop-blur-xl dark:border-white/10">
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
           {/* Scope Toggle: This Month vs All Time + Month Picker + Category Popover */}
           <div className="flex flex-wrap items-center gap-2 relative z-50">
-            <div className="inline-flex rounded-full p-1 bg-white/[0.04] border border-white/[0.06] shrink-0">
+            <div className="inline-flex rounded-full p-1 bg-black/[0.04] border border-black/[0.06] dark:bg-white/[0.04] dark:border-white/[0.06] shrink-0">
               <button
                 onClick={() => setViewScope('month')}
                 className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                   viewScope === 'month'
-                    ? 'bg-white text-zinc-950 shadow-xs'
-                    : 'text-zinc-400 hover:text-white'
+                    ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 shadow-xs'
+                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
                 }`}
               >
                 {t.filterThisMonth}
@@ -242,8 +242,8 @@ export const ExpensesPage: React.FC = () => {
                 onClick={() => setViewScope('all')}
                 className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                   viewScope === 'all'
-                    ? 'bg-white text-zinc-950 shadow-xs'
-                    : 'text-zinc-400 hover:text-white'
+                    ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 shadow-xs'
+                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
                 }`}
               >
                 {t.filterAll}
@@ -366,7 +366,7 @@ export const ExpensesPage: React.FC = () => {
                         onEdit={() => setIsAddExpenseOpen(true)}
                       >
                         <div
-                          className="p-3.5 sm:p-4 flex items-center justify-between gap-3 hover:bg-white/[0.02] transition-colors group w-full min-w-0"
+                          className="p-3.5 sm:p-4 flex items-center justify-between gap-3 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors group w-full min-w-0"
                         >
                           {/* Left: Category Icon & Item Details */}
                           <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -378,12 +378,12 @@ export const ExpensesPage: React.FC = () => {
                             </div>
 
                             <div className="min-w-0 flex-1">
-                              <h4 className="text-sm font-semibold text-zinc-100 truncate group-hover:text-white transition-colors">
+                              <h4 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate group-hover:text-black dark:group-hover:text-white transition-colors">
                                 {itemName}
                               </h4>
 
                               <div className="mt-0.5">
-                                <span className="inline-flex max-w-full rounded-full bg-white/[0.04] border border-white/[0.06] px-2 py-0.5 text-[10px] font-medium text-zinc-400 truncate">
+                                <span className="inline-flex max-w-full rounded-full bg-black/[0.04] dark:bg-white/[0.04] border border-black/[0.06] dark:border-white/[0.06] px-2 py-0.5 text-[10px] font-medium text-zinc-500 dark:text-zinc-400 truncate">
                                   {catName}
                                 </span>
                               </div>

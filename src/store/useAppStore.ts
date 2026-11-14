@@ -356,6 +356,27 @@ export function getInitialLanguage(): Language {
   return detectSystemLanguage();
 }
 
+export function getInitialTheme(): { theme: ThemeMode; isDarkMode: boolean } {
+  try {
+    const saved = localStorage.getItem('flouss_theme') as ThemeMode | null;
+    if (saved === 'dark' || saved === 'light' || saved === 'system') {
+      const isDark =
+        saved === 'dark'
+          ? true
+          : saved === 'light'
+          ? false
+          : typeof window !== 'undefined' &&
+            Boolean(window.matchMedia?.('(prefers-color-scheme: dark)').matches);
+      return { theme: saved, isDarkMode: isDark };
+    }
+  } catch (e) {}
+
+  const systemDark =
+    typeof window !== 'undefined' &&
+    Boolean(window.matchMedia?.('(prefers-color-scheme: dark)').matches);
+  return { theme: 'system', isDarkMode: systemDark };
+}
+
 export function extractAccountState(account: UserAccount | null) {
   if (!account) {
     return {
@@ -866,10 +887,7 @@ export const useAppStore = create<AppState>()(
         ...extractAccountState(null),
 
         // ── UI Preferences ──────────────────────────────────────────
-        theme: 'dark' as ThemeMode,
-        isDarkMode:
-          typeof window !== 'undefined' &&
-          Boolean(window.matchMedia?.('(prefers-color-scheme: dark)').matches),
+        ...getInitialTheme(),
         language: getInitialLanguage() as Language,
         activeScreen: 'dashboard' as ScreenId,
         screenHistory: [] as ScreenId[],

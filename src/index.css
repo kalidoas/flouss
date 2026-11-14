@@ -15,15 +15,15 @@ body,
   :root {
     --safe-area-top: env(safe-area-inset-top, 0px);
     --safe-area-bottom: env(safe-area-inset-bottom, 0px);
-    --color-canvas: #f5f5f7;
-    --color-surface: #ffffff;
-    --color-surface-raised: #f1f2f5;
-    --color-border: rgba(24, 24, 32, 0.08);
-    --color-content: #20212a;
-    --color-muted: #666874;
-    --color-accent: #3478f6;
-    --color-positive: #16856b;
-    --color-negative: #d7485d;
+    --color-canvas: #F2F2F7;
+    --color-surface: #FFFFFF;
+    --color-surface-raised: #E5E5EA;
+    --color-border: rgba(0, 0, 0, 0.08);
+    --color-content: #1C1C1E;
+    --color-muted: #6C6C70;
+    --color-accent: #8b5cf6;
+    --color-positive: #10b981;
+    --color-negative: #f43f5e;
     --radius-card: 12px;
     --radius-control: 8px;
     --font-caption: 12px;
@@ -58,18 +58,18 @@ body,
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -webkit-tap-highlight-color: transparent;
-    background-color: #050505;
+    background-color: var(--color-canvas);
     color: var(--color-content);
   }
 
   .dark body, body.dark {
-    background-color: #050505;
+    background-color: var(--color-canvas);
     color: var(--color-content);
   }
 
   /* Zawaq Typography: Headings */
   h1, h2, h3, h4, h5, h6 {
-    color: #ffffff;
+    color: var(--color-content);
     font-weight: 500;
     letter-spacing: -0.025em;
   }
@@ -278,12 +278,16 @@ body,
 /* Apple HIG Squircle and specular highlight cards */
 .apple-squircle {
   border-radius: 1.5rem;
+  background-color: var(--color-surface);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--color-border);
   box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.05), inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
 }
 
 .dark .apple-squircle {
+  background-color: rgba(11, 12, 18, 0.85);
+  border-color: rgba(255, 255, 255, 0.07);
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
 }
 
@@ -375,15 +379,26 @@ body,
 /* Zawa9 Bento Card & Spotlight Utilities */
 .zawa-bento {
   position: relative;
-  background-color: rgba(11, 12, 18, 0.85);
+  background-color: var(--color-surface);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04);
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+.dark .zawa-bento {
+  background-color: rgba(11, 12, 18, 0.85);
+  border-color: rgba(255, 255, 255, 0.07);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
+}
+
 .zawa-bento:hover {
+  border-color: rgba(0, 0, 0, 0.14);
+}
+
+.dark .zawa-bento:hover {
   border-color: rgba(255, 255, 255, 0.18);
   box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
 }

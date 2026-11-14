@@ -51,27 +51,27 @@ export const DashboardPage: React.FC = () => {
   ];
 
   return (
-    <div className="mx-auto max-w-[1280px] w-full pb-8 animate-page select-text">
+    <div className="mx-auto max-w-[1280px] w-full pb-8 animate-page select-text min-w-0 @container">
       {/* 1. Optional Dismissible PIN Protection Card */}
       <ProtectWorkspacePinCard onConfigurePin={() => setActiveScreen('settings')} />
 
       {/* 2. Empty Balance CTA for accounts who skipped initial balance */}
       {txList.length === 0 && (initialBalance === null || initialBalance === 0) && (
-        <div className="spotlight-card rounded-2xl bg-gradient-to-r from-emerald-950/40 via-teal-950/20 to-zinc-900/40 p-4 sm:p-5 backdrop-blur-xl border border-emerald-500/20 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] relative overflow-hidden mb-4 animate-in fade-in duration-300">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
+        <div className="spotlight-card rounded-2xl bg-gradient-to-r from-emerald-950/40 via-teal-950/20 to-zinc-900/40 p-4 sm:p-5 backdrop-blur-xl border border-emerald-500/20 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] relative overflow-hidden mb-4 animate-in fade-in duration-300 min-w-0">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 min-w-0 flex-wrap">
+            <div className="flex items-center gap-3 min-w-0">
               <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0 shadow-sm shadow-emerald-500/20">
                 <Wallet className="w-5 h-5 stroke-[2.2]" />
               </div>
-              <div>
-                <h3 className="text-sm font-bold text-white tracking-tight">
+              <div className="min-w-0">
+                <h3 className="text-sm font-bold text-content dark:text-white tracking-tight truncate">
                   {language === 'ar'
                     ? 'ابدأ بتحديد رصيدك الحالي'
                     : language === 'fr'
                     ? 'Définissez votre solde de départ'
                     : 'Set your starting balance'}
                 </h3>
-                <p className="text-xs text-zinc-400 mt-0.5">
+                <p className="text-xs text-muted dark:text-zinc-400 mt-0.5 truncate">
                   {language === 'ar'
                     ? 'حدد المبلغ المتوفر لديك حالياً لبدء تتبع دقيق لأموالك.'
                     : language === 'fr'
@@ -99,19 +99,19 @@ export const DashboardPage: React.FC = () => {
       )}
 
       <div
-        className="columns-1 md:columns-2 xl:columns-3 gap-4"
+        className="columns-1 @lg:columns-2 @3xl:columns-3 gap-4 min-w-0"
         dir={language === 'ar' ? 'rtl' : 'ltr'}
       >
         {/* Card 1: Available Balance Hero Tile */}
-        <div className="break-inside-avoid mb-4">
+        <div className="break-inside-avoid mb-4 min-w-0">
           <DashboardHero selectedMonth={selectedMonth} />
         </div>
 
         {/* Card 2: Monthly Summary Card (Compact & Expandable) */}
-        <section aria-label={t.monthlySummary} className="break-inside-avoid mb-4">
+        <section aria-label={t.monthlySummary} className="break-inside-avoid mb-4 min-w-0">
           <div
             data-spotlight="true"
-            className="spotlight-card rounded-2xl bg-white/5 p-3.5 sm:p-4 md:p-4.5 backdrop-blur-xl border border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] relative overflow-hidden transition-all duration-300 h-fit"
+            className="spotlight-card rounded-2xl bg-surface dark:bg-white/5 p-3.5 sm:p-4 md:p-4.5 backdrop-blur-xl border border-border-subtle dark:border-white/10 shadow-xs dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] relative overflow-hidden transition-all duration-300 h-fit min-w-0"
           >
             <div className={`grid ${showDetails ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-2'} divide-y sm:divide-y-0 sm:divide-x divide-white/[0.06] rtl:sm:divide-x-reverse gap-y-3 sm:gap-y-0 transition-all duration-300`}>
               {/* Income this month */}
@@ -178,9 +178,13 @@ export const DashboardPage: React.FC = () => {
                   {showDetails
                     ? language === 'ar'
                       ? 'تفاصيل أقل ←'
+                      : language === 'fr'
+                      ? 'Moins de détails ←'
                       : 'Less details ←'
                     : language === 'ar'
                     ? 'المزيد من التفاصيل →'
+                    : language === 'fr'
+                    ? 'Plus de détails →'
                     : 'More details →'}
                 </span>
               </button>
@@ -209,22 +213,22 @@ export const DashboardPage: React.FC = () => {
         <DashboardFocusNow />
 
         {/* Card 5: Today's Program */}
-        <div className="break-inside-avoid mb-4">
+        <div className="break-inside-avoid mb-4 min-w-0">
           <DashboardTodayCard />
         </div>
 
         {/* Card 6: Flouss AI Copilot */}
-        <div className="break-inside-avoid mb-4">
+        <div className="break-inside-avoid mb-4 min-w-0">
           <DashboardAiWidget />
         </div>
 
         {/* Card 7: Pinned Note */}
-        <div className="break-inside-avoid mb-4">
+        <div className="break-inside-avoid mb-4 min-w-0">
           <DashboardPinnedNote />
         </div>
 
         {/* Card 8: Upcoming Bills */}
-        <div className="break-inside-avoid mb-4">
+        <div className="break-inside-avoid mb-4 min-w-0">
           <DashboardBillsCard
             subscriptions={subscriptions}
             language={language}
@@ -233,7 +237,7 @@ export const DashboardPage: React.FC = () => {
         </div>
 
         {/* Card 9: Recent Transactions */}
-        <div className="break-inside-avoid mb-4">
+        <div className="break-inside-avoid mb-4 min-w-0">
           <DashboardRecentTransactions
             transactions={recentTransactions}
             onViewAll={() => setActiveScreen('history')}

@@ -124,15 +124,15 @@ export const HistoryPage: React.FC = () => {
         <button
           type="button"
           onClick={handleExportExcel}
-          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-white/[0.04] hover:bg-emerald-500/15 border border-white/[0.08] hover:border-emerald-500/30 text-zinc-200 hover:text-emerald-300 px-4 py-2 text-xs font-semibold backdrop-blur-md transition-all active:scale-[0.98] self-start sm:self-auto"
+          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-surface border border-border-subtle text-content hover:bg-emerald-500/10 hover:border-emerald-500/30 hover:text-emerald-600 dark:bg-white/[0.04] dark:hover:bg-emerald-500/15 dark:border-white/[0.08] dark:hover:border-emerald-500/30 dark:text-zinc-200 dark:hover:text-emerald-300 px-4 py-2 text-xs font-semibold backdrop-blur-md transition-all active:scale-[0.98] self-start sm:self-auto"
         >
-          <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+          <FileSpreadsheet className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
           <span>{language === 'ar' ? 'تصدير إلى Excel' : language === 'en' ? 'Export to Excel' : 'Exporter Excel (.xlsx)'}</span>
         </button>
       </div>
 
       {/* 3-Column Bento Metric Bar with Subtle Radial Corner Glows */}
-      <div className="rounded-2xl bg-white/5 p-5 sm:p-6 backdrop-blur-xl border border-white/10 relative overflow-hidden shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)]">
+      <div className="rounded-2xl bg-surface border border-border-subtle p-5 sm:p-6 shadow-xs dark:bg-white/5 dark:backdrop-blur-xl dark:border-white/10 relative overflow-hidden dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)]">
         <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-white/[0.06] rtl:sm:divide-x-reverse gap-y-4 sm:gap-y-0">
           {/* Total In */}
           <div className="sm:px-4 first:ps-0 last:pe-0">
@@ -226,13 +226,13 @@ export const HistoryPage: React.FC = () => {
         </div>
 
         {/* Type Filter Pills Row */}
-        <div className="flex items-center gap-1 p-1 bg-white/[0.04] rounded-full overflow-x-auto scrollbar-none border border-white/[0.06]">
+        <div className="flex items-center gap-1 p-1 bg-black/[0.04] dark:bg-white/[0.04] rounded-full overflow-x-auto scrollbar-none border border-black/[0.06] dark:border-white/[0.06]">
           <button
             onClick={() => setTypeFilter('all')}
             className={`px-3 py-1 rounded-full text-xs font-medium transition-all shrink-0 ${
               typeFilter === 'all'
-                ? 'bg-white text-zinc-950 font-semibold shadow-xs'
-                : 'text-zinc-400 hover:text-white'
+                ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 font-semibold shadow-xs'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
             }`}
           >
             {t.filterAll}
@@ -241,8 +241,8 @@ export const HistoryPage: React.FC = () => {
             onClick={() => setTypeFilter('expense')}
             className={`px-3 py-1 rounded-full text-xs font-medium transition-all shrink-0 ${
               typeFilter === 'expense'
-                ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30 font-semibold'
-                : 'text-zinc-400 hover:text-white'
+                ? 'bg-rose-500/20 text-rose-600 dark:text-rose-300 border border-rose-500/30 font-semibold'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
             }`}
           >
             {t.filterExpenses}
@@ -251,8 +251,8 @@ export const HistoryPage: React.FC = () => {
             onClick={() => setTypeFilter('income')}
             className={`px-3 py-1 rounded-full text-xs font-medium transition-all shrink-0 ${
               typeFilter === 'income'
-                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold'
-                : 'text-zinc-400 hover:text-white'
+                ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30 font-semibold'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
             }`}
           >
             {t.filterIncome}
@@ -261,8 +261,8 @@ export const HistoryPage: React.FC = () => {
             onClick={() => setTypeFilter('contribution')}
             className={`px-3 py-1 rounded-full text-xs font-medium transition-all shrink-0 ${
               typeFilter === 'contribution'
-                ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30 font-semibold'
-                : 'text-zinc-400 hover:text-white'
+                ? 'bg-blue-500/20 text-blue-600 dark:text-blue-300 border border-blue-500/30 font-semibold'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
             }`}
           >
             {t.filterSavings}
@@ -271,8 +271,8 @@ export const HistoryPage: React.FC = () => {
             onClick={() => setTypeFilter('adjustment')}
             className={`px-3 py-1 rounded-full text-xs font-medium transition-all shrink-0 ${
               typeFilter === 'adjustment'
-                ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-semibold'
-                : 'text-zinc-400 hover:text-white'
+                ? 'bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border border-indigo-500/30 font-semibold'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
             }`}
           >
             {t.filterAdjustments}

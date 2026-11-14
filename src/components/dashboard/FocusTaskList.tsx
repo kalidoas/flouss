@@ -5,6 +5,7 @@ import { translations } from '../../i18n/translations';
 import { FocusTask, FocusListMenu } from '../../types';
 import { islandManager } from '../../utils/islandManager';
 import { GoogleCalendarAlarmModal } from '../common/GoogleCalendarAlarmModal';
+import { CustomDatePicker } from '../common/CustomDatePicker';
 import { getFocusListName, getFocusTaskText } from '../../utils/i18nHelpers';
 import { playHapticFeedback } from '../../utils/haptics';
 import confetti from 'canvas-confetti';
@@ -340,11 +341,9 @@ export const FocusTaskList: React.FC = () => {
                 {/* Due Date */}
                 <div className="flex flex-col gap-1 flex-1 min-w-[140px]">
                   <span className="text-[11px] font-medium text-zinc-400">{tDashboard.dueDate}</span>
-                  <input
-                    type="date"
+                  <CustomDatePicker
                     value={newDueDate}
-                    onChange={(e) => setNewDueDate(e.target.value)}
-                    className="min-w-[140px] text-xs px-4 py-2 rounded-xl border border-white/10 bg-zinc-900 text-white outline-none font-mono"
+                    onChange={(d) => setNewDueDate(d)}
                   />
                 </div>
               </div>
@@ -399,11 +398,9 @@ export const FocusTaskList: React.FC = () => {
                   <option value="urgent">{tFocus.urgentPriority}</option>
                 </select>
 
-                <input
-                  type="date"
+                <CustomDatePicker
                   value={editDueDate}
-                  onChange={(e) => setEditDueDate(e.target.value)}
-                  className="text-xs px-2.5 py-1.5 rounded-xl border border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white outline-none"
+                  onChange={(d) => setEditDueDate(d)}
                 />
               </div>
 

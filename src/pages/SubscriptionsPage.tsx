@@ -304,14 +304,14 @@ export const SubscriptionsPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
               {tSub.title}
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 border border-indigo-500/20">
               {tSub.badge}
             </span>
           </div>
-          <p className="text-xs sm:text-sm text-zinc-400 mt-1">
+          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1">
             {tSub.subtitle} • {(tSub.activeCount || '{count} abonnements').replace('{count}', String(stats.activeCount))}
           </p>
         </div>
@@ -331,25 +331,25 @@ export const SubscriptionsPage: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 p-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_16px_36px_-12px_rgba(0,0,0,0.6)] group hover:border-indigo-500/30 transition-all duration-300 after:absolute after:inset-x-8 after:bottom-0 after:h-[1px] after:bg-gradient-to-r after:from-transparent after:via-indigo-400/50 after:to-transparent"
+          className="relative overflow-hidden rounded-2xl bg-surface border border-border-subtle dark:bg-white/5 dark:border-white/10 p-5 shadow-xs dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_16px_36px_-12px_rgba(0,0,0,0.6)] group hover:border-indigo-500/30 transition-all duration-300"
         >
           <div className="flex items-start justify-between">
             <div className="space-y-1">
-              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400 block">
+              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 block">
                 {tSub.monthlyLiability}
               </span>
               <MoneyText
                 amount={stats.totalMonthly}
-                className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white tabular-nums block"
+                className="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-white tabular-nums block"
               />
             </div>
-            <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(99,102,241,0.15)]">
+            <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 dark:text-indigo-400 flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(99,102,241,0.15)]">
               <Receipt className="w-5 h-5 stroke-[2]" />
             </div>
           </div>
           <div className="mt-3 flex items-center gap-2 text-xs text-zinc-500">
-            <span className="inline-flex items-center gap-1 font-semibold text-zinc-300">
-              <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+            <span className="inline-flex items-center gap-1 font-semibold text-zinc-700 dark:text-zinc-300">
+              <Sparkles className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
               {tSub.activeCount.replace('{count}', String(stats.activeCount))}
             </span>
             <span>•</span>
@@ -362,31 +362,31 @@ export const SubscriptionsPage: React.FC = () => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
-          className="relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 p-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_16px_36px_-12px_rgba(0,0,0,0.6)] group hover:border-emerald-500/30 transition-all duration-300 after:absolute after:inset-x-8 after:bottom-0 after:h-[1px] after:bg-gradient-to-r after:from-transparent after:via-emerald-400/50 after:to-transparent"
+          className="relative overflow-hidden rounded-2xl bg-surface border border-border-subtle dark:bg-white/5 dark:border-white/10 p-5 shadow-xs dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_16px_36px_-12px_rgba(0,0,0,0.6)] group hover:border-emerald-500/30 transition-all duration-300"
         >
           <div className="flex items-start justify-between">
             <div className="space-y-1">
-              <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400 block">
+              <span className="text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 block">
                 {tSub.paidThisMonth}
               </span>
               <MoneyText
                 amount={stats.totalPaidThisMonth}
-                className="text-2xl sm:text-3xl font-extrabold tracking-tight text-emerald-400 tabular-nums block"
+                className="text-2xl sm:text-3xl font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400 tabular-nums block"
               />
             </div>
-            <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(16,185,129,0.15)]">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(16,185,129,0.15)]">
               <CheckCircle2 className="w-5 h-5 stroke-[2]" />
             </div>
           </div>
           <div className="mt-3 flex items-center justify-between text-xs">
-            <span className="font-semibold text-emerald-400">
+            <span className="font-semibold text-emerald-600 dark:text-emerald-400">
               {(tSub.paidCount || '{count} payés').replace('{count}', String(stats.paidItemsCount))}
             </span>
-            <span className="font-bold tabular-nums text-white">
+            <span className="font-bold tabular-nums text-zinc-900 dark:text-white">
               {stats.progress}%
             </span>
           </div>
-          <div className="w-full h-1.5 rounded-full bg-white/[0.06] overflow-hidden mt-2">
+          <div className="w-full h-1.5 rounded-full bg-black/[0.06] dark:bg-white/[0.06] overflow-hidden mt-2">
             <div
               className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-500 ease-out"
               style={{ width: `${stats.progress}%` }}
@@ -399,31 +399,31 @@ export const SubscriptionsPage: React.FC = () => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 p-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_16px_36px_-12px_rgba(0,0,0,0.6)] group hover:border-amber-500/30 transition-all duration-300 after:absolute after:inset-x-8 after:bottom-0 after:h-[1px] after:bg-gradient-to-r after:from-transparent after:via-amber-400/50 after:to-transparent"
+          className="relative overflow-hidden rounded-2xl bg-surface border border-border-subtle dark:bg-white/5 dark:border-white/10 p-5 shadow-xs dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_16px_36px_-12px_rgba(0,0,0,0.6)] group hover:border-amber-500/30 transition-all duration-300"
         >
           <div className="flex items-start justify-between">
             <div className="space-y-1">
-              <span className="text-xs font-semibold uppercase tracking-wider text-amber-400 block">
+              <span className="text-xs font-semibold uppercase tracking-wider text-amber-500 dark:text-amber-400 block">
                 {tSub.remainingThisMonth}
               </span>
               <MoneyText
                 amount={stats.remaining}
-                className="text-2xl sm:text-3xl font-extrabold tracking-tight text-amber-400 tabular-nums block"
+                className="text-2xl sm:text-3xl font-extrabold tracking-tight text-amber-500 dark:text-amber-400 tabular-nums block"
               />
             </div>
-            <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(245,158,11,0.15)]">
+            <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-500 dark:text-amber-400 flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(245,158,11,0.15)]">
               <Clock className="w-5 h-5 stroke-[2]" />
             </div>
           </div>
           <div className="mt-3 flex items-center justify-between text-xs">
-            <span className="font-semibold text-amber-400">
+            <span className="font-semibold text-amber-500 dark:text-amber-400">
               {(tSub.pendingCount || '{count} en attente').replace('{count}', String(stats.pendingItemsCount))}
             </span>
             <span className="font-semibold text-zinc-500">
               {stats.totalMonthly > 0 ? 100 - stats.progress : 0}%
             </span>
           </div>
-          <div className="w-full h-1.5 rounded-full bg-white/[0.06] overflow-hidden mt-2">
+          <div className="w-full h-1.5 rounded-full bg-black/[0.06] dark:bg-white/[0.06] overflow-hidden mt-2">
             <div
               className="h-full bg-gradient-to-r from-amber-500 to-rose-400 rounded-full transition-all duration-500 ease-out"
               style={{ width: `${stats.totalMonthly > 0 ? 100 - stats.progress : 0}%` }}
@@ -437,25 +437,25 @@ export const SubscriptionsPage: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative overflow-hidden rounded-2xl p-5 bg-white/5 backdrop-blur-xl border border-white/10 space-y-4"
+          className="relative overflow-hidden rounded-2xl p-5 bg-surface border border-border-subtle dark:bg-white/5 dark:border-white/10 space-y-4"
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-indigo-400" />
-              <h3 className="text-xs font-bold uppercase tracking-wider text-white">
+              <Calendar className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
+              <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-900 dark:text-white">
                 {tSub.radarTitle}
               </h3>
             </div>
             <div className="flex items-center gap-3 text-xs">
-              <span className="flex items-center gap-1.5 text-emerald-400">
-                <span className="w-2 h-2 rounded-full bg-emerald-400" />
+              <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400" />
                 {tSub.paid}
               </span>
-              <span className="flex items-center gap-1.5 text-amber-400">
-                <span className="w-2 h-2 rounded-full bg-amber-400" />
+              <span className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
+                <span className="w-2 h-2 rounded-full bg-amber-500 dark:bg-amber-400" />
                 {tSub.upcoming}
               </span>
-              <span className="flex items-center gap-1.5 text-indigo-400 font-semibold">
+              <span className="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400 font-semibold">
                 <span className="w-2 h-2 rounded-full bg-indigo-500 animate-ping" />
                 {tSub.todayDay.replace('{day}', String(currentDay))}
               </span>
@@ -465,7 +465,7 @@ export const SubscriptionsPage: React.FC = () => {
           {/* Continuous Radar Track Bar */}
           <div className="relative pt-6 pb-4 px-2">
             {/* Background Line */}
-            <div className="h-1.5 w-full bg-white/[0.08] rounded-full relative">
+            <div className="h-1.5 w-full bg-black/[0.08] dark:bg-white/[0.08] rounded-full relative">
               {/* Elapsed Month Gradient Fill */}
               <div
                 className="h-full bg-gradient-to-r from-indigo-500/40 to-indigo-500 rounded-full"
@@ -478,7 +478,7 @@ export const SubscriptionsPage: React.FC = () => {
                 style={{ left: `${Math.min(100, (currentDay / daysInMonth) * 100)}%` }}
               >
                 <div className="w-4 h-4 rounded-full bg-indigo-500 border-2 border-white shadow-[0_0_15px_rgba(99,102,241,0.8)]" />
-                <span className="absolute -top-6 text-[10px] font-bold text-indigo-300 bg-indigo-950/80 px-1.5 py-0.5 rounded-full border border-indigo-500/30 whitespace-nowrap">
+                <span className="absolute -top-6 text-[10px] font-bold text-indigo-700 dark:text-indigo-300 bg-white dark:bg-indigo-950/80 px-1.5 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-500/30 whitespace-nowrap shadow-xs">
                   {language === 'ar' ? `اليوم (${currentDay})` : `J.${currentDay}`}
                 </span>
               </div>
@@ -507,11 +507,11 @@ export const SubscriptionsPage: React.FC = () => {
                     <div className={`w-3.5 h-3.5 rounded-full border-2 transition-transform duration-200 group-hover:scale-150 ${nodeColor}`} />
 
                     {/* Hover Floating Tooltip Card */}
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none absolute -bottom-16 left-1/2 -translate-x-1/2 bg-[#12131C] border border-white/10 rounded-xl px-2.5 py-1.5 shadow-xl text-center whitespace-nowrap z-30">
-                      <div className="text-[11px] font-bold text-white">
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none absolute -bottom-16 left-1/2 -translate-x-1/2 bg-surface text-content border border-border-subtle dark:bg-[#12131C] dark:border-white/10 rounded-xl px-2.5 py-1.5 shadow-xl text-center whitespace-nowrap z-30">
+                      <div className="text-[11px] font-bold text-zinc-900 dark:text-white">
                         {tSub.dayNumber.replace('{day}', String(day))} • {formatMAD(info.total)}
                       </div>
-                      <div className="text-[10px] text-zinc-400 truncate max-w-[140px]">
+                      <div className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate max-w-[140px]">
                         {info.names.join(', ')}
                       </div>
                     </div>
@@ -533,14 +533,14 @@ export const SubscriptionsPage: React.FC = () => {
       )}
 
       {/* ── Single-Row Sleek Glass Filter Tabs ── */}
-      <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 overflow-x-auto scrollbar-none">
+      <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-surface border border-border-subtle dark:bg-white/5 dark:border-white/10 overflow-x-auto scrollbar-none">
         <button
           type="button"
           onClick={() => setActiveFilter('all')}
           className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 ${
             activeFilter === 'all'
-              ? 'bg-white text-zinc-950 font-bold shadow-xs'
-              : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
+              ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 font-bold shadow-xs'
+              : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-black/[0.04] dark:hover:bg-white/[0.04]'
           }`}
         >
           {tSub.allFilter || 'Tous'} ({stats.activeCount})
@@ -551,8 +551,8 @@ export const SubscriptionsPage: React.FC = () => {
           onClick={() => setActiveFilter('pending')}
           className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 ${
             activeFilter === 'pending'
-              ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold'
-              : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
+              ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 font-bold'
+              : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-black/[0.04] dark:hover:bg-white/[0.04]'
           }`}
         >
           {tSub.pendingFilter} ({stats.pendingItemsCount})
@@ -563,8 +563,8 @@ export const SubscriptionsPage: React.FC = () => {
           onClick={() => setActiveFilter('paid')}
           className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 ${
             activeFilter === 'paid'
-              ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold'
-              : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
+              ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-bold'
+              : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-black/[0.04] dark:hover:bg-white/[0.04]'
           }`}
         >
           {tSub.paidFilter || 'Payés'} ({stats.paidItemsCount})
@@ -606,18 +606,18 @@ export const SubscriptionsPage: React.FC = () => {
                 <div
                   className={`relative overflow-hidden rounded-2xl p-5 border transition-all duration-300 ${
                     isPaid
-                      ? 'bg-white/5 border-white/[0.04] opacity-80'
-                      : 'bg-white/5 backdrop-blur-xl border-white/10 hover:border-white/20 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]'
+                      ? 'bg-surface/80 border-border-subtle opacity-80 dark:bg-white/5 dark:border-white/[0.04]'
+                      : 'bg-surface border-border-subtle hover:border-black/15 shadow-xs dark:bg-white/5 dark:backdrop-blur-xl dark:border-white/10 dark:hover:border-white/20 dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]'
                   }`}
                 >
                 {/* Header Row */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="space-y-1.5 flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/[0.05] text-zinc-300 border border-white/[0.08]">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-black/[0.04] text-zinc-700 border border-black/[0.06] dark:bg-white/[0.05] dark:text-zinc-300 dark:border-white/[0.08]">
                         {sub.category === 'Abonnement' ? tSub.defaultCategory : (sub.category || tSub.defaultCategory)}
                       </span>
-                      <h4 className="font-bold text-sm sm:text-base text-white tracking-tight truncate">
+                      <h4 className="font-bold text-sm sm:text-base text-zinc-900 dark:text-white tracking-tight truncate">
                         {sub.name}
                       </h4>
                     </div>
@@ -632,9 +632,9 @@ export const SubscriptionsPage: React.FC = () => {
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-3 text-xs text-zinc-400 pt-0.5">
+                    <div className="flex items-center gap-3 text-xs text-zinc-500 dark:text-zinc-400 pt-0.5">
                       <div className="flex items-center gap-1 tabular-nums font-medium">
-                        <Calendar className="w-3.5 h-3.5 text-zinc-500" />
+                        <Calendar className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500" />
                         <span>{tSub.dayOfMonth.replace('{day}', String(sub.billingDay))}</span>
                       </div>
                       {sub.notes && (
@@ -650,7 +650,7 @@ export const SubscriptionsPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handleOpenEdit(sub)}
-                      className="p-1.5 rounded-xl text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-colors"
+                      className="p-1.5 rounded-xl text-zinc-400 hover:text-zinc-700 dark:hover:text-white hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors"
                       title={tSub.editSubscription}
                     >
                       <Edit2 className="w-3.5 h-3.5" />
@@ -661,7 +661,7 @@ export const SubscriptionsPage: React.FC = () => {
                         deleteSubscription(sub.id);
                         deleteCalendarEventByFloussId(sub.id).catch(() => {});
                       }}
-                      className="p-1.5 rounded-xl text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                      className="p-1.5 rounded-xl text-zinc-400 hover:text-rose-500 dark:hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
                       title={tCommon.delete}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -670,7 +670,7 @@ export const SubscriptionsPage: React.FC = () => {
                 </div>
 
                 {/* Amount and 1-Click "Mark Paid" Button Row */}
-                <div className="flex items-center justify-between gap-3 mt-4 pt-3 border-t border-white/[0.06]">
+                <div className="flex items-center justify-between gap-3 mt-4 pt-3 border-t border-black/[0.06] dark:border-white/[0.06]">
                   <div>
                     <span className="text-[11px] text-zinc-500 uppercase font-semibold tracking-wider block">
                       {isPaid ? tSub.paidBadge : tSub.pendingBadge}
@@ -678,7 +678,7 @@ export const SubscriptionsPage: React.FC = () => {
                     <MoneyText
                       amount={sub.amount}
                       className={`text-xl sm:text-2xl font-extrabold tracking-tight tabular-nums block ${
-                        isPaid ? 'text-emerald-400' : 'text-white'
+                        isPaid ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-900 dark:text-white'
                       }`}
                     />
                   </div>
@@ -689,8 +689,8 @@ export const SubscriptionsPage: React.FC = () => {
                     onClick={() => handleTogglePaidWithCelebration(sub)}
                     className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 shrink-0 ${
                       isPaid
-                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/35 shadow-[0_0_15px_rgba(16,185,129,0.2)]'
-                        : 'bg-white text-zinc-950 hover:bg-zinc-200 shadow-[0_0_15px_rgba(255,255,255,0.15)]'
+                        ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/35 shadow-xs'
+                        : 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 hover:bg-zinc-800 dark:hover:bg-zinc-200 shadow-xs'
                     }`}
                   >
                     {isPaid ? (
@@ -722,7 +722,7 @@ export const SubscriptionsPage: React.FC = () => {
       >
         <form onSubmit={handleSaveSub} className="space-y-4 pt-2">
           <div>
-            <label className="block text-xs font-bold text-zinc-300 mb-1">
+            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
               {tSub.nameLabel} *
             </label>
             <input
@@ -731,13 +731,13 @@ export const SubscriptionsPage: React.FC = () => {
               value={subName}
               onChange={(e) => setSubName(e.target.value)}
               placeholder={tSub.namePlaceholder}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.09] text-white text-sm focus:outline-none focus:border-indigo-500 font-medium"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.09] text-zinc-900 dark:text-white text-sm focus:outline-none focus:border-indigo-500 font-medium"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-zinc-300 mb-1">
+              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
                 {tSub.amountLabel} *
               </label>
               <input
@@ -747,12 +747,12 @@ export const SubscriptionsPage: React.FC = () => {
                 value={subAmount}
                 onChange={(e) => setSubAmount(e.target.value)}
                 placeholder="0.00"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.09] text-white text-sm focus:outline-none focus:border-indigo-500 font-bold tabular-nums"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.09] text-zinc-900 dark:text-white text-sm focus:outline-none focus:border-indigo-500 font-bold tabular-nums"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-zinc-300 mb-1">
+              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
                 {tSub.dayLabel}
               </label>
               <input
@@ -762,13 +762,13 @@ export const SubscriptionsPage: React.FC = () => {
                 required
                 value={subDay}
                 onChange={(e) => setSubDay(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.09] text-white text-sm focus:outline-none focus:border-indigo-500 tabular-nums font-bold"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.09] text-zinc-900 dark:text-white text-sm focus:outline-none focus:border-indigo-500 tabular-nums font-bold"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-zinc-300 mb-1">
+            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
               {tSub.categoryLabel}
             </label>
             <input
@@ -776,12 +776,12 @@ export const SubscriptionsPage: React.FC = () => {
               value={subCategory}
               onChange={(e) => setSubCategory(e.target.value)}
               placeholder="Ex: Télécom, Sport, Logement..."
-              className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.09] text-white text-sm focus:outline-none focus:border-indigo-500"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.09] text-zinc-900 dark:text-white text-sm focus:outline-none focus:border-indigo-500"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-zinc-300 mb-1">
+            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
               {tSub.notesLabel}
             </label>
             <textarea
@@ -789,11 +789,11 @@ export const SubscriptionsPage: React.FC = () => {
               value={subNotes}
               onChange={(e) => setSubNotes(e.target.value)}
               placeholder={tSub.notesPlaceholder}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.09] text-white text-sm focus:outline-none focus:border-indigo-500"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.09] text-zinc-900 dark:text-white text-sm focus:outline-none focus:border-indigo-500"
             />
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-white/[0.08]">
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-black/[0.08] dark:border-white/[0.08]">
             <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>
               {tSub.cancel}
             </Button>

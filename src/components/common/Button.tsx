@@ -30,17 +30,17 @@ export const Button: React.FC<ButtonProps> = ({
 
   const variantStyles = {
     primary:
-      'bg-white text-zinc-950 font-semibold shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:bg-zinc-100 hover:shadow-[0_0_15px_rgba(139,92,246,0.3)] border border-transparent',
+      'bg-zinc-950 text-white hover:bg-zinc-800 shadow-sm dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100 dark:shadow-[0_0_20px_rgba(255,255,255,0.2)] font-semibold border border-transparent',
     secondary:
-      'bg-white/5 hover:bg-white/10 text-zinc-200 border border-white/10 backdrop-blur-xl hover:shadow-[0_0_15px_rgba(139,92,246,0.3)]',
+      'bg-surface-raised hover:bg-surface text-content border border-border-subtle dark:bg-white/5 dark:hover:bg-white/10 dark:text-zinc-200 dark:border-white/10 backdrop-blur-xl',
     income:
-      'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/25 hover:shadow-[0_0_15px_rgba(16,185,129,0.3)]',
+      'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/25',
     danger:
-      'bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/25 hover:shadow-[0_0_15px_rgba(244,63,94,0.3)]',
+      'bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 border border-rose-500/25',
     outline:
-      'bg-white/5 hover:bg-white/10 text-zinc-200 border border-white/10 backdrop-blur-xl hover:shadow-[0_0_15px_rgba(139,92,246,0.3)]',
+      'bg-transparent hover:bg-surface-raised text-content border border-border-subtle dark:bg-white/5 dark:hover:bg-white/10 dark:text-zinc-200 dark:border-white/10',
     ghost:
-      'bg-transparent hover:bg-white/10 text-zinc-400 hover:text-white',
+      'bg-transparent hover:bg-surface-raised text-muted hover:text-content dark:hover:bg-white/10 dark:text-zinc-400 dark:hover:text-white',
   };
 
   const widthStyle = fullWidth ? 'w-full' : '';
