@@ -14,22 +14,26 @@ import {
 import { calculateAvailableBalance } from '../../utils/calculations';
 import { translations } from '../../i18n/translations';
 import { getSubCategoryName } from '../../utils/i18nHelpers';
+import { Transaction } from '../../types';
 import { AlertTriangle, Check, Clock3 } from 'lucide-react';
 
 interface AddExpenseModalProps {
   isOpen: boolean;
   onClose: () => void;
   defaultCategoryId?: string;
+  transactionToEdit?: Transaction | null;
 }
 
 export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
   isOpen,
   onClose,
   defaultCategoryId,
+  transactionToEdit,
 }) => {
   const {
     categories,
     addTransaction,
+    updateTransaction,
     balance: storeBalance,
     initialBalance,
     transactions,
@@ -48,15 +52,25 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
-      setCategoryId(defaultCategoryId || '');
-      setSubCategoryId(null);
-      setError('');
-      setAmountStr('');
-      setNote('');
-      setDate(getTodayDateStr());
-      setTime(getCurrentTimeStr());
+      if (transactionToEdit) {
+        setAmountStr(transactionToEdit.amount.toString());
+        setCategoryId(transactionToEdit.categoryId || defaultCategoryId || '');
+        setSubCategoryId(transactionToEdit.subCategoryId || null);
+        setDate(transactionToEdit.date.slice(0, 10));
+        setTime(transactionToEdit.date.slice(11, 16) || getCurrentTimeStr());
+        setNote(transactionToEdit.note || '');
+        setError('');
+      } else {
+        setCategoryId(defaultCategoryId || '');
+        setSubCategoryId(null);
+        setError('');
+        setAmountStr('');
+        setNote('');
+        setDate(getTodayDateStr());
+        setTime(getCurrentTimeStr());
+      }
     }
-  }, [isOpen, defaultCategoryId]);
+  }, [isOpen, defaultCategoryId, transactionToEdit]);
 
   const availableBalance =
     typeof storeBalance === 'number' && !isNaN(storeBalance)
@@ -103,16 +117,26 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
 
     const isoDate = toIsoDateTime(date, time);
 
-    addTransaction({
-      id: 'tx_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
-      type: 'expense',
-      amount: numericAmount,
-      categoryId,
-      subCategoryId: subCategoryId || undefined,
-      date: isoDate,
-      note: note.trim() || undefined,
-      createdAt: new Date().toISOString(),
-    });
+    if (transactionToEdit) {
+      updateTransaction(transactionToEdit.id, {
+        amount: numericAmount,
+        categoryId,
+        subCategoryId: subCategoryId || undefined,
+        date: isoDate,
+        note: note.trim() || undefined,
+      });
+    } else {
+      addTransaction({
+        id: 'tx_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+        type: 'expense',
+        amount: numericAmount,
+        categoryId,
+        subCategoryId: subCategoryId || undefined,
+        date: isoDate,
+        note: note.trim() || undefined,
+        createdAt: new Date().toISOString(),
+      });
+    }
 
     setAmountStr('');
     setNote('');
@@ -125,8 +149,8 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={t.transactionTitleExpense}
-      subtitle={t.transactionSubtitleExpense}
+      title={transactionToEdit ? t.transactionTitleExpenseEdit : t.transactionTitleExpense}
+      subtitle={transactionToEdit ? t.transactionSubtitleExpenseEdit : t.transactionSubtitleExpense}
       maxWidth="md"
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">

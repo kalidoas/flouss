@@ -618,23 +618,14 @@ export const CategoriesPage: React.FC = () => {
                         >
                           <Minus className="w-3 h-3" />
                         </button>
-                        <input
-                          type="number"
-                          min="0"
-                          step="10"
-                          defaultValue={category.monthlyBudget || ''}
-                          key={category.monthlyBudget || 'empty'}
-                          onBlur={(e) => {
-                            const val = Number(e.currentTarget.value);
-                            const next = Number.isFinite(val) && val > 0 ? val : null;
-                            if (next !== (category.monthlyBudget || null)) {
-                              updateCategory(category.id, { monthlyBudget: next });
-                            }
-                          }}
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEdit(category)}
                           aria-label={`${categoryName} monthly budget`}
-                          className="w-16 h-6 bg-transparent text-center text-xs font-semibold text-white outline-none tabular-nums"
-                          placeholder="0"
-                        />
+                          className="px-2 h-6 rounded flex items-center justify-center text-xs font-semibold text-zinc-800 dark:text-zinc-200 hover:bg-black/[0.04] dark:hover:bg-white/[0.08] transition-colors tabular-nums"
+                        >
+                          {category.monthlyBudget ? `${category.monthlyBudget} MAD` : '0 MAD'}
+                        </button>
                         <button
                           type="button"
                           onClick={() => {

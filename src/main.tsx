@@ -5,6 +5,11 @@ import App from './App';
 import { PrivacyPage, TermsPage } from './LegalPages';
 import './index.css';
 import { initGlobalHaptics } from './utils/haptics';
+import { useAppStore } from './store/useAppStore';
+
+if (typeof window !== 'undefined') {
+  (window as any).useAppStore = useAppStore;
+}
 
 // Initialize global capture-phase haptics delegation (0ms sensory latency)
 initGlobalHaptics();

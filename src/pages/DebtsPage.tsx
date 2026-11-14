@@ -4,6 +4,7 @@ import { useAppStore } from '../store/useAppStore';
 import { DebtItem, DebtType } from '../types';
 import { Modal } from '../components/common/Modal';
 import { Button } from '../components/common/Button';
+import { AmountKeypad } from '../components/common/AmountKeypad';
 import { CustomDatePicker } from '../components/common/CustomDatePicker';
 import { EmptyState } from '../components/common/EmptyState';
 import { formatMAD } from '../utils/formatters';
@@ -43,7 +44,11 @@ export const DebtsPage: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<'all' | 'lend' | 'borrow' | 'settled'>('all');
   const [search, setSearch] = useState('');
-  const [inlinePaymentInput, setInlinePaymentInput] = useState<Record<string, string>>({});
+
+  // Repayment Modal State
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [paymentDebt, setPaymentDebt] = useState<DebtItem | null>(null);
+  const [paymentAmount, setPaymentAmount] = useState('');
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -218,16 +223,15 @@ export const DebtsPage: React.FC = () => {
     }
   };
 
-  const handleInlineCustomPay = (debt: DebtItem) => {
-    const raw = inlinePaymentInput[debt.id];
-    const amt = parseFloat(raw || '0');
+  const handlePaymentSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!paymentDebt) return;
+    const amt = parseFloat(paymentAmount.replace(/\s/g, '').replace(',', '.')) || 0;
     if (isNaN(amt) || amt <= 0) return;
 
-    const remaining = Math.max(0, debt.totalAmount - (debt.paidAmount || 0));
-    const willSettle = (debt.paidAmount || 0) + amt >= debt.totalAmount;
+    const willSettle = (paymentDebt.paidAmount || 0) + amt >= paymentDebt.totalAmount;
 
-    recordDebtPayment(debt.id, amt);
-    setInlinePaymentInput((prev) => ({ ...prev, [debt.id]: '' }));
+    recordDebtPayment(paymentDebt.id, amt);
 
     if (willSettle) {
       playHapticFeedback('success');
@@ -238,17 +242,21 @@ export const DebtsPage: React.FC = () => {
       });
       showToast({
         message: language === 'ar'
-          ? `🎉 تم تسوية دين "${debt.personName}" بالكامل!`
-          : `🎉 Debt with "${debt.personName}" fully settled!`,
+          ? `🎉 تم تسوية دين "${paymentDebt.personName}" بالكامل!`
+          : `🎉 Debt with "${paymentDebt.personName}" fully settled!`,
       });
     } else {
       playHapticFeedback('selection');
       showToast({
         message: language === 'ar'
-          ? `✓ تم تسجيل سداد ${formatMAD(amt)} لـ "${debt.personName}"`
-          : `✓ Recorded ${formatMAD(amt)} payment for "${debt.personName}"`,
+          ? `✓ تم تسجيل سداد ${formatMAD(amt)} لـ "${paymentDebt.personName}"`
+          : `✓ Recorded ${formatMAD(amt)} payment for "${paymentDebt.personName}"`,
       });
     }
+
+    setIsPaymentModalOpen(false);
+    setPaymentDebt(null);
+    setPaymentAmount('');
   };
 
   return (
@@ -632,39 +640,19 @@ export const DebtsPage: React.FC = () => {
                         <Sparkles className="w-3 h-3" />
                         {language === 'ar' ? 'تسوية 100%' : 'Settle 100%'}
                       </button>
-                    </div>
 
-                    {/* Inline Custom Payment Input */}
-                    <div className="flex items-center gap-2 pt-1">
-                      <input
-                        type="number"
-                        step="any"
-                        value={inlinePaymentInput[debt.id] || ''}
-                        onChange={(e) =>
-                          setInlinePaymentInput((prev) => ({
-                            ...prev,
-                            [debt.id]: e.target.value,
-                          }))
-                        }
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            handleInlineCustomPay(debt);
-                          }
-                        }}
-                        placeholder={
-                          language === 'ar'
-                            ? 'مبلغ مخصص (Enter)...'
-                            : 'Custom amount (press Enter)...'
-                        }
-                        className="flex-1 bg-zinc-50 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.08] focus:border-indigo-500/60 text-xs px-3 py-1.5 rounded-xl text-zinc-900 dark:text-white placeholder-zinc-400 outline-none tabular-nums transition-all"
-                      />
+                      {/* Custom Repayment Modal Button */}
                       <button
                         type="button"
-                        onClick={() => handleInlineCustomPay(debt)}
-                        className="rounded-xl bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 font-bold px-3 py-1.5 text-xs hover:bg-zinc-800 dark:hover:bg-zinc-200 active:scale-95 transition-all shrink-0"
+                        onClick={() => {
+                          setPaymentDebt(debt);
+                          setPaymentAmount('');
+                          setIsPaymentModalOpen(true);
+                        }}
+                        className="px-2.5 py-1 rounded-xl bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-500/30 text-xs font-semibold text-indigo-600 dark:text-indigo-400 active:scale-95 transition-all flex items-center gap-1"
                       >
-                        {tDebt.recordPayment}
+                        <Zap className="w-3 h-3" />
+                        {language === 'ar' ? 'سداد مخصص' : language === 'fr' ? 'Montant personnalisé' : 'Custom payment'}
                       </button>
                     </div>
                   </div>
@@ -726,35 +714,15 @@ export const DebtsPage: React.FC = () => {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
-                {tDebt.totalAmountLabel} *
-              </label>
-              <input
-                type="number"
-                step="any"
-                required
-                value={debtTotal}
-                onChange={(e) => setDebtTotal(e.target.value)}
-                placeholder="0.00"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.09] text-zinc-900 dark:text-white text-sm focus:outline-none focus:border-indigo-500 font-bold tabular-nums"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
-                {tDebt.initialPaidLabel}
-              </label>
-              <input
-                type="number"
-                step="any"
-                value={debtPaid}
-                onChange={(e) => setDebtPaid(e.target.value)}
-                placeholder="0.00"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.09] text-zinc-900 dark:text-white text-sm focus:outline-none focus:border-indigo-500 tabular-nums"
-              />
-            </div>
+          <div>
+            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+              {tDebt.totalAmountLabel} *
+            </label>
+            <AmountKeypad
+              amount={debtTotal}
+              onChange={setDebtTotal}
+              currency={translations[language].currency}
+            />
           </div>
 
           <div>
@@ -786,6 +754,59 @@ export const DebtsPage: React.FC = () => {
             </Button>
             <Button type="submit" variant="primary">
               {editingDebt ? tDebt.save : tDebt.confirm}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* ── PARTIAL / CUSTOM PAYMENT MODAL ── */}
+      <Modal
+        isOpen={isPaymentModalOpen}
+        onClose={() => {
+          setIsPaymentModalOpen(false);
+          setPaymentDebt(null);
+        }}
+        title={tDebt.paymentModalTitle}
+        subtitle={tDebt.paymentModalSubtitle}
+      >
+        <form onSubmit={handlePaymentSubmit} className="space-y-4 pt-2">
+          {paymentDebt && (
+            <div className="p-3.5 rounded-2xl bg-zinc-100/80 dark:bg-zinc-800/60 border border-black/[0.04] dark:border-white/[0.06] flex items-center justify-between text-xs">
+              <span className="text-zinc-500 dark:text-zinc-400 font-medium">{tDebt.remainingLabel}</span>
+              <span className="font-bold text-zinc-900 dark:text-white tabular-nums text-sm">
+                {formatMAD(Math.max(0, paymentDebt.totalAmount - (paymentDebt.paidAmount || 0)), false, language)}
+              </span>
+            </div>
+          )}
+
+          <div>
+            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+              {tDebt.paymentAmountLabel}
+            </label>
+            <AmountKeypad
+              amount={paymentAmount}
+              onChange={setPaymentAmount}
+              currency={translations[language].currency}
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-black/[0.08] dark:border-white/[0.08]">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => {
+                setIsPaymentModalOpen(false);
+                setPaymentDebt(null);
+              }}
+            >
+              {tDebt.cancel}
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              icon={<Check className="w-4 h-4 stroke-[2.5]" />}
+            >
+              {tDebt.confirmPayment}
             </Button>
           </div>
         </form>

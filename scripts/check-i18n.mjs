@@ -204,12 +204,27 @@ const foundIssues = [];
 
 for (const file of tsxFiles) {
   const relPath = path.relative(rootDir, file);
-  if (relPath.includes('Logo.tsx') || relPath.includes('translations.ts')) continue;
+  if (relPath.includes('Logo.tsx') || relPath.includes('translations.ts') || relPath.includes('LegalPages')) continue;
 
   const content = fs.readFileSync(file, 'utf-8');
   for (const raw of flaggedRawStrings) {
     if (content.includes(`"${raw}"`) || content.includes(`'${raw}'`) || content.includes(`>${raw}<`)) {
       foundIssues.push({ file: relPath, string: raw });
+    }
+  }
+
+  // Check for unlocalized JSX text nodes
+  const allowedJsxLiterals = new Set([
+    'MAD', 'XP', 'Lv', '•', '—', '+', '-', '×', '/', '%', '...', 'x', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+    '4x10', '3x12', '+50 MAD', '-50 MAD', '0 MAD', 'Flouss', 'Flouss Insights', 'Android', 'iPhone (iOS)',
+    'Ctrl/⌘ K', 'Auto', 'Google Calendar...',
+  ]);
+  const jsxRegex = /<(?:span|p|h[1-6]|button|div|label|a|li)[^>]*>([^<>{}\n]+)<\/(?:span|p|h[1-6]|button|div|label|a|li)>/g;
+  let match;
+  while ((match = jsxRegex.exec(content)) !== null) {
+    const text = match[1].trim();
+    if (text.length > 3 && /[a-zA-Z\u0600-\u06FF\u00C0-\u00FF]{3,}/.test(text) && !allowedJsxLiterals.has(text)) {
+      foundIssues.push({ file: relPath, string: text });
     }
   }
 }

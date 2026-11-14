@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useAppStore } from '../store/useAppStore';
 import { Button } from '../components/common/Button';
 import { Card } from '../components/common/Card';
@@ -31,6 +31,19 @@ export const IncomePage: React.FC = () => {
   const [selectedSourceFilter, setSelectedSourceFilter] = useState<string>('all');
   const [selectedMonth, setSelectedMonth] = useState<string>(getCurrentMonthStr());
   const [prefilledSourceId, setPrefilledSourceId] = useState<string | undefined>();
+  const [editingTx, setEditingTx] = useState<Transaction | null>(null);
+
+  useEffect(() => {
+    const handleEditTx = (e: Event) => {
+      const custom = e as CustomEvent<{ transaction: Transaction }>;
+      if (custom.detail?.transaction && custom.detail.transaction.type === 'income') {
+        setEditingTx(custom.detail.transaction);
+        setIsAddIncomeOpen(true);
+      }
+    };
+    window.addEventListener('flouss:edit-transaction', handleEditTx);
+    return () => window.removeEventListener('flouss:edit-transaction', handleEditTx);
+  }, []);
 
   // Filter only income transactions
   const allIncomeTransactions = (transactions || []).filter((tx: Transaction) => tx?.type === 'income');
@@ -346,8 +359,13 @@ export const IncomePage: React.FC = () => {
       {/* Modals */}
       <AddIncomeModal
         isOpen={isAddIncomeOpen}
-        onClose={() => setIsAddIncomeOpen(false)}
+        onClose={() => {
+          setIsAddIncomeOpen(false);
+          setEditingTx(null);
+          setPrefilledSourceId(undefined);
+        }}
         defaultSourceId={prefilledSourceId}
+        transactionToEdit={editingTx}
       />
 
       <IncomeSourceModal

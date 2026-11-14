@@ -11,20 +11,23 @@ import {
   toIsoDateTime,
 } from '../../utils/formatters';
 import { translations } from '../../i18n/translations';
+import { Transaction } from '../../types';
 import { Check, Clock3 } from 'lucide-react';
 
 interface AddIncomeModalProps {
   isOpen: boolean;
   onClose: () => void;
   defaultSourceId?: string;
+  transactionToEdit?: Transaction | null;
 }
 
 export const AddIncomeModal: React.FC<AddIncomeModalProps> = ({
   isOpen,
   onClose,
   defaultSourceId,
+  transactionToEdit,
 }) => {
-  const { incomeSources, addTransaction, language } = useAppStore();
+  const { incomeSources, addTransaction, updateTransaction, language } = useAppStore();
   const t = translations[language].common;
 
   const [amountStr, setAmountStr] = useState('');
@@ -39,16 +42,27 @@ export const AddIncomeModal: React.FC<AddIncomeModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
-      setSourceId(defaultSourceId || '');
-      setSubSourceId(null);
-      setIsRecurring(false);
-      setError('');
-      setAmountStr('');
-      setNote('');
-      setDate(getTodayDateStr());
-      setTime(getCurrentTimeStr());
+      if (transactionToEdit) {
+        setAmountStr(transactionToEdit.amount.toString());
+        setSourceId(transactionToEdit.sourceId || defaultSourceId || '');
+        setSubSourceId(transactionToEdit.incomeSubSourceId || null);
+        setDate(transactionToEdit.date.slice(0, 10));
+        setTime(transactionToEdit.date.slice(11, 16) || getCurrentTimeStr());
+        setNote(transactionToEdit.note || '');
+        setIsRecurring(Boolean(transactionToEdit.isRecurring));
+        setError('');
+      } else {
+        setSourceId(defaultSourceId || '');
+        setSubSourceId(null);
+        setIsRecurring(false);
+        setError('');
+        setAmountStr('');
+        setNote('');
+        setDate(getTodayDateStr());
+        setTime(getCurrentTimeStr());
+      }
     }
-  }, [isOpen, defaultSourceId]);
+  }, [isOpen, defaultSourceId, transactionToEdit]);
 
   useEffect(() => {
     if (incomeSources.length && !sourceId) {
@@ -84,18 +98,30 @@ export const AddIncomeModal: React.FC<AddIncomeModalProps> = ({
 
     const isoDate = toIsoDateTime(date, time);
 
-    addTransaction({
-      id: 'tx_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
-      type: 'income',
-      amount: numericAmount,
-      sourceId,
-      incomeSubSourceId: subSourceId || undefined,
-      date: isoDate,
-      note: note.trim() || undefined,
-      isRecurring,
-      recurringDay: isRecurring ? recurringDay : undefined,
-      createdAt: new Date().toISOString(),
-    });
+    if (transactionToEdit) {
+      updateTransaction(transactionToEdit.id, {
+        amount: numericAmount,
+        sourceId,
+        incomeSubSourceId: subSourceId || undefined,
+        date: isoDate,
+        note: note.trim() || undefined,
+        isRecurring,
+        recurringDay: isRecurring ? recurringDay : undefined,
+      });
+    } else {
+      addTransaction({
+        id: 'tx_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+        type: 'income',
+        amount: numericAmount,
+        sourceId,
+        incomeSubSourceId: subSourceId || undefined,
+        date: isoDate,
+        note: note.trim() || undefined,
+        isRecurring,
+        recurringDay: isRecurring ? recurringDay : undefined,
+        createdAt: new Date().toISOString(),
+      });
+    }
 
     setAmountStr('');
     setNote('');
@@ -109,8 +135,8 @@ export const AddIncomeModal: React.FC<AddIncomeModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={t.transactionTitleIncome}
-      subtitle={t.transactionSubtitleIncome}
+      title={transactionToEdit ? t.transactionTitleIncomeEdit : t.transactionTitleIncome}
+      subtitle={transactionToEdit ? t.transactionSubtitleIncomeEdit : t.transactionSubtitleIncome}
       maxWidth="md"
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '../store/useAppStore';
 import { Card } from '../components/common/Card';
@@ -50,6 +50,19 @@ export const ExpensesPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('all');
   const [viewScope, setViewScope] = useState<'month' | 'all'>('month');
+  const [editingTx, setEditingTx] = useState<Transaction | null>(null);
+
+  useEffect(() => {
+    const handleEditTx = (e: Event) => {
+      const custom = e as CustomEvent<{ transaction: Transaction }>;
+      if (custom.detail?.transaction && custom.detail.transaction.type === 'expense') {
+        setEditingTx(custom.detail.transaction);
+        setIsAddExpenseOpen(true);
+      }
+    };
+    window.addEventListener('flouss:edit-transaction', handleEditTx);
+    return () => window.removeEventListener('flouss:edit-transaction', handleEditTx);
+  }, []);
 
   // Strictly filter only expense transactions
   const allExpenses = useMemo(() => {
@@ -363,7 +376,10 @@ export const ExpensesPage: React.FC = () => {
                       <SwipeRow
                         key={tx.id}
                         onDelete={() => handleDelete(tx)}
-                        onEdit={() => setIsAddExpenseOpen(true)}
+                        onEdit={() => {
+                          setEditingTx(tx);
+                          setIsAddExpenseOpen(true);
+                        }}
                       >
                         <div
                           className="p-3.5 sm:p-4 flex items-center justify-between gap-3 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors group w-full min-w-0"
@@ -423,10 +439,14 @@ export const ExpensesPage: React.FC = () => {
         </div>
       )}
 
-      {/* Add Expense Modal */}
+      {/* Add / Edit Expense Modal */}
       <AddExpenseModal
         isOpen={isAddExpenseOpen}
-        onClose={() => setIsAddExpenseOpen(false)}
+        onClose={() => {
+          setIsAddExpenseOpen(false);
+          setEditingTx(null);
+        }}
+        transactionToEdit={editingTx}
       />
     </div>
   );

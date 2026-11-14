@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import { BottomSheet } from '../common/BottomSheet';
 import { Button } from '../common/Button';
+import { AmountKeypad } from '../common/AmountKeypad';
 import { translations } from '../../i18n/translations';
 import { formatMAD } from '../../utils/formatters';
 import { playHapticFeedback } from '../../utils/haptics';
@@ -138,25 +139,16 @@ export const AdjustBalanceModal: React.FC<AdjustBalanceModalProps> = ({
           </div>
         </div>
 
-        {/* Big Apple-Style Numeric Input */}
+        {/* Numeric Amount Keypad */}
         <div>
           <label className="block text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1.5">
             {tWallet.newBalanceLabel}
           </label>
-          <div className="relative flex items-center">
-            <input
-              type="text"
-              inputMode="decimal"
-              autoFocus
-              value={targetStr}
-              onChange={(e) => setTargetStr(e.target.value)}
-              placeholder="0.00"
-              className="w-full text-3xl font-extrabold py-3.5 px-4 rounded-2xl border border-blue-500/30 dark:border-blue-500/40 bg-blue-50/30 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/15 outline-none transition-all pr-24 tabular-nums"
-            />
-            <span className="absolute right-3.5 text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-500/15 dark:bg-blue-500/25 px-2.5 py-1.5 rounded-xl uppercase tracking-wider">
-              {translations[language].currency}
-            </span>
-          </div>
+          <AmountKeypad
+            amount={targetStr}
+            onChange={setTargetStr}
+            currency={translations[language].currency}
+          />
 
           {/* Quick Increment/Decrement Chips & Reset Button */}
           <div className="flex items-center justify-between gap-1.5 mt-2 flex-wrap">

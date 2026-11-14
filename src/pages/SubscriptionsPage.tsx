@@ -4,6 +4,7 @@ import { useAppStore } from '../store/useAppStore';
 import { SubscriptionItem } from '../types';
 import { Modal } from '../components/common/Modal';
 import { Button } from '../components/common/Button';
+import { AmountKeypad } from '../components/common/AmountKeypad';
 import { EmptyState } from '../components/common/EmptyState';
 import { MoneyText } from '../components/common/PrivacyCurrency';
 import { formatMAD, getCurrentMonthStr } from '../utils/formatters';
@@ -735,36 +736,30 @@ export const SubscriptionsPage: React.FC = () => {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
-                {tSub.amountLabel} *
-              </label>
-              <input
-                type="number"
-                step="any"
-                required
-                value={subAmount}
-                onChange={(e) => setSubAmount(e.target.value)}
-                placeholder="0.00"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.09] text-zinc-900 dark:text-white text-sm focus:outline-none focus:border-indigo-500 font-bold tabular-nums"
-              />
-            </div>
+          <div>
+            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+              {tSub.amountLabel} *
+            </label>
+            <AmountKeypad
+              amount={subAmount}
+              onChange={setSubAmount}
+              currency={translations[language].currency}
+            />
+          </div>
 
-            <div>
-              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
-                {tSub.dayLabel}
-              </label>
-              <input
-                type="number"
-                min="1"
-                max="31"
-                required
-                value={subDay}
-                onChange={(e) => setSubDay(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.09] text-zinc-900 dark:text-white text-sm focus:outline-none focus:border-indigo-500 tabular-nums font-bold"
-              />
-            </div>
+          <div>
+            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+              {tSub.dayLabel}
+            </label>
+            <input
+              type="number"
+              min="1"
+              max="31"
+              required
+              value={subDay}
+              onChange={(e) => setSubDay(e.target.value)}
+              className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.09] text-zinc-900 dark:text-white text-sm focus:outline-none focus:border-indigo-500 tabular-nums font-bold"
+            />
           </div>
 
           <div>

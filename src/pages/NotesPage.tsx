@@ -775,27 +775,14 @@ const NoteBentoCard: React.FC<NoteBentoCardProps> = ({
               ))}
             </div>
 
-            {/* Quick add item input on the card */}
-            <div className="flex items-center gap-1.5 pt-1">
-              <input
-                type="text"
-                value={checklistInputValue}
-                onChange={(e) => onChecklistInputChange(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    onAddChecklistItem();
-                  }
-                }}
-                placeholder={language === 'ar' ? '+ بند جديد...' : '+ New item...'}
-                className="flex-1 bg-zinc-50 dark:bg-white/[0.03] border border-zinc-200 dark:border-white/[0.06] focus:border-teal-500/50 text-[11px] px-2.5 py-1 rounded-lg text-zinc-900 dark:text-white placeholder-zinc-400 outline-none transition-all"
-              />
+            {/* Action to edit checklist in Modal */}
+            <div className="pt-1">
               <button
                 type="button"
-                onClick={onAddChecklistItem}
-                className="px-2 py-1 rounded-lg bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-white/[0.08] dark:hover:bg-white/[0.15] text-[11px] font-bold dark:text-white transition-all shrink-0"
+                onClick={onEdit}
+                className="w-full py-1.5 px-2 rounded-lg bg-black/[0.03] dark:bg-white/[0.04] hover:bg-black/[0.06] dark:hover:bg-white/[0.08] border border-black/[0.06] dark:border-white/[0.08] text-[11px] font-semibold text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-all text-center"
               >
-                +
+                {language === 'ar' ? '+ تعديل البنود في النافذة...' : language === 'fr' ? '+ Gérer les cases...' : '+ Edit checklist...'}
               </button>
             </div>
           </div>
