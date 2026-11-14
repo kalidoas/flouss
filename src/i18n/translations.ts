@@ -489,6 +489,9 @@ export const translations = {
       backupReminder:
         'Rappel : Pensez à exporter régulièrement vos données pour les garder en sécurité.',
       exportButton: 'Exporter la sauvegarde (JSON)',
+      exportExcelButton: 'Exporter vers Excel (.xlsx)',
+      advancedBackup: 'Avancé : sauvegarde JSON',
+      advancedBackupDesc: 'Importer ou restaurer une ancienne sauvegarde JSON. Ce format est conservé pour la compatibilité.',
       importButton: 'Importer une sauvegarde',
       demoDataButton: 'Charger des données de démo',
       demoDataDesc: 'Remplir avec des données fictives marocaines réalistes.',
@@ -1608,6 +1611,9 @@ export const translations = {
       backupReminder:
         'تذكير: احرص على تصدير بياناتك دورياً للاحتفاظ بنسخة احتياطية آمنة.',
       exportButton: 'تصدير النسخة الاحتياطية (JSON)',
+      exportExcelButton: 'تصدير إلى Excel (.xlsx)',
+      advancedBackup: 'متقدم: النسخة الاحتياطية JSON',
+      advancedBackupDesc: 'استيراد أو استعادة نسخة JSON قديمة. يحتفظ بهذا التنسيق للتوافق.',
       importButton: 'استيراد نسخة احتياطية',
       demoDataButton: 'تحميل بيانات تجريبية',
       demoDataDesc: 'تعبئة التطبيق بمعاملات مغربية واقعية لاختباره.',
@@ -2725,6 +2731,9 @@ export const translations = {
       backupReminder:
         'Reminder: Don’t forget to export your data regularly to keep it safe.',
       exportButton: 'Export Backup (JSON)',
+      exportExcelButton: 'Export to Excel (.xlsx)',
+      advancedBackup: 'Advanced: JSON backup',
+      advancedBackupDesc: 'Import or restore an older JSON backup. This format remains available for compatibility.',
       importButton: 'Import Backup',
       demoDataButton: 'Load Demo Data',
       demoDataDesc: 'Populate Flouss with realistic Moroccan sample data.',
