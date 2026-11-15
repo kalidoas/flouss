@@ -1,0 +1,1 @@
+Read docs/DESIGN_SKILL.md before any visual or background work.
