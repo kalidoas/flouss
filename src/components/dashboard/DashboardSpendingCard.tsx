@@ -1,10 +1,8 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { ArrowRight } from 'lucide-react';
-import { Card } from '../common/Card';
 import { MoneyText } from '../common/PrivacyCurrency';
 import { Category, Language, Transaction } from '../../types';
 import { getCategoryName } from '../../utils/i18nHelpers';
-import { getCategoryIcon } from '../../utils/icons';
 import { getCategoryVisualColor } from '../../utils/categoryColor';
 import { isTransactionInMonth } from '../../utils/formatters';
 import { translations } from '../../i18n/translations';
@@ -18,79 +16,127 @@ interface Props {
   onOpenBudgets: () => void;
 }
 
-export const DashboardSpendingCard: React.FC<Props> = ({ categories = [], transactions = [], selectedMonth, totalExpense, language, onOpenBudgets }) => {
+export const DashboardSpendingCard: React.FC<Props> = ({
+  categories = [],
+  transactions = [],
+  selectedMonth,
+  totalExpense,
+  language,
+  onOpenBudgets,
+}) => {
   const t = translations[language].dashboard;
   const catList = categories || [];
   const txList = transactions || [];
-  const [mode, setMode] = useState<'spending' | 'budget'>(catList.some((category) => Number(category?.monthlyBudget) > 0) ? 'budget' : 'spending');
+
   const totals = useMemo(() => {
     const map = new Map<string, number>();
     txList.forEach((transaction) => {
-      if (transaction.type !== 'expense' || !transaction.categoryId || !isTransactionInMonth(transaction.date, selectedMonth)) return;
-      map.set(transaction.categoryId, (map.get(transaction.categoryId) || 0) + Number(transaction.amount || 0));
+      if (
+        transaction.type !== 'expense' ||
+        !transaction.categoryId ||
+        !isTransactionInMonth(transaction.date, selectedMonth)
+      )
+        return;
+      map.set(
+        transaction.categoryId,
+        (map.get(transaction.categoryId) || 0) + Number(transaction.amount || 0)
+      );
     });
     return catList
       .filter((category) => !category.isArchived && !category.isGoal && (map.get(category.id) || 0) > 0)
-      .map((category) => ({ category, spent: map.get(category.id) || 0, budget: Number(category.monthlyBudget) || 0 }))
+      .map((category) => ({
+        category,
+        spent: map.get(category.id) || 0,
+        budget: Number(category.monthlyBudget) || 0,
+      }))
       .sort((a, b) => b.spent - a.spent);
-  }, [categories, transactions, selectedMonth]);
-  const budgetTotals = categories.filter((category) => !category.isArchived && !category.isGoal && Number(category.monthlyBudget) > 0)
-    .map((category) => ({ category, spent: transactions.reduce((sum, transaction) => sum + (transaction.type === 'expense' && transaction.categoryId === category.id && isTransactionInMonth(transaction.date, selectedMonth) ? Number(transaction.amount) || 0 : 0), 0), budget: Number(category.monthlyBudget) || 0 }));
-  const hasBudgets = budgetTotals.length > 0;
+  }, [catList, txList, selectedMonth]);
+
   const top = totals.slice(0, 4);
   const topCategoryTotal = top.reduce((sum, item) => sum + item.spent, 0);
   const otherTotal = Math.max(0, totalExpense - topCategoryTotal);
-  const sections = [...top.map((item) => ({ ...item, color: getCategoryVisualColor(item.category.id) })), ...(otherTotal > 0 ? [{ category: null, spent: otherTotal, budget: 0, color: '#888A91' }] : [])];
-  const budgetLeaders = budgetTotals
-    .sort((a, b) => (b.spent / b.budget) - (a.spent / a.budget))
-    .slice(0, 3);
+  const sections = [
+    ...top.map((item) => ({ ...item, color: getCategoryVisualColor(item.category.id) })),
+    ...(otherTotal > 0 ? [{ category: null, spent: otherTotal, budget: 0, color: '#888A91' }] : []),
+  ];
 
   return (
     <div
       data-spotlight="true"
-      className="spotlight-card flex flex-col justify-between gap-4 rounded-2xl bg-white/5 p-5 sm:p-6 backdrop-blur-xl border border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] h-fit"
+      className="spotlight-card rounded-2xl bg-surface dark:bg-white/5 p-4 sm:p-5 backdrop-blur-xl border border-border-subtle dark:border-white/10 shadow-xs dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] flex flex-col justify-between gap-3 min-w-0"
     >
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex min-w-0 items-center gap-2">
-          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-400">{t.spendingTitle}</p>
-          <span className="text-zinc-600">·</span>
-          <MoneyText amount={totalExpense} className="text-sm font-bold tabular-nums text-white" />
+      {/* Title + total + "Set budgets" (sentence case, 15-17px, font-semibold) */}
+      <div className="flex items-center justify-between gap-2 min-w-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <h2 className="text-[15px] sm:text-base font-semibold text-content dark:text-white truncate">
+            {t.spendingTitle}
+          </h2>
+          <span className="text-muted dark:text-zinc-500">·</span>
+          <MoneyText
+            amount={totalExpense}
+            className="text-sm sm:text-[15px] font-bold text-content dark:text-white tabular-nums shrink-0"
+          />
         </div>
-        <button type="button" onClick={onOpenBudgets} className="inline-flex min-h-8 items-center gap-1 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] px-3 py-1 text-xs font-medium text-indigo-300 hover:text-white transition-all">{t.setBudgets}<ArrowRight aria-hidden="true" className={`h-3 w-3 ${language === 'ar' ? 'rotate-180' : ''}`} /></button>
+        <button
+          type="button"
+          onClick={onOpenBudgets}
+          className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors shrink-0 cursor-pointer"
+        >
+          <span>{t.setBudgets}</span>
+          <ArrowRight aria-hidden="true" className="h-3 w-3 rtl:rotate-180" />
+        </button>
       </div>
 
-      {hasBudgets && <div role="group" aria-label={t.spendingTitle} className="flex w-fit rounded-full border border-white/[0.08] bg-white/[0.03] p-0.5">
-        {(['spending', 'budget'] as const).map((entry) => <button key={entry} type="button" aria-pressed={mode === entry} onClick={() => setMode(entry)} className={`min-h-7 rounded-full px-3 text-xs font-medium transition-all ${mode === entry ? 'bg-white text-zinc-950 font-semibold shadow-xs' : 'text-zinc-400 hover:text-white'}`}>{entry === 'spending' ? t.spendingMode : t.budgetMode}</button>)}
-      </div>}
+      {totalExpense > 0 ? (
+        <div className="space-y-3 min-w-0">
+          {/* Stacked Horizontal Bar */}
+          <div
+            role="img"
+            aria-label={t.spendingTitle}
+            className="flex h-2.5 w-full overflow-hidden rounded-full bg-surface-raised dark:bg-white/[0.06] p-0.5 gap-0.5"
+          >
+            {sections.map(({ category, spent, color }, index) => (
+              <span
+                key={category?.id || `other-${index}`}
+                className="h-full rounded-full transition-all"
+                style={{
+                  width: `${Math.max(1, (spent / totalExpense) * 100)}%`,
+                  backgroundColor: color,
+                }}
+              />
+            ))}
+          </div>
 
-      {mode === 'budget' && hasBudgets ? <div className="space-y-3">
-        {budgetLeaders.length ? budgetLeaders.map(({ category, spent, budget }) => {
-          const progress = budget > 0 ? spent / budget * 100 : 0;
-          const tone = progress > 100 ? 'bg-rose-500' : progress >= 80 ? 'bg-amber-500' : 'bg-indigo-500';
-          const Icon = getCategoryIcon(category.icon);
-          return <div key={category.id} className="space-y-1.5">
-            <div className="flex items-center gap-2 text-xs">
-              <Icon aria-hidden="true" className="h-4 w-4 shrink-0" strokeWidth={1.8} style={{ color: getCategoryVisualColor(category.id) }} />
-              <span className="min-w-0 flex-1 truncate text-zinc-200" title={getCategoryName(category, language)}>{getCategoryName(category, language)}</span>
-              <MoneyText amount={spent} className="font-semibold text-white tabular-nums" /><span className="text-zinc-500">/ <MoneyText amount={budget} /></span>
-            </div>
-            <div className="h-2 overflow-hidden rounded-full bg-white/[0.06]" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.min(100, Math.round(progress))} aria-label={`${getCategoryName(category, language)} ${t.budget}`}>
-              <div className={`h-full rounded-full transition-all duration-300 ${tone}`} style={{ width: `${Math.min(100, progress)}%` }} />
-            </div>
-          </div>;
-        }) : <p className="text-xs text-zinc-400">{t.noBudgets}</p>}
-      </div> : totalExpense > 0 ? <div className="space-y-3.5">
-        <div role="img" aria-label={t.spendingTitle} className="flex h-3 overflow-hidden rounded-full bg-white/[0.06] p-0.5 gap-0.5">
-          {sections.map(({ category, spent, color }, index) => <span key={category?.id || `other-${index}`} className="h-full rounded-full transition-all" style={{ width: `${Math.max(1, spent / totalExpense * 100)}%`, backgroundColor: color }} />)}
+          {/* Wrapped inline legend (dot + name + amount) in 2 columns, not stacked pills */}
+          <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs min-w-0">
+            {sections.map(({ category, spent, color }, index) => (
+              <div key={category?.id || `other-${index}`} className="flex items-center justify-between gap-2 min-w-0">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span
+                    aria-hidden="true"
+                    className="h-2 w-2 shrink-0 rounded-full"
+                    style={{ backgroundColor: color }}
+                  />
+                  <span
+                    className="truncate text-xs text-muted dark:text-zinc-300"
+                    title={category ? getCategoryName(category, language) : t.otherCategory}
+                  >
+                    {category ? getCategoryName(category, language) : t.otherCategory}
+                  </span>
+                </div>
+                <MoneyText
+                  amount={spent}
+                  className="font-medium text-content dark:text-zinc-100 tabular-nums shrink-0 text-end"
+                />
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="flex flex-wrap gap-x-3.5 gap-y-2">
-          {sections.map(({ category, spent, color }, index) => <div key={category?.id || `other-${index}`} className="inline-flex min-w-0 items-center gap-1.5 rounded-full bg-white/[0.03] border border-white/[0.06] px-2.5 py-1 text-xs">
-            <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: color }} />
-            <span className="max-w-28 truncate text-zinc-400" title={category ? getCategoryName(category, language) : t.otherCategory}>{category ? getCategoryName(category, language) : t.otherCategory}</span>
-            <MoneyText amount={spent} className="font-semibold text-zinc-100 tabular-nums" />
-          </div>)}
-        </div>
-      </div> : <p className="flex min-h-11 items-center text-xs text-zinc-400">{t.noExpensesThisMonth}</p>}
+      ) : (
+        <p className="flex min-h-8 items-center text-xs text-muted dark:text-zinc-400">
+          {t.noExpensesThisMonth}
+        </p>
+      )}
     </div>
   );
 };

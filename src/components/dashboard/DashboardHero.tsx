@@ -1,17 +1,18 @@
 import React, { useMemo, useState } from 'react';
 import { useAppStore } from '../../store/useAppStore';
-import { Card } from '../common/Card';
 import { MoneyText } from '../common/PrivacyCurrency';
 import { AdjustBalanceModal } from './AdjustBalanceModal';
 import { AddContributionModal } from '../transactions/AddContributionModal';
 import { BalanceSparkline, buildBalanceSeries } from './BalanceSparkline';
 import { selectDashboardFinancials } from '../../utils/calculations';
-import { getCurrentMonthStr } from '../../utils/formatters';
-import { getDailyRateInsight } from '../../utils/dashboard';
+import { getCurrentMonthStr, isTransactionInMonth } from '../../utils/formatters';
+import { getDailyRateInsight, getNetPresentation } from '../../utils/dashboard';
 import { translations } from '../../i18n/translations';
 import { ArrowDownRight, ArrowUpRight, Pencil, PiggyBank, TrendingDown, TrendingUp } from 'lucide-react';
 
-interface Props { selectedMonth: string; }
+interface Props {
+  selectedMonth: string;
+}
 
 export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
   const { initialBalance = null, transactions = [], language } = useAppStore();
@@ -25,6 +26,7 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
   const safeMonth = selectedMonth || currentMonth;
   const today = new Date();
   const isCurrentMonth = safeMonth === currentMonth;
+
   const summary = useMemo(
     () => selectDashboardFinancials(initialBalance, txList, safeMonth),
     [initialBalance, txList, safeMonth]
@@ -39,88 +41,108 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
   const deltaPercent = openingBalance !== 0 ? Math.round((delta / Math.abs(openingBalance)) * 100) : 0;
   const deltaPositive = delta >= 0;
 
-  const quickAdd = (type: 'income' | 'expense') => window.dispatchEvent(new CustomEvent('flouss:quick-add', { detail: { type } }));
+  const selectedTransactions = useMemo(
+    () => txList.filter((transaction) => isTransactionInMonth(transaction?.date, safeMonth)),
+    [txList, safeMonth]
+  );
+  const incomeCount = selectedTransactions.filter((transaction) => transaction?.type === 'income').length;
+  const expenseCount = selectedTransactions.filter((transaction) => transaction?.type === 'expense').length;
+  const netPresentation = getNetPresentation(summary.net);
+  const netCaption = t[netPresentation.caption];
+
+  const quickAdd = (type: 'income' | 'expense') =>
+    window.dispatchEvent(new CustomEvent('flouss:quick-add', { detail: { type } }));
 
   return (
     <>
       <div
         data-spotlight="true"
-        className="spotlight-card group relative overflow-hidden rounded-2xl bg-white/5 p-4 sm:p-5 backdrop-blur-xl border border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)]"
-        style={{ backgroundImage: 'radial-gradient(ellipse 75% 65% at 0% 0%, rgba(99,102,241,0.18), transparent 70%)' }}
+        className="spotlight-card group relative overflow-hidden rounded-2xl bg-surface dark:bg-white/5 p-4 sm:p-5 backdrop-blur-xl border border-border-subtle dark:border-white/10 shadow-xs dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] min-w-0"
+        style={{ backgroundImage: 'radial-gradient(ellipse 75% 65% at 0% 0%, rgba(99,102,241,0.14), transparent 70%)' }}
       >
-        <div className="relative z-10 flex flex-col gap-3">
-          <div className="min-w-0">
-            <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-400">
-              — {t.totalBalance}
-            </p>
-            <div className="mt-1 flex min-w-0 items-center gap-2">
-              <MoneyText
-                amount={summary.balance}
-                className="min-w-0 max-w-full text-2xl sm:text-3xl font-bold tracking-tight tabular-nums text-white"
-                currencyClassName="text-[.45em] font-medium tracking-normal text-zinc-400 ms-1.5"
-              />
-              {isCurrentMonth && (
-                <button
-                  type="button"
-                  onClick={() => setAdjustOpen(true)}
-                  aria-label={tWallet.adjustBalance}
-                  title={tWallet.adjustBalance}
-                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-zinc-400 opacity-90 transition hover:bg-white/[0.08] hover:text-white focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 active:scale-95 duration-200"
-                >
-                  <Pencil className="h-3 w-3" />
-                </button>
-              )}
-            </div>
-
-            <div className="mt-2.5 flex flex-wrap items-center gap-2">
-              {dailyInsight && (
-                <div className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] px-2.5 py-0.5 text-xs font-medium text-zinc-300">
-                  <span className="text-zinc-400">{t.about}</span>
-                  <MoneyText amount={dailyInsight.amountPerDay} className="font-semibold text-white tabular-nums" />
-                  <span className="text-zinc-400">/ {t.perDay.replace('/', '').trim()}</span>
-                  <span className="text-zinc-500">·</span>
-                  <span className="text-zinc-400">{dailyInsight.daysLeft} {t.daysLeft}</span>
-                </div>
-              )}
-
-              <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${deltaPositive ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400' : 'border-rose-500/20 bg-rose-500/10 text-rose-400'}`}>
-                {deltaPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                {delta > 0 ? '+' : ''}{deltaPercent}% {t.deltaThisMonth}
-              </span>
-            </div>
+        <div className="relative z-10 flex flex-col gap-3 min-w-0">
+          {/* Title & Edit Button (sentence case, 15-17px, font-semibold) */}
+          <div className="flex items-center justify-between gap-2 min-w-0">
+            <h1 className="text-[15px] sm:text-base font-semibold text-muted dark:text-zinc-300 truncate">
+              {t.totalBalance}
+            </h1>
+            {isCurrentMonth && (
+              <button
+                type="button"
+                onClick={() => setAdjustOpen(true)}
+                aria-label={tWallet.adjustBalance}
+                title={tWallet.adjustBalance}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted hover:text-content hover:bg-surface-raised dark:text-zinc-400 dark:hover:bg-white/[0.08] dark:hover:text-white transition-all active:scale-95 duration-200 cursor-pointer"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+              </button>
+            )}
           </div>
 
-          {/* Compact Glass Pill Action Buttons */}
-          <div className="flex flex-wrap items-center gap-1.5 pt-1">
+          {/* Balance Amount (56-64px) */}
+          <div className="flex items-baseline flex-wrap gap-x-2 gap-y-1 min-w-0">
+            <MoneyText
+              amount={summary.balance}
+              className="text-[52px] sm:text-[56px] lg:text-[64px] font-bold leading-none tracking-tight tabular-nums text-content dark:text-white min-w-0"
+              currencyClassName="text-xl sm:text-2xl font-semibold tracking-normal text-muted dark:text-zinc-400 ms-1.5"
+            />
+          </div>
+
+          {/* Delta Chip & Daily Rate Insight */}
+          <div className="flex flex-wrap items-center gap-2 min-w-0">
+            <span
+              className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold shrink-0 ${
+                deltaPositive
+                  ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                  : 'border-rose-500/20 bg-rose-500/10 text-rose-600 dark:text-rose-400'
+              }`}
+            >
+              {deltaPositive ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
+              <span>{delta > 0 ? '+' : ''}{deltaPercent}% {t.deltaThisMonth}</span>
+            </span>
+
+            {dailyInsight && (
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-surface-raised/80 dark:bg-white/[0.04] border border-border-subtle dark:border-white/[0.08] px-2.5 py-1 text-xs font-medium text-muted dark:text-zinc-300 min-w-0">
+                <span>{t.about}</span>
+                <MoneyText amount={dailyInsight.amountPerDay} className="font-semibold text-content dark:text-white tabular-nums" />
+                <span>/ {t.perDay.replace('/', '').trim()}</span>
+                <span className="text-zinc-400 dark:text-zinc-500">·</span>
+                <span className="truncate">{dailyInsight.daysLeft} {t.daysLeft}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Quick Actions (44px Buttons) */}
+          <div className="grid grid-cols-3 gap-2 sm:gap-2.5 pt-1 w-full min-w-0">
             <button
               type="button"
               onClick={() => quickAdd('income')}
-              className="inline-flex min-h-8 items-center justify-center gap-1.5 rounded-full bg-white/5 hover:bg-emerald-500/15 border border-white/10 hover:border-emerald-500/30 px-3 py-1 text-xs font-medium text-zinc-200 hover:text-emerald-300 backdrop-blur-xl hover:shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all duration-300 active:scale-[0.98] cursor-pointer"
+              className="inline-flex min-h-[44px] items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-2.5 sm:px-3 py-2 text-xs sm:text-sm font-semibold transition-all active:scale-[0.98] cursor-pointer min-w-0"
             >
-              <ArrowUpRight className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
-              <span>{tCommon.addIncome}</span>
+              <ArrowUpRight className="h-4 w-4 shrink-0" />
+              <span className="truncate">{tCommon.addIncome}</span>
             </button>
             <button
               type="button"
               onClick={() => quickAdd('expense')}
-              className="inline-flex min-h-8 items-center justify-center gap-1.5 rounded-full bg-white/5 hover:bg-rose-500/15 border border-white/10 hover:border-rose-500/30 px-3 py-1 text-xs font-medium text-zinc-200 hover:text-rose-300 backdrop-blur-xl hover:shadow-[0_0_15px_rgba(244,63,94,0.3)] transition-all duration-300 active:scale-[0.98] cursor-pointer"
+              className="inline-flex min-h-[44px] items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/15 border border-rose-500/20 text-rose-600 dark:text-rose-400 px-2.5 sm:px-3 py-2 text-xs sm:text-sm font-semibold transition-all active:scale-[0.98] cursor-pointer min-w-0"
             >
-              <ArrowDownRight className="h-3.5 w-3.5 text-rose-400 shrink-0" />
-              <span>{tCommon.addExpense}</span>
+              <ArrowDownRight className="h-4 w-4 shrink-0" />
+              <span className="truncate">{tCommon.addExpense}</span>
             </button>
             <button
               type="button"
               onClick={() => setContributionOpen(true)}
-              className="inline-flex min-h-8 items-center justify-center gap-1.5 rounded-full bg-white/5 hover:bg-indigo-500/15 border border-white/10 hover:border-indigo-500/30 px-3 py-1 text-xs font-medium text-zinc-200 hover:text-indigo-300 backdrop-blur-xl hover:shadow-[0_0_15px_rgba(139,92,246,0.3)] transition-all duration-300 active:scale-[0.98] cursor-pointer"
+              className="inline-flex min-h-[44px] items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/15 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 px-2.5 sm:px-3 py-2 text-xs sm:text-sm font-semibold transition-all active:scale-[0.98] cursor-pointer min-w-0"
             >
-              <PiggyBank className="h-3.5 w-3.5 text-indigo-400 shrink-0" />
-              <span>{tWallet.saveGoal}</span>
+              <PiggyBank className="h-4 w-4 shrink-0" />
+              <span className="truncate">{tWallet.saveGoal}</span>
             </button>
           </div>
         </div>
 
-        {/* Embedded Sparkline with Zero Wasted Padding */}
-        <div className="-mx-4 -mb-4 sm:-mx-5 sm:-mb-5 mt-2">
+        {/* Embedded Sparkline (Full Card Width) */}
+        <div className="-mx-4 sm:-mx-5 mt-2">
           <BalanceSparkline
             initialBalance={initialBalance}
             transactions={transactions}
@@ -131,6 +153,57 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
             balanceLabel={t.totalBalance}
             changeLabel={t.dailyChange}
           />
+        </div>
+
+        {/* Three Stat Tiles (Income, Expenses, Net) Inside the Hero Card */}
+        <div className="grid grid-cols-3 divide-x divide-border-subtle dark:divide-white/10 rtl:divide-x-reverse pt-3.5 border-t border-border-subtle dark:border-white/10 -mx-4 -mb-4 sm:-mx-5 sm:-mb-5 px-4 sm:px-5 pb-4 sm:pb-5 bg-surface-raised/40 dark:bg-white/[0.02]">
+          {/* Income */}
+          <div className="pe-2 sm:pe-3 first:ps-0 min-w-0">
+            <p className="text-xs font-medium text-muted dark:text-zinc-400 truncate">
+              {t.incomeThisMonth}
+            </p>
+            <MoneyText
+              amount={summary.income}
+              showSign={true}
+              className="mt-1 block max-w-full truncate text-base sm:text-lg font-bold tracking-tight tabular-nums text-positive"
+            />
+            <p className="mt-0.5 text-[11px] text-muted dark:text-zinc-400 truncate">
+              {t.incomeCount ? t.incomeCount.replace('{count}', String(incomeCount)) : `${incomeCount}`}
+            </p>
+          </div>
+
+          {/* Expenses */}
+          <div className="px-2 sm:px-3 min-w-0">
+            <p className="text-xs font-medium text-muted dark:text-zinc-400 truncate">
+              {t.expensesThisMonth}
+            </p>
+            <MoneyText
+              amount={summary.expenses}
+              prefix="− "
+              showSign={false}
+              className="mt-1 block max-w-full truncate text-base sm:text-lg font-bold tracking-tight tabular-nums text-negative"
+            />
+            <p className="mt-0.5 text-[11px] text-muted dark:text-zinc-400 truncate">
+              {t.expenseCount ? t.expenseCount.replace('{count}', String(expenseCount)) : `${expenseCount}`}
+            </p>
+          </div>
+
+          {/* Net */}
+          <div className="ps-2 sm:ps-3 last:pe-0 min-w-0">
+            <p className="text-xs font-medium text-muted dark:text-zinc-400 truncate">
+              {t.netLabel}
+            </p>
+            <MoneyText
+              amount={summary.net}
+              showSign={true}
+              className={`mt-1 block max-w-full truncate text-base sm:text-lg font-bold tracking-tight tabular-nums ${
+                summary.net >= 0 ? 'text-indigo-500 dark:text-indigo-300' : 'text-negative'
+              }`}
+            />
+            <p className="mt-0.5 text-[11px] text-muted dark:text-zinc-400 truncate">
+              {netCaption}
+            </p>
+          </div>
         </div>
       </div>
       <AdjustBalanceModal isOpen={adjustOpen} onClose={() => setAdjustOpen(false)} currentBalance={summary.balance} />

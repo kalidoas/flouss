@@ -69,33 +69,33 @@ export const DashboardAiWidget: React.FC<DashboardAiWidgetProps> = (props) => {
       <section
         data-testid="getting-started-tip"
         aria-label={tip.title}
-        className="relative flex flex-col justify-between rounded-2xl border border-border-subtle bg-surface/70 p-4 shadow-xs backdrop-blur-sm transition-all"
+        className="relative flex flex-col justify-between rounded-2xl border border-border-subtle bg-surface/70 p-4 shadow-xs backdrop-blur-sm transition-all min-w-0"
       >
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-muted/15 text-muted">
+        <div className="flex items-start justify-between gap-3 min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-muted/15 text-muted shrink-0">
               <Info className="h-3.5 w-3.5" />
             </span>
-            <span className="text-xs font-semibold text-foreground">{tip.title}</span>
+            <span className="text-xs font-semibold text-content dark:text-white truncate">{tip.title}</span>
           </div>
           <button
             type="button"
             onClick={handleDismiss}
             aria-label="Dismiss onboarding tip"
-            className="rounded p-1 text-muted hover:bg-muted/10 hover:text-foreground transition-colors"
+            className="rounded p-1 text-muted hover:bg-surface-raised hover:text-content dark:hover:text-white transition-colors cursor-pointer shrink-0"
           >
             <X className="h-3.5 w-3.5" />
           </button>
         </div>
-        <p className="mt-2 text-xs leading-relaxed text-muted">{tip.desc}</p>
-        <div className="mt-3 flex items-center justify-between border-t border-border-subtle pt-2">
+        <p className="mt-2 text-xs leading-relaxed text-muted dark:text-zinc-400">{tip.desc}</p>
+        <div className="mt-3 flex items-center justify-between border-t border-border-subtle dark:border-white/10 pt-2 min-w-0">
           <button
             type="button"
             onClick={() => {
               triggerHaptic(40);
               window.dispatchEvent(new CustomEvent('flouss:quick-add', { detail: { type: 'expense' } }));
             }}
-            className="inline-flex min-h-7 items-center gap-1.5 text-xs font-semibold text-primary transition-colors hover:underline"
+            className="inline-flex min-h-7 items-center gap-1.5 text-xs font-semibold text-primary transition-colors hover:underline cursor-pointer"
           >
             <span>{tip.action}</span>
             <ArrowRight className="h-3 w-3 rtl:rotate-180" />
@@ -114,28 +114,28 @@ export const DashboardAiWidget: React.FC<DashboardAiWidgetProps> = (props) => {
       data-testid="ai-insight-card"
       data-spotlight="true"
       aria-label={locale === 'ar' ? 'ملخص نشاطك' : locale === 'fr' ? 'Résumé de votre activité' : 'Activity summary'}
-      className="spotlight-card relative flex h-fit flex-col justify-between overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-4 shadow-[0_0_24px_rgba(99,102,241,0.12),inset_0_1px_0_0_rgba(255,255,255,0.08)] backdrop-blur-xl group"
+      className="spotlight-card relative flex h-fit flex-col justify-between overflow-hidden rounded-2xl border border-border-subtle dark:border-white/10 bg-surface dark:bg-white/5 p-4 shadow-xs dark:shadow-[0_0_24px_rgba(99,102,241,0.12),inset_0_1px_0_0_rgba(255,255,255,0.08)] backdrop-blur-xl group min-w-0"
     >
       <div className="pointer-events-none absolute -right-12 -top-12 h-28 w-28 rounded-full bg-indigo-500/15 blur-2xl transition-all duration-500 group-hover:bg-indigo-500/25" />
       <div className="pointer-events-none absolute -bottom-10 -left-10 h-24 w-24 rounded-full bg-purple-500/10 blur-2xl" />
 
-      <div className="relative z-10 mb-2.5 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 text-white shadow-[0_0_12px_rgba(99,102,241,0.5)]">
+      <div className="relative z-10 mb-2.5 flex items-center justify-between gap-2 min-w-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 text-white shadow-[0_0_12px_rgba(99,102,241,0.5)] shrink-0">
             <Sparkles className="h-3.5 w-3.5" />
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold tracking-tight text-white">Flouss Insights</span>
-            <span className="rounded-full border border-indigo-500/30 bg-indigo-500/15 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-widest text-indigo-300">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-xs font-bold tracking-tight text-content dark:text-white truncate">Flouss Insights</span>
+            <span className="rounded-full border border-indigo-500/30 bg-indigo-500/15 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-widest text-indigo-600 dark:text-indigo-300 shrink-0">
               {currentInsight.tag[locale]}
             </span>
           </div>
         </div>
       </div>
 
-      <div className="relative z-10 flex flex-1 flex-col justify-between">
-        <p className="text-xs font-medium leading-relaxed text-zinc-300">{currentInsight.message[locale]}</p>
-        <div className="mt-3 flex items-center justify-between border-t border-white/[0.05] pt-2">
+      <div className="relative z-10 flex flex-1 flex-col justify-between min-w-0">
+        <p className="text-xs font-medium leading-relaxed text-muted dark:text-zinc-300">{currentInsight.message[locale]}</p>
+        <div className="mt-3 flex items-center justify-between border-t border-border-subtle dark:border-white/[0.05] pt-2 min-w-0">
           <button
             type="button"
             onClick={() => {
@@ -146,12 +146,12 @@ export const DashboardAiWidget: React.FC<DashboardAiWidgetProps> = (props) => {
                 setActiveScreen(currentInsight.screen);
               }
             }}
-            className="inline-flex min-h-8 items-center gap-1.5 text-[11px] font-bold text-indigo-400 transition-colors hover:text-indigo-300"
+            className="inline-flex min-h-8 items-center gap-1.5 text-[11px] font-bold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors cursor-pointer"
           >
             <span>{currentInsight.action[locale]}</span>
             <ArrowRight className="h-3 w-3 rtl:rotate-180" />
           </button>
-          <span className="text-[10px] text-zinc-400">
+          <span className="text-[10px] text-muted dark:text-zinc-400 shrink-0">
             {locale === 'ar' ? 'ملخص من بياناتك' : locale === 'fr' ? 'Basé sur vos données' : 'Based on your data'}
           </span>
         </div>

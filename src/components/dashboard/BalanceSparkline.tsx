@@ -56,13 +56,13 @@ export const BalanceSparkline: React.FC<Props> = ({
     () => buildBalanceSeries(initialBalance, transactions, selectedMonth, currentMonth),
     [initialBalance, transactions, selectedMonth, currentMonth]
   );
-  const dimensions = { width: 800, height: 132, padX: 8, padY: 12 };
+  const dimensions = { width: 800, height: 120, padX: 0, padY: 10 };
   const values = points.map((point) => point.balance);
   const minValue = Math.min(...values, 0);
   const maxValue = Math.max(...values, 0);
   const span = Math.max(maxValue - minValue, 1);
   const coordinates = points.map((point, index) => ({
-    x: dimensions.padX + (points.length <= 1 ? 0 : index * (dimensions.width - dimensions.padX * 2) / (points.length - 1)),
+    x: points.length <= 1 ? dimensions.width / 2 : index * (dimensions.width / (points.length - 1)),
     y: dimensions.padY + (maxValue - point.balance) * (dimensions.height - dimensions.padY * 2) / span,
   }));
   const linePath = coordinates.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ');
@@ -77,18 +77,20 @@ export const BalanceSparkline: React.FC<Props> = ({
   const summary = points.length
     ? `${chartLabel}: ${formatDate(points[0].date, language)} – ${formatDate(points[points.length - 1].date, language)}`
     : chartLabel;
+  const xRatio = dimensions.width > 0 ? (coordinate?.x || 0) / dimensions.width : 0.5;
+  const clampedPercent = Math.max(16, Math.min(84, xRatio * 100));
 
   return (
-    <div className="relative mt-4 border-t border-border-subtle dark:border-white/10 pt-3">
+    <div className="relative mt-2 pt-2 w-full overflow-hidden">
       <div
-        className="pointer-events-none absolute top-2 z-10 rounded-xl border border-border-subtle bg-surface/95 dark:bg-zinc-900/95 dark:border-white/10 px-3 py-2 text-xs shadow-xl backdrop-blur-md text-content dark:text-white"
+        className="pointer-events-none absolute top-1 z-10 rounded-xl border border-border-subtle bg-surface/95 dark:bg-zinc-900/95 dark:border-white/10 px-3 py-1.5 text-xs shadow-xl backdrop-blur-md text-content dark:text-white transition-[left] duration-75"
         style={{
-          insetInlineStart: (coordinate?.x || 0) / dimensions.width < 0.68 ? `${Math.max(1, ((coordinate?.x || 0) / dimensions.width) * 100)}%` : undefined,
-          insetInlineEnd: (coordinate?.x || 0) / dimensions.width >= 0.68 ? '0' : undefined,
+          left: `${clampedPercent}%`,
+          transform: 'translateX(-50%)',
         }}
       >
-        <p className="mb-1 text-[10px] text-muted dark:text-zinc-400">{tooltipDate}</p>
-        <p className="font-semibold text-content dark:text-white"><span className="sr-only">{balanceLabel}: </span><MoneyText amount={point?.balance || 0} /></p>
+        <p className="mb-0.5 text-[10px] text-muted dark:text-zinc-400">{tooltipDate}</p>
+        <p className="font-semibold text-content dark:text-white leading-tight"><span className="sr-only">{balanceLabel}: </span><MoneyText amount={point?.balance || 0} /></p>
         <p className="text-[10px] text-muted dark:text-zinc-400"><span>{changeLabel}: </span><MoneyText amount={point?.change || 0} showSign /></p>
       </div>
       <svg

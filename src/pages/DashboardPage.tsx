@@ -1,7 +1,5 @@
 import React, { useMemo, useState } from 'react';
 import { useAppStore } from '../store/useAppStore';
-import { Card } from '../components/common/Card';
-import { MoneyText } from '../components/common/PrivacyCurrency';
 import { DashboardHero } from '../components/dashboard/DashboardHero';
 import { DashboardFocusNow } from '../components/dashboard/DashboardFocusNow';
 import { DashboardTodayCard } from '../components/dashboard/DashboardTodayCard';
@@ -14,50 +12,48 @@ import { ProtectWorkspacePinCard } from '../components/dashboard/ProtectWorkspac
 import { AdjustBalanceModal } from '../components/dashboard/AdjustBalanceModal';
 import { Wallet, Pencil } from 'lucide-react';
 import { selectDashboardFinancials } from '../utils/calculations';
-import { getNetPresentation } from '../utils/dashboard';
-import { isTransactionInMonth, getCurrentMonthStr } from '../utils/formatters';
-import { translations } from '../i18n/translations';
+import { getCurrentMonthStr } from '../utils/formatters';
 import { useDashboardHeader } from '../components/layout/DashboardHeaderContext';
 
 export const DashboardPage: React.FC = () => {
-  const { initialBalance = null, transactions = [], categories = [], subscriptions = [], language, setActiveScreen } = useAppStore();
+  const {
+    initialBalance = null,
+    transactions = [],
+    categories = [],
+    subscriptions = [],
+    language,
+    setActiveScreen,
+  } = useAppStore();
   const txList = transactions || [];
-  const [showDetails, setShowDetails] = useState(false);
   const [adjustBalanceOpen, setAdjustBalanceOpen] = useState(false);
-  const t = translations[language].dashboard;
   const { selectedMonth } = useDashboardHeader();
   const safeMonth = selectedMonth || getCurrentMonthStr();
+
   const summary = useMemo(
     () => selectDashboardFinancials(initialBalance, txList, safeMonth),
     [initialBalance, txList, safeMonth]
   );
-  const selectedTransactions = useMemo(
-    () => txList.filter((transaction) => isTransactionInMonth(transaction?.date, safeMonth)),
-    [txList, safeMonth]
-  );
-  const incomeCount = selectedTransactions.filter((transaction) => transaction?.type === 'income').length;
-  const expenseCount = selectedTransactions.filter((transaction) => transaction?.type === 'expense').length;
-  const netPresentation = getNetPresentation(summary.net);
-  const netCaption = t[netPresentation.caption];
-  const netColor = netPresentation.tone === 'positive' ? 'text-positive' : netPresentation.tone === 'negative' ? 'text-negative' : 'text-muted';
-  const recentTransactions = useMemo(() => [...txList]
-    .sort((a, b) => (Date.parse(b?.date) || Date.parse(b?.createdAt) || 0) - (Date.parse(a?.date) || Date.parse(a?.createdAt) || 0))
-    .slice(0, 5), [txList]);
 
-  const statItems = [
-    { key: 'income', label: t.incomeThisMonth, count: t.incomeCount.replace('{count}', String(incomeCount)), value: summary.income, color: 'text-positive', sign: true, prefix: '' },
-    { key: 'expenses', label: t.expensesThisMonth, count: t.expenseCount.replace('{count}', String(expenseCount)), value: summary.expenses, color: 'text-negative', sign: false, prefix: '− ' },
-    { key: 'net', label: t.netLabel, count: netCaption, value: summary.net, color: netColor, sign: true, prefix: '' },
-  ];
+  const recentTransactions = useMemo(
+    () =>
+      [...txList]
+        .sort(
+          (a, b) =>
+            (Date.parse(b?.date) || Date.parse(b?.createdAt) || 0) -
+            (Date.parse(a?.date) || Date.parse(a?.createdAt) || 0)
+        )
+        .slice(0, 5),
+    [txList]
+  );
 
   return (
-    <div className="mx-auto max-w-[1280px] w-full pb-8 animate-page select-text min-w-0 @container">
+    <div className="mx-auto max-w-[1280px] w-full pb-28 sm:pb-32 animate-page select-text min-w-0">
       {/* 1. Optional Dismissible PIN Protection Card */}
       <ProtectWorkspacePinCard onConfigurePin={() => setActiveScreen('settings')} />
 
       {/* 2. Empty Balance CTA for accounts who skipped initial balance */}
       {txList.length === 0 && (initialBalance === null || initialBalance === 0) && (
-        <div className="spotlight-card rounded-2xl bg-gradient-to-r from-emerald-950/40 via-teal-950/20 to-zinc-900/40 p-4 sm:p-5 backdrop-blur-xl border border-emerald-500/20 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] relative overflow-hidden mb-4 animate-in fade-in duration-300 min-w-0">
+        <div className="spotlight-card rounded-2xl bg-gradient-to-r from-emerald-950/40 via-teal-950/20 to-zinc-900/40 p-4 sm:p-5 backdrop-blur-xl border border-emerald-500/20 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] relative overflow-hidden mb-5 animate-in fade-in duration-300 min-w-0">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 min-w-0 flex-wrap">
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0 shadow-sm shadow-emerald-500/20">
@@ -98,150 +94,39 @@ export const DashboardPage: React.FC = () => {
         </div>
       )}
 
+      {/* 3. Bento 2-column layout (>=1100px) / 1-column (<1100px) */}
       <div
-        className="columns-1 @lg:columns-2 @3xl:columns-3 gap-4 min-w-0"
+        className="grid grid-cols-1 min-[1100px]:grid-cols-12 gap-5 min-w-0 items-start"
         dir={language === 'ar' ? 'rtl' : 'ltr'}
       >
-        {/* Card 1: Available Balance Hero Tile */}
-        <div className="break-inside-avoid mb-4 min-w-0">
-          <DashboardHero selectedMonth={selectedMonth} />
-        </div>
-
-        {/* Card 2: Monthly Summary Card (Compact & Expandable) */}
-        <section aria-label={t.monthlySummary} className="break-inside-avoid mb-4 min-w-0">
-          <div
-            data-spotlight="true"
-            className="spotlight-card rounded-2xl bg-surface dark:bg-white/5 p-3.5 sm:p-4 md:p-4.5 backdrop-blur-xl border border-border-subtle dark:border-white/10 shadow-xs dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] relative overflow-hidden transition-all duration-300 h-fit min-w-0"
-          >
-            <div className={`grid ${showDetails ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-2'} divide-y sm:divide-y-0 sm:divide-x divide-white/[0.06] rtl:sm:divide-x-reverse gap-y-3 sm:gap-y-0 transition-all duration-300`}>
-              {/* Income this month */}
-              <div className="sm:px-3 first:ps-0 last:pe-0">
-                <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-400 block truncate">
-                  {t.incomeThisMonth}
-                </span>
-                <MoneyText
-                  amount={summary.income}
-                  showSign={true}
-                  className="mt-1 block max-w-full truncate text-base sm:text-lg md:text-xl font-bold tracking-tight tabular-nums text-emerald-400"
-                />
-                {showDetails && (
-                  <p className="mt-0.5 text-caption text-zinc-500 truncate" title={t.incomeCount.replace('{count}', String(incomeCount))}>
-                    {t.incomeCount.replace('{count}', String(incomeCount))}
-                  </p>
-                )}
-              </div>
-
-              {/* Expenses this month */}
-              <div className="sm:px-3 first:ps-0 last:pe-0">
-                <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-400 block truncate">
-                  {t.expensesThisMonth}
-                </span>
-                <MoneyText
-                  amount={summary.expenses}
-                  prefix="− "
-                  showSign={false}
-                  className="mt-1 block max-w-full truncate text-base sm:text-lg md:text-xl font-bold tracking-tight tabular-nums text-rose-400"
-                />
-                {showDetails && (
-                  <p className="mt-0.5 text-caption text-zinc-500 truncate" title={t.expenseCount.replace('{count}', String(expenseCount))}>
-                    {t.expenseCount.replace('{count}', String(expenseCount))}
-                  </p>
-                )}
-              </div>
-
-              {/* Net (Hidden by default, revealed on More details toggle) */}
-              {showDetails && (
-                <div className="pt-2.5 sm:pt-0 sm:px-3 first:ps-0 last:pe-0">
-                  <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-400 block truncate">
-                    {t.netLabel}
-                  </span>
-                  <MoneyText
-                    amount={summary.net}
-                    showSign={true}
-                    className={`mt-1 block max-w-full truncate text-base sm:text-lg md:text-xl font-bold tracking-tight tabular-nums ${summary.net >= 0 ? 'text-indigo-300' : 'text-rose-400'}`}
-                  />
-                  <p className="mt-0.5 text-caption text-zinc-500 truncate" title={netCaption}>
-                    {netCaption}
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {/* Bottom Toggle Bar */}
-            <div className="mt-2.5 pt-2 border-t border-white/[0.05] flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() => setShowDetails((prev) => !prev)}
-                className="inline-flex items-center gap-1 text-[11px] font-medium text-indigo-400 hover:text-indigo-300 transition-colors active:scale-95 duration-200"
-              >
-                <span>
-                  {showDetails
-                    ? language === 'ar'
-                      ? 'تفاصيل أقل ←'
-                      : language === 'fr'
-                      ? 'Moins de détails ←'
-                      : 'Less details ←'
-                    : language === 'ar'
-                    ? 'المزيد من التفاصيل →'
-                    : language === 'fr'
-                    ? 'Plus de détails →'
-                    : 'More details →'}
-                </span>
-              </button>
-              {showDetails && (
-                <span className="text-[10px] text-zinc-500 truncate">
-                  {translations[language].summaryScopes.dashboard}
-                </span>
-              )}
-            </div>
-          </div>
-        </section>
-
-        {/* Card 3: Spending Breakdown */}
-        <div className="break-inside-avoid mb-4">
+        {/* Main Column (7 cols): Balance hero, Spending, Recent */}
+        <div className="min-[1100px]:col-span-7 flex flex-col gap-5 min-w-0">
+          <DashboardHero selectedMonth={safeMonth} />
           <DashboardSpendingCard
             categories={categories}
             transactions={transactions}
-            selectedMonth={selectedMonth}
+            selectedMonth={safeMonth}
             totalExpense={summary.expenses}
             language={language}
             onOpenBudgets={() => setActiveScreen('categories')}
           />
+          <DashboardRecentTransactions
+            transactions={recentTransactions}
+            onViewAll={() => setActiveScreen('history')}
+          />
         </div>
 
-        {/* Card 4: Focus Now (Tasks) */}
-        <DashboardFocusNow />
-
-        {/* Card 5: Today's Program */}
-        <div className="break-inside-avoid mb-4 min-w-0">
+        {/* Side Column (5 cols): Focus now, Today, Pinned note, Bills, Insights */}
+        <div className="min-[1100px]:col-span-5 flex flex-col gap-5 min-w-0">
+          <DashboardFocusNow />
           <DashboardTodayCard />
-        </div>
-
-        {/* Card 6: Flouss AI Copilot */}
-        <div className="break-inside-avoid mb-4 min-w-0">
-          <DashboardAiWidget />
-        </div>
-
-        {/* Card 7: Pinned Note */}
-        <div className="break-inside-avoid mb-4 min-w-0">
           <DashboardPinnedNote />
-        </div>
-
-        {/* Card 8: Upcoming Bills */}
-        <div className="break-inside-avoid mb-4 min-w-0">
           <DashboardBillsCard
             subscriptions={subscriptions}
             language={language}
             onOpen={() => setActiveScreen('subscriptions')}
           />
-        </div>
-
-        {/* Card 9: Recent Transactions */}
-        <div className="break-inside-avoid mb-4 min-w-0">
-          <DashboardRecentTransactions
-            transactions={recentTransactions}
-            onViewAll={() => setActiveScreen('history')}
-          />
+          <DashboardAiWidget />
         </div>
       </div>
 

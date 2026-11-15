@@ -38,7 +38,7 @@ describe('DashboardRecentTransactions', () => {
     }
   });
 
-  it('renders a strict vertical flex stack without multi-column grid classes', async () => {
+  it('renders a 2-column grid on desktop for recent transactions', async () => {
     const mockTransactions: Transaction[] = [
       {
         id: 'tx-1',
@@ -67,15 +67,11 @@ describe('DashboardRecentTransactions', () => {
       );
     });
 
-    // Verify container uses vertical flex layout
-    const stackContainer = container!.querySelector('.flex.flex-col.gap-3');
-    expect(stackContainer).not.toBeNull();
+    // Verify container uses 2-column grid on desktop
+    const gridContainer = container!.querySelector('.grid.grid-cols-1.md\\:grid-cols-2');
+    expect(gridContainer).not.toBeNull();
 
-    // Ensure no grid-cols-2 or md:grid-cols-2 are present in the list container
-    expect(container!.querySelector('.grid-cols-2')).toBeNull();
-    expect(container!.querySelector('.md\\:grid-cols-2')).toBeNull();
-
-    // Verify both items are present in vertical stack
+    // Verify both items are rendered
     expect(container!.textContent).toContain('وجبات سريعة وخفيفة');
     expect(container!.textContent).toContain('قهوة وشاي');
   });
