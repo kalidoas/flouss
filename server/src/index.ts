@@ -4,6 +4,13 @@ import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import crypto from 'crypto';
 import { getAdminFirestore, getAdminAuth, verifyAuthHeader } from './firebase.js';
+import {
+  generateOtpRecord,
+  verifyOtpSubmission,
+  computeOtpHmac,
+} from './otp.js';
+
+export { computeOtpHmac, generateOtpRecord, verifyOtpSubmission };
 
 const app = express();
 const port = parseInt(process.env.PORT || '3000', 10);
@@ -132,7 +139,12 @@ async function handleSendOtp(req: Request, res: Response) {
   try {
     const { uid, email } = await verifyAuthHeader(req);
     if (!email) {
-      return res.status(400).json({ error: 'No email address associated with this account.' });
+      // Never reveal whether an account or email exists
+      return res.status(200).json({
+        success: true,
+        message: 'Verification code sent to your email',
+        cooldownSeconds: 60,
+      });
     }
 
     const db = getAdminFirestore();
@@ -165,10 +177,9 @@ async function handleSendOtp(req: Request, res: Response) {
       }
     }
 
-    // Cryptographically random 6-digit code and random salt
-    const otpCode = crypto.randomInt(100000, 1000000).toString();
-    const salt = crypto.randomBytes(16).toString('hex');
-    const hash = crypto.createHash('sha256').update(salt + otpCode).digest('hex');
+    // Cryptographically random 6-digit code, random salt, and HMAC-SHA256 with server-side secret
+    const otpRecord = generateOtpRecord(now);
+    const { code: otpCode, salt, hash, expiresAt, attemptsLeft } = otpRecord;
 
     const hourMs = 60 * 60 * 1000;
     const isWithinHour = existing && now - (existing.firstSentThisHour || 0) < hourMs;
@@ -208,13 +219,13 @@ async function handleSendOtp(req: Request, res: Response) {
       });
     }
 
-    // Persist hash, salt and limits to Firestore `otp/{uid}` (never the raw OTP code!)
+    // Persist HMAC hash, salt and limits to Firestore `otp/{uid}` (never the raw OTP code!)
     await otpRef.set({
       hash,
       salt,
       createdAt: now,
-      expiresAt: now + 10 * 60 * 1000, // 10 minutes
-      attemptsLeft: 5,
+      expiresAt,
+      attemptsLeft,
       lastSentAt: now,
       firstSentThisHour,
       sendCountThisHour,
@@ -253,61 +264,37 @@ async function handleVerifyOtp(req: Request, res: Response) {
     if (!snap.exists) {
       return res.status(400).json({
         success: false,
-        error: 'No active verification code found. Please request a new code.',
+        error: 'Invalid or expired verification code.',
       });
     }
 
     const data = snap.data()!;
     const now = Date.now();
 
-    // 1. Check expiration (10 min)
-    if (now > data.expiresAt) {
+    const verification = verifyOtpSubmission({
+      code,
+      storedHash: data.hash,
+      salt: data.salt,
+      expiresAt: data.expiresAt,
+      attemptsLeft: data.attemptsLeft,
+      now,
+    });
+
+    if (verification.shouldDelete) {
       await otpRef.delete().catch(() => {});
+    } else if (verification.attemptsLeft !== undefined) {
+      await otpRef.update({ attemptsLeft: verification.attemptsLeft }).catch(() => {});
+    }
+
+    if (!verification.success) {
       return res.status(400).json({
         success: false,
-        error: 'Verification code has expired. Please request a new code.',
+        attemptsLeft: verification.attemptsLeft ?? 0,
+        error: verification.error || 'Invalid verification code.',
       });
     }
 
-    // 2. Check remaining attempts (max 5)
-    if (data.attemptsLeft <= 0) {
-      await otpRef.delete().catch(() => {});
-      return res.status(400).json({
-        success: false,
-        attemptsLeft: 0,
-        error: 'Too many incorrect attempts. Please request a new code.',
-      });
-    }
-
-    // 3. Constant-time comparison of SHA-256 hash with per-code salt
-    const expectedHash = crypto.createHash('sha256').update(data.salt + code).digest('hex');
-    const expectedBuf = Buffer.from(expectedHash, 'hex');
-    const storedBuf = Buffer.from(data.hash, 'hex');
-
-    const isMatch =
-      expectedBuf.length === storedBuf.length &&
-      crypto.timingSafeEqual(expectedBuf, storedBuf);
-
-    if (!isMatch) {
-      const remaining = data.attemptsLeft - 1;
-      if (remaining <= 0) {
-        await otpRef.delete().catch(() => {});
-        return res.status(400).json({
-          success: false,
-          attemptsLeft: 0,
-          error: 'Incorrect code. Maximum attempts reached. Please request a new code.',
-        });
-      } else {
-        await otpRef.update({ attemptsLeft: remaining }).catch(() => {});
-        return res.status(400).json({
-          success: false,
-          attemptsLeft: remaining,
-          error: `Incorrect code. ${remaining} attempt${remaining > 1 ? 's' : ''} remaining.`,
-        });
-      }
-    }
-
-    // 4. Success! Mark emailVerified in Firebase Auth & Profile doc
+    // Success! Enforce verification server-side: mark emailVerified in Firebase Auth & Profile doc
     const auth = getAdminAuth();
     await auth.updateUser(uid, { emailVerified: true });
 
@@ -317,9 +304,6 @@ async function handleVerifyOtp(req: Request, res: Response) {
     } catch (e) {
       console.warn('[verify-otp] Notice updating profile doc:', e);
     }
-
-    // 5. Delete OTP document immediately so it cannot be reused
-    await otpRef.delete().catch(() => {});
 
     return res.status(200).json({
       success: true,
