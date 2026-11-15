@@ -1,62 +1,117 @@
-import React, { useMemo } from 'react';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowRight, Sparkles, Info, X } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { triggerHaptic } from '../../utils/haptics';
+import { deriveDashboardInsight } from '../../utils/dashboard';
+import { Category, Transaction } from '../../types';
 
-type Insight = {
-  message: Record<'ar' | 'fr' | 'en', string>;
-  tag: Record<'ar' | 'fr' | 'en', string>;
-  action: Record<'ar' | 'fr' | 'en', string>;
-  screen: 'expenses';
-  addExpense?: boolean;
-};
+export interface DashboardAiWidgetProps {
+  transactions?: Transaction[];
+  categories?: Category[];
+  language?: 'ar' | 'fr' | 'en';
+  uid?: string;
+}
 
-export const DashboardAiWidget: React.FC = () => {
-  const { language, transactions = [], setActiveScreen } = useAppStore();
+export const DashboardAiWidget: React.FC<DashboardAiWidgetProps> = (props) => {
+  const storeLanguage = useAppStore((s) => s.language);
+  const storeTransactions = useAppStore((s) => s.transactions);
+  const storeCategories = useAppStore((s) => s.categories);
+  const storeFirebaseUser = useAppStore((s) => s.firebaseUser);
+  const setActiveScreen = useAppStore((s) => s.setActiveScreen);
 
-  const insights = useMemo<Insight[]>(() => {
-    const now = new Date();
-    const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7));
-    const monthPrefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-    const expenses = transactions.filter((transaction) => transaction.type === 'expense');
-    const monthExpenses = expenses.filter((transaction) => transaction.date?.startsWith(monthPrefix));
-    const weekExpenses = expenses.filter((transaction) => {
-      const timestamp = Date.parse(transaction.date);
-      return Number.isFinite(timestamp) && timestamp >= weekStart.getTime();
-    });
+  const language = props.language ?? storeLanguage;
+  const transactions = props.transactions ?? storeTransactions ?? [];
+  const categories = props.categories ?? storeCategories ?? [];
+  const uid = props.uid ?? storeFirebaseUser?.uid ?? 'anon';
+  const dismissStorageKey = `flouss_dismiss_getting_started_${uid}`;
 
-    if (transactions.length === 0) {
-      return [{
-        message: {
-          en: 'Your personal insights will appear here after you record a few transactions.',
-          fr: 'Vos résumés apparaîtront ici après quelques transactions.',
-          ar: 'غادي يبان ليك الملخص هنا من بعد ما تسجل شي معاملات.',
-        },
-        tag: { en: 'Getting started', fr: 'Pour commencer', ar: 'البداية' },
-        action: { en: 'Add first expense', fr: 'Ajouter une dépense', ar: 'زيد أول مصروف' },
-        screen: 'expenses',
-        addExpense: true,
-      }];
+  const [tipDismissed, setTipDismissed] = useState(() => {
+    try {
+      return localStorage.getItem(dismissStorageKey) === 'true';
+    } catch {
+      return false;
     }
+  });
 
-    return [{
-      message: {
-        en: `You recorded ${weekExpenses.length} expense${weekExpenses.length === 1 ? '' : 's'} this week and ${monthExpenses.length} this month.`,
-        fr: `Vous avez enregistré ${weekExpenses.length} dépense${weekExpenses.length === 1 ? '' : 's'} cette semaine et ${monthExpenses.length} ce mois-ci.`,
-        ar: `سجلتي ${weekExpenses.length} مصروف هاد السيمانة و${monthExpenses.length} هاد الشهر.`,
-      },
-      tag: { en: 'Your activity', fr: 'Votre activité', ar: 'النشاط ديالك' },
-      action: { en: 'View expenses', fr: 'Voir les dépenses', ar: 'شوف المصاريف' },
-      screen: 'expenses',
-    }];
-  }, [transactions]);
-
-  const currentInsight = insights[0];
   const locale = language === 'ar' || language === 'fr' || language === 'en' ? language : 'en';
+
+  // ── RULE 1: Hide every AI/insight card when transactions.length < 3 ──
+  // A "Getting started" card is allowed ONLY as a dismissible onboarding tip, never styled as an insight.
+  if (transactions.length < 3) {
+    if (tipDismissed) return null;
+
+    const handleDismiss = () => {
+      setTipDismissed(true);
+      try {
+        localStorage.setItem(dismissStorageKey, 'true');
+      } catch {}
+    };
+
+    const tip = {
+      title: {
+        en: 'Getting started',
+        fr: 'Pour commencer',
+        ar: 'البداية',
+      }[locale],
+      desc: {
+        en: 'Record at least 3 transactions over time to unlock automated insights and smart trend detection.',
+        fr: 'Enregistrez au moins 3 transactions pour débloquer les analyses automatiques et la détection des tendances.',
+        ar: 'سجل على الأقل 3 معاملات مع الوقت باش تفتح التحليلات الذكية وتتبع المصاريف.',
+      }[locale],
+      action: {
+        en: 'Add first expense',
+        fr: 'Ajouter une dépense',
+        ar: 'زيد أول مصروف',
+      }[locale],
+    };
+
+    return (
+      <section
+        data-testid="getting-started-tip"
+        aria-label={tip.title}
+        className="relative flex flex-col justify-between rounded-2xl border border-border-subtle bg-surface/70 p-4 shadow-xs backdrop-blur-sm transition-all"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-muted/15 text-muted">
+              <Info className="h-3.5 w-3.5" />
+            </span>
+            <span className="text-xs font-semibold text-foreground">{tip.title}</span>
+          </div>
+          <button
+            type="button"
+            onClick={handleDismiss}
+            aria-label="Dismiss onboarding tip"
+            className="rounded p-1 text-muted hover:bg-muted/10 hover:text-foreground transition-colors"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
+        <p className="mt-2 text-xs leading-relaxed text-muted">{tip.desc}</p>
+        <div className="mt-3 flex items-center justify-between border-t border-border-subtle pt-2">
+          <button
+            type="button"
+            onClick={() => {
+              triggerHaptic(40);
+              window.dispatchEvent(new CustomEvent('flouss:quick-add', { detail: { type: 'expense' } }));
+            }}
+            className="inline-flex min-h-7 items-center gap-1.5 text-xs font-semibold text-primary transition-colors hover:underline"
+          >
+            <span>{tip.action}</span>
+            <ArrowRight className="h-3 w-3 rtl:rotate-180" />
+          </button>
+        </div>
+      </section>
+    );
+  }
+
+  // ── RULE 2: Derive AI insight (weekly comparison ONLY if >= 2 weeks of data) ──
+  const currentInsight = deriveDashboardInsight(transactions, categories);
+  if (!currentInsight) return null;
 
   return (
     <section
+      data-testid="ai-insight-card"
       data-spotlight="true"
       aria-label={locale === 'ar' ? 'ملخص نشاطك' : locale === 'fr' ? 'Résumé de votre activité' : 'Activity summary'}
       className="spotlight-card relative flex h-fit flex-col justify-between overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-4 shadow-[0_0_24px_rgba(99,102,241,0.12),inset_0_1px_0_0_rgba(255,255,255,0.08)] backdrop-blur-xl group"
@@ -76,7 +131,6 @@ export const DashboardAiWidget: React.FC = () => {
             </span>
           </div>
         </div>
-
       </div>
 
       <div className="relative z-10 flex flex-1 flex-col justify-between">
@@ -97,7 +151,9 @@ export const DashboardAiWidget: React.FC = () => {
             <span>{currentInsight.action[locale]}</span>
             <ArrowRight className="h-3 w-3 rtl:rotate-180" />
           </button>
-          <span className="text-[10px] text-zinc-400">{locale === 'ar' ? 'ملخص من بياناتك' : locale === 'fr' ? 'Basé sur vos données' : 'Based on your data'}</span>
+          <span className="text-[10px] text-zinc-400">
+            {locale === 'ar' ? 'ملخص من بياناتك' : locale === 'fr' ? 'Basé sur vos données' : 'Based on your data'}
+          </span>
         </div>
       </div>
     </section>
