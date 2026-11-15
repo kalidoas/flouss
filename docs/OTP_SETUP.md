@@ -16,7 +16,7 @@ Flouss is deployed as two decoupled Docker containers on your Azure VM via Cooli
 2. **Backend OTP Service (`flouss-backend` in `/server`)**:
    - Standalone Node/Express microservice.
    - Verifies Firebase Auth ID tokens via `firebase-admin`.
-   - Stores salted SHA-256 hashes in Firestore `/otp/{uid}` (10 min expiry, 5 attempts max, 60s cooldown, max 5 sends/hour).
+   - Stores salted HMAC-SHA-256 digests in Firestore `/otp/{uid}` (10 min expiry, 5 attempts max, 60s cooldown, max 5 sends/hour).
    - Sends verification emails via Resend (`RESEND_API_KEY`) with an Obsidian/Zawaq dark-theme template.
    - CORS restricted to `https://flouss.live` and configured origins.
    - Health check endpoint at `GET /health`.
@@ -49,6 +49,10 @@ In Coolify, under your Backend application settings (pointed to directory `/serv
 | `ALLOWED_ORIGIN` | Runtime | Allowed CORS origin(s) (comma-separated if multiple). | `https://flouss.live` |
 | `PORT` | Runtime | Internal container listen port (defaults to 3000). | `3000` |
 | `NODE_ENV` | Runtime | Node environment mode. | `production` |
+| `OTP_SECRET` | Runtime secret | Random HMAC key; production refuses to start if missing or shorter than 32 bytes. | Generate a unique value with `openssl rand -hex 32` |
+| `TRUST_PROXY_HOPS` | Runtime | Number of trusted reverse-proxy hops before the container (default is `1` in production, `0` otherwise). | `1` for the standard single Coolify proxy hop |
+
+Keep the backend reachable only through Coolify's reverse proxy when trusting a proxy hop. If the routing topology changes, set `TRUST_PROXY_HOPS` to the actual trusted hop count; do not expose the container port directly to the public internet. Current rate-limit counters are in memory, so run one backend replica unless a shared rate-limit store is configured.
 
 ---
 
@@ -69,7 +73,8 @@ In Coolify, under your Backend application settings (pointed to directory `/serv
    - **Base Directory**: `/server`
    - **Domains**: `https://api.flouss.live`
    - **Port Expose**: `3000`
-   - **Runtime Variables**: Add `FIREBASE_SERVICE_ACCOUNT`, `RESEND_API_KEY`, `ALLOWED_ORIGIN=https://flouss.live`, `PORT=3000`.
+   - **Runtime Variables**: Add `FIREBASE_SERVICE_ACCOUNT`, `RESEND_API_KEY`, `RESEND_FROM`, `OTP_SECRET`, `ALLOWED_ORIGIN=https://flouss.live`, `TRUST_PROXY_HOPS=1`, `PORT=3000`, and `NODE_ENV=production`.
+   - **Health Check**: `GET /health` on port `3000` (the image also includes a Docker health check).
 
 ---
 

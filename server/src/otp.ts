@@ -4,7 +4,11 @@ export const DEFAULT_OTP_EXPIRY_MS = 10 * 60 * 1000; // 10 minutes
 export const MAX_OTP_ATTEMPTS = 5;
 
 export function getOtpSecret(): string {
-  return process.env.OTP_SECRET || 'flouss_otp_server_secret_v1_secure';
+  const secret = process.env.OTP_SECRET;
+  if (!secret || Buffer.byteLength(secret, 'utf8') < 32) {
+    throw new Error('OTP_SECRET must be configured with at least 32 bytes');
+  }
+  return secret;
 }
 
 /**

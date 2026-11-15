@@ -22,8 +22,8 @@ export function getFirebaseAdminApp(): App {
       const decoded = Buffer.from(saEnv, 'base64').toString('utf8');
       serviceAccount = JSON.parse(decoded);
     }
-  } catch (err: any) {
-    throw new Error(`Invalid FIREBASE_SERVICE_ACCOUNT JSON: ${err?.message}`);
+  } catch {
+    throw new Error('FIREBASE_SERVICE_ACCOUNT must contain valid JSON or base64-encoded JSON');
   }
 
   return initializeApp({
@@ -55,7 +55,14 @@ export async function verifyAuthHeader(req: Request): Promise<{ uid: string; ema
   }
 
   const auth = getAdminAuth();
-  const decoded = await auth.verifyIdToken(token);
+  let decoded;
+  try {
+    decoded = await auth.verifyIdToken(token);
+  } catch {
+    const error: any = new Error('Invalid or expired authentication token');
+    error.status = 401;
+    throw error;
+  }
   return {
     uid: decoded.uid,
     email: decoded.email || '',

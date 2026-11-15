@@ -3,8 +3,9 @@ import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import crypto from 'crypto';
-import { getAdminFirestore, getAdminAuth, verifyAuthHeader } from './firebase.js';
+import { getAdminFirestore, getAdminAuth, getFirebaseAdminApp, verifyAuthHeader } from './firebase.js';
 import {
+  getOtpSecret,
   generateOtpRecord,
   verifyOtpSubmission,
   computeOtpHmac,
@@ -14,6 +15,28 @@ export { computeOtpHmac, generateOtpRecord, verifyOtpSubmission };
 
 const app = express();
 const port = parseInt(process.env.PORT || '3000', 10);
+
+// Never start a production OTP service with a missing or weak HMAC secret.
+if (process.env.NODE_ENV === 'production') {
+  try {
+    getOtpSecret();
+    if (!process.env.RESEND_API_KEY) {
+      throw new Error('RESEND_API_KEY is required');
+    }
+    getFirebaseAdminApp();
+  } catch {
+    console.error('Startup configuration error: check OTP_SECRET, Firebase Admin credentials, and RESEND_API_KEY.');
+    process.exit(1);
+  }
+}
+
+// Coolify's reverse proxy is one hop in front of this container by default.
+// Override TRUST_PROXY_HOPS if the deployment topology differs.
+const trustProxyHops = Number(process.env.TRUST_PROXY_HOPS ?? (process.env.NODE_ENV === 'production' ? 1 : 0));
+if (!Number.isInteger(trustProxyHops) || trustProxyHops < 0 || trustProxyHops > 5) {
+  throw new Error('TRUST_PROXY_HOPS must be an integer between 0 and 5');
+}
+app.set('trust proxy', trustProxyHops);
 
 // ─── CORS Configuration ────────────────────────────────────────────────────────
 const defaultOrigins = ['https://flouss.live'];
@@ -34,7 +57,9 @@ app.use(
       if (!origin || allowedOrigins.has(origin)) {
         return callback(null, true);
       }
-      return callback(new Error(`Origin ${origin} not allowed by CORS`));
+      const error: any = new Error('Origin not allowed');
+      error.status = 403;
+      return callback(error);
     },
     credentials: true,
     methods: ['GET', 'POST', 'OPTIONS'],
@@ -60,6 +85,14 @@ const otpSendLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many OTP requests from this IP. Please wait before retrying.' },
+});
+
+const otpVerifyLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many verification attempts. Please wait before retrying.' },
 });
 
 // ─── Health Endpoint ───────────────────────────────────────────────────────────
@@ -191,7 +224,7 @@ async function handleSendOtp(req: Request, res: Response) {
     if (!resendApiKey) {
       console.error('[send-otp] RESEND_API_KEY is missing in environment variables');
       return res.status(500).json({
-        error: 'Email service configuration error (missing RESEND_API_KEY).',
+        error: 'Email service is temporarily unavailable.',
       });
     }
 
@@ -212,10 +245,9 @@ async function handleSendOtp(req: Request, res: Response) {
     });
 
     if (!resendRes.ok) {
-      const resendErr = (await resendRes.json().catch(() => ({}))) as any;
-      console.error('[send-otp] Resend API error:', resendErr);
+      console.error(`[send-otp] Resend request failed with status ${resendRes.status}`);
       return res.status(502).json({
-        error: resendErr?.message || 'Failed to dispatch email via Resend.',
+        error: 'Email delivery failed. Please try again later.',
       });
     }
 
@@ -237,9 +269,9 @@ async function handleSendOtp(req: Request, res: Response) {
       cooldownSeconds: 60,
     });
   } catch (err: any) {
-    console.error('[send-otp] Error:', err);
+    console.error(`[send-otp] Request failed (status ${err?.status || 500})`);
     return res.status(err?.status || 500).json({
-      error: err?.message || 'Internal server error',
+      error: err?.status === 401 ? 'Authentication required.' : 'Unable to send the verification code right now.',
     });
   }
 }
@@ -310,10 +342,10 @@ async function handleVerifyOtp(req: Request, res: Response) {
       message: 'Email verified successfully',
     });
   } catch (err: any) {
-    console.error('[verify-otp] Error:', err);
+    console.error(`[verify-otp] Request failed (status ${err?.status || 500})`);
     return res.status(err?.status || 500).json({
       success: false,
-      error: err?.message || 'Internal server error',
+      error: err?.status === 401 ? 'Authentication required.' : 'Unable to verify the code right now.',
     });
   }
 }
@@ -323,15 +355,15 @@ async function handleVerifyOtp(req: Request, res: Response) {
 app.post('/api/send-otp', otpSendLimiter, handleSendOtp);
 app.post('/send-otp', otpSendLimiter, handleSendOtp);
 
-app.post('/api/verify-otp', handleVerifyOtp);
-app.post('/verify-otp', handleVerifyOtp);
+app.post('/api/verify-otp', otpVerifyLimiter, handleVerifyOtp);
+app.post('/verify-otp', otpVerifyLimiter, handleVerifyOtp);
 
 // Global Error Handler
 app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-  console.error('Unhandled Server Error:', err);
+  console.error(`Request rejected (status ${err?.status || 500})`);
   const status = err.status || 500;
   res.status(status).json({
-    error: err.message || 'Internal server error',
+    error: status === 403 ? 'Origin not allowed.' : 'Internal server error.',
   });
 });
 
