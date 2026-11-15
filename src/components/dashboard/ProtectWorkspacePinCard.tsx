@@ -34,7 +34,7 @@ export const ProtectWorkspacePinCard: React.FC<Props> = ({ onConfigurePin }) => 
   return (
     <div
       dir={isAr ? 'rtl' : 'ltr'}
-      className="spotlight-card rounded-2xl bg-gradient-to-r from-indigo-950/40 via-purple-950/20 to-zinc-900/40 p-4 sm:p-5 backdrop-blur-xl border border-indigo-500/20 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] relative overflow-hidden mb-4 animate-in fade-in duration-300"
+      className="spotlight-card rounded-2xl bg-surface dark:bg-gradient-to-r dark:from-indigo-950/40 dark:via-purple-950/20 dark:to-zinc-900/40 p-4 sm:p-5 backdrop-blur-xl border border-indigo-500/30 dark:border-indigo-500/20 shadow-xs dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] relative overflow-hidden mb-4 animate-in fade-in duration-300"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3.5 min-w-0">
@@ -43,14 +43,14 @@ export const ProtectWorkspacePinCard: React.FC<Props> = ({ onConfigurePin }) => 
           </div>
 
           <div className="min-w-0">
-            <h3 className="text-sm font-bold text-white tracking-tight">
+            <h3 className="text-sm font-bold text-content dark:text-white tracking-tight">
               {isAr
                 ? 'احمِ مساحة عملك برمز PIN سري'
                 : language === 'fr'
                 ? 'Protégez votre espace avec un code PIN'
                 : 'Protect your workspace with a PIN'}
             </h3>
-            <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
+            <p className="text-xs text-muted dark:text-zinc-400 mt-1 leading-relaxed">
               {isAr
                 ? 'أضف طبقة أمان إضافية لقفل بياناتك المالية ومنع أي وصول غير مصرح به على هذا الجهاز.'
                 : language === 'fr'

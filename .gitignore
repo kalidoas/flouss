@@ -35,6 +35,7 @@ pnpm-debug.log*
 # Internal audit reports & design artifacts
 security-audit-report.html
 Flouss_Dashboard_Design.md
+screenshots/
 
 # Temporary recovery & restore files - NEVER commit these
 *recovered*.json

@@ -79,11 +79,17 @@ export const BalanceSparkline: React.FC<Props> = ({
     : chartLabel;
 
   return (
-    <div className="relative mt-4 border-t border-white/10 pt-3">
-      <div className="pointer-events-none absolute top-2 z-10 rounded-xl border border-white/10 bg-zinc-900/95 px-3 py-2 text-xs shadow-xl backdrop-blur-md" style={{ insetInlineStart: (coordinate?.x || 0) / dimensions.width < 0.68 ? `${Math.max(1, ((coordinate?.x || 0) / dimensions.width) * 100)}%` : undefined, insetInlineEnd: (coordinate?.x || 0) / dimensions.width >= 0.68 ? '0' : undefined }}>
-        <p className="mb-1 text-[10px] text-zinc-400">{tooltipDate}</p>
-        <p className="font-semibold text-white"><span className="sr-only">{balanceLabel}: </span><MoneyText amount={point?.balance || 0} /></p>
-        <p className="text-[10px] text-zinc-400"><span>{changeLabel}: </span><MoneyText amount={point?.change || 0} showSign /></p>
+    <div className="relative mt-4 border-t border-border-subtle dark:border-white/10 pt-3">
+      <div
+        className="pointer-events-none absolute top-2 z-10 rounded-xl border border-border-subtle bg-surface/95 dark:bg-zinc-900/95 dark:border-white/10 px-3 py-2 text-xs shadow-xl backdrop-blur-md text-content dark:text-white"
+        style={{
+          insetInlineStart: (coordinate?.x || 0) / dimensions.width < 0.68 ? `${Math.max(1, ((coordinate?.x || 0) / dimensions.width) * 100)}%` : undefined,
+          insetInlineEnd: (coordinate?.x || 0) / dimensions.width >= 0.68 ? '0' : undefined,
+        }}
+      >
+        <p className="mb-1 text-[10px] text-muted dark:text-zinc-400">{tooltipDate}</p>
+        <p className="font-semibold text-content dark:text-white"><span className="sr-only">{balanceLabel}: </span><MoneyText amount={point?.balance || 0} /></p>
+        <p className="text-[10px] text-muted dark:text-zinc-400"><span>{changeLabel}: </span><MoneyText amount={point?.change || 0} showSign /></p>
       </div>
       <svg
         viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
