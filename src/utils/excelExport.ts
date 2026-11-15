@@ -1,9 +1,7 @@
-import { Category, IncomeSource, Language, Transaction } from '../types';
-import {
-  calculateAvailableBalance,
-  calculateTotalSavingsInGoals,
-} from './calculations';
-import { formatMAD, formatDateTime, getTodayDateStr } from './formatters';
+import * as XLSX from 'xlsx';
+import { Category, DebtItem, IncomeSource, Language, NoteItem, ProgramTrack, SubscriptionItem, TaskItem, Transaction } from '../types';
+import { calculateAvailableBalance } from './calculations';
+import { getTodayDateStr } from './formatters';
 import {
   getCategoryName,
   getSubCategoryName,
@@ -17,6 +15,90 @@ interface ExcelExportParams {
   categories: Category[];
   incomeSources: IncomeSource[];
   language?: Language;
+  selectedPeriod?: { from?: string; to?: string };
+  tasks?: TaskItem[];
+  programTracks?: ProgramTrack[];
+  debts?: DebtItem[];
+  subscriptions?: SubscriptionItem[];
+  notes?: NoteItem[];
+  goals?: Category[];
+  currency?: string;
+}
+
+const label = (language: Language, en: string, fr: string, ar: string): string =>
+  language === 'ar' ? ar : language === 'fr' ? fr : en;
+
+const toDate = (value: string): Date => {
+  const parsed = new Date(value.includes('T') ? value : `${value}T00:00:00`);
+  return Number.isNaN(parsed.getTime()) ? new Date(0) : parsed;
+};
+
+const formatDateCell = (value: string): string => value.includes('T') ? value.slice(0, 10) : value;
+const formatTimeCell = (value: string): string => value.includes('T') ? value.slice(11, 16) : '';
+const monthOf = (value: string): string => formatDateCell(value).slice(0, 7);
+
+function transactionRows(
+  transactions: Transaction[],
+  categories: Category[],
+  incomeSources: IncomeSource[],
+  language: Language,
+  initialBalance: number | null,
+) {
+  const sorted = [...transactions].sort((a, b) => a.date.localeCompare(b.date));
+  let runningBalance = Number(initialBalance || 0);
+  return sorted.map((transaction) => {
+    const category = categories.find((item) => item.id === transaction.categoryId);
+    const subcategory = category?.subcategories?.find((item) => item.id === transaction.subCategoryId);
+    const source = incomeSources.find((item) => item.id === transaction.sourceId);
+    const incomeSubSource = source?.subcategories?.find((item) => item.id === transaction.incomeSubSourceId);
+    const signedAmount = transaction.type === 'income' || transaction.type === 'goal_withdraw'
+      ? transaction.amount
+      : -transaction.amount;
+    runningBalance += signedAmount;
+    const date = toDate(transaction.date);
+    return [
+      formatDateCell(transaction.date),
+      formatTimeCell(transaction.date),
+      date.toLocaleDateString(language === 'ar' ? 'ar-MA' : language === 'fr' ? 'fr-FR' : 'en-US', { weekday: 'long' }),
+      transaction.type,
+      category ? getCategoryName(category, language) : source ? getIncomeSourceName(source, language) : '',
+      subcategory ? getSubCategoryName(subcategory, language) : incomeSubSource ? getIncomeSubSourceName(incomeSubSource, language) : '',
+      transaction.note || '',
+      transaction.amount,
+      signedAmount,
+      runningBalance,
+      transaction.type === 'adjustment' || transaction.type === 'contribution' || transaction.type === 'goal_withdraw' ? 'Yes' : 'No',
+    ];
+  });
+}
+
+function applySheetLayout(XLSX: any, sheet: any, freezeRows = 1): void {
+  const range = XLSX.utils.decode_range(sheet['!ref'] || 'A1:A1');
+  const widths: number[] = [];
+  for (let column = range.s.c; column <= range.e.c; column += 1) {
+    let maxLength = 12;
+    for (let row = range.s.r; row <= Math.min(range.e.r, range.s.r + 250); row += 1) {
+      const cell = sheet[XLSX.utils.encode_cell({ r: row, c: column })];
+      maxLength = Math.max(maxLength, String(cell?.v ?? '').length);
+    }
+    widths.push(Math.min(42, Math.max(10, maxLength + 2)));
+  }
+  sheet['!cols'] = widths.map((wch) => ({ wch }));
+  sheet['!autofilter'] = { ref: XLSX.utils.encode_range(range) };
+  sheet['!freeze'] = { xSplit: 0, ySplit: freezeRows };
+  if (typeof document !== 'undefined' && document.documentElement.dir === 'rtl') {
+    sheet['!sheetView'] = [{ rightToLeft: true }];
+  }
+}
+
+function applyNumberFormats(XLSX: any, sheet: any, currencyFormat: string): void {
+  const range = XLSX.utils.decode_range(sheet['!ref'] || 'A1:A1');
+  for (let row = range.s.r + 1; row <= range.e.r; row += 1) {
+    for (let column = range.s.c; column <= range.e.c; column += 1) {
+      const cell = sheet[XLSX.utils.encode_cell({ r: row, c: column })];
+      if (cell && typeof cell.v === 'number') cell.z = currencyFormat;
+    }
+  }
 }
 
 export async function exportToExcel({
@@ -25,199 +107,84 @@ export async function exportToExcel({
   categories,
   incomeSources,
   language = 'fr',
+  selectedPeriod,
+  tasks = [],
+  programTracks = [],
+  debts = [],
+  subscriptions = [],
+  notes = [],
+  goals = categories.filter((category) => category.isGoal),
+  currency = 'MAD',
 }: ExcelExportParams): Promise<void> {
   const XLSX = await import('xlsx');
   const wb = XLSX.utils.book_new();
+  const currencyFormat = `#,##0.00 "${currency}"`;
+  const inPeriod = (transaction: Transaction) => {
+    const date = formatDateCell(transaction.date);
+    return (!selectedPeriod?.from || date >= selectedPeriod.from) && (!selectedPeriod?.to || date <= selectedPeriod.to);
+  };
+  const scopedTransactions = transactions.filter(inPeriod);
+  const allRows = transactionRows(scopedTransactions, categories, incomeSources, language, initialBalance);
+  const income = scopedTransactions.filter((transaction) => transaction.type === 'income');
+  const expenses = scopedTransactions.filter((transaction) => transaction.type === 'expense');
+  const totalIncome = income.reduce((sum, transaction) => sum + transaction.amount, 0);
+  const totalExpenses = expenses.reduce((sum, transaction) => sum + transaction.amount, 0);
+  const net = totalIncome - totalExpenses;
+  const balance = calculateAvailableBalance(initialBalance, scopedTransactions);
+  const periodLabel = selectedPeriod?.from || selectedPeriod?.to
+    ? `${selectedPeriod.from || 'Beginning'} → ${selectedPeriod.to || 'Today'}`
+    : label(language, 'All time', 'Toutes périodes', 'كل الفترة');
+  const sheetName = (en: string, fr: string, ar: string) => label(language, en, fr, ar).slice(0, 31);
+  const append = (name: string, rows: unknown[][], formats = true) => {
+    const sheet = XLSX.utils.aoa_to_sheet(rows);
+    applySheetLayout(XLSX, sheet);
+    if (formats) applyNumberFormats(XLSX, sheet, currencyFormat);
+    XLSX.utils.book_append_sheet(wb, sheet, name);
+    return sheet;
+  };
 
-  const balance = calculateAvailableBalance(initialBalance, transactions);
-  const totalSavings = calculateTotalSavingsInGoals(categories, transactions);
-
-  const totalIncome = transactions
-    .filter((t) => t.type === 'income')
-    .reduce((sum, t) => sum + t.amount, 0);
-
-  const totalExpense = transactions
-    .filter((t) => t.type === 'expense')
-    .reduce((sum, t) => sum + t.amount, 0);
-
-  const totalContributions = transactions
-    .filter((t) => t.type === 'contribution')
-    .reduce((sum, t) => sum + t.amount, 0);
-
-  const savingsRate =
-    totalIncome > 0
-      ? Math.max(0, Math.min(100, Math.round((totalContributions / totalIncome) * 100)))
-      : 0;
-
-  // Localized Sheet Titles
-  const sheetTitles = {
-    fr: {
-      summary: 'Synthèse',
-      expenses: 'Dépenses',
-      income: 'Revenus',
-      savings: 'Épargne',
-    },
-    ar: {
-      summary: 'ملخص الحساب',
-      expenses: 'المصاريف',
-      income: 'المداخيل',
-      savings: 'الادخار',
-    },
-    en: {
-      summary: 'Summary',
-      expenses: 'Expenses',
-      income: 'Income',
-      savings: 'Savings',
-    },
-  }[language];
-
-  // 1. Synthèse Sheet
-  const summaryHeaders = {
-    fr: ['Indicateur Financier', 'Valeur (MAD / %)'],
-    ar: ['المؤشر المالي', 'القيمة (د.م. / %)'],
-    en: ['Financial Metric', 'Value (MAD / %)'],
-  }[language];
-
-  const summaryData = [
-    summaryHeaders,
-    [
-      language === 'ar' ? 'الرصيد المتاح حالياً' : language === 'en' ? 'Available Balance' : 'Solde disponible actuel',
-      formatMAD(balance, false, language),
-    ],
-    [
-      language === 'ar' ? 'الرصيد الأولي المقفول' : language === 'en' ? 'Locked Initial Balance' : 'Solde initial verrouillé',
-      formatMAD(initialBalance, false, language),
-    ],
-    [
-      language === 'ar' ? 'إجمالي المداخيل' : language === 'en' ? 'Total Income' : 'Total des revenus',
-      formatMAD(totalIncome, false, language),
-    ],
-    [
-      language === 'ar' ? 'إجمالي المصاريف' : language === 'en' ? 'Total Expenses' : 'Total des dépenses',
-      formatMAD(totalExpense, false, language),
-    ],
-    [
-      language === 'ar' ? 'إجمالي المدخرات في الأهداف' : language === 'en' ? 'Total Saved in Goals' : 'Total épargné dans les objectifs',
-      formatMAD(totalSavings, false, language),
-    ],
-    [
-      language === 'ar' ? 'نسبة الادخار الإجمالية' : language === 'en' ? 'Overall Savings Rate' : 'Taux d’épargne global',
-      `${savingsRate}%`,
-    ],
-    [
-      language === 'ar' ? 'تاريخ التصدير' : language === 'en' ? 'Export Date' : 'Date d’exportation',
-      new Date().toLocaleString(language === 'ar' ? 'ar-MA' : language === 'en' ? 'en-US' : 'fr-FR'),
-    ],
+  const summaryRows: unknown[][] = [
+    [label(language, 'Metric', 'Indicateur', 'المؤشر'), label(language, 'Value', 'Valeur', 'القيمة'), label(language, 'Scope', 'Périmètre', 'النطاق')],
+    [label(language, 'Balance', 'Solde', 'الرصيد'), balance, periodLabel],
+    [label(language, 'Initial balance', 'Solde initial', 'الرصيد الأولي'), Number(initialBalance || 0), label(language, 'All time', 'Toutes périodes', 'كل الفترة')],
+    [label(language, 'Income', 'Revenus', 'المداخيل'), totalIncome, periodLabel],
+    [label(language, 'Expenses', 'Dépenses', 'المصاريف'), totalExpenses, periodLabel],
+    [label(language, 'Net', 'Net', 'الصافي'), net, periodLabel],
+    [label(language, 'Savings rate', 'Taux d’épargne', 'معدل الادخار'), totalIncome > 0 ? net / totalIncome : 0, periodLabel],
+    [label(language, 'Goals', 'Objectifs', 'الأهداف'), goals.length, label(language, 'All time', 'Toutes périodes', 'كل الفترة')],
+    [label(language, 'Top category', 'Catégorie principale', 'الفئة الأولى'), categories.map((category) => [category.name, expenses.filter((item) => item.categoryId === category.id).reduce((sum, item) => sum + item.amount, 0)]).sort((a, b) => Number(b[1]) - Number(a[1]))[0]?.[0] || '', periodLabel],
+    [label(language, 'Top 5 expenses', 'Top 5 dépenses', 'أكبر 5 مصاريف'), expenses.sort((a, b) => b.amount - a.amount).slice(0, 5).map((item) => item.note || item.id).join(' | '), periodLabel],
+    [label(language, 'Biggest day', 'Jour le plus dépensier', 'أكبر يوم إنفاقاً'), Object.entries(expenses.reduce<Record<string, number>>((acc, item) => { const date = formatDateCell(item.date); acc[date] = (acc[date] || 0) + item.amount; return acc; }, {})).sort((a, b) => b[1] - a[1])[0]?.[0] || '', periodLabel],
   ];
+  const summarySheet = append(sheetName('Summary', 'Synthèse', 'الملخص'), summaryRows, false);
+  applyNumberFormats(XLSX, summarySheet, currencyFormat);
 
-  const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
-  XLSX.utils.book_append_sheet(wb, wsSummary, sheetTitles.summary);
+  append(sheetName('Transactions', 'Transactions', 'المعاملات'), [[
+    label(language, 'Date', 'Date', 'التاريخ'), label(language, 'Time', 'Heure', 'الوقت'), label(language, 'Weekday', 'Jour', 'اليوم'), label(language, 'Type', 'Type', 'النوع'), label(language, 'Category', 'Catégorie', 'الفئة'), label(language, 'Subcategory', 'Sous-catégorie', 'الفئة الفرعية'), label(language, 'Note', 'Note', 'ملاحظة'), label(language, 'Amount', 'Montant', 'المبلغ'), label(language, 'Signed amount', 'Montant signé', 'المبلغ الموقع'), label(language, 'Running balance', 'Solde cumulé', 'الرصيد التراكمي'), label(language, 'Adjustment/transfer', 'Régularisation/transfert', 'تسوية/تحويل'),
+  ], ...allRows]);
 
-  // 2. Dépenses Sheet
-  const expensesHeaders = {
-    fr: ['Date', 'Catégorie', 'Sous-catégorie', 'Montant (MAD)', 'Montant Numérique', 'Note'],
-    ar: ['التاريخ', 'الفئة', 'الفئة الفرعية', 'المبلغ (د.م.)', 'القيمة الرقمية', 'ملاحظات'],
-    en: ['Date', 'Category', 'Sub-category', 'Amount (MAD)', 'Raw Amount', 'Note'],
-  }[language];
-
-  const expenseRows = transactions
-    .filter((t) => t.type === 'expense')
-    .sort((a, b) => b.date.localeCompare(a.date))
-    .map((t) => {
-      const cat = categories.find((c) => c.id === t.categoryId);
-      const sub = cat?.subcategories?.find((s) => s.id === t.subCategoryId);
-      return [
-        formatDateTime(t.date, language),
-        cat ? getCategoryName(cat, language) : '-',
-        sub ? getSubCategoryName(sub, language) : '-',
-        formatMAD(t.amount, false, language),
-        t.amount,
-        t.note || '',
-      ];
+  const detailRows = (items: Transaction[], kind: 'expense' | 'income') => {
+    const rows = items.sort((a, b) => a.date.localeCompare(b.date)).map((item) => {
+      const category = categories.find((entry) => entry.id === item.categoryId);
+      const source = incomeSources.find((entry) => entry.id === item.sourceId);
+      const subcategory = category?.subcategories?.find((entry) => entry.id === item.subCategoryId);
+      const incomeSubSource = source?.subcategories?.find((entry) => entry.id === item.incomeSubSourceId);
+      return [formatDateCell(item.date), formatTimeCell(item.date), category ? getCategoryName(category, language) : source ? getIncomeSourceName(source, language) : '', subcategory ? getSubCategoryName(subcategory, language) : incomeSubSource ? getIncomeSubSourceName(incomeSubSource, language) : '', item.note || '', item.amount];
     });
+    const total = items.reduce((sum, item) => sum + item.amount, 0);
+    return [[label(language, 'Date', 'Date', 'التاريخ'), label(language, 'Time', 'Heure', 'الوقت'), label(language, 'Category/Source', 'Catégorie/Source', 'الفئة/المصدر'), label(language, 'Subcategory', 'Sous-catégorie', 'الفئة الفرعية'), label(language, 'Note', 'Note', 'ملاحظة'), label(language, 'Amount', 'Montant', 'المبلغ')], ...rows, [label(language, 'TOTAL', 'TOTAL', 'المجموع'), '', '', '', '', total], [label(language, 'Top category', 'Catégorie principale', 'الفئة الأولى'), '', '', '', '', categories.map((category) => [category, items.filter((item) => item.categoryId === category.id).reduce((sum, item) => sum + item.amount, 0)]).sort((a, b) => Number(b[1]) - Number(a[1]))[0]?.[0] instanceof Object ? getCategoryName(categories.find((category) => category.id === (categories.map((category) => [category, items.filter((item) => item.categoryId === category.id).reduce((sum, item) => sum + item.amount, 0)]).sort((a, b) => Number(b[1]) - Number(a[1]))[0]?.[0] as Category)?.id) || categories[0], language) : '']];
+  };
+  append(sheetName('Expenses', 'Dépenses', 'المصاريف'), detailRows(expenses, 'expense'));
+  append(sheetName('Income', 'Revenus', 'المداخيل'), detailRows(income, 'income'));
 
-  const wsExpenses = XLSX.utils.aoa_to_sheet([expensesHeaders, ...expenseRows]);
-  XLSX.utils.book_append_sheet(wb, wsExpenses, sheetTitles.expenses);
+  const monthly = new Map<string, { income: number; expenses: number }>();
+  scopedTransactions.forEach((item) => { const current = monthly.get(monthOf(item.date)) || { income: 0, expenses: 0 }; if (item.type === 'income') current.income += item.amount; if (item.type === 'expense') current.expenses += item.amount; monthly.set(monthOf(item.date), current); });
+  append(sheetName('Monthly', 'Mensuel', 'شهري'), [[label(language, 'Month', 'Mois', 'الشهر'), label(language, 'Income', 'Revenus', 'المداخيل'), label(language, 'Expenses', 'Dépenses', 'المصاريف'), label(language, 'Net', 'Net', 'الصافي')], ...Array.from(monthly.entries()).sort().map(([month, values]) => [month, values.income, values.expenses, values.income - values.expenses])]);
+  append(sheetName('Goals', 'Objectifs', 'الأهداف'), [[label(language, 'Name', 'Nom', 'الاسم'), label(language, 'Target', 'Cible', 'الهدف'), label(language, 'Saved', 'Épargné', 'المدخر'), label(language, 'Progress', 'Progression', 'التقدم')], ...goals.map((goal) => [getCategoryName(goal, language), goal.targetAmount || 0, transactions.filter((item) => item.categoryId === goal.id && item.type === 'contribution').reduce((sum, item) => sum + item.amount, 0), ''])]);
+  append(sheetName('Debts', 'Dettes', 'الديون'), [[label(language, 'Person', 'Personne', 'الشخص'), label(language, 'Type', 'Type', 'النوع'), label(language, 'Total', 'Total', 'المجموع'), label(language, 'Paid', 'Payé', 'المدفوع'), label(language, 'Due date', 'Échéance', 'تاريخ الاستحقاق')], ...debts.map((debt) => [debt.personName, debt.type, debt.totalAmount, debt.paidAmount, debt.dueDate || ''])]);
+  append(sheetName('Subscriptions', 'Abonnements', 'الاشتراكات'), [[label(language, 'Name', 'Nom', 'الاسم'), label(language, 'Amount', 'Montant', 'المبلغ'), label(language, 'Next due', 'Prochaine échéance', 'الاستحقاق القادم'), label(language, 'Category', 'Catégorie', 'الفئة')], ...subscriptions.map((subscription) => [subscription.name, subscription.amount, subscription.nextDueDate || '', subscription.category])]);
+  append(sheetName('Program', 'Programme', 'البرنامج'), [[label(language, 'Task', 'Tâche', 'المهمة'), label(language, 'Completions', 'Réalisations', 'الإنجازات'), label(language, 'Streak', 'Série', 'السلسلة'), label(language, 'XP', 'XP', 'نقاط XP')], ...tasks.map((task) => [task.title, task.completedDates?.length || 0, '', (task.completedDates?.length || 0) * 10]), ...programTracks.flatMap((track) => (track.subtasks || []).map((subtask) => [subtask.title, subtask.completedDates?.length || 0, '', (subtask.completedDates?.length || 0) * (subtask.points || 10)]))]);
+  append(sheetName('Notes', 'Notes', 'الملاحظات'), [[label(language, 'Title', 'Titre', 'العنوان'), label(language, 'Content', 'Contenu', 'المحتوى'), label(language, 'Updated', 'Mis à jour', 'التحديث')], ...notes.map((note) => [note.title, note.content, note.updatedAt])]);
 
-  // 3. Revenus Sheet
-  const incomeHeaders = {
-    fr: ['Date', 'Source', 'Type / Sous-source', 'Montant (MAD)', 'Montant Numérique', 'Récurrent', 'Note'],
-    ar: ['التاريخ', 'المصدر', 'النوع / فرع الدخل', 'المبلغ (د.م.)', 'القيمة الرقمية', 'دوري', 'ملاحظات'],
-    en: ['Date', 'Source', 'Sub-source / Type', 'Amount (MAD)', 'Raw Amount', 'Recurring', 'Note'],
-  }[language];
-
-  const incomeRows = transactions
-    .filter((t) => t.type === 'income')
-    .sort((a, b) => b.date.localeCompare(a.date))
-    .map((t) => {
-      const src = incomeSources.find((s) => s.id === t.sourceId);
-      const sub = src?.subcategories?.find((s) => s.id === t.incomeSubSourceId);
-      return [
-        formatDateTime(t.date, language),
-        src ? getIncomeSourceName(src, language) : '-',
-        sub ? getIncomeSubSourceName(sub, language) : '-',
-        formatMAD(t.amount, false, language),
-        t.amount,
-        t.isRecurring ? (language === 'ar' ? 'نعم' : language === 'en' ? 'Yes' : 'Oui') : '-',
-        t.note || '',
-      ];
-    });
-
-  const wsIncome = XLSX.utils.aoa_to_sheet([incomeHeaders, ...incomeRows]);
-  XLSX.utils.book_append_sheet(wb, wsIncome, sheetTitles.income);
-
-  // 4. Épargne Sheet
-  const savingsHeaders = {
-    fr: ['Date', 'Objectif / Projet', 'Type d’opération', 'Montant (MAD)', 'Montant Numérique', 'Note'],
-    ar: ['التاريخ', 'الهدف / المشروع', 'نوع المعاملة', 'المبلغ (د.م.)', 'القيمة الرقمية', 'ملاحظات'],
-    en: ['Date', 'Goal / Project', 'Operation Type', 'Amount (MAD)', 'Raw Amount', 'Note'],
-  }[language];
-
-  const savingsRows = transactions
-    .filter((t) => t.type === 'contribution' || t.type === 'goal_withdraw')
-    .sort((a, b) => b.date.localeCompare(a.date))
-    .map((t) => {
-      const cat = categories.find((c) => c.id === t.categoryId);
-      const opType =
-        t.type === 'contribution'
-          ? language === 'ar'
-            ? 'إيداع ادخار'
-            : language === 'en'
-            ? 'Deposit'
-            : 'Versement épargne'
-          : language === 'ar'
-          ? 'استرداد للرصيد'
-          : language === 'en'
-          ? 'Withdrawal'
-          : 'Retrait vers solde';
-      return [
-        formatDateTime(t.date, language),
-        cat ? getCategoryName(cat, language) : '-',
-        opType,
-        formatMAD(t.amount, false, language),
-        t.amount,
-        t.note || '',
-      ];
-    });
-
-  const wsSavings = XLSX.utils.aoa_to_sheet([savingsHeaders, ...savingsRows]);
-  XLSX.utils.book_append_sheet(wb, wsSavings, sheetTitles.savings);
-
-  // Auto-fit column widths slightly for aesthetics
-  [wsSummary, wsExpenses, wsIncome, wsSavings].forEach((ws) => {
-    ws['!cols'] = [
-      { wch: 22 },
-      { wch: 24 },
-      { wch: 24 },
-      { wch: 18 },
-      { wch: 16 },
-      { wch: 35 },
-      { wch: 20 },
-    ];
-  });
-
-  // Generate the file and trigger browser download.
-  const dateStr = getTodayDateStr();
-  const filename = `flouss_export_${dateStr}.xlsx`;
-  XLSX.writeFile(wb, filename);
+  XLSX.writeFile(wb, `flouss_export_${getTodayDateStr()}.xlsx`);
 }
