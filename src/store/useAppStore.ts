@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 import { doc, getDoc, setDoc, onSnapshot, runTransaction, serverTimestamp, Unsubscribe } from '@firebase/firestore';
 import { auth, db } from '../lib/firebase';
 import { money } from '../lib/currency';
-import { saveRollingBackup, savePreSyncSafetyBackup } from '../utils/backup';
+import { saveRollingBackup, savePreSyncSafetyBackup, purgeUserStorage, migrateLegacyBackups } from '../utils/backup';
 import {
   Category,
   IncomeSource,
@@ -514,8 +514,9 @@ export function applyRemoteAccount(
   if (!data) return null;
   try {
     const currentAcc = useAppStore.getState().currentAccount;
+    const uid = useAppStore.getState().firebaseUser?.uid || auth.currentUser?.uid;
     if (currentAcc && Array.isArray(currentAcc.transactions) && currentAcc.transactions.length > 0) {
-      savePreSyncSafetyBackup(currentAcc);
+      savePreSyncSafetyBackup(currentAcc, uid);
     }
   } catch (e) {}
   const incomingAccount = data.account || data;
@@ -729,7 +730,7 @@ const writeAccountToFirestore = async (
     return false;
   }
 
-  saveRollingBackup(accountToWrite);
+  saveRollingBackup(accountToWrite, uid);
   console.log(`✅ [Flouss Cloud] ${label} sync completed (balance: ${computedBalance}) for users/${uid}`);
   return true;
 };
@@ -911,6 +912,10 @@ export const useAppStore = create<AppState>()(
           }
 
           if (!user) {
+            const currentUid = get().firebaseUser?.uid;
+            if (currentUid) {
+              purgeUserStorage(currentUid);
+            }
             try {
               localStorage.removeItem('flouss_user_default');
               localStorage.removeItem('flouss-store');
@@ -939,6 +944,10 @@ export const useAppStore = create<AppState>()(
               clearTimeout(syncTimer);
               syncTimer = null;
             }
+            const prevUid = get().firebaseUser.uid;
+            if (prevUid) {
+              purgeUserStorage(prevUid);
+            }
             try {
               localStorage.removeItem('flouss_user_default');
               localStorage.removeItem('flouss-store');
@@ -957,6 +966,10 @@ export const useAppStore = create<AppState>()(
           }
 
           const uid = user.uid;
+          try {
+            migrateLegacyBackups(uid, user.email);
+          } catch (e) {}
+
           const userDocRef = doc(db, 'users', uid);
 
           set({
@@ -1014,7 +1027,7 @@ export const useAppStore = create<AppState>()(
             }
           }
 
-          let firestorePin: string | null = profile.pinHash;
+          let firestorePin: string | null = profile?.pinHash ?? null;
           let resolvedAccount: UserAccount | null = null;
           let shouldSyncRecoveredTransactions = false;
 
@@ -1122,12 +1135,12 @@ export const useAppStore = create<AppState>()(
             localStorage.removeItem('flouss-store');
           } catch (e) {}
 
-          const hasPin = Boolean(profile.hasPin);
+          const hasPin = Boolean(profile?.hasPin);
           const sessionVerified = sessionStorage.getItem(`flouss_2fa_${uid}`) === 'verified';
           const isPinVerified = !hasPin || sessionVerified;
-          const hasSeenWelcome = Boolean(profile.hasSeenWelcome || localStorage.getItem(`flouss_welcome_${uid}`) === 'true');
+          const hasSeenWelcome = Boolean(profile?.hasSeenWelcome || localStorage.getItem(`flouss_welcome_${uid}`) === 'true');
           const hasSetInitialBalance = Boolean(
-            profile.hasSetInitialBalance ||
+            profile?.hasSetInitialBalance ||
             localStorage.getItem(`flouss_initial_balance_set_${uid}`) === 'true' ||
             (cloudDocExists && (cloudData?.isOnboarded || (cloudData?.transactions && cloudData.transactions.length > 0) || cloudData?.initialBalance !== null))
           );
@@ -1140,7 +1153,7 @@ export const useAppStore = create<AppState>()(
             authGate,
             accounts: [resolvedAccount],
             activeAccountId: uid,
-            userPinCode: profile.pinHash,
+            userPinCode: profile?.pinHash ?? null,
             isPinVerified,
             isPinUnlocked: isPinVerified,
             hasSeenWelcome,
@@ -1464,10 +1477,7 @@ export const useAppStore = create<AppState>()(
           }
           const uid = get().firebaseUser?.uid;
           if (uid) {
-            sessionStorage.removeItem(`flouss_2fa_${uid}`);
-            try {
-              localStorage.removeItem(`flouss_user_${uid}`);
-            } catch (e) {}
+            purgeUserStorage(uid);
           }
           try {
             localStorage.removeItem('flouss_user_default');
@@ -2550,6 +2560,15 @@ export const useAppStore = create<AppState>()(
 
             if (accountsToImport.length > 0) {
               const currentUid = get().firebaseUser?.uid || auth.currentUser?.uid || 'default';
+              if (currentUid !== 'default') {
+                const isCrossAccount = accountsToImport.some(
+                  (acc: UserAccount) => acc?.id && acc.id !== currentUid && acc.id !== 'default' && !acc.id.startsWith('account_')
+                );
+                if (isCrossAccount) {
+                  console.warn('[Flouss Backup] Refusing snapshot restore of another user:', accountsToImport[0]?.id);
+                  return false;
+                }
+              }
               const migratedAccounts = accountsToImport.map((acc: UserAccount, idx: number) => ({
                 ...acc,
                 id: idx === 0 && currentUid !== 'default' ? currentUid : (acc.id || `account_${idx}`),

@@ -136,10 +136,10 @@ export const SettingsPage: React.FC = () => {
   const [googleAuthLoading, setGoogleAuthLoading] = useState(false);
 
   const googleConnected = Boolean(
-    getStoredGoogleAccessToken() || notificationSettings?.googleCalendarConnected
+    getStoredGoogleAccessToken(firebaseUser?.uid) || notificationSettings?.googleCalendarConnected
   );
   const googleEmail =
-    notificationSettings?.googleCalendarEmail || getStoredGoogleCalendarEmail();
+    notificationSettings?.googleCalendarEmail || getStoredGoogleCalendarEmail(firebaseUser?.uid);
 
   const handleConnectGoogle = async () => {
     setGoogleAuthLoading(true);
@@ -337,7 +337,13 @@ export const SettingsPage: React.FC = () => {
     balance: number;
     accountName: string;
   } | null>(null);
-  const [rollingBackups, setRollingBackups] = useState<RollingBackupEntry[]>(() => getRollingBackups());
+  const [rollingBackups, setRollingBackups] = useState<RollingBackupEntry[]>(() =>
+    getRollingBackups(firebaseUser?.uid)
+  );
+
+  useEffect(() => {
+    setRollingBackups(getRollingBackups(firebaseUser?.uid));
+  }, [firebaseUser?.uid]);
 
   const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -391,7 +397,7 @@ export const SettingsPage: React.FC = () => {
         text: language === 'ar' ? 'تم استيراد ومزامنة النسخة الاحتياطية بنجاح!' : language === 'en' ? 'Backup imported and synced successfully!' : 'Sauvegarde importée et synchronisée avec succès !',
         type: 'success',
       });
-      setRollingBackups(getRollingBackups());
+      setRollingBackups(getRollingBackups(firebaseUser?.uid));
     } else {
       setFeedbackMsg({
         text: language === 'ar' ? 'حدث خطأ أثناء الاستيراد' : language === 'en' ? 'Error importing backup' : 'Erreur lors de l’import.',
@@ -401,6 +407,19 @@ export const SettingsPage: React.FC = () => {
   };
 
   const handleRestoreRollingSnapshot = async (snapshot: RollingBackupEntry) => {
+    if (snapshot.account?.id && firebaseUser?.uid && snapshot.account.id !== firebaseUser.uid) {
+      setFeedbackMsg({
+        text:
+          language === 'ar'
+            ? 'لا يمكن استعادة نسخة حساب آخر'
+            : language === 'en'
+            ? 'Cannot restore a snapshot from another account'
+            : 'Impossible de restaurer la sauvegarde d’un autre compte.',
+        type: 'error',
+      });
+      return;
+    }
+
     const confirmMsg = language === 'ar'
       ? `هل تريد استعادة نسخة ${snapshot.date} (${snapshot.transactionCount} معاملة، الرصيد: ${formatMAD(snapshot.balance, false, language)})؟`
       : language === 'en'

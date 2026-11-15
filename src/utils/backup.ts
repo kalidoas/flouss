@@ -2,6 +2,7 @@
  * Standalone offline backup utility
  * Safely exports raw localStorage data even if state hydration or application crashes.
  */
+import { migrateLegacyGoogleCalendar } from '../services/googleCalendar';
 
 export function createEmergencyLocalStorageBackup(): string | null {
   try {
@@ -46,16 +47,23 @@ export interface RollingBackupEntry {
   account: any;
 }
 
-const ROLLING_BACKUPS_KEY = 'flouss_rolling_backups';
-const PRE_SYNC_BACKUP_KEY = 'flouss_pre_sync_safety_backup';
+export function getRollingBackupsKey(uid?: string | null): string {
+  return uid ? `flouss_rolling_backups_${uid}` : 'flouss_rolling_backups';
+}
 
-export function saveRollingBackup(account: any): void {
+export function getPreSyncBackupKey(uid?: string | null): string {
+  return uid ? `flouss_pre_sync_safety_backup_${uid}` : 'flouss_pre_sync_safety_backup';
+}
+
+export function saveRollingBackup(account: any, uid?: string | null): void {
   if (!account || !Array.isArray(account.transactions) || account.transactions.length === 0) {
     return;
   }
+  const targetUid = uid || account?.id || null;
+  const storageKey = getRollingBackupsKey(targetUid);
   try {
     const today = new Date().toISOString().slice(0, 10);
-    const existingRaw = localStorage.getItem(ROLLING_BACKUPS_KEY);
+    const existingRaw = localStorage.getItem(storageKey);
     let backups: RollingBackupEntry[] = [];
     if (existingRaw) {
       try {
@@ -71,7 +79,7 @@ export function saveRollingBackup(account: any): void {
       timestamp: new Date().toISOString(),
       transactionCount: account.transactions.length,
       balance: account.balance ?? 0,
-      account,
+      account: { ...account, id: targetUid || account.id },
     });
 
     // Keep only the last 7 daily snapshots
@@ -79,41 +87,162 @@ export function saveRollingBackup(account: any): void {
       backups = backups.slice(0, 7);
     }
 
-    localStorage.setItem(ROLLING_BACKUPS_KEY, JSON.stringify(backups));
+    localStorage.setItem(storageKey, JSON.stringify(backups));
   } catch (err) {
     console.warn('[Flouss Backup] Failed to save rolling backup:', err);
   }
 }
 
-export function getRollingBackups(): RollingBackupEntry[] {
+export function getRollingBackups(uid?: string | null): RollingBackupEntry[] {
+  const storageKey = getRollingBackupsKey(uid);
   try {
-    const raw = localStorage.getItem(ROLLING_BACKUPS_KEY);
-    return raw ? JSON.parse(raw) : [];
+    const raw = localStorage.getItem(storageKey);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    // Strict isolation: if a uid is requested, refuse/filter out entries belonging to other uids
+    if (uid) {
+      return parsed.filter((b) => !b.account?.id || b.account.id === uid);
+    }
+    return parsed;
   } catch (e) {
     return [];
   }
 }
 
-export function savePreSyncSafetyBackup(account: any): void {
+export function savePreSyncSafetyBackup(account: any, uid?: string | null): void {
   if (!account) return;
+  const targetUid = uid || account?.id || null;
+  const storageKey = getPreSyncBackupKey(targetUid);
   try {
     const payload = {
       timestamp: new Date().toISOString(),
       transactionCount: Array.isArray(account.transactions) ? account.transactions.length : 0,
       balance: account.balance ?? 0,
-      account,
+      account: { ...account, id: targetUid || account.id },
     };
-    localStorage.setItem(PRE_SYNC_BACKUP_KEY, JSON.stringify(payload));
+    localStorage.setItem(storageKey, JSON.stringify(payload));
   } catch (e) {
     console.warn('[Flouss Backup] Failed to save pre-sync safety backup:', e);
   }
 }
 
-export function getPreSyncSafetyBackup(): any | null {
+export function getPreSyncSafetyBackup(uid?: string | null): any | null {
+  const storageKey = getPreSyncBackupKey(uid);
   try {
-    const raw = localStorage.getItem(PRE_SYNC_BACKUP_KEY);
-    return raw ? JSON.parse(raw) : null;
+    const raw = localStorage.getItem(storageKey);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    // Refuse snapshot of another uid
+    if (uid && parsed?.account?.id && parsed.account.id !== uid) {
+      return null;
+    }
+    return parsed;
   } catch (e) {
     return null;
+  }
+}
+
+/**
+ * One-time migration of existing un-namespaced values.
+ * Attributes them to a uid ONLY if the payload carries that uid; otherwise deletes them.
+ * Afterwards deletes all legacy un-namespaced keys.
+ */
+export function migrateLegacyBackups(currentUid: string, currentUserEmail?: string | null): void {
+  if (!currentUid) return;
+
+  // 1. Rolling backups migration
+  const legacyRollingKey = 'flouss_rolling_backups';
+  const legacyRolling = localStorage.getItem(legacyRollingKey);
+  if (legacyRolling) {
+    try {
+      const parsed = JSON.parse(legacyRolling);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        // Attribute to currentUid ONLY if payload carries that uid
+        const userEntries = parsed.filter((entry: any) => entry?.account?.id === currentUid);
+        if (userEntries.length > 0) {
+          const namespacedKey = getRollingBackupsKey(currentUid);
+          if (!localStorage.getItem(namespacedKey)) {
+            localStorage.setItem(namespacedKey, JSON.stringify(userEntries));
+          }
+        }
+      }
+    } catch {}
+    localStorage.removeItem(legacyRollingKey);
+  }
+
+  // 2. Pre-sync safety backup migration
+  const legacyPreSyncKey = 'flouss_pre_sync_safety_backup';
+  const legacyPreSync = localStorage.getItem(legacyPreSyncKey);
+  if (legacyPreSync) {
+    try {
+      const parsed = JSON.parse(legacyPreSync);
+      if (parsed?.account?.id === currentUid) {
+        const namespacedKey = getPreSyncBackupKey(currentUid);
+        if (!localStorage.getItem(namespacedKey)) {
+          localStorage.setItem(namespacedKey, legacyPreSync);
+        }
+      }
+    } catch {}
+    localStorage.removeItem(legacyPreSyncKey);
+  }
+
+  // 3. Google Calendar legacy keys migration
+  migrateLegacyGoogleCalendar(currentUid, currentUserEmail);
+
+  // 4. Clean up any remaining legacy un-namespaced keys
+  const legacyUnNamespacedKeys = [
+    'flouss_rolling_backups',
+    'flouss_pre_sync_safety_backup',
+    'flouss_emergency_snapshot',
+    'flouss_user_default',
+    'flouss-store',
+  ];
+  for (const k of legacyUnNamespacedKeys) {
+    localStorage.removeItem(k);
+  }
+}
+
+/**
+ * Purge every flouss_* key associated with a specific uid from localStorage and sessionStorage.
+ * Used on logout and on account switch to guarantee 100% data isolation.
+ */
+export function purgeUserStorage(uid: string): void {
+  if (!uid) return;
+
+  // 1. Purge from localStorage
+  const localKeysToRemove: string[] = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (!key) continue;
+    // Matches any key that contains the user's UID or legacy un-namespaced default keys
+    if (
+      key.includes(uid) ||
+      key === 'flouss_user_default' ||
+      key === 'flouss-store' ||
+      key === 'flouss_rolling_backups' ||
+      key === 'flouss_pre_sync_safety_backup'
+    ) {
+      localKeysToRemove.push(key);
+    }
+  }
+  for (const key of localKeysToRemove) {
+    localStorage.removeItem(key);
+  }
+
+  // 2. Purge from sessionStorage
+  const sessionKeysToRemove: string[] = [];
+  for (let i = 0; i < sessionStorage.length; i++) {
+    const key = sessionStorage.key(i);
+    if (!key) continue;
+    if (
+      key.includes(uid) ||
+      key.startsWith('flouss_google_')
+    ) {
+      sessionKeysToRemove.push(key);
+    }
+  }
+  for (const key of sessionKeysToRemove) {
+    sessionStorage.removeItem(key);
   }
 }

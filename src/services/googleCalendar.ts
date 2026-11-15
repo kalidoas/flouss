@@ -3,9 +3,62 @@ import { auth } from '../lib/firebase';
 import { useAppStore } from '../store/useAppStore';
 
 export const CALENDAR_SCOPE = 'https://www.googleapis.com/auth/calendar.events';
-const TOKEN_STORAGE_KEY = 'flouss_google_access_token';
-const SCOPE_STORAGE_KEY = 'flouss_google_calendar_scope_granted';
-const USER_EMAIL_KEY = 'flouss_google_calendar_email';
+
+export function getCalendarKeys(uid?: string | null) {
+  let effectiveUid = uid;
+  if (!effectiveUid) {
+    try {
+      effectiveUid = auth?.currentUser?.uid || (useAppStore?.getState?.()?.firebaseUser?.uid) || null;
+    } catch {}
+  }
+  const prefix = effectiveUid ? `flouss_google_calendar_${effectiveUid}_` : 'flouss_google_calendar_anonymous_';
+  return {
+    token: `${prefix}access_token`,
+    expiry: `${prefix}access_token_expiry`,
+    scope: `${prefix}scope_granted`,
+    email: `${prefix}email`,
+  };
+}
+
+export function migrateLegacyGoogleCalendar(currentUid: string, currentUserEmail?: string | null): void {
+  try {
+    const legacyToken = localStorage.getItem('flouss_google_access_token') || sessionStorage.getItem('flouss_google_access_token');
+    const legacyEmail = localStorage.getItem('flouss_google_calendar_email') || sessionStorage.getItem('flouss_google_calendar_email');
+    const legacyScope = localStorage.getItem('flouss_google_calendar_scope_granted') || sessionStorage.getItem('flouss_google_calendar_scope_granted');
+    const legacyExpiry = localStorage.getItem('flouss_google_access_token_expiry') || sessionStorage.getItem('flouss_google_access_token_expiry');
+
+    if (legacyToken && currentUid) {
+      if (currentUserEmail && legacyEmail && legacyEmail.toLowerCase() === currentUserEmail.toLowerCase()) {
+        const keys = getCalendarKeys(currentUid);
+        localStorage.setItem(keys.token, legacyToken);
+        sessionStorage.setItem(keys.token, legacyToken);
+        if (legacyExpiry) {
+          localStorage.setItem(keys.expiry, legacyExpiry);
+          sessionStorage.setItem(keys.expiry, legacyExpiry);
+        }
+        if (legacyScope) {
+          localStorage.setItem(keys.scope, legacyScope);
+          sessionStorage.setItem(keys.scope, legacyScope);
+        }
+        if (legacyEmail) {
+          localStorage.setItem(keys.email, legacyEmail);
+          sessionStorage.setItem(keys.email, legacyEmail);
+        }
+      }
+    }
+
+    const legacyKeys = [
+      'flouss_google_access_token',
+      'flouss_google_access_token_expiry',
+      'flouss_google_calendar_scope_granted',
+      'flouss_google_calendar_email',
+    ];
+    for (const k of legacyKeys) {
+      localStorage.removeItem(k);
+      sessionStorage.removeItem(k);
+    }
+  } catch {}
+}
 
 export interface CalendarEventReminderOverride {
   method: 'popup';
@@ -23,11 +76,10 @@ export function triggerCalendarReconnectModal(reason = 'expired'): void {
   }
 }
 
-const TOKEN_EXPIRY_KEY = 'flouss_google_access_token_expiry';
-
-export function isGoogleAccessTokenExpired(): boolean {
+export function isGoogleAccessTokenExpired(uid?: string | null): boolean {
   try {
-    const rawExpiry = localStorage.getItem(TOKEN_EXPIRY_KEY) || sessionStorage.getItem(TOKEN_EXPIRY_KEY);
+    const keys = getCalendarKeys(uid);
+    const rawExpiry = localStorage.getItem(keys.expiry) || sessionStorage.getItem(keys.expiry);
     if (!rawExpiry) return false;
     return Date.now() >= Number(rawExpiry);
   } catch {
@@ -38,15 +90,16 @@ export function isGoogleAccessTokenExpired(): boolean {
 /**
  * Get stored Google OAuth access token or return null (auto-clears if expired)
  */
-export function getStoredGoogleAccessToken(): string | null {
+export function getStoredGoogleAccessToken(uid?: string | null): string | null {
   try {
-    if (isGoogleAccessTokenExpired()) {
-      setStoredGoogleAccessToken(null, false, null);
+    if (isGoogleAccessTokenExpired(uid)) {
+      setStoredGoogleAccessToken(null, false, null, uid);
       return null;
     }
+    const keys = getCalendarKeys(uid);
     return (
-      sessionStorage.getItem(TOKEN_STORAGE_KEY) ||
-      localStorage.getItem(TOKEN_STORAGE_KEY) ||
+      sessionStorage.getItem(keys.token) ||
+      localStorage.getItem(keys.token) ||
       null
     );
   } catch (e) {
@@ -57,11 +110,12 @@ export function getStoredGoogleAccessToken(): string | null {
 /**
  * Get stored Google account email associated with calendar sync
  */
-export function getStoredGoogleCalendarEmail(): string | null {
+export function getStoredGoogleCalendarEmail(uid?: string | null): string | null {
   try {
+    const keys = getCalendarKeys(uid);
     return (
-      sessionStorage.getItem(USER_EMAIL_KEY) ||
-      localStorage.getItem(USER_EMAIL_KEY) ||
+      sessionStorage.getItem(keys.email) ||
+      localStorage.getItem(keys.email) ||
       null
     );
   } catch {
@@ -75,33 +129,35 @@ export function getStoredGoogleCalendarEmail(): string | null {
 export function setStoredGoogleAccessToken(
   token: string | null,
   hasCalendarScope = false,
-  email?: string | null
+  email?: string | null,
+  uid?: string | null
 ): void {
   try {
+    const keys = getCalendarKeys(uid);
     if (token) {
-      sessionStorage.setItem(TOKEN_STORAGE_KEY, token);
-      localStorage.setItem(TOKEN_STORAGE_KEY, token);
+      sessionStorage.setItem(keys.token, token);
+      localStorage.setItem(keys.token, token);
       // Google access tokens expire after 3600 seconds; set 3500s safety margin
       const expiry = String(Date.now() + 3500 * 1000);
-      sessionStorage.setItem(TOKEN_EXPIRY_KEY, expiry);
-      localStorage.setItem(TOKEN_EXPIRY_KEY, expiry);
+      sessionStorage.setItem(keys.expiry, expiry);
+      localStorage.setItem(keys.expiry, expiry);
       if (hasCalendarScope) {
-        sessionStorage.setItem(SCOPE_STORAGE_KEY, 'true');
-        localStorage.setItem(SCOPE_STORAGE_KEY, 'true');
+        sessionStorage.setItem(keys.scope, 'true');
+        localStorage.setItem(keys.scope, 'true');
       }
       if (email) {
-        sessionStorage.setItem(USER_EMAIL_KEY, email);
-        localStorage.setItem(USER_EMAIL_KEY, email);
+        sessionStorage.setItem(keys.email, email);
+        localStorage.setItem(keys.email, email);
       }
     } else {
-      sessionStorage.removeItem(TOKEN_STORAGE_KEY);
-      localStorage.removeItem(TOKEN_STORAGE_KEY);
-      sessionStorage.removeItem(TOKEN_EXPIRY_KEY);
-      localStorage.removeItem(TOKEN_EXPIRY_KEY);
-      sessionStorage.removeItem(SCOPE_STORAGE_KEY);
-      localStorage.removeItem(SCOPE_STORAGE_KEY);
-      sessionStorage.removeItem(USER_EMAIL_KEY);
-      localStorage.removeItem(USER_EMAIL_KEY);
+      sessionStorage.removeItem(keys.token);
+      localStorage.removeItem(keys.token);
+      sessionStorage.removeItem(keys.expiry);
+      localStorage.removeItem(keys.expiry);
+      sessionStorage.removeItem(keys.scope);
+      localStorage.removeItem(keys.scope);
+      sessionStorage.removeItem(keys.email);
+      localStorage.removeItem(keys.email);
     }
   } catch (e) {
     // Ignore storage errors in private mode
@@ -111,8 +167,8 @@ export function setStoredGoogleAccessToken(
 /**
  * Disconnect Google Calendar completely from local state
  */
-export function disconnectGoogleCalendar(): void {
-  setStoredGoogleAccessToken(null, false, null);
+export function disconnectGoogleCalendar(uid?: string | null): void {
+  setStoredGoogleAccessToken(null, false, null, uid);
   const store = useAppStore.getState();
   if (store.updateNotificationSettings) {
     store.updateNotificationSettings({
@@ -126,8 +182,9 @@ export function disconnectGoogleCalendar(): void {
  * Validates whether an OAuth token is active and has the required Calendar scope
  * via Google's tokeninfo endpoint.
  */
-export async function checkHasCalendarScope(token: string): Promise<boolean> {
+export async function checkHasCalendarScope(token: string, uid?: string | null): Promise<boolean> {
   if (!token) return false;
+  const keys = getCalendarKeys(uid);
   try {
     const res = await fetch(
       `https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${encodeURIComponent(token)}`
@@ -143,15 +200,15 @@ export async function checkHasCalendarScope(token: string): Promise<boolean> {
 
     if (data?.email) {
       try {
-        sessionStorage.setItem(USER_EMAIL_KEY, data.email);
-        localStorage.setItem(USER_EMAIL_KEY, data.email);
+        sessionStorage.setItem(keys.email, data.email);
+        localStorage.setItem(keys.email, data.email);
       } catch {}
     }
 
     return hasScope;
   } catch (err) {
     try {
-      return localStorage.getItem(SCOPE_STORAGE_KEY) === 'true';
+      return localStorage.getItem(keys.scope) === 'true';
     } catch {
       return false;
     }
