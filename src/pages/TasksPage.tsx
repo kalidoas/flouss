@@ -2000,7 +2000,7 @@ export const TasksPage: React.FC = () => {
             <table className="w-full min-w-max border-collapse text-[11px] font-mono">
               <thead>
                 <tr className="sticky top-0 bg-black/40 backdrop-blur-sm border-b border-white/[0.08]">
-                  <th className="sticky left-0 z-10 w-28 px-2 py-1.5 text-left font-medium text-zinc-400 bg-black/40 border-r border-white/[0.06]">
+                  <th className="sticky left-0 z-10 w-44 sm:w-52 min-w-[160px] sm:min-w-[190px] px-2.5 py-1.5 text-left font-medium text-zinc-400 bg-black/40 border-r border-white/[0.06]">
                     {language === 'ar' ? 'العادة / المهمة' : language === 'fr' ? 'Habitude / Tâche' : 'Habit / Task'}
                   </th>
                   {Array.from({ length: matrixDaysInMonth }, (_, i) => i + 1).map((day) => {
@@ -2022,10 +2022,10 @@ export const TasksPage: React.FC = () => {
               <tbody>
                 {matrixHabits.map((habit) => (
                   <tr key={habit.id} className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors">
-                    <td className="sticky left-0 z-10 w-28 px-2 py-1.5 text-left font-medium text-zinc-200 bg-black/40 border-r border-white/[0.06] truncate max-w-[120px]" title={habit.label}>
+                    <td className="sticky left-0 z-10 w-44 sm:w-52 min-w-[160px] sm:min-w-[190px] px-2.5 py-1.5 text-left font-medium text-zinc-200 bg-black/40 border-r border-white/[0.06] whitespace-normal break-words leading-tight" title={habit.label}>
                       <span className="flex items-center gap-1.5">
-                        <span>{habit.icon}</span>
-                        <span>{habit.label}</span>
+                        <span className="shrink-0">{habit.icon}</span>
+                        <span className="min-w-0">{habit.label}</span>
                       </span>
                     </td>
                     {Array.from({ length: matrixDaysInMonth }, (_, i) => i + 1).map((day) => {
