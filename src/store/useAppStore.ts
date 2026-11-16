@@ -55,7 +55,6 @@ import {
   verifyProfilePin as verifyProfilePinService,
   markWelcomeSeen as markWelcomeSeenService,
   markInitialBalanceSet as markInitialBalanceSetService,
-  markEmailVerified as markEmailVerifiedService,
   UserProfileDoc,
 } from '../services/userProfile';
 
@@ -794,7 +793,9 @@ export function computeAuthGate(
   if (!profile) return 'loading';
 
   const isGoogle = user.providerData?.some((p: any) => p.providerId === 'google.com');
-  const isEmailVerified = Boolean(user.emailVerified || profile.emailVerified);
+  // Verification is trusted only from Firebase Auth's signed user record.
+  // Firestore profile fields are client-writable and must not grant this gate.
+  const isEmailVerified = Boolean(user.emailVerified);
 
   if (!isGoogle && !isEmailVerified) {
     return 'needsEmailVerif';
@@ -992,8 +993,6 @@ export const useAppStore = create<AppState>()(
 
           const cloudDocExists = Boolean(snap && snap.exists());
           const cloudData = cloudDocExists ? snap.data() : null;
-          const isGoogleUser = user.providerData?.some((p: any) => p.providerId === 'google.com');
-
           if (!profile) {
             // Profile doc missing!
             const existingPin = cloudData?.pinCode || cloudData?.account?.pinCode || null;
@@ -1007,7 +1006,7 @@ export const useAppStore = create<AppState>()(
             if (cloudDocExists && hasExistingData) {
               // Existing owner account: preserve legacy data, mark hasSeenWelcome=true so owner is NOT forced through onboarding
               profile = await createUserProfile(uid, {
-                emailVerified: Boolean(user.emailVerified || isGoogleUser),
+                emailVerified: false,
                 hasPin: Boolean(existingPin),
                 pinHash: existingPin,
                 pinSalt: `${uid}:flouss_pin_salt_v1`,
@@ -1017,7 +1016,7 @@ export const useAppStore = create<AppState>()(
             } else {
               // Brand-new user: empty profile
               profile = await createUserProfile(uid, {
-                emailVerified: Boolean(user.emailVerified || isGoogleUser),
+                emailVerified: false,
                 hasPin: false,
                 pinHash: null,
                 pinSalt: null,
@@ -1443,9 +1442,6 @@ export const useAppStore = create<AppState>()(
           if (!u) return;
           await u.reload();
           const refreshedUser = auth.currentUser;
-          if (refreshedUser?.emailVerified && u.uid) {
-            await markEmailVerifiedService(u.uid);
-          }
           const profile = await loadUserProfile(u.uid);
           set((state: any) => ({
             firebaseUser: refreshedUser,

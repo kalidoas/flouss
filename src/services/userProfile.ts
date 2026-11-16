@@ -235,10 +235,3 @@ export async function markInitialBalanceSet(uid: string): Promise<void> {
     localStorage.setItem(`flouss_initial_balance_set_${uid}`, 'true');
   } catch {}
 }
-
-/**
- * Mark the user's email as verified in the profile doc.
- */
-export async function markEmailVerified(uid: string): Promise<void> {
-  await updateUserProfile(uid, { emailVerified: true });
-}
