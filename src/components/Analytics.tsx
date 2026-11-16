@@ -1,6 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { Activity, ArrowDownRight, ArrowUpRight, BarChart3, CalendarDays, ChevronDown, ChevronRight, CircleDollarSign, FileText, Lightbulb, PiggyBank, Receipt, Repeat2, WalletCards } from 'lucide-react';
+import { Activity, ArrowDownRight, ArrowUpRight, BarChart3, CalendarDays, ChevronDown, ChevronRight, CircleDollarSign, FileText, Lightbulb, PiggyBank, Receipt, Repeat2, WalletCards, X } from 'lucide-react';
 import { KpiCard } from './common/KpiCard';
 import { CountUpNumber } from './common/CountUpNumber';
 import { GlassMonthPicker } from './common/GlassMonthPicker';
@@ -20,6 +21,26 @@ export const Analytics: React.FC = () => {
   const [comparePrevious, setComparePrevious] = useState(true);
   const [detail, setDetail] = useState<'income' | 'expense' | 'net' | 'savings' | null>(null);
   const [categoryPath, setCategoryPath] = useState<string | null>(null);
+
+  const shouldReduceMotion = useReducedMotion();
+  const detailRef = useRef<HTMLDivElement>(null);
+  const categoryRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (detail) {
+      detailRef.current?.scrollIntoView({ behavior: shouldReduceMotion ? 'auto' : 'smooth', block: 'nearest' });
+    }
+  }, [detail, shouldReduceMotion]);
+
+  useEffect(() => {
+    if (categoryPath) {
+      categoryRef.current?.scrollIntoView({ behavior: shouldReduceMotion ? 'auto' : 'smooth', block: 'nearest' });
+    }
+  }, [categoryPath, shouldReduceMotion]);
+
+  const handleToggleDetail = (key: 'income' | 'expense' | 'net' | 'savings') => {
+    setDetail((prev) => (prev === key ? null : key));
+  };
 
   const monthOptions = useMemo(() => {
     const values = new Set((transactions || []).map((transaction) => transaction.date.slice(0, 7)).filter((month) => /^\d{4}-\d{2}$/.test(month)));
@@ -76,10 +97,71 @@ export const Analytics: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <button type="button" onClick={() => setDetail('income')} className="text-left"><KpiCard title={copy(language, 'Inflow', 'Entrées', 'المداخيل')} value={summary.income} change={comparePrevious ? change(summary.income, previousSummary.income) : undefined} changeSuffix="%" changeLabel={copy(language, 'vs previous month', 'vs mois précédent', 'مقابل الشهر السابق')} icon={ArrowUpRight} color="emerald" /></button>
-        <button type="button" onClick={() => setDetail('expense')} className="text-left"><KpiCard title={copy(language, 'Outflow', 'Sorties', 'المصاريف')} value={summary.expenses} change={comparePrevious ? change(summary.expenses, previousSummary.expenses) : undefined} changeSuffix="%" changeLabel={copy(language, 'vs previous month', 'vs mois précédent', 'مقابل الشهر السابق')} icon={ArrowDownRight} color="rose" isPositiveGood={false} /></button>
-        <button type="button" onClick={() => setDetail('net')} className="text-left"><KpiCard title={copy(language, 'Net', 'Net', 'الصافي')} value={summary.net} icon={Activity} color="indigo" /></button>
-        <button type="button" onClick={() => setDetail('savings')} className="text-left"><KpiCard title={copy(language, 'Savings rate', 'Taux d’épargne', 'معدل الادخار')} value={savingsRate} unit="%" change={comparePrevious ? savingsRate - previousSavingsRate : undefined} changeSuffix="pp" icon={PiggyBank} color="amber" /></button>
+        <button
+          type="button"
+          onClick={() => handleToggleDetail('income')}
+          className={`text-left rounded-2xl transition-all duration-200 outline-none ${
+            detail === 'income' ? 'ring-2 ring-emerald-500 ring-offset-2 ring-offset-background' : 'hover:opacity-95'
+          }`}
+          aria-expanded={detail === 'income'}
+        >
+          <KpiCard
+            title={copy(language, 'Inflow', 'Entrées', 'المداخيل')}
+            value={summary.income}
+            change={comparePrevious ? change(summary.income, previousSummary.income) : undefined}
+            changeSuffix="%"
+            changeLabel={copy(language, 'vs previous month', 'vs mois précédent', 'مقابل الشهر السابق')}
+            icon={ArrowUpRight}
+            color="emerald"
+          />
+        </button>
+        <button
+          type="button"
+          onClick={() => handleToggleDetail('expense')}
+          className={`text-left rounded-2xl transition-all duration-200 outline-none ${
+            detail === 'expense' ? 'ring-2 ring-rose-500 ring-offset-2 ring-offset-background' : 'hover:opacity-95'
+          }`}
+          aria-expanded={detail === 'expense'}
+        >
+          <KpiCard
+            title={copy(language, 'Outflow', 'Sorties', 'المصاريف')}
+            value={summary.expenses}
+            change={comparePrevious ? change(summary.expenses, previousSummary.expenses) : undefined}
+            changeSuffix="%"
+            changeLabel={copy(language, 'vs previous month', 'vs mois précédent', 'مقابل الشهر السابق')}
+            icon={ArrowDownRight}
+            color="rose"
+            isPositiveGood={false}
+          />
+        </button>
+        <button
+          type="button"
+          onClick={() => handleToggleDetail('net')}
+          className={`text-left rounded-2xl transition-all duration-200 outline-none ${
+            detail === 'net' ? 'ring-2 ring-indigo-500 ring-offset-2 ring-offset-background' : 'hover:opacity-95'
+          }`}
+          aria-expanded={detail === 'net'}
+        >
+          <KpiCard title={copy(language, 'Net', 'Net', 'الصافي')} value={summary.net} icon={Activity} color="indigo" />
+        </button>
+        <button
+          type="button"
+          onClick={() => handleToggleDetail('savings')}
+          className={`text-left rounded-2xl transition-all duration-200 outline-none ${
+            detail === 'savings' ? 'ring-2 ring-amber-500 ring-offset-2 ring-offset-background' : 'hover:opacity-95'
+          }`}
+          aria-expanded={detail === 'savings'}
+        >
+          <KpiCard
+            title={copy(language, 'Savings rate', 'Taux d’épargne', 'معدل الادخار')}
+            value={savingsRate}
+            unit="%"
+            change={comparePrevious ? savingsRate - previousSavingsRate : undefined}
+            changeSuffix="pp"
+            icon={PiggyBank}
+            color="amber"
+          />
+        </button>
       </div>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
@@ -93,9 +175,89 @@ export const Analytics: React.FC = () => {
 
       {insight && <section className="flex flex-col gap-3 rounded-2xl border border-border bg-muted/30 p-4 sm:flex-row sm:items-center sm:justify-between"><div className="flex items-start gap-3"><Lightbulb className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" /><div><p className="font-medium text-foreground">{insight.text}</p><p className="text-xs text-muted-foreground">{insight.action}</p></div></div><ChevronRight className="hidden h-4 w-4 text-muted-foreground sm:block" /></section>}
 
-      {detail && <div className="rounded-2xl border border-border bg-card p-4"><div className="mb-3 flex items-center justify-between"><h2 className="font-semibold text-foreground">{copy(language, 'Details', 'Détails', 'التفاصيل')}</h2><button type="button" onClick={() => setDetail(null)} className="text-sm text-muted-foreground hover:text-foreground">{copy(language, 'Close', 'Fermer', 'إغلاق')}</button></div><p className="mb-3 text-sm text-muted-foreground">{detail === 'savings' ? `${savingsRate}%` : <MoneyText amount={detail === 'income' ? summary.income : detail === 'expense' ? summary.expenses : summary.net} />}</p><div className="max-h-64 space-y-1 overflow-y-auto">{detailTransactions.map((transaction) => <div key={transaction.id} className="flex items-center justify-between gap-3 rounded-lg p-2 text-sm hover:bg-muted/40"><span className="text-foreground break-words line-clamp-2">{transaction.note || formatDate(transaction.date, language)}</span><MoneyText amount={transaction.amount} /></div>)}</div></div>}
+      <AnimatePresence mode="wait">
+        {detail && (
+          <motion.div
+            key={`detail-${detail}`}
+            ref={detailRef}
+            initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.99 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -8, scale: 0.99 }}
+            transition={{ duration: shouldReduceMotion ? 0 : 0.22, ease: 'easeOut' }}
+            className="rounded-2xl border border-border bg-card p-4 shadow-sm"
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="font-semibold text-foreground">
+                {copy(language, 'Details', 'Détails', 'التفاصيل')} - {
+                  detail === 'income' ? copy(language, 'Inflow', 'Entrées', 'المداخيل') :
+                  detail === 'expense' ? copy(language, 'Outflow', 'Sorties', 'المصاريف') :
+                  detail === 'net' ? copy(language, 'Net', 'Net', 'الصافي') :
+                  copy(language, 'Savings rate', 'Taux d’épargne', 'معدل الادخار')
+                }
+              </h2>
+              <button
+                type="button"
+                onClick={() => setDetail(null)}
+                className="p-1 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                aria-label={copy(language, 'Close', 'Fermer', 'إغلاق')}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="mb-3 text-sm text-muted-foreground">
+              {detail === 'savings' ? `${savingsRate}%` : <MoneyText amount={detail === 'income' ? summary.income : detail === 'expense' ? summary.expenses : summary.net} />}
+            </p>
+            <div className="max-h-64 space-y-1 overflow-y-auto">
+              {detailTransactions.map((transaction) => (
+                <div key={transaction.id} className="flex items-center justify-between gap-3 rounded-lg p-2 text-sm hover:bg-muted/40">
+                  <span className="text-foreground break-words line-clamp-2">{transaction.note || formatDate(transaction.date, language)}</span>
+                  <MoneyText amount={transaction.amount} />
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {categoryPath && <div className="rounded-2xl border border-border bg-card p-4"><div className="mb-3 flex items-center justify-between"><h2 className="font-semibold text-foreground">{selectedCategory ? getCategoryName(selectedCategory, language) : copy(language, 'Category details', 'Détails de catégorie', 'تفاصيل الفئة')}</h2><button type="button" onClick={() => setCategoryPath(null)} className="text-sm text-muted-foreground hover:text-foreground">{copy(language, 'Close', 'Fermer', 'إغلاق')}</button></div><div className="space-y-1">{categoryTransactions.map((transaction) => <div key={transaction.id} className="flex items-center justify-between gap-3 rounded-lg p-2 text-sm"><span className="text-foreground break-words line-clamp-2">{transaction.subCategoryId && selectedCategory?.subcategories ? getSubCategoryName(selectedCategory.subcategories.find((subcategory) => subcategory.id === transaction.subCategoryId) || selectedCategory.subcategories[0], language) : transaction.note || '—'}</span><MoneyText amount={transaction.amount} /></div>)}</div></div>}
+      <AnimatePresence mode="wait">
+        {categoryPath && (
+          <motion.div
+            key={`category-${categoryPath}`}
+            ref={categoryRef}
+            initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.99 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -8, scale: 0.99 }}
+            transition={{ duration: shouldReduceMotion ? 0 : 0.22, ease: 'easeOut' }}
+            className="rounded-2xl border border-border bg-card p-4 shadow-sm"
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="font-semibold text-foreground">
+                {selectedCategory ? getCategoryName(selectedCategory, language) : copy(language, 'Category details', 'Détails de catégorie', 'تفاصيل الفئة')}
+              </h2>
+              <button
+                type="button"
+                onClick={() => setCategoryPath(null)}
+                className="p-1 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                aria-label={copy(language, 'Close', 'Fermer', 'إغلاق')}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="space-y-1">
+              {categoryTransactions.map((transaction) => (
+                <div key={transaction.id} className="flex items-center justify-between gap-3 rounded-lg p-2 text-sm">
+                  <span className="text-foreground break-words line-clamp-2">
+                    {transaction.subCategoryId && selectedCategory?.subcategories
+                      ? getSubCategoryName(selectedCategory.subcategories.find((subcategory) => subcategory.id === transaction.subCategoryId) || selectedCategory.subcategories[0], language)
+                      : transaction.note || '—'}
+                  </span>
+                  <MoneyText amount={transaction.amount} />
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

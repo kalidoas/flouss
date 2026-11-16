@@ -22,7 +22,6 @@ export interface ExcelExportParams {
   notes?: NoteItem[];
   goals?: Category[];
   currency?: string;
-  outputPath?: string; // Optional output path for testing/node environments
 }
 
 const label = (language: Language, en: string, fr: string, ar: string): string =>
@@ -116,7 +115,6 @@ export async function exportToExcel({
   notes = [],
   goals = categories.filter((category) => category.isGoal),
   currency = 'MAD',
-  outputPath,
 }: ExcelExportParams): Promise<Uint8Array | void> {
   const XLSX = await import('xlsx');
   const fflate = await import('fflate');
@@ -353,13 +351,6 @@ export async function exportToExcel({
   }
 
   const patchedBuffer = fflate.zipSync(unzipped);
-
-  // If running in a Node environment or testing with outputPath:
-  if (outputPath && typeof process !== 'undefined') {
-    const fs = await import('fs');
-    fs.writeFileSync(outputPath, Buffer.from(patchedBuffer));
-    return patchedBuffer;
-  }
 
   // If in browser:
   if (typeof window !== 'undefined' && typeof document !== 'undefined') {
