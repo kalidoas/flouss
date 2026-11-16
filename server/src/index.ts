@@ -4,6 +4,7 @@ import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import crypto from 'crypto';
 import { getAdminFirestore, getAdminAuth, getFirebaseAdminApp, verifyAuthHeader } from './firebase.js';
+import { sendWithResend } from './resend.js';
 import {
   getOtpSecret,
   generateOtpRecord,
@@ -13,19 +14,22 @@ import {
 
 export { computeOtpHmac, generateOtpRecord, verifyOtpSubmission };
 
-const app = express();
+export const app = express();
 const port = parseInt(process.env.PORT || '3000', 10);
 
 // Never start a production OTP service with a missing or weak HMAC secret.
 if (process.env.NODE_ENV === 'production') {
   try {
     getOtpSecret();
+    if (!process.env.ALLOWED_ORIGIN?.trim()) {
+      throw new Error('ALLOWED_ORIGIN is required');
+    }
     if (!process.env.RESEND_API_KEY) {
       throw new Error('RESEND_API_KEY is required');
     }
     getFirebaseAdminApp();
   } catch {
-    console.error('Startup configuration error: check OTP_SECRET, Firebase Admin credentials, and RESEND_API_KEY.');
+    console.error('Startup configuration error: check OTP_SECRET, ALLOWED_ORIGIN, Firebase Admin credentials, and RESEND_API_KEY.');
     process.exit(1);
   }
 }
@@ -39,7 +43,6 @@ if (!Number.isInteger(trustProxyHops) || trustProxyHops < 0 || trustProxyHops > 
 app.set('trust proxy', trustProxyHops);
 
 // ─── CORS Configuration ────────────────────────────────────────────────────────
-const defaultOrigins = ['https://flouss.live'];
 const customOrigins = (process.env.ALLOWED_ORIGIN || '')
   .split(',')
   .map((o) => o.trim())
@@ -48,7 +51,18 @@ const devOrigins =
   process.env.NODE_ENV !== 'production'
     ? ['http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5173']
     : [];
-const allowedOrigins = new Set([...defaultOrigins, ...customOrigins, ...devOrigins]);
+const invalidOrigins = customOrigins.filter((value) => {
+  try {
+    const parsed = new URL(value);
+    return parsed.origin !== value || (process.env.NODE_ENV === 'production' && parsed.protocol !== 'https:');
+  } catch {
+    return true;
+  }
+});
+if (invalidOrigins.length > 0) {
+  throw new Error('ALLOWED_ORIGIN must contain comma-separated HTTPS origins in production');
+}
+const allowedOrigins = new Set([...customOrigins, ...devOrigins]);
 
 app.use(
   cors({
@@ -66,6 +80,18 @@ app.use(
     allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
+
+// Security headers for the JSON API (TLS is terminated at Coolify's proxy).
+app.use((req: Request, res: Response, next: NextFunction) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'no-referrer');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  if (req.secure) {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000');
+  }
+  next();
+});
 
 app.use(express.json({ limit: '10kb' }));
 
@@ -230,18 +256,11 @@ async function handleSendOtp(req: Request, res: Response) {
 
     const fromSender = process.env.RESEND_FROM || 'Flouss <notifications@flouss.live>';
 
-    const resendRes = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${resendApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: fromSender,
-        to: email,
-        subject: `Votre code Flouss: ${otpCode}`,
-        html: buildEmailTemplate(otpCode),
-      }),
+    const resendRes = await sendWithResend(resendApiKey, {
+      from: fromSender,
+      to: email,
+      subject: `Votre code Flouss: ${otpCode}`,
+      html: buildEmailTemplate(otpCode),
     });
 
     if (!resendRes.ok) {
@@ -292,31 +311,36 @@ async function handleVerifyOtp(req: Request, res: Response) {
     const db = getAdminFirestore();
     const otpRef = db.collection('otp').doc(uid);
 
-    const snap = await otpRef.get();
-    if (!snap.exists) {
+    const result = await db.runTransaction(async (transaction) => {
+      const snap = await transaction.get(otpRef);
+      if (!snap.exists) return { missing: true as const };
+
+      const data = snap.data()!;
+      const verification = verifyOtpSubmission({
+        code,
+        storedHash: data.hash,
+        salt: data.salt,
+        expiresAt: data.expiresAt,
+        attemptsLeft: data.attemptsLeft,
+        now: Date.now(),
+      });
+
+      if (verification.shouldDelete) {
+        transaction.delete(otpRef);
+      } else if (verification.attemptsLeft !== undefined) {
+        transaction.update(otpRef, { attemptsLeft: verification.attemptsLeft });
+      }
+      return { missing: false as const, verification };
+    });
+
+    if (result.missing) {
       return res.status(400).json({
         success: false,
         error: 'Invalid or expired verification code.',
       });
     }
 
-    const data = snap.data()!;
-    const now = Date.now();
-
-    const verification = verifyOtpSubmission({
-      code,
-      storedHash: data.hash,
-      salt: data.salt,
-      expiresAt: data.expiresAt,
-      attemptsLeft: data.attemptsLeft,
-      now,
-    });
-
-    if (verification.shouldDelete) {
-      await otpRef.delete().catch(() => {});
-    } else if (verification.attemptsLeft !== undefined) {
-      await otpRef.update({ attemptsLeft: verification.attemptsLeft }).catch(() => {});
-    }
+    const verification = result.verification;
 
     if (!verification.success) {
       return res.status(400).json({
@@ -367,7 +391,9 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   });
 });
 
-app.listen(port, () => {
-  console.log(`🚀 Flouss OTP Service listening on port ${port}`);
-  console.log(`Allowed origins: ${Array.from(allowedOrigins).join(', ')}`);
-});
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(port, () => {
+    console.log(`🚀 Flouss OTP Service listening on port ${port}`);
+    console.log(`Allowed origins: ${Array.from(allowedOrigins).join(', ')}`);
+  });
+}
