@@ -99,6 +99,11 @@ export const SettingsPage: React.FC = () => {
     importBackup,
     loadDemoData,
     resetAllData,
+    tasks,
+    programTracks,
+    debts,
+    subscriptions,
+    notes,
     accounts,
     activeAccountId,
     firebaseUser,
@@ -318,6 +323,11 @@ export const SettingsPage: React.FC = () => {
         categories,
         incomeSources,
         language,
+        tasks,
+        programTracks,
+        debts,
+        subscriptions,
+        notes,
       });
       setFeedbackMsg({
         text: language === 'ar' ? 'تم تصدير ملف Excel بنجاح!' : language === 'en' ? 'Excel exported successfully!' : 'Fichier Excel exporté avec succès !',
@@ -340,6 +350,7 @@ export const SettingsPage: React.FC = () => {
   const [rollingBackups, setRollingBackups] = useState<RollingBackupEntry[]>(() =>
     getRollingBackups(firebaseUser?.uid)
   );
+  const [isAdvancedBackupOpen, setIsAdvancedBackupOpen] = useState(false);
 
   useEffect(() => {
     setRollingBackups(getRollingBackups(firebaseUser?.uid));
@@ -1438,18 +1449,18 @@ export const SettingsPage: React.FC = () => {
         <div className="flex flex-col sm:flex-row gap-3">
           <Button
             variant="primary"
-            onClick={handleExport}
-            icon={<Download className="w-4 h-4" />}
+            onClick={handleExportExcel}
+            icon={<FileSpreadsheet className="w-4 h-4" />}
           >
-            {t.exportButton}
+            {t.exportExcelButton}
           </Button>
 
           <Button
-            variant="outline"
-            onClick={handleExportExcel}
-            icon={<FileSpreadsheet className="w-4 h-4 text-emerald-600" />}
+            variant="secondary"
+            onClick={() => setIsAdvancedBackupOpen((open) => !open)}
+            icon={<Archive className="w-4 h-4" />}
           >
-            {language === 'ar' ? 'تصدير إلى Excel (.xlsx)' : language === 'en' ? 'Export to Excel (.xlsx)' : 'Exporter Excel (.xlsx)'}
+            {t.advancedBackup}
           </Button>
 
           <input
@@ -1460,13 +1471,32 @@ export const SettingsPage: React.FC = () => {
             className="hidden"
           />
 
-          <Button
-            variant="secondary"
-            onClick={() => fileInputRef.current?.click()}
-            icon={<Upload className="w-4 h-4" />}
-          >
-            {t.importButton}
-          </Button>
+          {isAdvancedBackupOpen && (
+            <div className="w-full basis-full rounded-xl border border-slate-200/70 bg-slate-50/70 p-3 dark:border-slate-800 dark:bg-slate-900/40">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{t.advancedBackup}</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">{t.advancedBackupDesc}</p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={handleExport}
+                    icon={<Download className="w-4 h-4" />}
+                  >
+                    {t.exportButton}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                    icon={<Upload className="w-4 h-4" />}
+                  >
+                    {t.importButton}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Rolling Local Snapshots (7 Days) */}

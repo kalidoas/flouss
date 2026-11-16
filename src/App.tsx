@@ -16,7 +16,7 @@ import { DashboardPage } from './pages/DashboardPage';
 import { CategoriesPage } from './pages/CategoriesPage';
 import { IncomePage } from './pages/IncomePage';
 import { HistoryPage } from './pages/HistoryPage';
-import { StatsPage } from './pages/StatsPage';
+import { Analytics } from './components/Analytics';
 import { SettingsPage } from './pages/SettingsPage';
 import { TasksPage } from './pages/TasksPage';
 import { DebtsPage } from './pages/DebtsPage';
@@ -197,7 +197,7 @@ export const App: React.FC = () => {
       case 'income':        return <IncomePage />;
       case 'expenses':      return <ExpensesPage />;
       case 'history':       return <HistoryPage />;
-      case 'stats':         return <StatsPage />;
+      case 'stats':         return <Analytics />;
       case 'settings':      return <SettingsPage />;
       default:              return <DashboardPage />;
     }
