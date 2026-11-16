@@ -20,6 +20,16 @@ export const CountUpNumber: React.FC<CountUpNumberProps> = ({
   const [displayValue, setDisplayValue] = useState(value);
 
   useEffect(() => {
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (prefersReducedMotion) {
+      setDisplayValue(value);
+      return;
+    }
+
     let startTimestamp: number | null = null;
     const startValue = displayValue;
     const endValue = value;
