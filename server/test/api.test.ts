@@ -182,6 +182,17 @@ describe('production startup configuration', () => {
     const child = spawnSync(process.execPath, [entry], { env, encoding: 'utf8', timeout: 90000 });
     expect(child.status).toBe(1);
     expect(child.stderr).toContain('Startup configuration error');
+    // After fix: specific error message appended (not swallowed)
+    if (env.OTP_SECRET === undefined || env.OTP_SECRET.length < 32) {
+      // getOtpSecret() throws 'OTP_SECRET must be configured with at least 32 bytes'
+      expect(child.stderr).toContain('OTP_SECRET must be configured with at least 32 bytes');
+    } else if (env.FIREBASE_SERVICE_ACCOUNT === undefined) {
+      // getFirebaseAdminApp() throws 'FIREBASE_SERVICE_ACCOUNT runtime environment variable is not configured'
+      expect(child.stderr).toContain('FIREBASE_SERVICE_ACCOUNT runtime environment variable is not configured');
+    } else if (env.RESEND_API_KEY === undefined) {
+      // explicit check in index.ts
+      expect(child.stderr).toContain('RESEND_API_KEY is required');
+    }
   };
 
   it('fails without OTP_SECRET or with a secret shorter than 32 bytes', () => {

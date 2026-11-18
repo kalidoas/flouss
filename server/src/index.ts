@@ -28,8 +28,8 @@ if (process.env.NODE_ENV === 'production') {
       throw new Error('RESEND_API_KEY is required');
     }
     getFirebaseAdminApp();
-  } catch {
-    console.error('Startup configuration error: check OTP_SECRET, ALLOWED_ORIGIN, Firebase Admin credentials, and RESEND_API_KEY.');
+  } catch (err) {
+    console.error('Startup configuration error: check OTP_SECRET, ALLOWED_ORIGIN, Firebase Admin credentials, and RESEND_API_KEY.', err instanceof Error ? err.message : 'unknown error');
     process.exit(1);
   }
 }
