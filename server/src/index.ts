@@ -4,6 +4,7 @@ import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import crypto from 'crypto';
 import { getAdminFirestore, getAdminAuth, getFirebaseAdminApp, verifyAuthHeader } from './firebase.js';
+import { sendWithResend } from './resend.js';
 import {
   getOtpSecret,
   generateOtpRecord,
@@ -13,7 +14,7 @@ import {
 
 export { computeOtpHmac, generateOtpRecord, verifyOtpSubmission };
 
-const app = express();
+export const app = express();
 const port = parseInt(process.env.PORT || '3000', 10);
 
 // Never start a production OTP service with a missing or weak HMAC secret.
@@ -255,18 +256,11 @@ async function handleSendOtp(req: Request, res: Response) {
 
     const fromSender = process.env.RESEND_FROM || 'Flouss <notifications@flouss.live>';
 
-    const resendRes = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${resendApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: fromSender,
-        to: email,
-        subject: `Votre code Flouss: ${otpCode}`,
-        html: buildEmailTemplate(otpCode),
-      }),
+    const resendRes = await sendWithResend(resendApiKey, {
+      from: fromSender,
+      to: email,
+      subject: `Votre code Flouss: ${otpCode}`,
+      html: buildEmailTemplate(otpCode),
     });
 
     if (!resendRes.ok) {
@@ -397,7 +391,9 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   });
 });
 
-app.listen(port, () => {
-  console.log(`🚀 Flouss OTP Service listening on port ${port}`);
-  console.log(`Allowed origins: ${Array.from(allowedOrigins).join(', ')}`);
-});
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(port, () => {
+    console.log(`🚀 Flouss OTP Service listening on port ${port}`);
+    console.log(`Allowed origins: ${Array.from(allowedOrigins).join(', ')}`);
+  });
+}
