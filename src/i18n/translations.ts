@@ -2465,7 +2465,6 @@ export const translations = {
       budgetMode: 'Budgets',
       setBudgets: 'Set budgets',
       otherCategory: 'Other',
-      monthlySummary: 'Monthly Summary',
       noBudgets: 'No monthly budgets set',
       billsUpToDate: 'Bills up to date · {count} active',
       netSavedCaption: 'Net saved this month',
