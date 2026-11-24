@@ -46,7 +46,6 @@ export const buildBalanceSeries = (
   }
   return points;
 };
-
 export const BalanceSparkline: React.FC<Props> = ({
   initialBalance, transactions, selectedMonth, currentMonth, language,
   chartLabel, balanceLabel, changeLabel,

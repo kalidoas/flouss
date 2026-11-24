@@ -59,13 +59,13 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
       {/* Hero Balance Card */}
       <div
         data-spotlight="true"
-        className="spotlight-card group relative overflow-hidden rounded-2xl bg-surface dark:bg-surface-3/5 p-4 sm:p-5 backdrop-blur-xl border border-border-subtle dark:border-white/10 shadow-xs dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] min-w-0"
-        style={{ backgroundImage: 'radial-gradient(ellipse 75% 65% at 0% 0%, rgba(99,102,241,0.14), transparent 70%)' }}
+        className="spotlight-card group relative overflow-hidden rounded-2xl bg-surface dark:bg-surface-3/5 p-3 sm:p-4 backdrop-blur-xl border border-border-subtle dark:border-white/10 shadow-xs dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] min-w-0 h-48 sm:h-64"
+        style={{ backgroundImage: 'radial-gradient(ellipse 65% 55% at 0% 0%, rgba(99,102,241,0.10), transparent 60%)' }}
       >
-        <div className="relative z-10 flex flex-col gap-3 min-w-0">
+        <div className="relative z-10 flex flex-col gap-2 min-w-0 h-full">
           {/* Title & Edit Button (sentence case, 15-17px, font-semibold) */}
           <div className="flex items-center justify-between gap-2 min-w-0">
-            <h1 className="text-[15px] sm:text-base font-semibold text-muted dark:text-muted truncate">
+            <h1 className="text-[13px] sm:text-xs font-semibold text-muted dark:text-muted truncate leading-tight">
               {t.totalBalance}
             </h1>
             {isCurrentMonth && (
@@ -74,71 +74,61 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
                 onClick={() => setAdjustOpen(true)}
                 aria-label={tWallet.adjustBalance}
                 title={tWallet.adjustBalance}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted hover:text-content hover:bg-surface-raised dark:text-content dark:hover:bg-surface-raised/[0.08] dark:hover:text-content transition-all active:scale-95 duration-200 cursor-pointer"
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-muted hover:text-content hover:bg-surface-raised dark:text-content dark:hover:bg-surface-raised/[0.08] dark:hover:text-content transition-all active:scale-95 duration-200 cursor-pointer"
               >
-                <Pencil className="h-3.5 w-3.5" />
+                <Pencil className="h-3 w-3" />
               </button>
             )}
           </div>
 
-          {/* Balance Amount (56-64px) */}
-          <div className="flex items-baseline flex-wrap gap-x-2 gap-y-1 min-w-0">
+          {/* Balance Amount (compact) */}
+          <div className="flex items-baseline flex-wrap gap-x-2 gap-y-1 min-w-0 mt-0.5">
             <MoneyText
               amount={summary.balance}
-              className="text-[52px] sm:text-[56px] lg:text-[64px] font-bold leading-none tracking-tight tabular-nums text-content dark:text-content min-w-0"
+              className="text-[40px] sm:text-[44px] lg:text-[48px] font-bold leading-none tracking-tight tabular-nums text-content dark:text-content min-w-0"
             />
           </div>
 
-          {/* Delta Chip & Daily Rate Insight */}
-          <div className="flex flex-wrap items-center gap-2 min-w-0">
+          {/* Delta Chip */}
+          <div className="flex items-center gap-2 min-w-0 mt-0.5">
             <span
-              className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold shrink-0 ${
+              className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold shrink-0 ${
                 deltaPositive
                   ? 'border-accent-500/20 bg-accent-500/10 text-positive dark:text-positive'
                   : 'border-negative-500/20 bg-negative-500/10 text-negative dark:text-negative'
               }`}
             >
-              {deltaPositive ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
+              {deltaPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
               <span>{delta > 0 ? '+' : ''}{deltaPercent}% {t.deltaThisMonth}</span>
             </span>
-
-            {dailyInsight && (
-              <div className="inline-flex items-center gap-1.5 rounded-full bg-surface-raised/80 dark:bg-surface-raised/[0.04] border border-border-subtle dark:border-border-subtle/[0.08] px-2.5 py-1 text-xs font-medium text-muted dark:text-content min-w-0">
-                <span>{t.about}</span>
-                <MoneyText amount={dailyInsight.amountPerDay} className="font-semibold text-content dark:text-content tabular-nums" />
-                <span>/ {t.perDay.replace('/', '').trim()}</span>
-                <span className="text-muted dark:text-muted">·</span>
-                <span className="truncate">{dailyInsight.daysLeft} {t.daysLeft}</span>
-              </div>
-            )}
           </div>
         </div>
       </div>
 
-      {/* Quick Actions (44px Buttons) */}
-      <div className="grid grid-cols-3 gap-2 sm:gap-2.5 pt-1 w-full min-w-0">
+      {/* Quick Actions (compact) */}
+      <div className="grid grid-cols-3 gap-1.5 sm:gap-2 pt-2 w-full min-w-0">
         <button
           type="button"
           onClick={() => quickAdd('income')}
-          className="inline-flex min-h-[44px] items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/20 text-positive dark:text-positive px-2.5 sm:px-3 py-2 text-xs sm:text-sm font-semibold transition-all active:scale-[0.98] cursor-pointer min-w-0"
+          className="inline-flex min-h-[36px] items-center justify-center gap-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/20 text-positive dark:text-positive px-2 py-1.5 text-[11px] sm:text-xs font-semibold transition-all active:scale-[0.98] cursor-pointer min-w-0"
         >
-          <ArrowUpRight className="h-4 w-4 shrink-0" />
+          <ArrowUpRight className="h-3.5 w-3.5 shrink-0" />
           <span className="truncate">{tCommon.addIncome}</span>
         </button>
         <button
           type="button"
           onClick={() => quickAdd('expense')}
-          className="inline-flex min-h-[44px] items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/15 border border-negative-500/20 text-negative dark:text-negative px-2.5 sm:px-3 py-2 text-xs sm:text-sm font-semibold transition-all active:scale-[0.98] cursor-pointer min-w-0"
+          className="inline-flex min-h-[36px] items-center justify-center gap-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/15 border border-negative-500/20 text-negative dark:text-negative px-2 py-1.5 text-[11px] sm:text-xs font-semibold transition-all active:scale-[0.98] cursor-pointer min-w-0"
         >
-          <ArrowDownRight className="h-4 w-4 shrink-0" />
+          <ArrowDownRight className="h-3.5 w-3.5 shrink-0" />
           <span className="truncate">{tCommon.addExpense}</span>
         </button>
         <button
           type="button"
           onClick={() => setContributionOpen(true)}
-          className="inline-flex min-h-[44px] items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-accent-500/10 hover:bg-accent-500/15 border border-accent-500/20 text-accent-600 dark:text-accent-400 px-2.5 sm:px-3 py-2 text-xs sm:text-sm font-semibold transition-all active:scale-[0.98] cursor-pointer min-w-0"
+          className="inline-flex min-h-[36px] items-center justify-center gap-1 rounded-lg bg-accent-500/10 hover:bg-accent-500/15 border border-accent-500/20 text-accent-600 dark:text-accent-400 px-2 py-1.5 text-[11px] sm:text-xs font-semibold transition-all active:scale-[0.98] cursor-pointer min-w-0"
         >
-          <PiggyBank className="h-4 w-4 shrink-0" />
+          <PiggyBank className="h-3.5 w-3.5 shrink-0" />
           <span className="truncate">{tWallet.saveGoal}</span>
         </button>
       </div>
@@ -158,51 +148,51 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
       </div>
 
       {/* Three Stat Tiles (Income, Expenses, Net) Inside the Hero Card */}
-      <div className="grid grid-cols-3 divide-x divide-border-subtle dark:divide-white/10 rtl:divide-x-reverse pt-3.5 border-t border-border-subtle dark:border-white/10 -mx-4 -mb-4 sm:-mx-5 sm:-mb-5 px-4 sm:px-5 pb-4 sm:pb-5 bg-surface-raised/40 dark:bg-surface-raised/[0.02]">
+      <div className="grid grid-cols-3 divide-x divide-border-subtle dark:divide-white/10 rtl:divide-x-reverse pt-2.5 border-t border-border-subtle dark:border-white/10 -mx-4 -mb-4 sm:-mx-5 sm:-mb-5 px-4 sm:px-5 pb-3 sm:pb-4 bg-surface-raised/40 dark:bg-surface-raised/[0.02]">
         {/* Income */}
-        <div className="pe-2 sm:pe-3 first:ps-0 min-w-0">
-          <p className="text-xs font-medium text-muted dark:text-muted truncate">
+        <div className="pe-1.5 sm:pe-2 first:ps-0 min-w-0">
+          <p className="text-[10px] font-medium text-muted dark:text-muted truncate leading-tight">
             {t.incomeThisMonth}
           </p>
           <MoneyText
             amount={summary.income}
             showSign={true}
-            className="mt-1 block max-w-full truncate text-base sm:text-lg font-bold tracking-tight tabular-nums text-positive"
+            className="mt-0.5 block max-w-full truncate text-xs sm:text-sm font-bold tracking-tight tabular-nums text-positive leading-tight"
           />
-          <p className="mt-0.5 text-[11px] text-muted dark:text-muted truncate">
+          <p className="mt-0.5 text-[9px] text-muted dark:text-muted truncate leading-tight">
             {t.incomeCount ? t.incomeCount.replace('{count}', String(incomeCount)) : `${incomeCount}`}
           </p>
         </div>
 
         {/* Expenses */}
-        <div className="px-2 sm:px-3 min-w-0">
-          <p className="text-xs font-medium text-muted dark:text-muted truncate">
+        <div className="px-1.5 sm:px-2 min-w-0">
+          <p className="text-[10px] font-medium text-muted dark:text-muted truncate leading-tight">
             {t.expensesThisMonth}
           </p>
           <MoneyText
             amount={summary.expenses}
             prefix="− "
             showSign={false}
-            className="mt-1 block max-w-full truncate text-base sm:text-lg font-bold tracking-tight tabular-nums text-negative"
+            className="mt-0.5 block max-w-full truncate text-xs sm:text-sm font-bold tracking-tight tabular-nums text-negative leading-tight"
           />
-          <p className="mt-0.5 text-[11px] text-muted dark:text-muted truncate">
+          <p className="mt-0.5 text-[9px] text-muted dark:text-muted truncate leading-tight">
             {t.expenseCount ? t.expenseCount.replace('{count}', String(expenseCount)) : `${expenseCount}`}
           </p>
         </div>
 
         {/* Net */}
-        <div className="ps-2 sm:ps-3 last:pe-0 min-w-0">
-          <p className="text-xs font-medium text-muted dark:text-muted truncate">
+        <div className="ps-1.5 sm:ps-2 last:pe-0 min-w-0">
+          <p className="text-[10px] font-medium text-muted dark:text-muted truncate leading-tight">
             {t.netLabel}
           </p>
           <MoneyText
             amount={summary.net}
             showSign={true}
-            className={`mt-1 block max-w-full truncate text-base sm:text-lg font-bold tracking-tight tabular-nums ${
+            className={`mt-0.5 block max-w-full truncate text-xs sm:text-sm font-bold tracking-tight tabular-nums leading-tight ${
               summary.net >= 0 ? 'text-accent-500 dark:text-accent-300' : 'text-negative'
             }`}
           />
-          <p className="mt-0.5 text-[11px] text-muted dark:text-muted truncate">
+          <p className="mt-0.5 text-[9px] text-muted dark:text-muted truncate leading-tight">
             {netCaption}
           </p>
         </div>
