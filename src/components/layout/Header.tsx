@@ -229,7 +229,7 @@ export const Header: React.FC = () => {
             <div className="hidden min-w-0 items-center gap-2 lg:flex">
               <div className="min-w-0">
                 <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted">{dateLine}</p>
-                <h1 className="truncate text-base font-bold tracking-tight bg-clip-text text-transparent">
+                <h1 className="truncate text-base font-bold tracking-tight text-content">
                   {greeting}
                 </h1>
               </div>
