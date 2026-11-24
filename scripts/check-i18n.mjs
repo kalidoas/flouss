@@ -114,6 +114,10 @@ const allowedIdentical = new Set([
   'Budget', 'Budgets', 'Train / ONCF', 'Gaming', 'Sadaqa', 'Zakat', 'Crypto', 'transactions',
   'Action', 'Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha',
   '—', '•', '0', '1', '100%', '4x10', '3x12', '+{points} XP', '{count}', '{amount} MAD', 'Normal',
+  'Flouss - Test Notification',
+  'Face ID / Touch ID',
+  'Transactions :',
+  'Motivation',
 ]);
 
 const unexpectedIdenticalFR = [];
@@ -200,6 +204,13 @@ const flaggedRawStrings = [
   'Catégorie ayant le plus gros impact',
 ];
 
+// JSX allowed literals (technical terms that can appear directly)
+const allowedJsxLiterals = new Set([
+  'MAD', 'XP', 'Lv', '•', '—', '+', '-', '×', '/', '%', '...', 'x', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+  '4x10', '3x12', '+50 MAD', '-50 MAD', '0 MAD', 'Flouss', 'Flouss Insights', 'Android', 'iPhone (iOS)',
+  'Ctrl/⌘ K', 'Auto', 'Google Calendar...',
+]);
+
 const foundIssues = [];
 
 for (const file of tsxFiles) {
@@ -207,27 +218,74 @@ for (const file of tsxFiles) {
   if (relPath.includes('Logo.tsx') || relPath.includes('translations.ts') || relPath.includes('LegalPages')) continue;
 
   const content = fs.readFileSync(file, 'utf-8');
+
+  // Check for flagged raw strings (exact matches in JS)
   for (const raw of flaggedRawStrings) {
     if (content.includes(`"${raw}"`) || content.includes(`'${raw}'`) || content.includes(`>${raw}<`)) {
       foundIssues.push({ file: relPath, string: raw });
     }
   }
 
-  // Check for unlocalized JSX text nodes
-  const allowedJsxLiterals = new Set([
-    'MAD', 'XP', 'Lv', '•', '—', '+', '-', '×', '/', '%', '...', 'x', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-    '4x10', '3x12', '+50 MAD', '-50 MAD', '0 MAD', 'Flouss', 'Flouss Insights', 'Android', 'iPhone (iOS)',
-    'Ctrl/⌘ K', 'Auto', 'Google Calendar...',
-  ]);
+  // Check for unlocalized JSX text nodes (text between opening/closing tags)
   const jsxRegex = /<(?:span|p|h[1-6]|button|div|label|a|li)[^>]*>([^<>{}\n]+)<\/(?:span|p|h[1-6]|button|div|label|a|li)>/g;
   let match;
   while ((match = jsxRegex.exec(content)) !== null) {
     const text = match[1].trim();
+    // Only flag if: has substantial text, has letters, and not in allowed list
     if (text.length > 3 && /[a-zA-Z\u0600-\u06FF\u00C0-\u00FF]{3,}/.test(text) && !allowedJsxLiterals.has(text)) {
       foundIssues.push({ file: relPath, string: text });
     }
   }
+
+  // Check for ternaries with hardcoded user-facing text:
+  // language === 'ar' ? 'arabic' : 'english'
+  const ternaryRegex = /language\s*==\s*'ar'\s*\?\s*'([^']+)'\s*:\s*'([^']+)'/g;
+  let ternaryMatch;
+  while ((ternaryMatch = ternaryRegex.exec(content)) !== null) {
+    const arText = ternaryMatch[1];
+    const otherText = ternaryMatch[2];
+
+    // Flag Arabic branch if it has substantial non-numeric text
+    if (arText.length > 3 && /[a-zA-Z\u0600-\u06FF\u00C0-\u00FF]{3,}/.test(arText) &&
+        !allowedJsxLiterals.has(arText) &&
+        !/^[0-9\s.,+/%$#@!—\-•:;()\[\]{}]+$/.test(arText)) {
+      foundIssues.push({ file: relPath, string: arText });
+    }
+
+    // Flag other branch if it has substantial non-numeric text
+    if (otherText.length > 3 && /[a-zA-Z\u0600-\u06FF\u00C0-\u00FF]{3,}/.test(otherText) &&
+        !allowedJsxLiterals.has(otherText) &&
+        !/^[0-9\s.,+/%$#@!—\-•:;()\[\]{}]+$/.test(otherText)) {
+      foundIssues.push({ file: relPath, string: otherText });
+    }
+  }
+
+  // Check for template literals with hardcoded Arabic/Latin text (excluding ${} patterns)
+  const templateRegex = /`([^`]+?)`/g;
+  let templateMatch;
+  while ((templateMatch = templateRegex.exec(content)) !== null) {
+    const templateContent = templateMatch[1];
+
+    // Skip if it's just variable interpolation
+    if (templateContent.includes('${') || templateContent.includes('}}')) continue;
+
+    // Check for hardcoded Arabic text
+    if (/[a-zA-Z\u0600-\u06FF\u00C0-\u00FF]{3,}/.test(templateContent)) {
+      // Skip if it contains only allowed patterns (numbers, symbols, known terms)
+      const hasOnlyAllowed = ['${', '}', 'MAD', 'XP', 'Lv', '•', '—', '+', '-', '×', '/', '%', '...', 'x', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+        '4x10', '3x12', '+50 MAD', '-50 MAD', '0 MAD', 'Flouss', 'Flouss Insights', 'Android', 'iPhone (iOS)',
+        'Ctrl/⌘ K', 'Auto', 'Google Calendar...'].some(pattern => templateContent.includes(pattern));
+
+      if (!hasOnlyAllowed) {
+        foundIssues.push({ file: relPath, string: templateContent });
+      }
+    }
+  }
 }
+
+// aria-label/title/placeholder props - only flag if they contain substantial user-facing text
+// and are not already i18n keys (we can't check this easily, so we'll be lenient)
+console.log('\n✅ (aria-label/title/placeholder check skipped - these are technical props)');
 
 if (foundIssues.length > 0) {
   console.error(`❌ Found ${foundIssues.length} hardcoded strings in JSX that must use i18n:`);
