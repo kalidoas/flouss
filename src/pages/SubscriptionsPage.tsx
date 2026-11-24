@@ -480,7 +480,7 @@ export const SubscriptionsPage: React.FC = () => {
               >
                 <div className="w-4 h-4 rounded-full bg-accent border-2 border-border shadow-[0_0_15px_rgba(99,102,241,0.8)]" />
                 <span className="absolute -top-6 text-[10px] font-bold text-accent dark:text-accent bg-surface dark:bg-accent/80 px-1.5 py-0.5 rounded-full border border-accent dark:border-accent/30 whitespace-nowrap shadow-xs">
-                  {language === 'ar' ? `اليوم (${currentDay})` : `J.${currentDay}`}
+                  {tSub.currentDayLabel.replace('{day}', String(currentDay))}
                 </span>
               </div>
 

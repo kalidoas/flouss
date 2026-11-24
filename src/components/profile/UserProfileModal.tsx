@@ -34,6 +34,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   } = useAppStore();
 
   const tProfile = translations[language].userProfileModal;
+  const tCommon = translations[language].common;
 
   const [isEditingPin, setIsEditingPin] = useState(false);
   const [newPin, setNewPin] = useState('');
@@ -156,7 +157,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   type="submit"
                   className="px-4 py-1.5 rounded-xl bg-info hover:bg-info text-accent-contrast text-xs font-bold transition-colors"
                 >
-                  Enregistrer
+                  {tCommon.save}
                 </button>
               </div>
             </form>

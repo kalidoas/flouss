@@ -127,7 +127,7 @@ export const HistoryPage: React.FC = () => {
           className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-surface border border-border-subtle text-content hover:bg-positive/10 hover:border-positive/30 hover:text-positive dark:bg-surface/[0.04] dark:hover:bg-positive/15 dark:border-border/[0.08] dark:hover:border-positive/30 dark:text-text dark:hover:text-positive px-4 py-2 text-xs font-semibold backdrop-blur-md transition-all active:scale-[0.98] self-start sm:self-auto"
         >
           <FileSpreadsheet className="w-4 h-4 text-positive dark:text-positive" />
-          <span>{language === 'ar' ? 'تصدير إلى Excel' : language === 'en' ? 'Export to Excel' : 'Exporter Excel (.xlsx)'}</span>
+          <span>{t.exportToExcel}</span>
         </button>
       </div>
 
@@ -219,7 +219,7 @@ export const HistoryPage: React.FC = () => {
                 className="min-h-8 px-3 rounded-full bg-negative/10 hover:bg-negative/20 text-xs text-negative font-medium flex items-center gap-1 transition-colors"
               >
                 <RotateCcw className="w-3 h-3" />
-                <span>{language === 'ar' ? 'مسح الفلاتر' : language === 'en' ? 'Clear' : 'Effacer'}</span>
+                <span>{t.clearFilters}</span>
               </button>
             )}
           </div>
@@ -296,9 +296,9 @@ export const HistoryPage: React.FC = () => {
             const yesterdayKey = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
             let dateLabel = formatDate(dateStr, language);
             if (dateStr === todayKey) {
-              dateLabel = language === 'ar' ? 'اليوم' : language === 'fr' ? "Aujourd'hui" : 'Today';
+              dateLabel = t.today;
             } else if (dateStr === yesterdayKey) {
-              dateLabel = language === 'ar' ? 'أمس' : language === 'fr' ? 'Hier' : 'Yesterday';
+              dateLabel = t.yesterday;
             }
 
             return (
@@ -308,7 +308,7 @@ export const HistoryPage: React.FC = () => {
                     {dateLabel}
                   </span>
                   <span className="text-[11px] text-muted font-medium">
-                    {dayTransactions.length} {language === 'ar' ? 'معاملات' : 'transaction(s)'}
+                    {dayTransactions.length} {t.transactions}
                   </span>
                 </div>
 

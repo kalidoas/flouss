@@ -41,6 +41,7 @@ export const DebtsPage: React.FC = () => {
   } = useAppStore();
 
   const tDebt = translations[language].debts;
+  const tCommon = translations[language].common;
 
   const [activeTab, setActiveTab] = useState<'all' | 'lend' | 'borrow' | 'settled'>('all');
   const [search, setSearch] = useState('');
@@ -190,16 +191,14 @@ export const DebtsPage: React.FC = () => {
         origin: { y: 0.6 },
       });
       showToast({
-        message: language === 'ar'
-          ? `🎉 تم تسوية دين "${debt.personName}" بالكامل!`
-          : `🎉 Debt with "${debt.personName}" fully settled!`,
+        message: tDebt.debtSettledFully.replace('{name}', debt.personName),
       });
     } else {
       playHapticFeedback('selection');
       showToast({
-        message: language === 'ar'
-          ? `✓ تم تسجيل سداد ${formatMAD(payAmount)} لـ "${debt.personName}"`
-          : `✓ Recorded ${formatMAD(payAmount)} payment for "${debt.personName}"`,
+        message: tDebt.debtPaymentRecorded
+          .replace('{name}', debt.personName)
+          .replace('{amount}', formatMAD(payAmount)),
       });
     }
   };
@@ -214,9 +213,7 @@ export const DebtsPage: React.FC = () => {
         origin: { y: 0.6 },
       });
       showToast({
-        message: language === 'ar'
-          ? `🎉 تم تسوية دين "${debt.personName}" بنجاح!`
-          : `🎉 Debt with "${debt.personName}" settled!`,
+        message: tDebt.debtSettled.replace('{name}', debt.personName),
       });
     } else {
       playHapticFeedback('light');
@@ -241,16 +238,14 @@ export const DebtsPage: React.FC = () => {
         origin: { y: 0.6 },
       });
       showToast({
-        message: language === 'ar'
-          ? `🎉 تم تسوية دين "${paymentDebt.personName}" بالكامل!`
-          : `🎉 Debt with "${paymentDebt.personName}" fully settled!`,
+        message: tDebt.debtSettledFully.replace('{name}', paymentDebt.personName),
       });
     } else {
       playHapticFeedback('selection');
       showToast({
-        message: language === 'ar'
-          ? `✓ تم تسجيل سداد ${formatMAD(amt)} لـ "${paymentDebt.personName}"`
-          : `✓ Recorded ${formatMAD(amt)} payment for "${paymentDebt.personName}"`,
+        message: tDebt.debtPaymentRecorded
+          .replace('{name}', paymentDebt.personName)
+          .replace('{amount}', formatMAD(amt)),
       });
     }
 
@@ -521,7 +516,7 @@ export const DebtsPage: React.FC = () => {
                           ? 'text-positive dark:text-positive bg-positive/20 border border-positive/30'
                           : 'text-muted hover:text-positive dark:hover:text-positive hover:bg-positive/10 border border-border'
                       }`}
-                      title={debt.isSettled ? 'Annuler le règlement' : 'Marquer réglé'}
+                      title={debt.isSettled ? tDebt.unsettle : tDebt.markSettled}
                     >
                       <CheckCircle2 className="w-4 h-4" />
                     </button>
@@ -537,7 +532,7 @@ export const DebtsPage: React.FC = () => {
                       type="button"
                       onClick={() => deleteDebt(debt.id)}
                       className="p-2 rounded-xl text-muted hover:text-negative dark:hover:text-negative hover:bg-negative/10 transition-colors"
-                      title="Supprimer"
+                      title={tCommon.delete}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -604,7 +599,7 @@ export const DebtsPage: React.FC = () => {
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] font-semibold text-muted dark:text-muted uppercase tracking-wider flex items-center gap-1">
                         <Zap className="w-3 h-3 text-warning dark:text-warning" />
-                        {language === 'ar' ? 'سداد سريع بنقرة واحدة' : '1-Tap Quick Repay'}
+                        {tCommon.quickRepayTitle}
                       </span>
                     </div>
 
@@ -638,7 +633,7 @@ export const DebtsPage: React.FC = () => {
                         className="px-2.5 py-1 rounded-xl bg-positive/15 hover:bg-positive/25 border border-positive/30 text-xs font-semibold text-positive dark:text-positive active:scale-95 transition-all flex items-center gap-1"
                       >
                         <Sparkles className="w-3 h-3" />
-                        {language === 'ar' ? 'تسوية 100%' : 'Settle 100%'}
+                        {tCommon.settle100}
                       </button>
 
                       {/* Custom Repayment Modal Button */}
@@ -652,7 +647,7 @@ export const DebtsPage: React.FC = () => {
                         className="px-2.5 py-1 rounded-xl bg-accent/15 hover:bg-accent/25 border border-accent/30 text-xs font-semibold text-accent dark:text-accent active:scale-95 transition-all flex items-center gap-1"
                       >
                         <Zap className="w-3 h-3" />
-                        {language === 'ar' ? 'سداد مخصص' : language === 'fr' ? 'Montant personnalisé' : 'Custom payment'}
+                        {tCommon.customRepay}
                       </button>
                     </div>
                   </div>

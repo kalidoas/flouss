@@ -298,7 +298,7 @@ export const StatsPage: React.FC = () => {
           value={selectedMonth}
           onChange={setSelectedMonth}
           options={monthOptions}
-          ariaLabel={language === 'ar' ? 'اختر الشهر' : language === 'fr' ? 'Choisir le mois' : 'Choose month'}
+          ariaLabel={tCommon.chooseMonth}
         />
       </div>
 
@@ -421,7 +421,7 @@ export const StatsPage: React.FC = () => {
                     <MoneyText amount={topCategory.amount} />
                   </span>
                   <span className="px-2.5 py-0.5 rounded-full bg-negative/15 border border-negative/20 text-[11px] font-bold text-negative tabular-nums">
-                    {topCategory.percentage}% {isAr ? 'من المصاريف' : language === 'fr' ? 'du total' : 'of spending'}
+                    {topCategory.percentage}% {t.ofSpending}
                   </span>
                 </div>
               </div>
@@ -775,7 +775,7 @@ export const StatsPage: React.FC = () => {
                           </span>
                           <span>•</span>
                           <span className="tabular-nums">
-                            {item.count} {isAr ? 'معاملات' : language === 'fr' ? 'opérations' : 'transactions'}
+                            {item.count} {tCommon.transactionsShort}
                           </span>
                         </div>
                       </div>
@@ -806,11 +806,10 @@ export const StatsPage: React.FC = () => {
               </div>
               <div>
                 <h2 className="text-base font-bold text-text dark:text-text tracking-tight">
-                  {t.topInflows || (isAr ? 'أكبر الواردات' : 'Top Inflows')}
+                  {t.topInflows}
                 </h2>
                 <p className="text-xs text-muted dark:text-muted">
-                  {t.topInflowsSubtitle ||
-                    (isAr ? 'أكبر المداخيل المسجلة هذا الشهر' : 'Top income transactions')}
+                  {t.topInflowsSubtitle}
                 </p>
               </div>
             </div>
@@ -818,7 +817,7 @@ export const StatsPage: React.FC = () => {
 
           {top5Incomes.length === 0 ? (
             <div className="py-8 text-center text-xs text-muted">
-              {t.noInflows || (isAr ? 'لا توجد واردات مسجلة' : 'No income recorded')}
+              {t.noInflows || 'No income recorded'}
             </div>
           ) : (
             <div className="space-y-2">
