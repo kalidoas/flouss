@@ -27,29 +27,29 @@ export const BalanceWidget: React.FC = () => {
       aria-label="Solde disponible"
       className="fixed bottom-20 md:bottom-5 left-4 z-40 select-none max-w-[calc(100vw-2rem)] sm:max-w-xs"
     >
-      <div className="bg-white dark:bg-[#202020] border border-[#e3e2de] dark:border-[#2f2f2f] rounded-lg shadow-sm overflow-hidden transition-all duration-200">
+      <div className="bg-surface border border-border rounded-lg shadow-sm overflow-hidden transition-all duration-200">
         {/* Header / Collapsed Trigger Button */}
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full flex items-center justify-between gap-3 px-3 py-2 text-left hover:bg-[#fbfbfa] dark:hover:bg-[#252525] transition-colors"
+          className="w-full flex items-center justify-between gap-3 px-3 py-2 text-left hover:bg-surface-2 transition-colors"
           title={isExpanded ? 'Réduire' : 'Afficher les détails du solde'}
         >
           <div className="flex items-center gap-2 min-w-0">
-            <div className="w-6 h-6 rounded bg-[#f1f0ee] dark:bg-[#282828] text-[#37352f] dark:text-[#ecebed] flex items-center justify-center shrink-0">
+            <div className="w-6 h-6 rounded bg-surface-2 text-content flex items-center justify-center shrink-0">
               <Coins className="w-3.5 h-3.5" />
             </div>
             <div className="min-w-0">
-              <span className="text-[10px] text-[#787774] dark:text-[#9b9a97] block leading-tight">
+              <span className="text-[10px] text-muted block leading-tight">
                 {isAr ? 'الرصيد المتاح' : 'Solde disponible'}
               </span>
               <PrivacyCurrency
                 amount={balance}
-                className="text-xs font-semibold text-[#37352f] dark:text-[#ecebed] block truncate"
+                className="text-xs font-semibold text-content block truncate"
               />
             </div>
           </div>
 
-          <div className="text-[#787774] dark:text-[#9b9a97] shrink-0">
+          <div className="text-muted shrink-0">
             {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
           </div>
         </button>

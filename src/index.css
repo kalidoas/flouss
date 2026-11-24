@@ -15,6 +15,33 @@ body,
   :root {
     --safe-area-top: env(safe-area-inset-top, 0px);
     --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+    --bg: #F2F2F7;
+    --surface: #FFFFFF;
+    --surface-2: #E5E5EA;
+    --surface-3: #F5F5F7;
+    --border: rgba(0, 0, 0, 0.08);
+    --border-strong: rgba(0, 0, 0, 0.15);
+    --text: #1C1C1E;
+    --text-muted: #6C6C70;
+    --text-subtle: #888EA8;
+    --accent: #8b5cf6;
+    --accent-contrast: #ffffff;
+    --positive: #10b981;
+    --negative: #f43f5e;
+    --warning: #f59e0b;
+    --info: #3b82f6;
+    --ring: #3b82f6;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --dur-fast: 150ms;
+    --dur-base: 250ms;
+    --dur-slow: 450ms;
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
     --color-canvas: #F2F2F7;
     --color-surface: #FFFFFF;
     --color-surface-raised: #E5E5EA;
@@ -42,9 +69,36 @@ body,
 
   .dark {
     color-scheme: dark;
+    --bg: #050505;
+    --surface: rgba(11, 12, 18, 0.85);
+    --surface-2: rgba(11, 12, 18, 0.60);
+    --surface-3: rgba(11, 12, 18, 0.40);
+    --border: rgba(255, 255, 255, 0.10);
+    --border-strong: rgba(255, 255, 255, 0.20);
+    --text: #ffffff;
+    --text-muted: #a1a1aa;
+    --text-subtle: #71717a;
+    --accent: #8b5cf6;
+    --accent-contrast: #ffffff;
+    --positive: #34d399;
+    --negative: #fb7185;
+    --warning: #fbbf24;
+    --info: #60a5fa;
+    --ring: #60a5fa;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --dur-fast: 150ms;
+    --dur-base: 250ms;
+    --dur-slow: 450ms;
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
     --color-canvas: #050505;
-    --color-surface: rgba(255, 255, 255, 0.05);
-    --color-surface-raised: rgba(255, 255, 255, 0.08);
+    --color-surface: rgba(11, 12, 18, 0.85);
+    --color-surface-raised: rgba(11, 12, 18, 0.60);
     --color-border: rgba(255, 255, 255, 0.10);
     --color-content: #ffffff;
     --color-muted: #a1a1aa;
@@ -86,7 +140,7 @@ body,
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-accent);
+    outline: 2px solid var(--ring);
     outline-offset: 2px;
   }
 
@@ -226,7 +280,7 @@ body,
   input:focus-visible,
   select:focus-visible,
   textarea:focus-visible {
-    outline: 2px solid #3b82f6;
+    outline: 2px solid var(--ring);
     outline-offset: 2px;
   }
 }

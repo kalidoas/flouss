@@ -99,10 +99,10 @@ export const DynamicIsland: React.FC = () => {
       ? tDashboard.syncSynced
       : tDashboard.syncSyncing;
   const syncDotClass = isOffline
-    ? 'bg-[#FF9F0A]'
+    ? 'bg-emerald-600'
     : syncStatus === 'synced'
-    ? 'bg-[#30D158]'
-    : 'bg-[#FF9F0A]';
+    ? 'bg-emerald-400'
+    : 'bg-emerald-300';
 
   return (
     <div className="flex justify-center shrink-0 pointer-events-none select-none">

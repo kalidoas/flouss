@@ -81,7 +81,7 @@ export const Header: React.FC = () => {
     <div
       role="group"
       aria-label={language === 'ar' ? 'اللغة' : language === 'fr' ? 'Langue' : 'Language'}
-      className="hidden md:flex relative items-center rounded-full border border-white/10 bg-white/5 backdrop-blur-xl p-0.5 text-xs"
+      className="hidden md:flex relative items-center rounded-full border border-border bg-surface/50 p-0.5 text-xs"
     >
       {languages.map((item) => {
         const isSelected = language === item.code;
@@ -105,14 +105,14 @@ export const Header: React.FC = () => {
             }}
             className={`relative flex min-h-8 items-center px-2.5 rounded-full text-[11px] font-semibold transition-all duration-150 z-10 cursor-pointer ${
               isSelected
-                ? 'text-zinc-950 font-bold'
-                : 'text-zinc-400 hover:text-white'
+                ? 'text-content font-bold bg-surface/10'
+                : 'text-muted hover:text-content transition-colors'
             }`}
           >
             {isSelected && (
               <motion.span
                 layoutId="header-lang-pill"
-                className="absolute inset-0 rounded-full bg-white shadow-xs -z-10"
+                className="absolute inset-0 rounded-full bg-accent shadow-xs -z-10"
                 transition={{ type: 'spring', stiffness: 420, damping: 32, mass: 0.8 }}
               />
             )}
@@ -132,10 +132,10 @@ export const Header: React.FC = () => {
       }}
       title={hideBalance ? tCommon.showAmounts : tCommon.hideAmounts}
       aria-label={hideBalance ? tCommon.showAmounts : tCommon.hideAmounts}
-      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition-all duration-150 cursor-pointer ${
+      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-surface/5 transition-all duration-150 cursor-pointer ${
         hideBalance
-          ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
-          : 'border-white/[0.06] bg-white/[0.02] text-zinc-400 hover:bg-white/[0.06] hover:text-white'
+          ? 'text-emerald-400'
+          : 'text-muted hover:text-content hover:bg-surface/10'
       }`}
     >
       {hideBalance ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -151,7 +151,11 @@ export const Header: React.FC = () => {
       }}
       title={isDark ? tCommon.switchToLight : tCommon.switchToDark}
       aria-label={isDark ? tCommon.switchToLight : tCommon.switchToDark}
-      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/[0.06] bg-white/[0.02] text-zinc-400 transition-colors hover:bg-white/[0.06] hover:text-white cursor-pointer"
+      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-bg bg-surface/5 transition-colors hover:bg-surface/10 cursor-pointer ${
+        isDark
+          ? 'text-indigo-400'
+          : 'text-amber-400'
+      }`}
     >
       {isDark ? <Moon className="h-4 w-4 text-indigo-400" /> : <Sun className="h-4 w-4 text-amber-400" />}
     </button>
@@ -160,17 +164,17 @@ export const Header: React.FC = () => {
   const monthSwitch = (
     <div
       dir="ltr"
-      className="inline-flex h-9 shrink-0 items-center gap-0.5 rounded-full border border-white/[0.08] bg-white/[0.03] p-0.5"
+      className="inline-flex h-9 shrink-0 items-center gap-0.5 rounded-full border border-bg bg-surface/5 p-0.5"
     >
       <button
         type="button"
         onClick={() => shiftMonth(-1)}
         aria-label={tWallet.prevMonth}
-        className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-colors cursor-pointer"
+        className="flex h-8 w-8 items-center justify-center rounded-full text-muted hover:text-content hover:bg-surface/10 transition-colors cursor-pointer"
       >
         <ChevronLeft className="h-4 w-4" />
       </button>
-      <span className="min-w-[76px] sm:min-w-[100px] px-1 text-center text-[11px] sm:text-xs font-semibold text-zinc-200">
+      <span className="min-w-[76px] sm:min-w-[100px] px-1 text-center text-[11px] sm:text-xs font-semibold text-muted">
         {formatMonthYear(selectedMonth, language)}
       </span>
       <button
@@ -178,7 +182,7 @@ export const Header: React.FC = () => {
         onClick={() => shiftMonth(1)}
         aria-label={tWallet.nextMonth}
         disabled={selectedMonth >= currentMonth}
-        className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-400 hover:text-white hover:bg-white/[0.06] disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
+        className="flex h-8 w-8 items-center justify-center rounded-full text-muted hover:text-content hover:bg-surface/10 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
       >
         <ChevronLeft className="h-4 w-4 rotate-180" />
       </button>
@@ -187,7 +191,7 @@ export const Header: React.FC = () => {
 
   return (
     <header
-      className="sticky top-0 z-30 border-b border-white/[0.06] bg-[#06070A]/90 backdrop-blur-2xl px-3 py-2 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-4 lg:px-8"
+      className="sticky top-0 z-30 border-b border-border bg-surface px-3 py-2 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-4 lg:px-8"
       style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}
     >
       <div className="mx-auto flex min-h-11 max-w-[1280px] items-center justify-between gap-2 sm:gap-3">
@@ -199,7 +203,7 @@ export const Header: React.FC = () => {
             onClick={() => window.dispatchEvent(new Event('flouss:open-more'))}
             aria-label={tNav.morePages}
             title={tNav.morePages}
-            className="flex h-9 w-9 md:hidden shrink-0 items-center justify-center rounded-xl border border-white/[0.06] bg-white/[0.02] text-zinc-400 hover:bg-white/[0.06] hover:text-white transition-colors cursor-pointer"
+            className="flex h-9 w-9 md:hidden shrink-0 items-center justify-center rounded-xl border border-bg bg-surface/5 hover:bg-surface/10 text-zinc-400 hover:text-content transition-colors cursor-pointer"
           >
             <Menu className="h-4 w-4" />
           </button>
@@ -214,7 +218,7 @@ export const Header: React.FC = () => {
               }}
               aria-label={tCommon.back}
               title={tCommon.back}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/[0.06] bg-white/[0.02] text-zinc-400 hover:bg-white/[0.06] hover:text-white transition-colors cursor-pointer"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-bg bg-surface/5 hover:bg-surface/10 text-zinc-400 hover:text-content transition-colors cursor-pointer"
             >
               <ChevronLeft className={`h-4 w-4 ${language === 'ar' ? 'rotate-180' : ''}`} />
             </button>
@@ -224,8 +228,8 @@ export const Header: React.FC = () => {
           {isDashboard && (
             <div className="hidden min-w-0 items-center gap-2 lg:flex">
               <div className="min-w-0">
-                <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-zinc-400">{dateLine}</p>
-                <h1 className="truncate text-base font-bold tracking-tight bg-gradient-to-r from-white via-white to-indigo-200 bg-clip-text text-transparent">
+                <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted">{dateLine}</p>
+                <h1 className="truncate text-base font-bold tracking-tight bg-clip-text text-transparent">
                   {greeting}
                 </h1>
               </div>

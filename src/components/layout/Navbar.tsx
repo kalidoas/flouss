@@ -57,13 +57,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onQuickAdd }) => {
   return (
     <>
       <nav aria-label={language === 'ar' ? 'التنقل الرئيسي' : language === 'fr' ? 'Navigation principale' : 'Main navigation'} className="md:hidden fixed bottom-0 inset-x-0 z-[100] px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pointer-events-none">
-        <div className="grid grid-cols-5 items-center rounded-full bg-[#0D0E14]/90 backdrop-blur-2xl border border-white/10 shadow-2xl px-2 py-1.5 max-w-md mx-auto w-full pointer-events-auto">
+        <div className="grid grid-cols-5 items-center rounded-full bg-surface/95 backdrop-blur-2xl border border-border shadow-2xl px-2 py-1.5 max-w-md mx-auto w-full pointer-events-auto">
         {items.slice(0, 2).map((item) => {
           const Icon = item.icon;
           const selected = activeScreen === item.id;
           return (
-            <button key={item.id} type="button" aria-current={selected ? 'page' : undefined} onClick={() => { playHapticFeedback('light'); setActiveScreen(item.id); }} className={`flex min-h-11 min-w-0 flex-col items-center justify-center gap-0.5 rounded-full px-1 transition-colors ${selected ? 'text-white' : 'text-zinc-400 hover:text-zinc-200'}`}>
-              <Icon className={`h-5 w-5 transition-transform ${selected ? 'text-indigo-400 scale-110' : ''}`} />
+            <button key={item.id} type="button" aria-current={selected ? 'page' : undefined} onClick={() => { playHapticFeedback('light'); setActiveScreen(item.id); }} className={`flex min-h-11 min-w-0 flex-col items-center justify-center gap-0.5 rounded-full px-1 transition-colors ${selected ? 'text-content' : 'text-muted hover:text-content'}`}>
+              <Icon className={`h-5 w-5 transition-transform ${selected ? 'text-accent scale-110' : ''}`} />
               <span className="max-w-full truncate text-[10px] font-medium leading-tight">{item.label}</span>
             </button>
           );
@@ -79,8 +79,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onQuickAdd }) => {
           aria-label={translations[language].common.quickAdd}
           className={`mx-auto flex h-11 w-11 items-center justify-center rounded-full font-semibold transition-all duration-300 active:scale-95 ${
             isOmniFabOpen
-              ? 'bg-gradient-to-tr from-indigo-500 to-purple-600 text-white shadow-[0_0_25px_rgba(99,102,241,0.6)] rotate-45'
-              : 'bg-white text-zinc-950 shadow-[0_0_20px_rgba(255,255,255,0.4)] hover:shadow-[0_0_25px_rgba(255,255,255,0.6)]'
+              ? 'bg-gradient-to-tr from-accent to-purple-600 text-content shadow-[0_0_25px_rgba(139,92,246,0.6)] rotate-45'
+              : 'bg-surface text-content shadow-[0_0_20px_rgba(255,255,255,0.4)] hover:shadow-[0_0_25px_rgba(255,255,255,0.6)]'
           }`}
         >
           <Plus className="h-5 w-5 stroke-[2.5]" />
@@ -89,8 +89,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onQuickAdd }) => {
           const Icon = item.icon;
           const selected = activeScreen === item.id;
           return (
-            <button key={item.id} type="button" aria-current={selected ? 'page' : undefined} onClick={() => { playHapticFeedback('light'); setActiveScreen(item.id); }} className={`flex min-h-11 min-w-0 flex-col items-center justify-center gap-0.5 rounded-full px-1 transition-colors ${selected ? 'text-white' : 'text-zinc-400 hover:text-zinc-200'}`}>
-              <Icon className={`h-5 w-5 transition-transform ${selected ? 'text-indigo-400 scale-110' : ''}`} />
+            <button key={item.id} type="button" aria-current={selected ? 'page' : undefined} onClick={() => { playHapticFeedback('light'); setActiveScreen(item.id); }} className={`flex min-h-11 min-w-0 flex-col items-center justify-center gap-0.5 rounded-full px-1 transition-colors ${selected ? 'text-content' : 'text-muted hover:text-content'}`}>
+              <Icon className={`h-5 w-5 transition-transform ${selected ? 'text-accent scale-110' : ''}`} />
               <span className="max-w-full truncate text-[10px] font-medium leading-tight">{item.label}</span>
             </button>
           );
