@@ -90,7 +90,7 @@ export const SwipeRow: React.FC<SwipeRowProps> = ({
               onEdit();
             }}
             aria-label={isRtl ? 'تعديل' : 'Edit'}
-            className="flex-1 bg-zinc-800 hover:bg-zinc-700 active:scale-95 transition-all text-zinc-300 hover:text-white flex flex-col items-center justify-center gap-1 px-3 text-[11px] font-semibold border-r border-white/[0.06]"
+            className="flex-1 bg-surface hover:bg-surface-2 active:scale-95 transition-all text-muted hover:text-content flex flex-col items-center justify-center gap-1 px-3 text-[11px] font-semibold border-r border-border"
           >
             <Edit2 className="w-4 h-4 stroke-[2]" />
             <span>{isRtl ? 'تعديل' : 'Edit'}</span>
@@ -107,7 +107,7 @@ export const SwipeRow: React.FC<SwipeRowProps> = ({
               onDelete();
             }}
             aria-label={isRtl ? 'حذف' : 'Delete'}
-            className="flex-1 bg-rose-600 hover:bg-rose-500 active:scale-95 transition-all text-white flex flex-col items-center justify-center gap-1 px-3 text-[11px] font-semibold"
+            className="flex-1 bg-negative hover:bg-negative active:scale-95 transition-all text-content flex flex-col items-center justify-center gap-1 px-3 text-[11px] font-semibold"
           >
             <Trash2 className="w-4 h-4 stroke-[2]" />
             <span>{isRtl ? 'حذف' : 'Delete'}</span>
@@ -125,7 +125,7 @@ export const SwipeRow: React.FC<SwipeRowProps> = ({
         onDragEnd={handleDragEnd}
         style={{ x }}
         transition={springs.snappy}
-        className="relative z-10 touch-pan-y bg-[#0D0E14] will-change-transform w-full min-w-0"
+        className="relative z-10 touch-pan-y bg-surface will-change-transform w-full min-w-0"
       >
         {children}
       </motion.div>

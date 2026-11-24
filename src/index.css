@@ -30,6 +30,7 @@ body,
     --negative: #f43f5e;
     --warning: #f59e0b;
     --info: #3b82f6;
+    --info-contrast: #ffffff;
     --ring: #3b82f6;
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -84,6 +85,7 @@ body,
     --negative: #fb7185;
     --warning: #fbbf24;
     --info: #60a5fa;
+    --info-contrast: #ffffff;
     --ring: #60a5fa;
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);

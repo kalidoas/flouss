@@ -48,15 +48,15 @@ export const AddToHomeScreenModal: React.FC<AddToHomeScreenModalProps> = ({
     >
       <div className="space-y-4 pt-2 text-xs">
         {/* Apple PWA Notice */}
-        <div className="p-3.5 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-950 dark:text-blue-200 flex items-start gap-3">
-          <div className="w-8 h-8 rounded-xl bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+        <div className="p-3.5 rounded-2xl bg-info/10 border border-info/20 text-info dark:text-info flex items-start gap-3">
+          <div className="w-8 h-8 rounded-xl bg-info/20 text-info dark:text-info flex items-center justify-center shrink-0">
             <Sparkles className="w-4 h-4" />
           </div>
           <div className="leading-relaxed">
-            <p className="font-bold text-xs text-blue-900 dark:text-blue-100">
+            <p className="font-bold text-xs text-info dark:text-info">
               {isAr ? 'متطلب أمان نظام Apple iOS' : 'Exigence système Apple iOS'}
             </p>
-            <p className="text-[11px] text-blue-800/80 dark:text-blue-200/80 mt-0.5">
+            <p className="text-[11px] text-info/80 dark:text-info/80 mt-0.5">
               {isAr
                 ? 'لا يسمح متصفح Safari على iPhone بتفعيل إشعارات الويب إلا بعد إضافة التطبيق إلى الشاشة الرئيسية.'
                 : 'Safari sur iPhone requiert que l’application soit ajoutée à l’écran d’accueil pour activer les notifications push.'}
@@ -67,45 +67,45 @@ export const AddToHomeScreenModal: React.FC<AddToHomeScreenModalProps> = ({
         {/* 3 Simple Steps */}
         <div className="space-y-2.5">
           {/* Step 1 */}
-          <div className="p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-black/[0.05] dark:border-white/[0.06] flex items-start gap-3">
-            <div className="w-8 h-8 rounded-xl bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white flex items-center justify-center shrink-0 font-bold">
+          <div className="p-3.5 rounded-2xl bg-surface-3 dark:bg-surface/50 border border-border/[0.05] dark:border-border flex items-start gap-3">
+            <div className="w-8 h-8 rounded-xl bg-border-border dark:bg-surface-2 text-content dark:text-content flex items-center justify-center shrink-0 font-bold">
               <Share className="w-4 h-4" />
             </div>
             <div className="space-y-0.5">
-              <h4 className="font-bold text-zinc-900 dark:text-white text-xs">
+              <h4 className="font-bold text-content dark:text-content text-xs">
                 {tNotif.addToHomeScreenStep1Title}
               </h4>
-              <p className="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed">
+              <p className="text-[11px] text-text-subtle dark:text-text-subtle leading-relaxed">
                 {tNotif.addToHomeScreenStep1Desc}
               </p>
             </div>
           </div>
 
           {/* Step 2 */}
-          <div className="p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-black/[0.05] dark:border-white/[0.06] flex items-start gap-3">
-            <div className="w-8 h-8 rounded-xl bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white flex items-center justify-center shrink-0 font-bold">
+          <div className="p-3.5 rounded-2xl bg-surface-3 dark:bg-surface/50 border border-border/[0.05] dark:border-border flex items-start gap-3">
+            <div className="w-8 h-8 rounded-xl bg-border-border dark:bg-surface-2 text-content dark:text-content flex items-center justify-center shrink-0 font-bold">
               <PlusSquare className="w-4 h-4" />
             </div>
             <div className="space-y-0.5">
-              <h4 className="font-bold text-zinc-900 dark:text-white text-xs">
+              <h4 className="font-bold text-content dark:text-content text-xs">
                 {tNotif.addToHomeScreenStep2Title}
               </h4>
-              <p className="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed">
+              <p className="text-[11px] text-text-subtle dark:text-text-subtle leading-relaxed">
                 {tNotif.addToHomeScreenStep2Desc}
               </p>
             </div>
           </div>
 
           {/* Step 3 */}
-          <div className="p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-black/[0.05] dark:border-white/[0.06] flex items-start gap-3">
-            <div className="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center justify-center shrink-0 font-bold">
+          <div className="p-3.5 rounded-2xl bg-surface-3 dark:bg-surface/50 border border-border/[0.05] dark:border-border flex items-start gap-3">
+            <div className="w-8 h-8 rounded-xl bg-positive/15 text-positive dark:text-positive border border-positive/20 flex items-center justify-center shrink-0 font-bold">
               <Smartphone className="w-4 h-4" />
             </div>
             <div className="space-y-0.5">
-              <h4 className="font-bold text-zinc-900 dark:text-white text-xs">
+              <h4 className="font-bold text-content dark:text-content text-xs">
                 {tNotif.addToHomeScreenStep3Title}
               </h4>
-              <p className="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed">
+              <p className="text-[11px] text-text-subtle dark:text-text-subtle leading-relaxed">
                 {tNotif.addToHomeScreenStep3Desc}
               </p>
             </div>

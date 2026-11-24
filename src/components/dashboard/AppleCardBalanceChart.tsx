@@ -122,16 +122,16 @@ export const AppleCardBalanceChart: React.FC<AppleCardBalanceChartProps> = ({
   return (
     <AppleGlassCard className="p-5 sm:p-6 flex flex-col justify-between relative overflow-hidden" enableTilt={false}>
       {/* Ambient background glow */}
-      <div className="absolute top-0 right-1/4 w-52 h-52 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-0 right-1/4 w-52 h-52 bg-info/10 rounded-full blur-3xl pointer-events-none" />
 
       {/* Header Info */}
       <div className="flex items-start justify-between gap-3 relative z-10 mb-2">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-lg bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/20 flex items-center justify-center">
+            <div className="w-6 h-6 rounded-lg bg-info/15 text-info dark:text-info border border-info/20 flex items-center justify-center">
               <Activity className="w-3.5 h-3.5 stroke-[2.4]" />
             </div>
-            <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-text-subtle dark:text-text-subtle uppercase tracking-wider">
               {isAr ? 'منحنى الرصيد هذا الشهر' : isEn ? 'Monthly Balance Curve' : 'Courbe du Solde (Ce mois)'}
             </span>
           </div>
@@ -139,7 +139,7 @@ export const AppleCardBalanceChart: React.FC<AppleCardBalanceChartProps> = ({
           <div className="flex items-baseline gap-2">
             <PrivacyCurrency
               amount={currentBalance}
-              className="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-white"
+              className="text-2xl sm:text-3xl font-extrabold tracking-tight text-content dark:text-content"
             />
           </div>
         </div>
@@ -148,8 +148,8 @@ export const AppleCardBalanceChart: React.FC<AppleCardBalanceChartProps> = ({
         <div
           className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold border transition-colors ${
             isPositive
-              ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/25'
-              : 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/25'
+              ? 'bg-positive/15 text-positive dark:text-positive border-positive/25'
+              : 'bg-negative/15 text-negative dark:text-negative border-negative/25'
           }`}
         >
           {isPositive ? (
@@ -170,9 +170,9 @@ export const AppleCardBalanceChart: React.FC<AppleCardBalanceChartProps> = ({
           <AreaChart data={data} margin={{ top: 8, right: 4, left: 4, bottom: 4 }}>
             <defs>
               <linearGradient id="appleCardSplineGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.35} />
-                <stop offset="70%" stopColor="#6366f1" stopOpacity={0.08} />
-                <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.0} />
+                <stop offset="0%" stopColor="bg-info" stopOpacity={0.35} />
+                <stop offset="70%" stopColor="bg-accent" stopOpacity={0.08} />
+                <stop offset="100%" stopColor="bg-info" stopOpacity={0.0} />
               </linearGradient>
             </defs>
 
@@ -185,9 +185,9 @@ export const AppleCardBalanceChart: React.FC<AppleCardBalanceChartProps> = ({
                   const val = payload[0].value as number;
                   const item = payload[0].payload as ChartPoint;
                   return (
-                    <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-black/10 dark:border-white/15 px-3 py-1.5 rounded-xl shadow-xl text-xs space-y-0.5">
-                      <div className="text-[10px] text-zinc-400 font-medium">{item.date}</div>
-                      <div className="font-bold text-zinc-900 dark:text-white tabular-nums">
+                    <div className="bg-surface dark:bg-bg/90 backdrop-blur-xl border border-border/10 dark:border-border/15 px-3 py-1.5 rounded-xl shadow-xl text-xs space-y-0.5">
+                      <div className="text-[10px] text-text-subtle font-medium">{item.date}</div>
+                      <div className="font-bold text-content dark:text-content tabular-nums">
                         {isHidden ? '••••••' : formatMAD(val, false, language)}
                       </div>
                     </div>
@@ -200,14 +200,14 @@ export const AppleCardBalanceChart: React.FC<AppleCardBalanceChartProps> = ({
             <Area
               type="monotone"
               dataKey="balance"
-              stroke="#3b82f6"
+              stroke="bg-info"
               strokeWidth={2.8}
               fill="url(#appleCardSplineGrad)"
               dot={false}
               activeDot={{
                 r: 5,
-                fill: '#3b82f6',
-                stroke: '#ffffff',
+                fill: 'bg-info',
+                stroke: 'text-content',
                 strokeWidth: 2,
               }}
             />

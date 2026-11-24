@@ -48,8 +48,8 @@ export const IOSCalendarGuideModal: React.FC<IOSCalendarGuideModalProps> = ({
     >
       <div className="space-y-4 pt-1 text-xs select-text">
         {/* Why this is the best setup for iPhone banner */}
-        <div className="p-3.5 rounded-2xl bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 flex items-start gap-3 shadow-sm">
-          <div className="w-8 h-8 rounded-xl bg-white/20 dark:bg-zinc-900/10 flex items-center justify-center shrink-0">
+        <div className="p-3.5 rounded-2xl bg-bg text-content dark:bg-surface dark:text-content flex items-start gap-3 shadow-sm">
+          <div className="w-8 h-8 rounded-xl bg-surface-2 dark:bg-bg/10 flex items-center justify-center shrink-0">
             <Apple className="w-4 h-4 fill-current" />
           </div>
           <div className="leading-relaxed">
@@ -73,12 +73,12 @@ export const IOSCalendarGuideModal: React.FC<IOSCalendarGuideModalProps> = ({
         {/* 5 Clear Steps */}
         <div className="space-y-3">
           {/* Step 1: Add Google account to iOS Calendar */}
-          <div className="p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-black/[0.05] dark:border-white/[0.06] space-y-1.5">
-            <div className="flex items-center gap-2 text-zinc-900 dark:text-white font-bold">
-              <span className="w-5 h-5 rounded-full bg-blue-500 text-white flex items-center justify-center text-[10px]">
+          <div className="p-3.5 rounded-2xl bg-surface-3 dark:bg-surface/50 border border-border/[0.05] dark:border-border space-y-1.5">
+            <div className="flex items-center gap-2 text-content dark:text-content font-bold">
+              <span className="w-5 h-5 rounded-full bg-info text-accent-contrast flex items-center justify-center text-[10px]">
                 1
               </span>
-              <Calendar className="w-3.5 h-3.5 text-blue-500" />
+              <Calendar className="w-3.5 h-3.5 text-info0" />
               <span>
                 {isAr
                   ? 'إضافة حساب Google إلى تقويم Apple'
@@ -87,14 +87,14 @@ export const IOSCalendarGuideModal: React.FC<IOSCalendarGuideModalProps> = ({
                   : 'Ajouter le compte Google à Apple Calendrier'}
               </span>
             </div>
-            <p className="text-[11px] font-semibold text-blue-600 dark:text-blue-400">
+            <p className="text-[11px] font-semibold text-info dark:text-info">
               {isAr
                 ? 'الإعدادات ⟵ التقويم ⟵ الحسابات ⟵ إضافة حساب ⟵ Google'
                 : isEn
                 ? 'Settings ⟶ Calendar ⟶ Accounts ⟶ Add Account ⟶ Google'
                 : 'Réglages ⟶ Calendrier ⟶ Comptes ⟶ Ajouter un compte ⟶ Google'}
             </p>
-            <p className="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed">
+            <p className="text-[11px] text-text-subtle dark:text-text-subtle leading-relaxed">
               {isAr
                 ? 'اربط نفس بريدك الإلكتروني المستخدم في مزامنة فلوس وفعّل خيار "التقويمات". ستظهر جميع المواعيد تلقائياً في تطبيق التقويم الخاص بهاتفك.'
                 : isEn
@@ -104,12 +104,12 @@ export const IOSCalendarGuideModal: React.FC<IOSCalendarGuideModalProps> = ({
           </div>
 
           {/* Step 2: Settings > Notifications > Calendar > Allow */}
-          <div className="p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-black/[0.05] dark:border-white/[0.06] space-y-1.5">
-            <div className="flex items-center gap-2 text-zinc-900 dark:text-white font-bold">
-              <span className="w-5 h-5 rounded-full bg-indigo-500 text-white flex items-center justify-center text-[10px]">
+          <div className="p-3.5 rounded-2xl bg-surface-3 dark:bg-surface/50 border border-border/[0.05] dark:border-border space-y-1.5">
+            <div className="flex items-center gap-2 text-content dark:text-content font-bold">
+              <span className="w-5 h-5 rounded-full bg-accent text-accent-contrast flex items-center justify-center text-[10px]">
                 2
               </span>
-              <Bell className="w-3.5 h-3.5 text-indigo-500" />
+              <Bell className="w-3.5 h-3.5 text-accent0" />
               <span>
                 {isAr
                   ? 'السماح بإشعارات التقويم'
@@ -118,14 +118,14 @@ export const IOSCalendarGuideModal: React.FC<IOSCalendarGuideModalProps> = ({
                   : 'Autoriser les notifications de Calendrier'}
               </span>
             </div>
-            <p className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400">
+            <p className="text-[11px] font-semibold text-accent dark:text-accent">
               {isAr
                 ? 'الإعدادات ⟵ الإشعارات ⟵ التقويم ⟵ السماح بالإشعارات'
                 : isEn
                 ? 'Settings ⟶ Notifications ⟶ Calendar ⟶ Allow Notifications'
                 : 'Réglages ⟶ Notifications ⟶ Calendrier ⟶ Autoriser'}
             </p>
-            <p className="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed">
+            <p className="text-[11px] text-text-subtle dark:text-text-subtle leading-relaxed">
               {isAr
                 ? 'تأكد من تفعيل "شاشة القفل" و"مركز الإشعارات" و"الشعارات"، واختر نمط الشعار "دائم" (Persistent).'
                 : isEn
@@ -135,12 +135,12 @@ export const IOSCalendarGuideModal: React.FC<IOSCalendarGuideModalProps> = ({
           </div>
 
           {/* Step 3: Settings > Sounds & Haptics > Calendar Alerts */}
-          <div className="p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-black/[0.05] dark:border-white/[0.06] space-y-1.5">
-            <div className="flex items-center gap-2 text-zinc-900 dark:text-white font-bold">
-              <span className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px]">
+          <div className="p-3.5 rounded-2xl bg-surface-3 dark:bg-surface/50 border border-border/[0.05] dark:border-border space-y-1.5">
+            <div className="flex items-center gap-2 text-content dark:text-content font-bold">
+              <span className="w-5 h-5 rounded-full bg-positive text-accent-contrast flex items-center justify-center text-[10px]">
                 3
               </span>
-              <Volume2 className="w-3.5 h-3.5 text-emerald-500" />
+              <Volume2 className="w-3.5 h-3.5 text-positive0" />
               <span>
                 {isAr
                   ? 'اختيار نغمة تنبيهات التقويم'
@@ -149,14 +149,14 @@ export const IOSCalendarGuideModal: React.FC<IOSCalendarGuideModalProps> = ({
                   : 'Choisir la sonnerie des alertes Calendrier'}
               </span>
             </div>
-            <p className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+            <p className="text-[11px] font-semibold text-positive dark:text-positive">
               {isAr
                 ? 'الإعدادات ⟵ الأصوات والحس اللمسي ⟵ تنبيهات التقويم'
                 : isEn
                 ? 'Settings ⟶ Sounds & Haptics ⟶ Calendar Alerts'
                 : 'Réglages ⟶ Sons et vibrations ⟶ Alertes de calendrier'}
             </p>
-            <p className="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed">
+            <p className="text-[11px] text-text-subtle dark:text-text-subtle leading-relaxed">
               {isAr
                 ? 'اختر نغمة رنين قوية ومسموعة (مثل "موجات" أو "إنذار") لضمان سماع تنبيهات الفواتير والمهام الهامة.'
                 : isEn
@@ -166,12 +166,12 @@ export const IOSCalendarGuideModal: React.FC<IOSCalendarGuideModalProps> = ({
           </div>
 
           {/* Step 4: Allow Calendar in Focus modes */}
-          <div className="p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-black/[0.05] dark:border-white/[0.06] space-y-1.5">
-            <div className="flex items-center gap-2 text-zinc-900 dark:text-white font-bold">
-              <span className="w-5 h-5 rounded-full bg-purple-500 text-white flex items-center justify-center text-[10px]">
+          <div className="p-3.5 rounded-2xl bg-surface-3 dark:bg-surface/50 border border-border/[0.05] dark:border-border space-y-1.5">
+            <div className="flex items-center gap-2 text-content dark:text-content font-bold">
+              <span className="w-5 h-5 rounded-full bg-accent text-accent-contrast flex items-center justify-center text-[10px]">
                 4
               </span>
-              <Moon className="w-3.5 h-3.5 text-purple-500" />
+              <Moon className="w-3.5 h-3.5 text-accent0" />
               <span>
                 {isAr
                   ? 'استثناء التقويم في وضع التركيز (Focus)'
@@ -180,14 +180,14 @@ export const IOSCalendarGuideModal: React.FC<IOSCalendarGuideModalProps> = ({
                   : 'Autoriser Calendrier dans les modes Concentration (Focus)'}
               </span>
             </div>
-            <p className="text-[11px] font-semibold text-purple-600 dark:text-purple-400">
+            <p className="text-[11px] font-semibold text-accent dark:text-accent">
               {isAr
                 ? 'الإعدادات ⟵ التركيز ⟵ [الوضع الحالي] ⟵ التطبيقات المسموح بها ⟵ التقويم'
                 : isEn
                 ? 'Settings ⟶ Focus ⟶ [Your Focus Mode] ⟶ Allowed Apps ⟶ Calendar'
                 : 'Réglages ⟶ Concentration ⟶ [Votre mode] ⟶ Apps autorisées ⟶ Calendrier'}
             </p>
-            <p className="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed">
+            <p className="text-[11px] text-text-subtle dark:text-text-subtle leading-relaxed">
               {isAr
                 ? 'أضف تطبيق التقويم للتطبيقات المسموح بها لترن التنبيهات حتى عند تفعيل وضع "عدم الإزعاج" أو "النوم".'
                 : isEn
@@ -197,12 +197,12 @@ export const IOSCalendarGuideModal: React.FC<IOSCalendarGuideModalProps> = ({
           </div>
 
           {/* Step 5: Silent Switch Warning */}
-          <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/25 space-y-1.5 text-amber-950 dark:text-amber-200">
-            <div className="flex items-center gap-2 font-bold text-amber-900 dark:text-amber-100">
-              <span className="w-5 h-5 rounded-full bg-amber-500 text-white flex items-center justify-center text-[10px]">
+          <div className="p-3.5 rounded-2xl bg-warning/10 border border-warning/25 space-y-1.5 text-warning dark:text-warning">
+            <div className="flex items-center gap-2 font-bold text-warning dark:text-warning">
+              <span className="w-5 h-5 rounded-full bg-warning text-accent-contrast flex items-center justify-center text-[10px]">
                 5
               </span>
-              <VolumeX className="w-3.5 h-3.5 text-amber-600" />
+              <VolumeX className="w-3.5 h-3.5 text-warning" />
               <span>
                 {isAr
                   ? 'تنبيه: زر الصامت الجانبي (Silent Switch)'

@@ -18,17 +18,17 @@ export const IconPicker: React.FC<IconPickerProps> = ({ selectedIcon, onSelect }
   return (
     <div className="space-y-3">
       <div className="relative">
-        <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+        <Search className="w-4 h-4 text-text-subtle absolute left-3 top-1/2 -translate-y-1/2" />
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Rechercher une icône..."
-          className="w-full text-xs pl-9 pr-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:border-emerald-500"
+          className="w-full text-xs pl-9 pr-3 py-2 rounded-xl border border-border dark:border-border bg-surface-3 dark:bg-bg text-text-content dark:text-muted focus:outline-none focus:border-positive"
         />
       </div>
 
-      <div className="grid grid-cols-6 sm:grid-cols-7 gap-2 max-h-48 overflow-y-auto p-1 border border-slate-100 dark:border-slate-800 rounded-2xl">
+      <div className="grid grid-cols-6 sm:grid-cols-7 gap-2 max-h-48 overflow-y-auto p-1 border border-border-border dark:border-border rounded-2xl">
         {filtered.map((item) => {
           const IconComp = item.icon;
           const isSelected = selectedIcon === item.name;
@@ -40,8 +40,8 @@ export const IconPicker: React.FC<IconPickerProps> = ({ selectedIcon, onSelect }
               title={item.label}
               className={`p-2.5 rounded-xl flex items-center justify-center transition-all ${
                 isSelected
-                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30 ring-2 ring-emerald-500 ring-offset-2 dark:ring-offset-slate-900'
-                  : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+                  ? 'bg-positive text-accent-contrast shadow-md shadow-positive/30 ring-2 ring-positive ring-offset-2 dark:ring-offset-text-content'
+                  : 'bg-surface-3 dark:bg-surface text-muted dark:text-muted hover:bg-surface-2 dark:hover:bg-text-muted'
               }`}
             >
               <IconComp className="w-5 h-5" />

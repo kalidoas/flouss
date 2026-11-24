@@ -53,17 +53,17 @@ export const LogoutConfirmModal: React.FC<LogoutConfirmModalProps> = ({ isOpen, 
     >
       <div className="space-y-4 pt-1">
         {hasUnsyncedChanges && (
-          <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-start gap-3 text-xs text-amber-700 dark:text-amber-400">
-            <AlertTriangle className="w-5 h-5 shrink-0 text-amber-500 mt-0.5" />
+          <div className="p-3.5 rounded-2xl bg-warning/10 border border-warning/20 flex items-start gap-3 text-xs text-warning dark:text-warning">
+            <AlertTriangle className="w-5 h-5 shrink-0 text-warning0 mt-0.5" />
             <p className="leading-relaxed font-medium">{texts.warning}</p>
           </div>
         )}
 
-        <p className="text-xs text-muted dark:text-zinc-400 leading-relaxed">
+        <p className="text-xs text-muted dark:text-text-subtle leading-relaxed">
           {texts.desc}
         </p>
 
-        <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-border-subtle dark:border-white/10">
+        <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-border-subtle dark:border-border">
           <Button
             type="button"
             variant="ghost"

@@ -30,17 +30,17 @@ export const Button: React.FC<ButtonProps> = ({
 
   const variantStyles = {
     primary:
-      'bg-zinc-950 text-white hover:bg-zinc-800 shadow-sm dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100 dark:shadow-[0_0_20px_rgba(255,255,255,0.2)] font-semibold border border-transparent',
+      'bg-bg text-content hover:bg-surface shadow-sm dark:bg-surface dark:text-text-subtle dark:hover:bg-surface-2 dark:shadow-[0_0_20px_rgba(255,255,255,0.2)] font-semibold border border-transparent',
     secondary:
-      'bg-surface-raised hover:bg-surface text-content border border-border-subtle dark:bg-white/5 dark:hover:bg-white/10 dark:text-zinc-200 dark:border-white/10 backdrop-blur-xl',
+      'bg-surface-raised hover:bg-surface text-content border border-border-subtle dark:bg-surface-3 dark:hover:bg-surface-2 dark:text-muted dark:border-border backdrop-blur-xl',
     income:
-      'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/25',
+      'bg-positive/10 text-positive dark:text-positive hover:bg-positive/20 border border-positive/25',
     danger:
-      'bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 border border-rose-500/25',
+      'bg-negative/10 text-negative dark:text-negative hover:bg-negative/20 border border-negative/25',
     outline:
-      'bg-transparent hover:bg-surface-raised text-content border border-border-subtle dark:bg-white/5 dark:hover:bg-white/10 dark:text-zinc-200 dark:border-white/10',
+      'bg-transparent hover:bg-surface-raised text-content border border-border-subtle dark:bg-surface-3 dark:hover:bg-surface-2 dark:text-muted dark:border-border',
     ghost:
-      'bg-transparent hover:bg-surface-raised text-muted hover:text-content dark:hover:bg-white/10 dark:text-zinc-400 dark:hover:text-white',
+      'bg-transparent hover:bg-surface-raised text-muted hover:text-content dark:hover:bg-surface-2 dark:text-text-subtle dark:hover:text-content',
   };
 
   const widthStyle = fullWidth ? 'w-full' : '';

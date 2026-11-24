@@ -17,12 +17,12 @@ import {
 } from 'lucide-react';
 
 const PRESET_COLORS = [
-  '#2383e2', // Notion Blue
-  '#0f7b6c', // Notion Teal
-  '#d9730d', // Notion Amber
-  '#df5452', // Notion Red
-  '#6940a5', // Notion Purple
-  '#37352f', // Notion Slate
+  'bg-info', // Notion Blue
+  'bg-positive', // Notion Teal
+  'bg-warning', // Notion Amber
+  'bg-negative', // Notion Red
+  'bg-accent', // Notion Purple
+  'text-content', // Notion Slate
 ];
 
 export const PinLockModal: React.FC = () => {
@@ -184,8 +184,8 @@ export const PinLockModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-      <div className="w-full max-w-sm bg-white dark:bg-[#202020] rounded-xl p-6 shadow-2xl border border-[#e3e2de] dark:border-[#2f2f2f] text-center animate-in zoom-in-95 duration-150 relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg backdrop-blur-xs p-4">
+      <div className="w-full max-w-sm bg-surface rounded-xl p-6 shadow-2xl border border-border text-center animate-in zoom-in-95 duration-150 relative">
         {/* Top Logo */}
         <div className="flex justify-center mb-2">
           <Logo size="md" showWordmark={true} />
@@ -195,10 +195,10 @@ export const PinLockModal: React.FC = () => {
         {mode === 'choose' && (
           <div className="space-y-4 pt-1">
             <div>
-              <h2 className="text-base font-semibold text-[#37352f] dark:text-[#ecebed]">
+              <h2 className="text-base font-semibold text-content">
                 {isAr ? 'من يستخدم Flouss ؟' : 'Qui utilise Flouss ?'}
               </h2>
-              <p className="text-xs text-[#787774] dark:text-[#9b9a97] mt-0.5">
+              <p className="text-xs text-muted mt-0.5">
                 {isAr
                   ? 'انقر على حسابك لإدخال رمز PIN والدخول'
                   : 'Sélectionnez votre profil pour vous identifier'}
@@ -211,21 +211,21 @@ export const PinLockModal: React.FC = () => {
                 <button
                   key={acc.id}
                   onClick={() => handleSelectAccount(acc)}
-                  className="w-full p-3 rounded-lg border border-[#e3e2de] dark:border-[#2f2f2f] bg-[#fbfbfa] dark:bg-[#1a1a1a] hover:bg-[#f1f0ee] dark:hover:bg-[#282828] hover:border-[#2383e2]/60 dark:hover:border-[#2383e2]/60 transition-all flex items-center justify-between text-left group"
+                  className="w-full p-3 rounded-lg border border-border bg-surface-2 hover:bg-surface-3 hover:bg-surface-3 hover:border-info/60 dark:hover:border-info/60 transition-all flex items-center justify-between text-left group"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div
-                      className="w-9 h-9 rounded-md flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-xs transition-transform group-hover:scale-105"
-                      style={{ backgroundColor: acc.avatarColor || '#2383e2' }}
+                      className="w-9 h-9 rounded-md flex items-center justify-center text-accent-contrast text-xs font-bold shrink-0 shadow-xs transition-transform group-hover:scale-105"
+                      style={{ backgroundColor: acc.avatarColor || 'bg-info' }}
                     >
                       {acc.name.charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0">
-                      <span className="text-xs font-semibold text-[#37352f] dark:text-[#ecebed] truncate block">
+                      <span className="text-xs font-semibold text-content truncate block">
                         {acc.name}
                       </span>
                       {acc.email && (
-                        <span className="text-[11px] text-[#787774] dark:text-[#9b9a97] truncate block">
+                        <span className="text-[11px] text-muted truncate block">
                           {acc.email}
                         </span>
                       )}
@@ -234,15 +234,15 @@ export const PinLockModal: React.FC = () => {
 
                   <div className="flex items-center gap-1.5 shrink-0">
                     {acc.pinEnabled && acc.pinCode ? (
-                      <span className="text-[10px] text-[#787774] dark:text-[#9b9a97] flex items-center gap-1 bg-white dark:bg-[#202020] px-2 py-0.5 rounded border border-[#e3e2de] dark:border-[#2f2f2f]">
+                      <span className="text-[10px] text-muted flex items-center gap-1 bg-surface px-2 py-0.5 rounded border border-border">
                         <Lock className="w-2.5 h-2.5" /> PIN
                       </span>
                     ) : (
-                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-200/50">
+                      <span className="text-[10px] text-positive dark:text-positive bg-positive dark:bg-positive/40 px-2 py-0.5 rounded border border-positive/50">
                         {isAr ? 'مفتوح' : 'Direct'}
                       </span>
                     )}
-                    <ArrowRight className="w-3.5 h-3.5 text-[#787774] group-hover:text-[#2383e2] transition-colors" />
+                    <ArrowRight className="w-3.5 h-3.5 text-muted group-hover:text-info transition-colors" />
                   </div>
                 </button>
               ))}
@@ -250,18 +250,18 @@ export const PinLockModal: React.FC = () => {
 
             {/* Add Another Account Button (if < 2 accounts) */}
             {accounts.length < 2 ? (
-              <div className="pt-2 border-t border-[#e3e2de] dark:border-[#2f2f2f]">
+              <div className="pt-2 border-t border-border">
                 <button
                   type="button"
                   onClick={() => setMode('create')}
-                  className="w-full py-2.5 px-3 rounded-lg border border-dashed border-[#e3e2de] dark:border-[#3f3f3f] hover:border-[#2383e2] text-xs font-medium text-[#787774] hover:text-[#2383e2] dark:hover:text-[#ecebed] hover:bg-[#fbfbfa] dark:hover:bg-[#1a1a1a] transition-all flex items-center justify-center gap-1.5"
+                  className="w-full py-2.5 px-3 rounded-lg border border-dashed border-border hover:border-info text-xs font-medium text-muted hover:text-info hover:text-content hover:bg-surface-2 dark:hover:bg-surface-2 transition-all flex items-center justify-center gap-1.5"
                 >
-                  <Plus className="w-3.5 h-3.5 text-[#2383e2]" />
+                  <Plus className="w-3.5 h-3.5 text-info" />
                   <span>{isAr ? 'إضافة حساب ثانٍ' : 'Ajouter un autre compte (Profil 2)'}</span>
                 </button>
               </div>
             ) : (
-              <p className="text-[11px] text-[#787774] dark:text-[#9b9a97] pt-1">
+              <p className="text-[11px] text-muted pt-1">
                 {isAr
                   ? 'تم تسجيل حسابين (الحد الأقصى)'
                   : '2 profils enregistrés (limite maximale)'}
@@ -282,29 +282,29 @@ export const PinLockModal: React.FC = () => {
                   setDigits([]);
                   setError(false);
                 }}
-                className="p-1 rounded text-xs text-[#787774] hover:text-[#37352f] dark:hover:text-[#ecebed] flex items-center gap-1"
+                className="p-1 rounded text-xs text-muted hover:text-content hover:text-content flex items-center gap-1"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
                 <span>{isAr ? 'رجوع' : 'Retour'}</span>
               </button>
 
-              <span className="text-[11px] text-[#787774] dark:text-[#9b9a97]">
+              <span className="text-[11px] text-muted">
                 {isAr ? 'تأكيد الهوية' : 'Sécurité'}
               </span>
             </div>
 
             <div>
               <div
-                className="w-10 h-10 mx-auto rounded-md flex items-center justify-center text-white text-sm font-bold shadow-xs mb-2"
-                style={{ backgroundColor: selectedAccount.avatarColor || '#2383e2' }}
+                className="w-10 h-10 mx-auto rounded-md flex items-center justify-center text-accent-contrast text-sm font-bold shadow-xs mb-2"
+                style={{ backgroundColor: selectedAccount.avatarColor || 'bg-info' }}
               >
                 {selectedAccount.name.charAt(0).toUpperCase()}
               </div>
 
-              <h2 className="text-base font-semibold text-[#37352f] dark:text-[#ecebed]">
+              <h2 className="text-base font-semibold text-content">
                 {selectedAccount.name}
               </h2>
-              <p className="text-xs text-[#787774] dark:text-[#9b9a97] mt-0.5">
+              <p className="text-xs text-muted mt-0.5">
                 {isAr ? 'أدخل رمز PIN المكون من 4 أرقام' : 'Entrez votre code PIN (4 chiffres)'}
               </p>
             </div>
@@ -318,10 +318,10 @@ export const PinLockModal: React.FC = () => {
                     key={idx}
                     className={`w-3.5 h-3.5 rounded-full border transition-all duration-150 ${
                       error
-                        ? 'bg-rose-500 border-rose-500 scale-110'
+                        ? 'bg-negative border-negative scale-110'
                         : isFilled
-                        ? 'bg-[#2383e2] border-[#2383e2] scale-110'
-                        : 'border-[#e3e2de] dark:border-[#3f3f3f] bg-transparent'
+                        ? 'bg-info border-info scale-110'
+                        : 'border-border bg-transparent'
                     }`}
                   />
                 );
@@ -329,7 +329,7 @@ export const PinLockModal: React.FC = () => {
             </div>
 
             {error && (
-              <p className="text-xs text-rose-500 font-medium">
+              <p className="text-xs text-negative0 font-medium">
                 {isAr ? 'رمز PIN غير صحيح' : 'Code PIN incorrect'}
               </p>
             )}
@@ -341,7 +341,7 @@ export const PinLockModal: React.FC = () => {
                   key={num}
                   type="button"
                   onClick={() => handleDigit(num)}
-                  className="h-10 rounded-md bg-[#fbfbfa] dark:bg-[#1a1a1a] hover:bg-[#f1f0ee] dark:hover:bg-[#282828] border border-[#e3e2de] dark:border-[#2f2f2f] text-sm font-semibold text-[#37352f] dark:text-[#ecebed] transition-colors"
+                  className="h-10 rounded-md bg-surface-2 hover:bg-surface-3 hover:bg-surface-3 border border-border text-sm font-semibold text-content transition-colors"
                 >
                   {num}
                 </button>
@@ -350,7 +350,7 @@ export const PinLockModal: React.FC = () => {
               <button
                 type="button"
                 onClick={handleClear}
-                className="h-10 rounded-md text-[11px] text-[#787774] hover:bg-[#f1f0ee] dark:hover:bg-[#282828] flex items-center justify-center transition-colors"
+                className="h-10 rounded-md text-[11px] text-muted hover:bg-surface-3 hover:bg-surface-3 flex items-center justify-center transition-colors"
               >
                 {isAr ? 'مسح' : 'C'}
               </button>
@@ -358,7 +358,7 @@ export const PinLockModal: React.FC = () => {
               <button
                 type="button"
                 onClick={() => handleDigit('0')}
-                className="h-10 rounded-md bg-[#fbfbfa] dark:bg-[#1a1a1a] hover:bg-[#f1f0ee] dark:hover:bg-[#282828] border border-[#e3e2de] dark:border-[#2f2f2f] text-sm font-semibold text-[#37352f] dark:text-[#ecebed] transition-colors"
+                className="h-10 rounded-md bg-surface-2 hover:bg-surface-3 hover:bg-surface-3 border border-border text-sm font-semibold text-content transition-colors"
               >
                 0
               </button>
@@ -366,14 +366,14 @@ export const PinLockModal: React.FC = () => {
               <button
                 type="button"
                 onClick={handleDelete}
-                className="h-10 rounded-md text-xs text-[#787774] hover:bg-[#f1f0ee] dark:hover:bg-[#282828] flex items-center justify-center transition-colors"
+                className="h-10 rounded-md text-xs text-muted hover:bg-surface-3 hover:bg-surface-3 flex items-center justify-center transition-colors"
                 aria-label="Supprimer"
               >
                 ⌫
               </button>
             </div>
 
-            <div className="pt-2 border-t border-[#e3e2de] dark:border-[#2f2f2f]">
+            <div className="pt-2 border-t border-border">
               <button
                 type="button"
                 onClick={() => {
@@ -381,7 +381,7 @@ export const PinLockModal: React.FC = () => {
                   setDigits([]);
                   setError(false);
                 }}
-                className="text-xs text-[#2383e2] hover:underline flex items-center justify-center gap-1.5 mx-auto"
+                className="text-xs text-info hover:underline flex items-center justify-center gap-1.5 mx-auto"
               >
                 <Users className="w-3.5 h-3.5" />
                 <span>{isAr ? 'اختيار حساب آخر' : 'Changer d’utilisateur'}</span>
@@ -397,18 +397,18 @@ export const PinLockModal: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setMode('choose')}
-                className="p-1 rounded text-xs text-[#787774] hover:text-[#37352f] dark:hover:text-[#ecebed] flex items-center gap-1"
+                className="p-1 rounded text-xs text-muted hover:text-content hover:text-content flex items-center gap-1"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
                 <span>{isAr ? 'رجوع' : 'Retour'}</span>
               </button>
-              <h3 className="text-xs font-semibold text-[#37352f] dark:text-[#ecebed]">
+              <h3 className="text-xs font-semibold text-content">
                 {isAr ? 'إضافة الحساب الثاني' : 'Nouveau Compte (Profil 2)'}
               </h3>
             </div>
 
             <div>
-              <label className="block text-[11px] font-medium text-[#787774] mb-1">
+              <label className="block text-[11px] font-medium text-muted mb-1">
                 {isAr ? 'اسم الحساب / الملف' : 'Nom du compte'}
               </label>
               <input
@@ -418,12 +418,12 @@ export const PinLockModal: React.FC = () => {
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 placeholder="Ex: Professionnel, Épargne"
-                className="w-full text-xs py-2 px-3 rounded-md border border-[#e3e2de] dark:border-[#2f2f2f] bg-[#fbfbfa] dark:bg-[#1a1a1a] text-[#37352f] dark:text-[#ecebed] focus:outline-none focus:border-[#2383e2]"
+                className="w-full text-xs py-2 px-3 rounded-md border border-border bg-surface-2 text-content focus:outline-none focus:border-info"
               />
             </div>
 
             <div>
-              <label className="block text-[11px] font-medium text-[#787774] mb-1">
+              <label className="block text-[11px] font-medium text-muted mb-1">
                 {isAr ? 'البريد الإلكتروني (اختياري)' : 'Adresse Email (optionnel)'}
               </label>
               <input
@@ -431,12 +431,12 @@ export const PinLockModal: React.FC = () => {
                 value={newEmail}
                 onChange={(e) => setNewEmail(e.target.value)}
                 placeholder="compte2@gmail.com"
-                className="w-full text-xs py-2 px-3 rounded-md border border-[#e3e2de] dark:border-[#2f2f2f] bg-[#fbfbfa] dark:bg-[#1a1a1a] text-[#37352f] dark:text-[#ecebed] focus:outline-none focus:border-[#2383e2]"
+                className="w-full text-xs py-2 px-3 rounded-md border border-border bg-surface-2 text-content focus:outline-none focus:border-info"
               />
             </div>
 
             <div>
-              <label className="block text-[11px] font-medium text-[#787774] mb-1">
+              <label className="block text-[11px] font-medium text-muted mb-1">
                 {isAr ? 'رمز PIN (4 أرقام - اختياري)' : 'Code PIN (4 chiffres - optionnel)'}
               </label>
               <input
@@ -445,12 +445,12 @@ export const PinLockModal: React.FC = () => {
                 value={newPin}
                 onChange={(e) => setNewPin(e.target.value.replace(/\D/g, ''))}
                 placeholder="••••"
-                className="w-full text-xs py-2 px-3 rounded-md border border-[#e3e2de] dark:border-[#2f2f2f] bg-[#fbfbfa] dark:bg-[#1a1a1a] text-[#37352f] dark:text-[#ecebed] font-mono tracking-widest focus:outline-none focus:border-[#2383e2]"
+                className="w-full text-xs py-2 px-3 rounded-md border border-border bg-surface-2 text-content font-mono tracking-widest focus:outline-none focus:border-info"
               />
             </div>
 
             <div>
-              <label className="block text-[11px] font-medium text-[#787774] mb-1.5">
+              <label className="block text-[11px] font-medium text-muted mb-1.5">
                 {isAr ? 'اللون' : 'Couleur'}
               </label>
               <div className="flex gap-2">
@@ -459,8 +459,8 @@ export const PinLockModal: React.FC = () => {
                     key={col}
                     type="button"
                     onClick={() => setNewColor(col)}
-                    className={`w-6 h-6 rounded-md flex items-center justify-center text-white transition-all ${
-                      newColor === col ? 'ring-2 ring-[#2383e2] ring-offset-1' : 'opacity-80 hover:opacity-100'
+                    className={`w-6 h-6 rounded-md flex items-center justify-center text-accent-contrast transition-all ${
+                      newColor === col ? 'ring-2 ring-info ring-offset-1' : 'opacity-80 hover:opacity-100'
                     }`}
                     style={{ backgroundColor: col }}
                   >
@@ -474,14 +474,14 @@ export const PinLockModal: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setMode('choose')}
-                className="flex-1 py-2 px-3 rounded-md border border-[#e3e2de] dark:border-[#2f2f2f] hover:bg-[#f1f0ee] dark:hover:bg-[#282828] text-xs font-medium text-[#787774] transition-colors"
+                className="flex-1 py-2 px-3 rounded-md border border-border hover:bg-surface-3 hover:bg-surface-3 text-xs font-medium text-muted transition-colors"
               >
                 {isAr ? 'إلغاء' : 'Annuler'}
               </button>
               <button
                 type="submit"
                 disabled={!newName.trim()}
-                className="flex-1 py-2 px-3 rounded-md bg-[#2383e2] hover:bg-[#1a73cb] text-white text-xs font-semibold disabled:opacity-50 transition-colors shadow-xs"
+                className="flex-1 py-2 px-3 rounded-md bg-info hover:bg-info text-accent-contrast text-xs font-semibold disabled:opacity-50 transition-colors shadow-xs"
               >
                 {isAr ? 'إنشاء ودخول' : 'Créer et entrer'}
               </button>

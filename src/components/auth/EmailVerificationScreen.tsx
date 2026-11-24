@@ -271,7 +271,7 @@ export const EmailVerificationScreen: React.FC = () => {
   return (
     <div
       dir={isAr ? 'rtl' : 'ltr'}
-      className="flex flex-col items-center justify-center min-h-screen bg-[#050505] text-zinc-100 px-4 py-8 relative overflow-hidden select-none"
+      className="flex flex-col items-center justify-center min-h-screen bg-bg text-content px-4 py-8 relative overflow-hidden select-none"
     >
       {/* Background ambient lighting */}
       <div
@@ -282,36 +282,36 @@ export const EmailVerificationScreen: React.FC = () => {
         }}
       />
 
-      <div className="w-full max-w-md flex flex-col items-center gap-6 p-6 sm:p-8 rounded-[28px] bg-[#0D0E14]/95 backdrop-blur-2xl border border-white/[0.08] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_24px_50px_-12px_rgba(0,0,0,0.8)] relative z-10 text-center animate-in fade-in zoom-in-95 duration-200">
+      <div className="w-full max-w-md flex flex-col items-center gap-6 p-6 sm:p-8 rounded-[28px] bg-surface/95 backdrop-blur-2xl border border-border-strong shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_24px_50px_-12px_rgba(0,0,0,0.8)] relative z-10 text-center animate-in fade-in zoom-in-95 duration-200">
 
         {/* Header Logo */}
         <Logo size="md" showWordmark={true} />
 
         {/* Mail Icon with ambient ring */}
         <div className="relative">
-          <div className="w-16 h-16 rounded-2xl bg-indigo-500/15 border border-indigo-500/25 text-indigo-400 flex items-center justify-center shadow-lg shadow-indigo-500/10">
+          <div className="w-16 h-16 rounded-2xl bg-accent/15 border border-accent/25 text-accent flex items-center justify-center shadow-lg shadow-accent/10">
             <Mail className="w-8 h-8 stroke-[1.75]" />
           </div>
-          <div className="absolute -inset-1 rounded-2xl bg-indigo-500/20 blur-sm -z-10 animate-pulse" />
+          <div className="absolute -inset-1 rounded-2xl bg-accent/20 blur-sm -z-10 animate-pulse" />
         </div>
 
         {/* Text */}
         <div className="space-y-2">
-          <h2 className="text-xl font-extrabold text-white tracking-tight">
+          <h2 className="text-xl font-extrabold text-content tracking-tight">
             {isAr
               ? 'تأكيد البريد الإلكتروني'
               : language === 'fr'
               ? 'Confirmez votre adresse email'
               : 'Verify your email'}
           </h2>
-          <p className="text-xs text-zinc-400 leading-relaxed max-w-xs mx-auto">
+          <p className="text-xs text-text-subtle leading-relaxed max-w-xs mx-auto">
             {isAr
               ? 'أدخل رمز التحقق المكون من 6 أرقام المرسل إلى :'
               : language === 'fr'
               ? 'Saisissez le code à 6 chiffres envoyé à :'
               : 'Enter the 6-digit code sent to:'}
           </p>
-          <div className="inline-block py-1 px-3.5 rounded-full bg-white/[0.06] border border-white/[0.1] text-xs font-mono font-semibold text-indigo-300">
+          <div className="inline-block py-1 px-3.5 rounded-full bg-surface/20 border border-border-strong text-xs font-mono font-semibold text-accent">
             {email}
           </div>
         </div>
@@ -335,10 +335,10 @@ export const EmailVerificationScreen: React.FC = () => {
                   const paste = e.clipboardData.getData('text');
                   handlePasteString(paste, index);
                 }}
-                className={`w-11 h-14 sm:w-12 sm:h-15 text-center text-2xl font-bold font-mono rounded-xl border bg-white/[0.04] text-white outline-none transition-all duration-150 tabular-nums ${
+                className={`w-11 h-14 sm:w-12 sm:h-15 text-center text-2xl font-bold font-mono rounded-xl border bg-surface/[0.04] text-content outline-none transition-all duration-150 tabular-nums ${
                   digit
-                    ? 'border-indigo-500/70 bg-indigo-500/10 ring-2 ring-indigo-500/20'
-                    : 'border-white/10 hover:border-white/20 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30'
+                    ? 'border-accent/70 bg-accent/10 ring-2 ring-accent/20'
+                    : 'border-border hover:border-border focus:border-accent focus:ring-2 focus:ring-accent/30'
                 }`}
               />
             ))}
@@ -346,21 +346,21 @@ export const EmailVerificationScreen: React.FC = () => {
 
           {/* Feedback messages */}
           {errorMessage && (
-            <div className="w-full flex items-start gap-2 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs text-start animate-in fade-in">
-              <AlertCircle className="w-4 h-4 shrink-0 text-rose-400 mt-0.5" />
+            <div className="w-full flex items-start gap-2 p-3 rounded-xl bg-negative/10 border border-negative/20 text-negative text-xs text-start animate-in fade-in">
+              <AlertCircle className="w-4 h-4 shrink-0 text-negative mt-0.5" />
               <span className="flex-1 leading-relaxed">{errorMessage}</span>
             </div>
           )}
 
           {statusMessage && (
-            <div className="w-full flex items-start gap-2 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs text-start animate-in fade-in">
-              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400 mt-0.5" />
+            <div className="w-full flex items-start gap-2 p-3 rounded-xl bg-positive/10 border border-positive/20 text-positive text-xs text-start animate-in fade-in">
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-positive mt-0.5" />
               <span className="flex-1 leading-relaxed">{statusMessage}</span>
             </div>
           )}
 
           {attemptsRemaining !== null && attemptsRemaining > 0 && attemptsRemaining < 5 && (
-            <p className="text-[11px] text-amber-400 font-medium">
+            <p className="text-[11px] text-warning font-medium">
               {isAr
                 ? `المحاولات المتبقية: ${attemptsRemaining}`
                 : `${attemptsRemaining} tentative${attemptsRemaining > 1 ? 's' : ''} restante${attemptsRemaining > 1 ? 's' : ''}`}
@@ -372,13 +372,13 @@ export const EmailVerificationScreen: React.FC = () => {
             type="button"
             disabled={currentCode.length !== 6 || isVerifying}
             onClick={() => submitVerificationCode(currentCode)}
-            className="w-full py-3.5 px-4 rounded-full bg-white text-zinc-950 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 hover:bg-zinc-200 disabled:opacity-40 transition-all cursor-pointer shadow-lg active:scale-[0.98]"
+            className="w-full py-3.5 px-4 rounded-full bg-surface text-text-subtle font-bold text-xs sm:text-sm flex items-center justify-center gap-2 hover:bg-surface disabled:opacity-40 transition-all cursor-pointer shadow-lg active:scale-[0.98]"
           >
             {isVerifying ? (
-              <div className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
+              <div className="w-4 h-4 border-2 border-border-strong border-t-transparent rounded-full animate-spin" />
             ) : (
               <>
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <CheckCircle2 className="w-4 h-4 text-positive" />
                 <span>
                   {isAr
                     ? 'تأكيد الرمز والمتابعة'
@@ -393,13 +393,13 @@ export const EmailVerificationScreen: React.FC = () => {
         </div>
 
         {/* Secondary Actions */}
-        <div className="w-full space-y-2 pt-1 border-t border-white/[0.06]">
+        <div className="w-full space-y-2 pt-1 border-t border-border">
           {/* Resend OTP button */}
           <button
             type="button"
             disabled={isSending || cooldown > 0}
             onClick={() => handleSendOtp(false)}
-            className="w-full py-2 px-4 rounded-full bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.06] text-xs font-semibold text-zinc-300 hover:text-white disabled:opacity-40 transition-all cursor-pointer flex items-center justify-center gap-2"
+            className="w-full py-2 px-4 rounded-full bg-surface/[0.03] hover:bg-surface/[0.07] border border-border text-xs font-semibold text-text-subtle hover:text-content disabled:opacity-40 transition-all cursor-pointer flex items-center justify-center gap-2"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isSending ? 'animate-spin' : ''}`} />
             <span>
@@ -423,7 +423,7 @@ export const EmailVerificationScreen: React.FC = () => {
               <button
                 type="button"
                 onClick={handleFallbackLinkVerification}
-                className="w-full py-1.5 text-[11px] text-zinc-400 hover:text-indigo-300 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                className="w-full py-1.5 text-[11px] text-text-subtle hover:text-accent transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <ExternalLink className="w-3 h-3" />
                 <span>
@@ -435,7 +435,7 @@ export const EmailVerificationScreen: React.FC = () => {
               <button
                 type="button"
                 onClick={handleManualCheckLink}
-                className="w-full py-1.5 text-[11px] text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                className="w-full py-1.5 text-[11px] text-text-subtle hover:text-content transition-colors cursor-pointer"
               >
                 {isAr ? 'نقرت على الرابط بالفعل' : 'J’ai déjà cliqué sur le lien'}
               </button>
@@ -446,7 +446,7 @@ export const EmailVerificationScreen: React.FC = () => {
           <button
             type="button"
             onClick={logout}
-            className="w-full py-2 px-4 text-xs font-medium text-zinc-500 hover:text-zinc-300 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+            className="w-full py-2 px-4 text-xs font-medium text-text-subtle hover:text-text-subtle transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span>

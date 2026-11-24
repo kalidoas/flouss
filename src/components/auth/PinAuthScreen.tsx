@@ -375,7 +375,7 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
     return (
       <div
         dir={isAr ? 'rtl' : 'ltr'}
-        className="flex flex-col items-center justify-center min-h-screen bg-[#050505] text-zinc-100 px-4 py-8 relative overflow-hidden select-none"
+        className="flex flex-col items-center justify-center min-h-screen bg-bg text-content px-4 py-8 relative overflow-hidden select-none"
       >
         <div
           className="fixed inset-0 pointer-events-none opacity-40"
@@ -385,40 +385,40 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
           }}
         />
 
-        <div className="w-full max-w-sm flex flex-col items-center gap-5 p-6 sm:p-8 rounded-[28px] bg-[#0D0E14]/90 backdrop-blur-2xl border border-white/[0.08] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_24px_50px_-12px_rgba(0,0,0,0.8)] relative z-10 text-center">
+        <div className="w-full max-w-sm flex flex-col items-center gap-5 p-6 sm:p-8 rounded-[28px] bg-surface/90 backdrop-blur-2xl border border-border-strong shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_24px_50px_-12px_rgba(0,0,0,0.8)] relative z-10 text-center">
           <Logo size="md" showWordmark={true} />
 
-          <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-2xl bg-accent/10 border border-accent/20 text-accent flex items-center justify-center">
             <Key className="w-6 h-6 stroke-[2]" />
           </div>
 
           <div className="space-y-1">
-            <h2 className="text-base font-bold text-white tracking-tight">{getTitle()}</h2>
-            <p className="text-xs text-zinc-400 leading-relaxed">{getSubtitle()}</p>
+            <h2 className="text-base font-bold text-content tracking-tight">{getTitle()}</h2>
+            <p className="text-xs text-text-subtle leading-relaxed">{getSubtitle()}</p>
           </div>
 
           {errorMessage && (
-            <div className="w-full flex items-start gap-2 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs text-start">
-              <AlertTriangle className="w-4 h-4 shrink-0 text-rose-400 mt-0.5" />
+            <div className="w-full flex items-start gap-2 p-3 rounded-xl bg-negative/10 border border-negative/20 text-negative text-xs text-start">
+              <AlertTriangle className="w-4 h-4 shrink-0 text-negative mt-0.5" />
               <span className="flex-1 leading-relaxed">{errorMessage}</span>
             </div>
           )}
 
           <form onSubmit={handleReauthWithPassword} className="w-full space-y-3 pt-1">
             <div className="relative">
-              <Lock className="w-4 h-4 text-zinc-500 absolute left-3.5 rtl:left-auto rtl:right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <Lock className="w-4 h-4 text-text-subtle absolute left-3.5 rtl:left-auto rtl:right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type={showReauthPassword ? 'text' : 'password'}
                 value={reauthPassword}
                 onChange={(e) => setReauthPassword(e.target.value)}
                 placeholder="••••••••"
                 autoFocus
-                className="w-full text-xs pl-10 rtl:pl-10 rtl:pr-10 pr-10 py-2.5 rounded-xl border border-white/[0.08] bg-white/[0.03] text-white placeholder:text-zinc-500 focus:border-indigo-400 focus:bg-white/[0.06] focus:outline-none transition-all"
+                className="w-full text-xs pl-10 rtl:pl-10 rtl:pr-10 pr-10 py-2.5 rounded-xl border border-border-strong bg-surface/[0.03] text-content placeholder:text-text-subtle focus:border-accent focus:bg-surface/[0.06] focus:outline-none transition-all"
               />
               <button
                 type="button"
                 onClick={() => setShowReauthPassword(!showReauthPassword)}
-                className="absolute right-3 rtl:right-auto rtl:left-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 p-1 cursor-pointer"
+                className="absolute right-3 rtl:right-auto rtl:left-3 top-1/2 -translate-y-1/2 text-text-subtle hover:text-text-subtle p-1 cursor-pointer"
               >
                 {showReauthPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
               </button>
@@ -427,10 +427,10 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
             <button
               type="submit"
               disabled={reauthenticating || !reauthPassword}
-              className="w-full py-2.5 px-4 rounded-full bg-white text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 hover:bg-zinc-200 disabled:opacity-40 transition-all cursor-pointer shadow-lg active:scale-[0.98]"
+              className="w-full py-2.5 px-4 rounded-full bg-surface text-text-subtle font-bold text-xs flex items-center justify-center gap-2 hover:bg-surface disabled:opacity-40 transition-all cursor-pointer shadow-lg active:scale-[0.98]"
             >
               {reauthenticating ? (
-                <div className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
+                <div className="w-4 h-4 border-2 border-bg-bg border-t-transparent rounded-full animate-spin" />
               ) : (
                 <>
                   <span>{isAr ? 'تأكيد' : isFr ? 'Confirmer' : 'Confirm'}</span>
@@ -446,7 +446,7 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
               setMode('verify');
               setErrorMessage('');
             }}
-            className="text-xs text-zinc-400 hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
+            className="text-xs text-text-subtle hover:text-content flex items-center gap-1 transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-3.5 h-3.5 rtl:rotate-180" />
             <span>{isAr ? 'إلغاء' : isFr ? 'Annuler' : 'Cancel'}</span>
@@ -460,7 +460,7 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
   return (
     <div
       dir={isAr ? 'rtl' : 'ltr'}
-      className="flex flex-col items-center justify-center min-h-screen bg-[#050505] text-zinc-100 px-4 py-8 relative overflow-hidden select-none"
+      className="flex flex-col items-center justify-center min-h-screen bg-bg text-content px-4 py-8 relative overflow-hidden select-none"
     >
       {/* Background ambient lighting */}
       <div
@@ -471,13 +471,13 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
         }}
       />
 
-      <div className="w-full max-w-sm flex flex-col items-center gap-4 p-6 sm:p-8 rounded-[28px] bg-[#0D0E14]/90 backdrop-blur-2xl border border-white/[0.08] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_24px_50px_-12px_rgba(0,0,0,0.8)] relative z-10 text-center">
+      <div className="w-full max-w-sm flex flex-col items-center gap-4 p-6 sm:p-8 rounded-[28px] bg-surface/90 backdrop-blur-2xl border border-border-strong shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_24px_50px_-12px_rgba(0,0,0,0.8)] relative z-10 text-center">
 
         {/* Logo */}
         <Logo size="md" showWordmark={true} />
 
         {/* User Pill */}
-        <div className="inline-flex items-center gap-2 py-1 px-3 rounded-full bg-white/[0.04] border border-white/[0.08] max-w-full">
+        <div className="inline-flex items-center gap-2 py-1 px-3 rounded-full bg-surface/[0.04] border border-border-strong max-w-full">
           {user.photoURL ? (
             <img
               src={user.photoURL}
@@ -486,28 +486,28 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
               referrerPolicy="no-referrer"
             />
           ) : (
-            <div className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold flex items-center justify-center shrink-0">
+            <div className="w-5 h-5 rounded-full bg-positive/20 text-positive text-[10px] font-bold flex items-center justify-center shrink-0">
               {(user.displayName || user.email || 'U').charAt(0).toUpperCase()}
             </div>
           )}
-          <span className="text-xs font-semibold text-zinc-300 truncate">
+          <span className="text-xs font-semibold text-text-subtle truncate">
             {user.displayName || user.email?.split('@')[0]}
           </span>
         </div>
 
         {/* Header Icon & Title */}
         <div className="space-y-1">
-          <div className="w-10 h-10 mx-auto rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center mb-1">
+          <div className="w-10 h-10 mx-auto rounded-2xl bg-accent/10 border border-accent/20 text-accent flex items-center justify-center mb-1">
             <Lock className="w-5 h-5 stroke-[2]" />
           </div>
-          <h2 className="text-base font-bold text-white tracking-tight">{getTitle()}</h2>
-          <p className="text-xs text-zinc-400">{getSubtitle()}</p>
+          <h2 className="text-base font-bold text-content tracking-tight">{getTitle()}</h2>
+          <p className="text-xs text-text-subtle">{getSubtitle()}</p>
         </div>
 
         {/* PIN entry progress */}
         <div className="flex justify-center items-center gap-3.5 py-2 min-h-8" aria-live="polite">
           {isSubmitting ? (
-            <span className="inline-flex items-center gap-2 text-xs text-indigo-300">
+            <span className="inline-flex items-center gap-2 text-xs text-accent">
               <span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
               {isAr ? 'جارٍ التحقق...' : isFr ? 'Vérification...' : 'Checking PIN...'}
             </span>
@@ -519,10 +519,10 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
                 key={idx}
                 className={`w-3.5 h-3.5 rounded-full border-2 transition-all duration-150 ${
                   error
-                    ? 'bg-rose-500 border-rose-500 scale-110'
+                    ? 'bg-negative border-negative scale-110'
                     : isFilled
-                    ? 'bg-white border-white scale-110'
-                    : 'border-white/[0.15] bg-transparent'
+                    ? 'bg-surface border-border scale-110'
+                    : 'border-border/[0.15] bg-transparent'
                 }`}
               />
             );
@@ -532,8 +532,8 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
 
         {/* Error / Lockout Messages */}
         {lockout.isLocked ? (
-          <div className="w-full p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-300 flex items-center justify-center gap-2 animate-pulse">
-            <AlertTriangle className="w-4 h-4 shrink-0 text-rose-400" />
+          <div className="w-full p-2.5 rounded-xl bg-negative/10 border border-negative/20 text-xs text-negative flex items-center justify-center gap-2 animate-pulse">
+            <AlertTriangle className="w-4 h-4 shrink-0 text-negative" />
             <span>
               {isAr
                 ? `تم قفل الحساب مؤقتاً (${lockout.remainingSeconds} ثانية متبقية)`
@@ -543,7 +543,7 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
             </span>
           </div>
         ) : errorMessage ? (
-          <p className="text-xs text-rose-400 font-medium">{errorMessage}</p>
+          <p className="text-xs text-negative font-medium">{errorMessage}</p>
         ) : null}
 
         {/* Numeric keypad */}
@@ -554,7 +554,7 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
               type="button"
               disabled={lockout.isLocked || isSubmitting}
               onClick={() => handleDigit(num)}
-              className={`h-11 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] active:scale-95 border border-white/[0.06] text-sm font-semibold text-white transition-all shadow-xs ${
+              className={`h-11 rounded-2xl bg-surface/[0.04] hover:bg-surface/[0.08] active:scale-95 border border-border text-sm font-semibold text-content transition-all shadow-xs ${
                 lockout.isLocked ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'
               }`}
             >
@@ -567,7 +567,7 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
             type="button"
             disabled={lockout.isLocked || isSubmitting}
             onClick={handleClear}
-            className={`h-11 rounded-2xl text-xs font-medium text-zinc-400 hover:text-white hover:bg-white/[0.04] active:scale-95 flex items-center justify-center transition-all ${
+            className={`h-11 rounded-2xl text-xs font-medium text-text-subtle hover:text-content hover:bg-surface/[0.04] active:scale-95 flex items-center justify-center transition-all ${
               lockout.isLocked ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'
             }`}
           >
@@ -579,7 +579,7 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
             type="button"
             disabled={lockout.isLocked || isSubmitting}
             onClick={() => handleDigit('0')}
-            className={`h-11 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] active:scale-95 border border-white/[0.06] text-sm font-semibold text-white transition-all shadow-xs ${
+            className={`h-11 rounded-2xl bg-surface/[0.04] hover:bg-surface/[0.08] active:scale-95 border border-border text-sm font-semibold text-content transition-all shadow-xs ${
               lockout.isLocked ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'
             }`}
           >
@@ -591,7 +591,7 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
             <button
               type="button"
               onClick={handleBiometric}
-              className="h-11 rounded-2xl text-indigo-400 hover:text-white hover:bg-indigo-500/10 active:scale-95 flex items-center justify-center transition-all cursor-pointer"
+              className="h-11 rounded-2xl text-accent hover:text-content hover:bg-accent/10 active:scale-95 flex items-center justify-center transition-all cursor-pointer"
               aria-label="Biometric authentication"
             >
               <ScanFace className="w-5 h-5" />
@@ -601,7 +601,7 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
               type="button"
               disabled={lockout.isLocked || isSubmitting}
               onClick={handleDelete}
-              className={`h-11 rounded-2xl text-xs font-medium text-zinc-400 hover:text-white hover:bg-white/[0.04] active:scale-95 flex items-center justify-center transition-all ${
+              className={`h-11 rounded-2xl text-xs font-medium text-text-subtle hover:text-content hover:bg-surface/[0.04] active:scale-95 flex items-center justify-center transition-all ${
                 lockout.isLocked ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'
               }`}
               aria-label="Delete"
@@ -612,13 +612,13 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
         </div>
 
         {/* Footer Actions: Forgot PIN + Sign out */}
-        <div className="w-full pt-3 mt-2 border-t border-white/[0.06] space-y-2">
+        <div className="w-full pt-3 mt-2 border-t border-border space-y-2">
           {mode === 'verify' && (
             <button
               type="button"
               disabled={reauthenticating}
               onClick={handleForgotPin}
-              className="text-xs text-indigo-400 hover:text-indigo-300 font-medium flex items-center justify-center gap-1 mx-auto cursor-pointer transition-colors"
+              className="text-xs text-accent hover:text-accent font-medium flex items-center justify-center gap-1 mx-auto cursor-pointer transition-colors"
             >
               {reauthenticating ? (
                 <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
@@ -631,7 +631,7 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
           <button
             type="button"
             onClick={onLogout}
-            className="text-xs text-zinc-400 hover:text-zinc-200 flex items-center justify-center gap-1.5 mx-auto cursor-pointer transition-colors"
+            className="text-xs text-text-subtle hover:text-text-subtle flex items-center justify-center gap-1.5 mx-auto cursor-pointer transition-colors"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span>

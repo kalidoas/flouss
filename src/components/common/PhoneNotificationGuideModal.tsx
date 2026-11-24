@@ -41,8 +41,8 @@ export const PhoneNotificationGuideModal: React.FC<PhoneNotificationGuideModalPr
     >
       <div className="space-y-4 pt-1 text-xs">
         {/* Important notice banner */}
-        <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-200 leading-relaxed flex items-start gap-2.5">
-          <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+        <div className="p-3.5 rounded-2xl bg-warning/10 border border-warning/20 text-warning dark:text-warning leading-relaxed flex items-start gap-2.5">
+          <AlertCircle className="w-4 h-4 text-warning0 shrink-0 mt-0.5" />
           <span>
             {isAr
               ? 'ملاحظة هامة: عندما يكون تطبيق Flouss مغلقاً، يتحكم تطبيق تقويم جوجل ونظام هاتفك في نغمة الرنين والأولوية. تأكد من تفعيل الإشعارات وتحديد نغمة رنين مسموعة في إعدادات الهاتف أدناه.'
@@ -53,17 +53,17 @@ export const PhoneNotificationGuideModal: React.FC<PhoneNotificationGuideModalPr
         </div>
 
         {/* OS Platform Tabs */}
-        <div className="grid grid-cols-2 gap-2 p-1 bg-zinc-100 dark:bg-zinc-800 rounded-xl">
+        <div className="grid grid-cols-2 gap-2 p-1 bg-surface-2 dark:bg-surface rounded-xl">
           <button
             type="button"
             onClick={() => setActiveTab('android')}
             className={`py-2 px-3 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
               activeTab === 'android'
-                ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-xs'
-                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+                ? 'bg-surface dark:bg-bg text-content dark:text-content shadow-xs'
+                : 'text-text-subtle dark:text-text-subtle hover:text-content dark:hover:text-content'
             }`}
           >
-            <Smartphone className="w-3.5 h-3.5 text-emerald-500" />
+            <Smartphone className="w-3.5 h-3.5 text-positive0" />
             <span>Android</span>
           </button>
 
@@ -72,20 +72,20 @@ export const PhoneNotificationGuideModal: React.FC<PhoneNotificationGuideModalPr
             onClick={() => setActiveTab('ios')}
             className={`py-2 px-3 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
               activeTab === 'ios'
-                ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-xs'
-                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+                ? 'bg-surface dark:bg-bg text-content dark:text-content shadow-xs'
+                : 'text-text-subtle dark:text-text-subtle hover:text-content dark:hover:text-content'
             }`}
           >
-            <Apple className="w-3.5 h-3.5 text-zinc-800 dark:text-zinc-200" />
+            <Apple className="w-3.5 h-3.5 text-bg-surface dark:text-muted" />
             <span>iPhone (iOS)</span>
           </button>
         </div>
 
         {/* Step-by-step instructions */}
         {activeTab === 'android' ? (
-          <div className="space-y-2.5 p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700/60 text-zinc-700 dark:text-zinc-300">
-            <h4 className="font-bold text-zinc-900 dark:text-white text-xs mb-2 flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+          <div className="space-y-2.5 p-4 rounded-2xl bg-surface-3 dark:bg-surface/50 border border-border-border dark:border-border text-content00 dark:text-muted">
+            <h4 className="font-bold text-content dark:text-content text-xs mb-2 flex items-center gap-1.5">
+              <CheckCircle2 className="w-3.5 h-3.5 text-positive0" />
               <span>
                 {isAr
                   ? 'خطوات ضبط أولوية المنبه على Android:'
@@ -126,9 +126,9 @@ export const PhoneNotificationGuideModal: React.FC<PhoneNotificationGuideModalPr
             </ol>
           </div>
         ) : (
-          <div className="space-y-2.5 p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700/60 text-zinc-700 dark:text-zinc-300">
-            <h4 className="font-bold text-zinc-900 dark:text-white text-xs mb-2 flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-blue-500" />
+          <div className="space-y-2.5 p-4 rounded-2xl bg-surface-3 dark:bg-surface/50 border border-border-border dark:border-border text-content00 dark:text-muted">
+            <h4 className="font-bold text-content dark:text-content text-xs mb-2 flex items-center gap-1.5">
+              <CheckCircle2 className="w-3.5 h-3.5 text-info0" />
               <span>
                 {isAr
                   ? 'خطوات ضبط التنبيهات على iPhone (iOS):'

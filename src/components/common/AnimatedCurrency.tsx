@@ -68,9 +68,9 @@ export const AnimatedCurrency: React.FC<AnimatedCurrencyProps> = ({
     <motion.span
       animate={
         pulseColor === 'green'
-          ? { scale: [1, 1.03, 1], color: ['#10b981', '#10b981', 'inherit'] }
+          ? { scale: [1, 1.03, 1], color: ['bg-positive', 'bg-positive', 'inherit'] }
           : pulseColor === 'red'
-          ? { scale: [1, 1.03, 1], color: ['#ef4444', '#ef4444', 'inherit'] }
+          ? { scale: [1, 1.03, 1], color: ['bg-negative', 'bg-negative', 'inherit'] }
           : { scale: 1 }
       }
       transition={{ duration: 0.8, ease: 'easeOut' }}

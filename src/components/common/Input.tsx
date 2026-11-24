@@ -16,13 +16,13 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full">
         {label && (
-          <label htmlFor={inputId} className="block text-[11px] font-medium text-zinc-400 uppercase tracking-wider mb-1.5">
+          <label htmlFor={inputId} className="block text-[11px] font-medium text-text-subtle uppercase tracking-wider mb-1.5">
             {label}
           </label>
         )}
         <div className="relative flex items-center">
           {prefix && (
-            <div className="absolute left-3 text-zinc-400 font-medium pointer-events-none select-none text-xs">
+            <div className="absolute left-3 text-text-subtle font-medium pointer-events-none select-none text-xs">
               {prefix}
             </div>
           )}
@@ -31,7 +31,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             id={inputId}
             aria-invalid={Boolean(error)}
             aria-describedby={error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined}
-            className={`w-full min-h-11 rounded-xl border border-border-subtle bg-surface text-content placeholder:text-muted dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-zinc-500 transition-all outline-none
+            className={`w-full min-h-11 rounded-xl border border-border-subtle bg-surface text-content placeholder:text-muted dark:border-border dark:bg-surface-3 dark:text-content dark:placeholder:text-text-subtle transition-all outline-none
               ${
                 isAmount
                   ? 'text-xl font-semibold py-2.5 px-3 tracking-tight'
@@ -41,22 +41,22 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
               ${suffix ? 'pr-14' : ''}
               ${
                 error
-                  ? 'border-rose-500/50 bg-rose-500/10 text-rose-500 dark:text-rose-300 focus:border-rose-500'
-                  : 'hover:border-black/20 dark:hover:border-white/20 focus:border-accent focus:ring-1 focus:ring-accent'
+                  ? 'border-negative/50 bg-negative/10 text-negative0 dark:text-negative focus:border-negative'
+                  : 'hover:border-border/20 dark:hover:border-border-strong focus:border-accent focus:ring-1 focus:ring-accent'
               }
               ${className}
             `}
             {...props}
           />
           {suffix && (
-            <div className="absolute right-2.5 text-[11px] font-medium text-zinc-400 pointer-events-none select-none uppercase tracking-wider bg-white/10 px-1.5 py-0.5 rounded">
+            <div className="absolute right-2.5 text-[11px] font-medium text-text-subtle pointer-events-none select-none uppercase tracking-wider bg-surface-2 px-1.5 py-0.5 rounded">
               {suffix}
             </div>
           )}
         </div>
-        {error && <p id={`${inputId}-error`} className="mt-1 text-xs font-medium text-rose-400">{error}</p>}
+        {error && <p id={`${inputId}-error`} className="mt-1 text-xs font-medium text-negative">{error}</p>}
         {hint && !error && (
-          <p id={`${inputId}-hint`} className="mt-1 text-xs text-zinc-400">{hint}</p>
+          <p id={`${inputId}-hint`} className="mt-1 text-xs text-text-subtle">{hint}</p>
         )}
       </div>
     );

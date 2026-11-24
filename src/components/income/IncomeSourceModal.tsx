@@ -20,7 +20,7 @@ export const IncomeSourceModal: React.FC<IncomeSourceModalProps> = ({
 
   const [name, setName] = useState('');
   const [icon, setIcon] = useState('Briefcase');
-  const [color, setColor] = useState('#059669');
+  const [color, setColor] = useState('bg-positive');
   const [error, setError] = useState('');
 
   const IconPreview = getCategoryIcon(icon);
@@ -43,7 +43,7 @@ export const IncomeSourceModal: React.FC<IncomeSourceModalProps> = ({
 
     setName('');
     setIcon('Briefcase');
-    setColor('#059669');
+    setColor('bg-positive');
     setError('');
     onClose();
   };
@@ -58,18 +58,18 @@ export const IncomeSourceModal: React.FC<IncomeSourceModalProps> = ({
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Preview */}
-        <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-800">
+        <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-surface-3 dark:bg-surface/40 border border-border/50 dark:border-border">
           <div
-            className="w-12 h-12 rounded-2xl flex items-center justify-center text-white shrink-0 shadow-sm"
+            className="w-12 h-12 rounded-2xl flex items-center justify-center text-accent-contrast shrink-0 shadow-sm"
             style={{ backgroundColor: color }}
           >
             <IconPreview className="w-6 h-6" />
           </div>
           <div>
-            <h4 className="font-extrabold text-slate-900 dark:text-white text-base">
+            <h4 className="font-extrabold text-content text-base">
               {name.trim() || 'Nom de la source'}
             </h4>
-            <span className="text-xs text-slate-500 dark:text-slate-400">
+            <span className="text-xs text-text-subtle dark:text-text-subtle">
               Source d’encaissement
             </span>
           </div>
@@ -90,7 +90,7 @@ export const IncomeSourceModal: React.FC<IncomeSourceModalProps> = ({
 
         {/* Color */}
         <div>
-          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-bold text-text-subtle uppercase tracking-wider mb-1.5">
             Couleur
           </label>
           <ColorPicker selectedColor={color} onSelect={setColor} />
@@ -98,7 +98,7 @@ export const IncomeSourceModal: React.FC<IncomeSourceModalProps> = ({
 
         {/* Icon */}
         <div>
-          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-bold text-text-subtle uppercase tracking-wider mb-1.5">
             Icône
           </label>
           <IconPicker selectedIcon={icon} onSelect={setIcon} />

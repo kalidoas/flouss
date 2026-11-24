@@ -48,8 +48,8 @@ export const CategoryChipRow: React.FC<CategoryChipRowProps> = ({
               }}
               className={`flex min-h-[44px] shrink-0 items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold transition-all cursor-pointer select-none active:scale-95 ${
                 isSelected
-                  ? 'bg-zinc-950 text-white shadow-sm dark:bg-white dark:text-zinc-950 font-bold'
-                  : 'bg-surface border border-border-subtle text-muted hover:text-content hover:bg-surface-raised dark:bg-white/5 dark:border-white/10 dark:text-zinc-300 dark:hover:text-white dark:hover:bg-white/10'
+                  ? 'bg-bg text-content shadow-sm dark:bg-surface dark:text-text-subtle font-bold'
+                  : 'bg-surface border border-border-subtle text-muted hover:text-content hover:bg-surface-raised dark:bg-surface-3 dark:border-border dark:text-muted dark:hover:text-content dark:hover:bg-surface-2'
               }`}
             >
               {IconComp && (

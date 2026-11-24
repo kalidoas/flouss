@@ -24,12 +24,12 @@ interface AccountSwitcherModalProps {
 }
 
 const PRESET_COLORS = [
-  '#2383e2', // Notion Blue
-  '#0f7b6c', // Notion Teal
-  '#d9730d', // Notion Amber
-  '#df5452', // Notion Red
-  '#6940a5', // Notion Purple
-  '#37352f', // Notion Gray
+  'bg-info', // Notion Blue
+  'bg-positive', // Notion Teal
+  'bg-warning', // Notion Amber
+  'bg-negative', // Notion Red
+  'bg-accent', // Notion Purple
+  'text-content', // Notion Gray
 ];
 
 export const AccountSwitcherModal: React.FC<AccountSwitcherModalProps> = ({
@@ -129,9 +129,9 @@ export const AccountSwitcherModal: React.FC<AccountSwitcherModalProps> = ({
         maxWidth="md"
       >
         <div className="space-y-4">
-          <div className="flex items-center justify-between text-xs text-[#787774] dark:text-[#9b9a97]">
+          <div className="flex items-center justify-between text-xs text-muted">
             <p>{isAr ? 'إدارة حساباتك (حد أقصى ملفين)' : 'Gérez vos comptes (max 2 profils distincts)'}</p>
-            <span className="font-medium bg-[#f1f0ee] dark:bg-[#282828] px-2 py-0.5 rounded text-[11px]">
+            <span className="font-medium bg-surface-2 px-2 py-0.5 rounded text-[11px]">
               {accounts.length}/2
             </span>
           </div>
@@ -151,43 +151,43 @@ export const AccountSwitcherModal: React.FC<AccountSwitcherModalProps> = ({
                   onClick={() => handleSelectAccount(acc.id)}
                   className={`p-3 rounded-md border transition-all cursor-pointer flex items-center justify-between gap-3 ${
                     isActive
-                      ? 'bg-[#f7f6f3] dark:bg-[#282828] border-[#2383e2]/40 shadow-xs'
-                      : 'border-[#e3e2de] dark:border-[#2f2f2f] hover:bg-[#fbfbfa] dark:hover:bg-[#222222]'
+                      ? 'bg-surface border-info/40 shadow-xs'
+                      : 'border-border hover:bg-surface-2'
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div
-                      className="w-8 h-8 rounded-md flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-xs"
-                      style={{ backgroundColor: acc.avatarColor || '#2383e2' }}
+                      className="w-8 h-8 rounded-md flex items-center justify-center text-accent-contrast text-xs font-bold shrink-0 shadow-xs"
+                      style={{ backgroundColor: acc.avatarColor || 'bg-info' }}
                     >
                       {acc.name.charAt(0).toUpperCase()}
                     </div>
 
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="text-xs font-semibold text-[#37352f] dark:text-[#ecebed] truncate">
+                        <span className="text-xs font-semibold text-content truncate">
                           {acc.name}
                         </span>
                         {isActive && (
-                          <span className="text-[10px] bg-[#2383e2]/15 text-[#2383e2] px-1.5 py-0.2 rounded font-medium">
+                          <span className="text-[10px] bg-info/15 text-info px-1.5 py-0.2 rounded font-medium">
                             {isAr ? 'الحالي' : 'Actif'}
                           </span>
                         )}
                         {acc.pinEnabled && acc.pinCode && (
-                          <span className="text-[10px] text-[#787774] dark:text-[#9b9a97] flex items-center gap-0.5">
+                          <span className="text-[10px] text-muted flex items-center gap-0.5">
                             <Lock className="w-2.5 h-2.5" /> PIN
                           </span>
                         )}
                       </div>
 
-                      <div className="flex items-center gap-2 mt-0.5 text-[11px] text-[#787774] dark:text-[#9b9a97]">
+                      <div className="flex items-center gap-2 mt-0.5 text-[11px] text-muted">
                         {acc.email && (
                           <span className="flex items-center gap-1 truncate max-w-[140px]">
                             <Mail className="w-2.5 h-2.5 shrink-0" />
                             {acc.email}
                           </span>
                         )}
-                        <span className="font-mono text-[#37352f] dark:text-[#ecebed]">
+                        <span className="font-mono text-content">
                           {formatMAD(balance, false, language)}
                         </span>
                       </div>
@@ -197,7 +197,7 @@ export const AccountSwitcherModal: React.FC<AccountSwitcherModalProps> = ({
                   <div className="flex items-center gap-1 shrink-0">
                     <button
                       onClick={(e) => handleStartEdit(acc, e)}
-                      className="p-1 rounded text-[#787774] hover:text-[#37352f] hover:bg-[#e3e2de]/50 dark:hover:bg-[#333] transition-colors"
+                      className="p-1 rounded text-muted hover:text-content hover:bg-surface-2 transition-colors"
                       title={tCommon.edit}
                     >
                       <Edit2 className="w-3.5 h-3.5" />
@@ -208,7 +208,7 @@ export const AccountSwitcherModal: React.FC<AccountSwitcherModalProps> = ({
                           e.stopPropagation();
                           setDeletingAccountId(acc.id);
                         }}
-                        className="p-1 rounded text-[#787774] hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                        className="p-1 rounded text-muted hover:text-negative hover:bg-negative/10 transition-colors"
                         title={tCommon.delete}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -224,9 +224,9 @@ export const AccountSwitcherModal: React.FC<AccountSwitcherModalProps> = ({
           {editingAccountId && (
             <form
               onSubmit={handleSaveEdit}
-              className="p-3 bg-[#fbfbfa] dark:bg-[#1a1a1a] rounded-md border border-[#e3e2de] dark:border-[#2f2f2f] space-y-2.5"
+              className="p-3 bg-surface-2 rounded-md border border-border space-y-2.5"
             >
-              <span className="text-xs font-semibold text-[#37352f] dark:text-[#ecebed] block">
+              <span className="text-xs font-semibold text-content block">
                 {tCommon.edit} :
               </span>
               <div className="space-y-2">
@@ -235,7 +235,7 @@ export const AccountSwitcherModal: React.FC<AccountSwitcherModalProps> = ({
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
                   placeholder="Nom du compte"
-                  className="w-full py-1.5 px-3 rounded-md border border-[#e3e2de] dark:border-[#2f2f2f] bg-white dark:bg-[#202020] text-xs font-medium"
+                  className="w-full py-1.5 px-3 rounded-md border border-border bg-surface text-xs font-medium"
                   autoFocus
                 />
                 <input
@@ -243,7 +243,7 @@ export const AccountSwitcherModal: React.FC<AccountSwitcherModalProps> = ({
                   value={editEmail}
                   onChange={(e) => setEditEmail(e.target.value)}
                   placeholder="Email lié (optionnel)"
-                  className="w-full py-1.5 px-3 rounded-md border border-[#e3e2de] dark:border-[#2f2f2f] bg-white dark:bg-[#202020] text-xs font-medium"
+                  className="w-full py-1.5 px-3 rounded-md border border-border bg-surface text-xs font-medium"
                 />
               </div>
               <div className="flex gap-2 justify-end pt-1">
@@ -268,14 +268,14 @@ export const AccountSwitcherModal: React.FC<AccountSwitcherModalProps> = ({
               variant="outline"
               fullWidth
               onClick={() => setIsCreating(true)}
-              icon={<Plus className="w-3.5 h-3.5 text-[#2383e2]" />}
+              icon={<Plus className="w-3.5 h-3.5 text-info" />}
             >
               {isAr ? 'إضافة حساب ثانٍ' : 'Ajouter un 2ème profil'}
             </Button>
           )}
 
           {!canAddAccount && !isCreating && (
-            <p className="text-[11px] text-center text-[#787774] dark:text-[#9b9a97] italic">
+            <p className="text-[11px] text-center text-muted italic">
               {isAr
                 ? 'تم الوصول إلى الحد الأقصى (حسابين منفصلين).'
                 : 'Limite de 2 profils atteinte pour une utilisation personnelle sécurisée.'}
@@ -285,14 +285,14 @@ export const AccountSwitcherModal: React.FC<AccountSwitcherModalProps> = ({
           {isCreating && (
             <form
               onSubmit={handleCreateSubmit}
-              className="p-3.5 rounded-md bg-[#fbfbfa] dark:bg-[#1a1a1a] border border-[#e3e2de] dark:border-[#2f2f2f] space-y-3"
+              className="p-3.5 rounded-md bg-surface-2 border border-border space-y-3"
             >
-              <h4 className="text-xs font-semibold text-[#37352f] dark:text-[#ecebed]">
+              <h4 className="text-xs font-semibold text-content">
                 {isAr ? 'إنشاء الحساب الثاني' : 'Nouveau compte (Profil 2)'}
               </h4>
 
               <div>
-                <label className="text-[11px] font-medium text-[#787774] block mb-1">
+                <label className="text-[11px] font-medium text-muted block mb-1">
                   {tAcc.accountName}
                 </label>
                 <input
@@ -300,13 +300,13 @@ export const AccountSwitcherModal: React.FC<AccountSwitcherModalProps> = ({
                   value={newAccountName}
                   onChange={(e) => setNewAccountName(e.target.value)}
                   placeholder="Ex: Professionnel ou Épargne"
-                  className="w-full py-1.5 px-3 rounded-md border border-[#e3e2de] dark:border-[#2f2f2f] bg-white dark:bg-[#202020] text-xs font-medium outline-none focus:border-[#2383e2]"
+                  className="w-full py-1.5 px-3 rounded-md border border-border bg-surface text-xs font-medium outline-none focus:border-info"
                   autoFocus
                 />
               </div>
 
               <div>
-                <label className="text-[11px] font-medium text-[#787774] block mb-1">
+                <label className="text-[11px] font-medium text-muted block mb-1">
                   {isAr ? 'البريد الإلكتروني' : 'Adresse Email'}
                 </label>
                 <input
@@ -314,12 +314,12 @@ export const AccountSwitcherModal: React.FC<AccountSwitcherModalProps> = ({
                   value={newAccountEmail}
                   onChange={(e) => setNewAccountEmail(e.target.value)}
                   placeholder="compte2@gmail.com"
-                  className="w-full py-1.5 px-3 rounded-md border border-[#e3e2de] dark:border-[#2f2f2f] bg-white dark:bg-[#202020] text-xs font-medium outline-none focus:border-[#2383e2]"
+                  className="w-full py-1.5 px-3 rounded-md border border-border bg-surface text-xs font-medium outline-none focus:border-info"
                 />
               </div>
 
               <div>
-                <label className="text-[11px] font-medium text-[#787774] block mb-1">
+                <label className="text-[11px] font-medium text-muted block mb-1">
                   {isAr ? 'رمز PIN السري (4 أرقام - اختياري)' : 'Code PIN (4 chiffres - optionnel)'}
                 </label>
                 <input
@@ -328,12 +328,12 @@ export const AccountSwitcherModal: React.FC<AccountSwitcherModalProps> = ({
                   value={newAccountPin}
                   onChange={(e) => setNewAccountPin(e.target.value.replace(/\D/g, ''))}
                   placeholder="••••"
-                  className="w-full py-1.5 px-3 rounded-md border border-[#e3e2de] dark:border-[#2f2f2f] bg-white dark:bg-[#202020] text-xs font-mono tracking-widest outline-none focus:border-[#2383e2]"
+                  className="w-full py-1.5 px-3 rounded-md border border-border bg-surface text-xs font-mono tracking-widest outline-none focus:border-info"
                 />
               </div>
 
               <div>
-                <label className="text-[11px] font-medium text-[#787774] block mb-1.5">
+                <label className="text-[11px] font-medium text-muted block mb-1.5">
                   {tAcc.color}
                 </label>
                 <div className="flex gap-2">
@@ -342,8 +342,8 @@ export const AccountSwitcherModal: React.FC<AccountSwitcherModalProps> = ({
                       key={col}
                       type="button"
                       onClick={() => setSelectedColor(col)}
-                      className={`w-6 h-6 rounded-md flex items-center justify-center text-white transition-all ${
-                        selectedColor === col ? 'ring-2 ring-[#2383e2] ring-offset-1' : 'opacity-80 hover:opacity-100'
+                      className={`w-6 h-6 rounded-md flex items-center justify-center text-accent-contrast transition-all ${
+                        selectedColor === col ? 'ring-2 ring-ring ring-offset-1' : 'opacity-80 hover:opacity-100'
                       }`}
                       style={{ backgroundColor: col }}
                     >
@@ -386,11 +386,11 @@ export const AccountSwitcherModal: React.FC<AccountSwitcherModalProps> = ({
         maxWidth="sm"
       >
         <div className="text-center space-y-3.5">
-          <div className="w-10 h-10 mx-auto rounded-md bg-rose-50 dark:bg-rose-950/40 text-rose-600 flex items-center justify-center">
+          <div className="w-10 h-10 mx-auto rounded-md bg-negative/10 text-negative flex items-center justify-center">
             <AlertTriangle className="w-5 h-5" />
           </div>
 
-          <p className="text-xs text-[#5f5e5b] dark:text-[#9b9a97] leading-relaxed">
+          <p className="text-xs text-muted leading-relaxed">
             {tAcc.deleteConfirm}
           </p>
 

@@ -35,12 +35,12 @@ export const StyledSelect: React.FC<StyledSelectProps> = ({
         aria-haspopup="listbox"
         aria-expanded={open}
         onClick={() => setOpen((current) => !current)}
-        className="flex min-h-9 w-full items-center justify-between gap-2 rounded-xl border border-white/10 bg-zinc-900 px-3.5 py-1.5 text-start text-xs text-zinc-200 outline-none hover:bg-zinc-800/90 hover:border-white/20 hover:shadow-[0_0_15px_rgba(139,92,246,0.2)] focus-visible:ring-2 focus-visible:ring-indigo-500 transition-all duration-300 cursor-pointer shadow-xs"
+        className="flex min-h-9 w-full items-center justify-between gap-2 rounded-xl border border-border bg-bg px-3.5 py-1.5 text-start text-xs text-muted outline-none hover:bg-surface/90 hover:border-border-strong hover:shadow-[0_0_15px_rgba(139,92,246,0.2)] focus-visible:ring-2 focus-visible:ring-accent transition-all duration-300 cursor-pointer shadow-xs"
       >
         <span className="truncate">{selected?.label || label}</span>
         <ChevronDown
-          className={`h-3.5 w-3.5 shrink-0 text-zinc-400 transition-transform duration-200 ${
-            open ? 'rotate-180 text-white' : ''
+          className={`h-3.5 w-3.5 shrink-0 text-text-subtle transition-transform duration-200 ${
+            open ? 'rotate-180 text-content' : ''
           }`}
         />
       </button>
@@ -52,7 +52,7 @@ export const StyledSelect: React.FC<StyledSelectProps> = ({
         matchTriggerWidth={true}
         minWidth={160}
         offsetY={4}
-        className="overflow-y-auto no-scrollbar rounded-xl bg-zinc-900 border border-white/10 p-1.5 shadow-[0_16px_36px_-8px_rgba(0,0,0,0.8)] backdrop-blur-2xl"
+        className="overflow-y-auto no-scrollbar rounded-xl bg-bg border border-border p-1.5 shadow-[0_16px_36px_-8px_rgba(0,0,0,0.8)] backdrop-blur-2xl"
       >
         <div role="listbox" aria-label={label} className="space-y-0.5">
           {options.map((option) => {
@@ -69,12 +69,12 @@ export const StyledSelect: React.FC<StyledSelectProps> = ({
                 }}
                 className={`flex min-h-8 w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-start text-xs font-medium transition-all duration-200 cursor-pointer ${
                   isSelected
-                    ? 'bg-white text-zinc-950 font-bold shadow-xs'
-                    : 'text-zinc-300 hover:text-white hover:bg-white/[0.08]'
+                    ? 'bg-surface text-text-subtle font-bold shadow-xs'
+                    : 'text-muted hover:text-content hover:bg-surface-2'
                 }`}
               >
                 <span className="truncate">{option.label}</span>
-                {isSelected && <Check className="w-3.5 h-3.5 text-zinc-950 stroke-[2.5] shrink-0" />}
+                {isSelected && <Check className="w-3.5 h-3.5 text-text-subtle stroke-[2.5] shrink-0" />}
               </button>
             );
           })}

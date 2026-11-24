@@ -57,10 +57,10 @@ export const GoalProgressBar: React.FC<GoalProgressBarProps> = ({
       {/* Header: Progress % & Status Badge */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-xl font-bold text-slate-900 dark:text-white tabular-nums">
+          <span className="text-xl font-bold text-content dark:text-content tabular-nums">
             {progressPercent}%
           </span>
-          <span className="text-xs text-slate-400 font-medium">{tCat.achieved}</span>
+          <span className="text-xs text-text-subtle font-medium">{tCat.achieved}</span>
         </div>
         <Badge variant={statusInfo.variant} icon={statusInfo.icon}>
           {statusInfo.label}
@@ -68,7 +68,7 @@ export const GoalProgressBar: React.FC<GoalProgressBarProps> = ({
       </div>
 
       {/* Progress Bar Track */}
-      <div className="w-full bg-[#f1f0ee] dark:bg-[#282828] rounded-full h-2 overflow-hidden">
+      <div className="w-full bg-surface-3 dark:bg-surface-3 rounded-full h-2 overflow-hidden">
         <div
           className="h-full rounded-full transition-all duration-500 ease-out"
           style={{
@@ -79,16 +79,16 @@ export const GoalProgressBar: React.FC<GoalProgressBarProps> = ({
       </div>
 
       {/* Amount details */}
-      <div className="flex items-center justify-between text-xs text-[#787774] dark:text-[#9b9a97]">
+      <div className="flex items-center justify-between text-xs text-muted">
         <div>
           <span>{tCat.savedLabel} : </span>
-          <strong className={`text-[#37352f] dark:text-[#ecebed] font-medium tabular-nums transition-[filter] duration-200 ${hideBalance ? 'privacy-blur' : ''}`}>
+          <strong className={`text-content font-medium tabular-nums transition-[filter] duration-200 ${hideBalance ? 'privacy-blur' : ''}`}>
             {formatMAD(savedAmount, false, language)}
           </strong>
         </div>
         <div>
           <span>{tCat.targetLabel} : </span>
-          <strong className={`text-[#37352f] dark:text-[#ecebed] font-medium tabular-nums transition-[filter] duration-200 ${hideBalance ? 'privacy-blur' : ''}`}>
+          <strong className={`text-content font-medium tabular-nums transition-[filter] duration-200 ${hideBalance ? 'privacy-blur' : ''}`}>
             {formatMAD(category.targetAmount || 0, false, language)}
           </strong>
         </div>
@@ -96,16 +96,16 @@ export const GoalProgressBar: React.FC<GoalProgressBarProps> = ({
 
       {/* Monthly Calculation / Recommendation advice */}
       {status !== 'completed' && (
-        <div className="p-2.5 rounded-md bg-[#fbfbfa] dark:bg-[#1a1a1a] border border-[#e3e2de] dark:border-[#2f2f2f] text-xs text-[#5f5e5b] dark:text-[#9b9a97] flex items-center justify-between gap-2">
+        <div className="p-2.5 rounded-md bg-surface-2 border border-border text-xs text-muted text-muted flex items-center justify-between gap-2">
           <div className="flex-1">
-            <span className="text-[#787774] dark:text-[#9b9a97] block text-[11px]">{tCat.monthlyAdvice} :</span>
-            <span className="font-medium text-[#37352f] dark:text-[#ecebed]">
-              <span className={`text-emerald-600 dark:text-emerald-400 tabular-nums transition-[filter] duration-200 ${hideBalance ? 'privacy-blur' : ''}`}>
+            <span className="text-muted block text-[11px]">{tCat.monthlyAdvice} :</span>
+            <span className="font-medium text-content">
+              <span className={`text-positive dark:text-positive tabular-nums transition-[filter] duration-200 ${hideBalance ? 'privacy-blur' : ''}`}>
                 {formatMAD(monthlyNeeded, false, language)}
               </span>{' '}
               {tCat.perMonth}
             </span>
-            <span className="text-[10px] text-[#787774] block mt-0.5">
+            <span className="text-[10px] text-muted block mt-0.5">
               ({tCat.monthsRemaining.replace('{months}', String(remainingMonths))} • {tCat.remaining} <span className={hideBalance ? 'privacy-blur' : ''}>{formatMAD(remainingAmount, false, language)}</span>)
             </span>
           </div>
@@ -113,7 +113,7 @@ export const GoalProgressBar: React.FC<GoalProgressBarProps> = ({
           {showContributeButton && onContribute && (
             <button
               onClick={onContribute}
-              className="px-2.5 py-1 rounded bg-[#2383e2] hover:bg-[#1a73cb] text-white font-medium text-xs shadow-sm flex items-center gap-1 transition-colors shrink-0"
+              className="px-2.5 py-1 rounded bg-info hover:bg-info text-accent-contrast font-medium text-xs shadow-sm flex items-center gap-1 transition-colors shrink-0"
             >
               <span>+ {tCat.quickContribute}</span>
               <ArrowUpRight className="w-3 h-3" />

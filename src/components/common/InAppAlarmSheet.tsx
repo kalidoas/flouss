@@ -96,12 +96,12 @@ export const InAppAlarmSheet: React.FC = () => {
   const getEntityIcon = () => {
     switch (activeAlarm.type) {
       case 'bill':
-        return <CreditCard className="w-8 h-8 text-amber-400 animate-bounce" />;
+        return <CreditCard className="w-8 h-8 text-warning animate-bounce" />;
       case 'meeting':
-        return <Calendar className="w-8 h-8 text-blue-400 animate-bounce" />;
+        return <Calendar className="w-8 h-8 text-info animate-bounce" />;
       case 'task':
       default:
-        return <Bell className="w-8 h-8 text-rose-400 animate-bounce" />;
+        return <Bell className="w-8 h-8 text-negative animate-bounce" />;
     }
   };
 
@@ -118,27 +118,27 @@ export const InAppAlarmSheet: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-xl animate-fade-in">
-      <div className="w-full sm:max-w-md bg-zinc-950 text-white rounded-t-3xl sm:rounded-3xl border border-zinc-800 p-6 sm:p-8 shadow-2xl space-y-6 animate-scale-up">
+    <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-bg backdrop-blur-xl animate-fade-in">
+      <div className="w-full sm:max-w-md bg-bg text-content rounded-t-3xl sm:rounded-3xl border border-border p-6 sm:p-8 shadow-2xl space-y-6 animate-scale-up">
         {/* Pulsing Header Icon */}
         <div className="flex flex-col items-center text-center space-y-3">
-          <div className="w-20 h-20 rounded-full bg-rose-500/20 border-2 border-rose-500/40 flex items-center justify-center shadow-lg shadow-rose-500/20 animate-pulse">
+          <div className="w-20 h-20 rounded-full bg-negative/20 border-2 border-negative/40 flex items-center justify-center shadow-lg shadow-negative/20 animate-pulse">
             {getEntityIcon()}
           </div>
 
           <div className="space-y-1">
-            <span className="text-xs font-bold uppercase tracking-wider text-rose-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-negative">
               {getEntityLabel()}
             </span>
-            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-black text-content tracking-tight">
               {activeAlarm.title}
             </h2>
             {activeAlarm.subtitle && (
-              <p className="text-sm text-zinc-400">{activeAlarm.subtitle}</p>
+              <p className="text-sm text-text-subtle">{activeAlarm.subtitle}</p>
             )}
             {activeAlarm.scheduledTime && (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-800/80 border border-zinc-700/60 text-xs font-mono text-zinc-300 mt-2">
-                <Clock className="w-3.5 h-3.5 text-zinc-400" />
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface/80 border border-border text-xs font-mono text-muted mt-2">
+                <Clock className="w-3.5 h-3.5 text-text-subtle" />
                 <span>{activeAlarm.scheduledTime}</span>
               </div>
             )}
@@ -151,9 +151,9 @@ export const InAppAlarmSheet: React.FC = () => {
           <button
             type="button"
             onClick={handleSnooze}
-            className="w-full py-3.5 px-4 rounded-2xl bg-zinc-800 hover:bg-zinc-700 active:scale-[0.98] border border-zinc-700 text-zinc-200 font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-sm"
+            className="w-full py-3.5 px-4 rounded-2xl bg-surface hover:bg-surface-2 active:scale-[0.98] border border-border text-muted font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-sm"
           >
-            <Moon className="w-4 h-4 text-amber-400" />
+            <Moon className="w-4 h-4 text-warning" />
             <span>{isAr ? 'تأجيل 5 دقائق' : isEn ? 'Snooze 5m' : 'Reporter 5 min'}</span>
           </button>
 
@@ -161,7 +161,7 @@ export const InAppAlarmSheet: React.FC = () => {
           <button
             type="button"
             onClick={handleDismiss}
-            className="w-full py-3.5 px-4 rounded-2xl bg-rose-600 hover:bg-rose-500 active:scale-[0.98] text-white font-extrabold text-sm flex items-center justify-center gap-2 transition-all shadow-lg shadow-rose-600/30"
+            className="w-full py-3.5 px-4 rounded-2xl bg-negative hover:bg-negative active:scale-[0.98] text-content font-extrabold text-sm flex items-center justify-center gap-2 transition-all shadow-lg shadow-negative/30"
           >
             <CheckCircle2 className="w-4 h-4" />
             <span>{isAr ? 'إيقاف المنبه' : isEn ? 'Dismiss' : 'Désactiver'}</span>

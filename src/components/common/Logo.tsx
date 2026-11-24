@@ -39,7 +39,7 @@ export const Logo: React.FC<LogoProps> = ({
     <div className={`inline-flex items-center gap-2 select-none ${className}`}>
       {/* Apple-style translucent icon badge */}
       <div
-        className={`${s.box} bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs flex items-center justify-center shrink-0 font-bold`}
+        className={`${s.box} bg-bg text-content dark:bg-surface dark:text-content shadow-xs flex items-center justify-center shrink-0 font-bold`}
       >
         <span className="text-xs font-mono">F</span>
       </div>
@@ -48,7 +48,7 @@ export const Logo: React.FC<LogoProps> = ({
       {showWordmark && (
         <div className="flex items-center leading-none">
           <span
-            className={`font-bold ${s.text} text-zinc-900 dark:text-white tracking-tight`}
+            className={`font-bold ${s.text} text-content dark:text-content tracking-tight`}
           >
             {titleText}
           </span>

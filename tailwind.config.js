@@ -25,6 +25,7 @@ export default {
         negative: 'var(--color-negative)',
         warning: 'var(--warning)',
         info: 'var(--info)',
+        'info-contrast': 'var(--info-contrast)',
         ring: 'var(--ring)',
         primary: {
           50: '#eff6ff',

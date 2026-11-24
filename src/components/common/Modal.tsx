@@ -166,7 +166,7 @@ export const Modal: React.FC<ModalProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.18 }}
-            className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-md cursor-pointer"
+            className="fixed inset-0 bg-bg dark:bg-bg/80 backdrop-blur-md cursor-pointer"
             onClick={() => {
               playHapticFeedback('light');
               onClose();
@@ -187,27 +187,27 @@ export const Modal: React.FC<ModalProps> = ({
                   : '90dvh'
                 : '85vh',
             }}
-            className={`relative w-full ${maxWidthStyles[maxWidth]} bg-surface text-content dark:bg-[#0A0A0C]/95 dark:text-white rounded-t-[28px] sm:rounded-3xl shadow-[0_24px_70px_rgba(0,0,0,0.5)] border-t sm:border border-border-subtle dark:border-white/10 overflow-hidden z-10 flex flex-col ${className}`}
+            className={`relative w-full ${maxWidthStyles[maxWidth]} bg-surface text-content dark:bg-[bg-bg]/95 dark:text-content rounded-t-[28px] sm:rounded-3xl shadow-[0_24px_70px_rgba(0,0,0,0.5)] border-t sm:border border-border-subtle dark:border-border overflow-hidden z-10 flex flex-col ${className}`}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Mobile Sheet Grabber */}
             {showGrabber && (
               <div className="sm:hidden pt-3 pb-1 flex justify-center cursor-grab active:cursor-grabbing touch-none select-none">
-                <div className="w-10 h-1 rounded-full bg-muted/40 dark:bg-white/20" />
+                <div className="w-10 h-1 rounded-full bg-surface dark:bg-surface-3" />
               </div>
             )}
 
             {/* Header */}
             {(title || subtitle) && (
-              <div className="px-5 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between border-b border-border-subtle dark:border-white/10 shrink-0">
+              <div className="px-5 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between border-b border-border-subtle dark:border-border shrink-0">
                 <div className="min-w-0 pr-3 rtl:pr-0 rtl:pl-3">
                   {title && (
-                    <h3 className="text-base font-semibold text-content dark:text-white tracking-tight truncate">
+                    <h3 className="text-base font-semibold text-content dark:text-content tracking-tight truncate">
                       {title}
                     </h3>
                   )}
                   {subtitle && (
-                    <p className="text-xs text-muted dark:text-zinc-400 mt-0.5 truncate">
+                    <p className="text-xs text-muted dark:text-text-subtle mt-0.5 truncate">
                       {subtitle}
                     </p>
                   )}
@@ -218,7 +218,7 @@ export const Modal: React.FC<ModalProps> = ({
                     playHapticFeedback('light');
                     onClose();
                   }}
-                  className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-muted hover:text-content hover:bg-surface-raised dark:text-zinc-400 dark:hover:text-white dark:hover:bg-white/10 transition-colors cursor-pointer"
+                  className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-muted hover:text-content hover:bg-surface-raised dark:text-text-subtle dark:hover:text-content dark:hover:bg-surface-2 transition-colors cursor-pointer"
                   aria-label="Close"
                 >
                   <X className="w-4 h-4 stroke-[2.2]" />
@@ -233,7 +233,7 @@ export const Modal: React.FC<ModalProps> = ({
 
             {/* Optional Sticky Footer */}
             {footer && (
-              <div className="sticky bottom-0 bg-surface/95 dark:bg-[#0A0A0C]/95 border-t border-border-subtle dark:border-white/10 px-4 sm:px-6 py-3 shrink-0 backdrop-blur-md">
+              <div className="sticky bottom-0 bg-surface/95 dark:bg-[bg-bg]/95 border-t border-border-subtle dark:border-border px-4 sm:px-6 py-3 shrink-0 backdrop-blur-md">
                 {footer}
               </div>
             )}

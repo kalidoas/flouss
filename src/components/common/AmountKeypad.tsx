@@ -77,9 +77,9 @@ export const AmountKeypad: React.FC<AmountKeypadProps> = ({
     <div className={`flex flex-col gap-3 ${className}`}>
       {/* Big Bold Amount Display */}
       {showDisplay && (
-        <div className="flex items-center justify-between rounded-2xl border border-border-subtle dark:border-white/10 bg-surface dark:bg-white/5 px-4 py-3">
+        <div className="flex items-center justify-between rounded-2xl border border-border-subtle dark:border-border bg-surface dark:bg-surface-3 px-4 py-3">
           <div className="flex items-baseline gap-2 min-w-0">
-            <span className="text-3xl sm:text-4xl font-black tabular-nums tracking-tight text-content dark:text-white truncate">
+            <span className="text-3xl sm:text-4xl font-black tabular-nums tracking-tight text-content dark:text-content truncate">
               {amount || '0'}
             </span>
             <span className="text-xs font-bold uppercase text-muted tracking-wider">
@@ -91,7 +91,7 @@ export const AmountKeypad: React.FC<AmountKeypadProps> = ({
             <button
               type="button"
               onClick={handleClear}
-              className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-muted hover:text-content hover:bg-surface-raised dark:hover:bg-white/10 transition-colors"
+              className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-muted hover:text-content hover:bg-surface-raised dark:hover:bg-surface-2 transition-colors"
               aria-label="Clear amount"
             >
               <Delete className="w-4 h-4" />
@@ -110,7 +110,7 @@ export const AmountKeypad: React.FC<AmountKeypadProps> = ({
                 type="button"
                 onClick={handleBackspace}
                 aria-label="Delete last digit"
-                className="flex min-h-[48px] items-center justify-center rounded-2xl bg-surface-raised dark:bg-white/5 border border-border-subtle dark:border-white/10 text-content dark:text-white font-bold text-lg hover:bg-surface dark:hover:bg-white/10 active:scale-95 transition-all select-none cursor-pointer"
+                className="flex min-h-[48px] items-center justify-center rounded-2xl bg-surface-raised dark:bg-surface-3 border border-border-subtle dark:border-border text-content dark:text-content font-bold text-lg hover:bg-surface dark:hover:bg-surface-2 active:scale-95 transition-all select-none cursor-pointer"
               >
                 <Delete className="w-5 h-5" />
               </button>
@@ -122,7 +122,7 @@ export const AmountKeypad: React.FC<AmountKeypadProps> = ({
               key={key}
               type="button"
               onClick={() => handleDigit(key)}
-              className="flex min-h-[48px] items-center justify-center rounded-2xl bg-surface dark:bg-white/[0.04] border border-border-subtle dark:border-white/10 text-content dark:text-white font-bold text-xl hover:bg-surface-raised dark:hover:bg-white/[0.08] active:scale-95 transition-all select-none cursor-pointer tabular-nums"
+              className="flex min-h-[48px] items-center justify-center rounded-2xl bg-surface dark:bg-surface-3 border border-border-subtle dark:border-border text-content dark:text-content font-bold text-xl hover:bg-surface-raised dark:hover:bg-surface-2 active:scale-95 transition-all select-none cursor-pointer tabular-nums"
             >
               {key}
             </button>

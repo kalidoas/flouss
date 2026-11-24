@@ -137,21 +137,21 @@ export const CategoryDetailModal: React.FC<CategoryDetailModalProps> = ({
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3.5">
               <div
-                className="w-14 h-14 rounded-3xl flex items-center justify-center text-white shrink-0 shadow-md"
+                className="w-14 h-14 rounded-3xl flex items-center justify-center text-accent-contrast shrink-0 shadow-md"
                 style={{ backgroundColor: getCategoryVisualColor(category.id) }}
               >
                 <IconComp className="w-7 h-7" />
               </div>
               <div>
-                <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">
+                <h2 className="text-xl font-extrabold text-content text-accent-contrast">
                   {categoryName}
                 </h2>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="text-xs text-slate-400">
+                  <span className="text-xs text-text-subtle">
                     {category.isGoal ? tCat.goalBadge : tCat.expenseBadge}
                   </span>
                   {category.isArchived && (
-                    <span className="text-[10px] bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] bg-border-border dark:bg-surface text-muted dark:text-muted font-bold px-2 py-0.5 rounded-full">
                       {tCat.archivedBadge || 'Archivée'}
                     </span>
                   )}
@@ -166,14 +166,14 @@ export const CategoryDetailModal: React.FC<CategoryDetailModalProps> = ({
                   onClose();
                   onEdit(category);
                 }}
-                className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                className="p-2 rounded-xl text-text-subtle hover:text-content dark:hover:text-muted hover:bg-surface-2 dark:hover:bg-surface transition-colors"
                 title={tCommon.edit}
               >
                 <Edit3 className="w-4 h-4" />
               </button>
               <button
                 onClick={handleToggleArchive}
-                className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                className="p-2 rounded-xl text-text-subtle hover:text-content dark:hover:text-muted hover:bg-surface-2 dark:hover:bg-surface transition-colors"
                 title={category.isArchived ? tCommon.unarchive : tCommon.archive}
               >
                 <Archive className="w-4 h-4" />
@@ -185,7 +185,7 @@ export const CategoryDetailModal: React.FC<CategoryDetailModalProps> = ({
                   }
                   setShowDeletePrompt(true);
                 }}
-                className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                className="p-2 rounded-xl text-text-subtle hover:text-negative hover:bg-negative dark:hover:bg-negative/40 transition-colors"
                 title={tCommon.delete}
               >
                 <Trash2 className="w-4 h-4" />
@@ -195,12 +195,12 @@ export const CategoryDetailModal: React.FC<CategoryDetailModalProps> = ({
 
           {/* Goal Progress Section (if it's a goal) */}
           {category.isGoal && goalCalc && (
-            <div className="p-4 rounded-3xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-800 space-y-3">
+            <div className="p-4 rounded-3xl bg-surface-3 dark:bg-surface/40 border border-border/50 dark:border-border space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                <span className="text-xs font-bold text-text-subtle uppercase tracking-wider">
                   {tCat.goalProgress || 'Progression de l’objectif'}
                 </span>
-                <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 tabular-nums">
+                <span className="text-xs font-extrabold text-positive dark:text-positive tabular-nums">
                   {goalCalc.progressPercent}%
                 </span>
               </div>
@@ -214,8 +214,8 @@ export const CategoryDetailModal: React.FC<CategoryDetailModalProps> = ({
 
           {/* Subcategories visual icon strip without textual clutter */}
           {subcategories.length > 0 && (
-            <div className="p-4 rounded-3xl bg-slate-50/70 dark:bg-slate-800/30 border border-slate-100 dark:border-slate-800 space-y-2.5">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
+            <div className="p-4 rounded-3xl bg-surface-3/70 dark:bg-surface/30 border border-border-border dark:border-border space-y-2.5">
+              <span className="text-xs font-bold text-text-subtle uppercase tracking-wider block">
                 {(tCat.subcategoriesTitle || 'Sous-catégories ({count})').replace('{count}', String(subcategories.length))}
               </span>
               <div className="flex flex-wrap gap-2">
@@ -227,16 +227,16 @@ export const CategoryDetailModal: React.FC<CategoryDetailModalProps> = ({
                     <div
                       key={sub.id}
                       title={getSubCategoryName(sub, language)}
-                      className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 text-xs flex items-center gap-2 shadow-2xs hover:border-slate-300 dark:hover:border-slate-600 transition-colors"
+                      className="px-3 py-1.5 rounded-xl bg-surface dark:bg-surface/90 border border-border dark:border-border/80 text-xs flex items-center gap-2 shadow-2xs hover:border-border-border dark:hover:border-text-muted transition-colors"
                     >
-                      <div className="w-5 h-5 rounded-md bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-300">
+                      <div className="w-5 h-5 rounded-md bg-surface-2 dark:bg-text-muted flex items-center justify-center text-content dark:text-muted">
                         <SubIcon className="w-3.5 h-3.5 stroke-[2.2]" />
                       </div>
-                      <span className="font-semibold text-slate-800 dark:text-slate-200">
+                      <span className="font-semibold text-text-content dark:text-muted">
                         {getSubCategoryName(sub, language)}
                       </span>
                       {subSpent > 0 && (
-                        <span className="text-[11px] font-mono text-slate-400 tabular-nums">
+                        <span className="text-[11px] font-mono text-text-subtle tabular-nums">
                           {formatMAD(subSpent, false, language)}
                         </span>
                       )}
@@ -249,25 +249,25 @@ export const CategoryDetailModal: React.FC<CategoryDetailModalProps> = ({
 
           {/* KPI Grid */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
-              <span className="text-[11px] text-slate-400 block font-medium">
+            <div className="p-4 rounded-2xl bg-surface dark:bg-surface border border-border-border dark:border-border">
+              <span className="text-[11px] text-text-subtle block font-medium">
                 {tCat.spentThisMonth}
               </span>
-              <span className="text-base font-bold text-slate-900 dark:text-white tabular-nums mt-0.5 block">
+              <span className="text-base font-bold text-content text-accent-contrast tabular-nums mt-0.5 block">
                 {formatMAD(spentThisMonth, hideBalance, language)}
               </span>
               {budgetStatus.hasBudget && (
-                <span className="text-[11px] text-slate-400 block mt-1">
+                <span className="text-[11px] text-text-subtle block mt-1">
                   Budget : {formatMAD(budgetStatus.budget, false, language)}
                 </span>
               )}
             </div>
 
-            <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
-              <span className="text-[11px] text-slate-400 block font-medium">
+            <div className="p-4 rounded-2xl bg-surface dark:bg-surface border border-border-border dark:border-border">
+              <span className="text-[11px] text-text-subtle block font-medium">
                 {tCat.totalSpent || 'Dépensé au total'}
               </span>
-              <span className="text-base font-bold text-slate-900 dark:text-white tabular-nums mt-0.5 block">
+              <span className="text-base font-bold text-content text-accent-contrast tabular-nums mt-0.5 block">
                 {formatMAD(spentAllTime, hideBalance, language)}
               </span>
             </div>
@@ -303,13 +303,13 @@ export const CategoryDetailModal: React.FC<CategoryDetailModalProps> = ({
           </div>
 
           {/* Category Transactions History List */}
-          <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800">
-            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+          <div className="space-y-3 pt-2 border-t border-border-border dark:border-border">
+            <h3 className="text-xs font-bold text-text-subtle uppercase tracking-wider">
               Transactions ({categoryTransactions.length})
             </h3>
 
             {categoryTransactions.length === 0 ? (
-              <div className="p-8 text-center text-xs text-slate-400 bg-slate-50 dark:bg-slate-800/40 rounded-2xl">
+              <div className="p-8 text-center text-xs text-text-subtle bg-surface-3 dark:bg-surface/40 rounded-2xl">
                 {tCat.noTransactions || 'Aucune transaction enregistrée dans cette catégorie.'}
               </div>
             ) : (
@@ -335,41 +335,41 @@ export const CategoryDetailModal: React.FC<CategoryDetailModalProps> = ({
         maxWidth="md"
       >
         <div className="space-y-4">
-          <div className="w-12 h-12 mx-auto rounded-2xl bg-rose-100 dark:bg-rose-950/60 text-rose-600 flex items-center justify-center">
+          <div className="w-12 h-12 mx-auto rounded-2xl bg-negative dark:bg-negative/60 text-negative flex items-center justify-center">
             <AlertTriangle className="w-6 h-6" />
           </div>
 
-          <p className="text-xs text-slate-600 dark:text-slate-300 text-center leading-relaxed">
+          <p className="text-xs text-muted dark:text-muted text-center leading-relaxed">
             {(tCat.deleteConfirmQuestion || 'Êtes-vous sûr de vouloir supprimer définitivement la catégorie {name} ?').replace('{name}', categoryName)}
           </p>
 
           {/* Option for existing transactions: reassign vs cascade delete */}
           {categoryTransactions.length > 0 && (
-            <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl space-y-3">
-              <p className="text-xs font-bold text-slate-900 dark:text-white">
+            <div className="p-4 bg-surface-3 dark:bg-surface/50 border border-border dark:border-border rounded-2xl space-y-3">
+              <p className="text-xs font-bold text-content text-accent-contrast">
                 {(tCat.txNotice || 'Cette catégorie contient {count} transaction(s). Que souhaitez-vous faire ?').replace('{count}', String(categoryTransactions.length))}
               </p>
 
               <div className="space-y-2 text-xs">
                 {otherCategories.length > 0 && (
-                  <label className="flex items-start gap-2.5 p-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 cursor-pointer">
+                  <label className="flex items-start gap-2.5 p-2.5 rounded-xl bg-surface dark:bg-surface border border-border dark:border-border cursor-pointer">
                     <input
                       type="radio"
                       name="txActionChoice"
                       value="reassign"
                       checked={txActionChoice === 'reassign'}
                       onChange={() => setTxActionChoice('reassign')}
-                      className="mt-0.5 text-emerald-600 focus:ring-emerald-500"
+                      className="mt-0.5 text-positive focus:ring-positive"
                     />
                     <div className="flex-1 space-y-2">
-                      <span className="font-bold text-slate-800 dark:text-slate-200">
+                      <span className="font-bold text-text-content dark:text-muted">
                         {tCat.txReassign || 'Réassigner à une autre catégorie'}
                       </span>
                       {txActionChoice === 'reassign' && (
                         <select
                           value={reassignTargetId}
                           onChange={(e) => setReassignTargetId(e.target.value)}
-                          className="w-full py-1.5 px-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
+                          className="w-full py-1.5 px-2.5 rounded-xl border border-border dark:border-border bg-surface dark:bg-surface text-xs font-semibold"
                         >
                           {otherCategories.map((c) => (
                             <option key={c.id} value={c.id}>
@@ -382,20 +382,20 @@ export const CategoryDetailModal: React.FC<CategoryDetailModalProps> = ({
                   </label>
                 )}
 
-                <label className="flex items-start gap-2.5 p-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 cursor-pointer">
+                <label className="flex items-start gap-2.5 p-2.5 rounded-xl bg-surface dark:bg-surface border border-border dark:border-border cursor-pointer">
                   <input
                     type="radio"
                     name="txActionChoice"
                     value="cascade_delete"
                     checked={txActionChoice === 'cascade_delete'}
                     onChange={() => setTxActionChoice('cascade_delete')}
-                    className="mt-0.5 text-rose-600 focus:ring-rose-500"
+                    className="mt-0.5 text-negative focus:ring-negative"
                   />
                   <div>
-                    <span className="font-bold text-rose-700 dark:text-rose-400">
+                    <span className="font-bold text-negative dark:text-negative">
                       {tCat.txCascadeDelete || 'Supprimer avec ses transactions'}
                     </span>
-                    <span className="block text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                    <span className="block text-[11px] text-text-subtle dark:text-text-subtle mt-0.5">
                       {(tCat.txCascadeDeleteDesc || 'Les {count} transactions seront définitivement supprimées et le solde recalculé.').replace('{count}', String(categoryTransactions.length))}
                     </span>
                   </div>
@@ -406,45 +406,45 @@ export const CategoryDetailModal: React.FC<CategoryDetailModalProps> = ({
 
           {/* Money prompt if category has saved amount */}
           {savedAmount > 0 && (
-            <div className="p-4 bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800 rounded-2xl space-y-3">
-              <p className="text-xs font-bold text-amber-900 dark:text-amber-200">
+            <div className="p-4 bg-warning dark:bg-warning/40 border border-warning/80 dark:border-warning rounded-2xl space-y-3">
+              <p className="text-xs font-bold text-warning dark:text-warning">
                 {(tCat.savedPrompt || 'Cette catégorie contient {amount} épargnés. Que faire de cet argent ?').replace('{amount}', formatMAD(savedAmount, false, language))}
               </p>
 
               <div className="space-y-2 text-xs">
-                <label className="flex items-center gap-2.5 p-2 rounded-xl bg-white dark:bg-slate-800 border border-amber-300 dark:border-amber-700 cursor-pointer">
+                <label className="flex items-center gap-2.5 p-2 rounded-xl bg-surface dark:bg-surface border border-warning dark:border-warning cursor-pointer">
                   <input
                     type="radio"
                     name="deleteRefund"
                     value="refund_to_balance"
                     checked={deleteRefundChoice === 'refund_to_balance'}
                     onChange={() => setDeleteRefundChoice('refund_to_balance')}
-                    className="text-emerald-600 focus:ring-emerald-500"
+                    className="text-positive focus:ring-positive"
                   />
                   <div>
-                    <span className="font-bold text-slate-800 dark:text-slate-200">
+                    <span className="font-bold text-text-content dark:text-muted">
                       {tCat.refundToBalance || 'Remettre dans le solde disponible'}
                     </span>
-                    <span className="block text-[11px] text-slate-500 dark:text-slate-400">
+                    <span className="block text-[11px] text-text-subtle dark:text-text-subtle">
                       {tCat.refundToBalanceDesc || 'Le montant sera réinjecté dans votre solde principal.'}
                     </span>
                   </div>
                 </label>
 
-                <label className="flex items-center gap-2.5 p-2 rounded-xl bg-white dark:bg-slate-800 border border-amber-300 dark:border-amber-700 cursor-pointer">
+                <label className="flex items-center gap-2.5 p-2 rounded-xl bg-surface dark:bg-surface border border-warning dark:border-warning cursor-pointer">
                   <input
                     type="radio"
                     name="deleteRefund"
                     value="consider_spent"
                     checked={deleteRefundChoice === 'consider_spent'}
                     onChange={() => setDeleteRefundChoice('consider_spent')}
-                    className="text-emerald-600 focus:ring-emerald-500"
+                    className="text-positive focus:ring-positive"
                   />
                   <div>
-                    <span className="font-bold text-slate-800 dark:text-slate-200">
+                    <span className="font-bold text-text-content dark:text-muted">
                       {tCat.keepAsSpent || 'Considérer comme déjà dépensé'}
                     </span>
-                    <span className="block text-[11px] text-slate-500 dark:text-slate-400">
+                    <span className="block text-[11px] text-text-subtle dark:text-text-subtle">
                       {tCat.keepAsSpentDesc || 'L’argent reste comptabilisé comme sortie.'}
                     </span>
                   </div>

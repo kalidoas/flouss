@@ -112,15 +112,15 @@ export const GoogleCalendarAlarmModal: React.FC<GoogleCalendarAlarmModalProps> =
     >
       <form onSubmit={handleScheduleAlarm} className="space-y-4 pt-1">
         {/* Task Title Banner */}
-        <div className="p-3.5 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-start gap-3">
-          <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 mt-0.5">
+        <div className="p-3.5 rounded-2xl bg-info/10 border border-info/20 flex items-start gap-3">
+          <div className="w-8 h-8 rounded-xl bg-info text-info-contrast flex items-center justify-center shrink-0 mt-0.5">
             <Bell className="w-4 h-4" />
           </div>
           <div className="min-w-0">
-            <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider block">
+            <span className="text-[11px] font-bold text-info dark:text-info uppercase tracking-wider block">
               {isAr ? 'المهمة المحددة' : isEn ? 'Selected Task' : 'Tâche ciblée'}
             </span>
-            <p className="text-sm font-extrabold text-zinc-900 dark:text-white truncate mt-0.5">
+            <p className="text-sm font-extrabold text-content dark:text-info-contrast truncate mt-0.5">
               {taskTitle}
             </p>
           </div>
@@ -128,7 +128,7 @@ export const GoogleCalendarAlarmModal: React.FC<GoogleCalendarAlarmModalProps> =
 
         {/* Quick presets */}
         <div>
-          <label className="block text-[11px] font-bold text-zinc-600 dark:text-zinc-400 mb-1.5">
+          <label className="block text-[11px] font-bold text-text-subtle dark:text-text-subtle mb-1.5">
             {isAr ? 'خيارات سريعة' : isEn ? 'Quick Presets' : 'Raccourcis rapides'}
           </label>
           <div className="flex flex-wrap gap-1.5">
@@ -137,8 +137,8 @@ export const GoogleCalendarAlarmModal: React.FC<GoogleCalendarAlarmModalProps> =
               onClick={() => applyPreset(todayStr, '18:00')}
               className={`px-2.5 py-1 rounded-xl text-xs font-semibold border transition-all ${
                 date === todayStr && time === '18:00'
-                  ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
-                  : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                  ? 'bg-info text-info-contrast border-info shadow-xs'
+                  : 'bg-surface-2 text-content border-border hover:bg-surface-3'
               }`}
             >
               {isAr ? 'اليوم 18:00' : isEn ? 'Today 18:00' : "Aujourd'hui 18h"}
@@ -148,8 +148,8 @@ export const GoogleCalendarAlarmModal: React.FC<GoogleCalendarAlarmModalProps> =
               onClick={() => applyPreset(todayStr, '20:00')}
               className={`px-2.5 py-1 rounded-xl text-xs font-semibold border transition-all ${
                 date === todayStr && time === '20:00'
-                  ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
-                  : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                  ? 'bg-info text-info-contrast border-info shadow-xs'
+                  : 'bg-surface-2 text-content border-border hover:bg-surface-3'
               }`}
             >
               {isAr ? 'اليوم 20:00' : isEn ? 'Today 20:00' : "Aujourd'hui 20h"}
@@ -159,8 +159,8 @@ export const GoogleCalendarAlarmModal: React.FC<GoogleCalendarAlarmModalProps> =
               onClick={() => applyPreset(tomorrowStr, '09:00')}
               className={`px-2.5 py-1 rounded-xl text-xs font-semibold border transition-all ${
                 date === tomorrowStr && time === '09:00'
-                  ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
-                  : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                  ? 'bg-info text-info-contrast border-info shadow-xs'
+                  : 'bg-surface-2 text-content border-border hover:bg-surface-3'
               }`}
             >
               {isAr ? 'غداً 09:00' : isEn ? 'Tomorrow 09:00' : 'Demain 09h'}
@@ -170,8 +170,8 @@ export const GoogleCalendarAlarmModal: React.FC<GoogleCalendarAlarmModalProps> =
               onClick={() => applyPreset(tomorrowStr, '10:00')}
               className={`px-2.5 py-1 rounded-xl text-xs font-semibold border transition-all ${
                 date === tomorrowStr && time === '10:00'
-                  ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
-                  : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                  ? 'bg-info text-info-contrast border-info shadow-xs'
+                  : 'bg-surface-2 text-content border-border hover:bg-surface-3'
               }`}
             >
               {isAr ? 'غداً 10:00' : isEn ? 'Tomorrow 10:00' : 'Demain 10h'}
@@ -181,8 +181,8 @@ export const GoogleCalendarAlarmModal: React.FC<GoogleCalendarAlarmModalProps> =
 
         {/* Date and Time Inputs */}
         <div>
-          <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5 flex items-center gap-1.5">
-            <Calendar className="w-3.5 h-3.5 text-blue-500" />
+          <label className="block text-xs font-bold text-content mb-1.5 flex items-center gap-1.5">
+            <Calendar className="w-3.5 h-3.5 text-info0" />
             <span>{isAr ? 'تاريخ ووقت التنبيه' : isEn ? 'Alarm Date & Time' : 'Date et heure de l’alarme'} *</span>
           </label>
           <CustomDatePicker
@@ -195,8 +195,8 @@ export const GoogleCalendarAlarmModal: React.FC<GoogleCalendarAlarmModalProps> =
         </div>
 
         {/* Informative Guarantee Card */}
-        <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-900 dark:text-amber-200 leading-relaxed flex items-start gap-2.5">
-          <Sparkles className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+        <div className="p-3.5 rounded-2xl bg-warning/10 border border-warning/20 text-xs text-warning dark:text-warning leading-relaxed flex items-start gap-2.5">
+          <Sparkles className="w-4 h-4 text-warning0 shrink-0 mt-0.5" />
           <span>
             {isAr
               ? 'ملاحظة: سيتم ضبط منبه صوتي فوري (Popup at minute 0) عبر تقويم جوجل، ليرن هاتفك المحمول تلقائياً في الوقت المحدد.'
@@ -207,7 +207,7 @@ export const GoogleCalendarAlarmModal: React.FC<GoogleCalendarAlarmModalProps> =
         </div>
 
         {/* Buttons */}
-        <div className="flex items-center justify-end gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+        <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
           <Button type="button" variant="ghost" onClick={onClose} disabled={loading}>
             {isAr ? 'إلغاء' : isEn ? 'Cancel' : 'Annuler'}
           </Button>

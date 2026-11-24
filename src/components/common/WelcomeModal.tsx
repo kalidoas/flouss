@@ -25,36 +25,36 @@ export const WelcomeModal: React.FC = () => {
   return (
     <div
       dir={isAr ? 'rtl' : 'ltr'}
-      className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-300"
+      className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-bg backdrop-blur-md animate-in fade-in duration-300"
     >
-      <div className="w-full max-w-sm rounded-[28px] bg-[#0D0E14]/95 border border-white/10 p-6 text-center shadow-[0_24px_60px_rgba(0,0,0,0.8),inset_0_1px_0_0_rgba(255,255,255,0.1)] relative overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="w-full max-w-sm rounded-[28px] bg-surface/95 border border-border p-6 text-center shadow-[0_24px_60px_rgba(0,0,0,0.8),inset_0_1px_0_0_rgba(255,255,255,0.1)] relative overflow-hidden animate-in zoom-in-95 duration-200">
         
         {/* Ambient Glow */}
         <div
           className="absolute -top-16 left-1/2 -translate-x-1/2 w-48 h-48 pointer-events-none rounded-full opacity-30 blur-2xl"
-          style={{ background: 'radial-gradient(circle, #6366f1, #10b981)' }}
+          style={{ background: 'radial-gradient(circle, bg-accent, bg-positive)' }}
         />
 
         {/* Close Button */}
         <button
           type="button"
           onClick={handleDismiss}
-          className="absolute top-4 right-4 rtl:right-auto rtl:left-4 p-1 rounded-full text-zinc-400 hover:text-white hover:bg-white/[0.08] transition-colors"
+          className="absolute top-4 right-4 rtl:right-auto rtl:left-4 p-1 rounded-full text-text-subtle hover:text-content hover:bg-surface-2 transition-colors"
           aria-label="Close"
         >
           <X className="w-4 h-4" />
         </button>
 
         {/* Header Icon */}
-        <div className="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-tr from-indigo-500/20 to-emerald-500/20 border border-white/10 flex items-center justify-center text-emerald-400 mb-4 shadow-lg">
+        <div className="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-tr from-indigo-500/20 to-emerald-500/20 border border-border flex items-center justify-center text-positive mb-4 shadow-lg">
           <Sparkles className="w-7 h-7" />
         </div>
 
         {/* Title & Description */}
-        <h2 className="text-lg font-bold text-white tracking-tight mb-1.5">
+        <h2 className="text-lg font-bold text-content tracking-tight mb-1.5">
           {t.title}
         </h2>
-        <p className="text-xs text-zinc-400 leading-relaxed mb-6">
+        <p className="text-xs text-text-subtle leading-relaxed mb-6">
           {t.subtitle}
         </p>
 
@@ -63,9 +63,9 @@ export const WelcomeModal: React.FC = () => {
           <button
             type="button"
             onClick={handleAddFirstIncome}
-            className="w-full py-3 px-4 rounded-full bg-white text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 hover:bg-zinc-200 transition-all shadow-[0_0_20px_rgba(255,255,255,0.25)] active:scale-95 duration-200 cursor-pointer"
+            className="w-full py-3 px-4 rounded-full bg-surface text-text-subtle font-bold text-xs flex items-center justify-center gap-2 hover:bg-border-border transition-all shadow-[0_0_20px_rgba(255,255,255,0.25)] active:scale-95 duration-200 cursor-pointer"
           >
-            <TrendingUp className="w-4 h-4 text-emerald-600" />
+            <TrendingUp className="w-4 h-4 text-positive" />
             <span>{t.cta}</span>
             <ArrowRight className="w-3.5 h-3.5 rtl:rotate-180" />
           </button>
@@ -73,7 +73,7 @@ export const WelcomeModal: React.FC = () => {
           <button
             type="button"
             onClick={handleDismiss}
-            className="w-full py-2.5 px-4 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] text-xs font-semibold text-zinc-300 hover:text-white transition-all cursor-pointer"
+            className="w-full py-2.5 px-4 rounded-full bg-surface-3 hover:bg-surface-2 border border-border text-xs font-semibold text-muted hover:text-content transition-all cursor-pointer"
           >
             {t.dismiss}
           </button>

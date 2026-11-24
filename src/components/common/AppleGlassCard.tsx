@@ -78,7 +78,7 @@ export const AppleGlassCard: React.FC<AppleGlassCardProps> = ({
         damping: 32,
         mass: 0.8,
       }}
-      className={`group relative overflow-hidden rounded-2xl sm:rounded-3xl bg-white/80 dark:bg-zinc-900/65 backdrop-blur-2xl border border-black/[0.06] dark:border-white/[0.08] shadow-[0_4px_24px_-1px_rgba(0,0,0,0.05),inset_0_1px_0_0_rgba(255,255,255,0.7)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.36),inset_0_1px_0_0_rgba(255,255,255,0.08)] transition-shadow duration-300 ${className}`}
+      className={`group relative overflow-hidden rounded-2xl sm:rounded-3xl bg-surface dark:bg-bg/65 backdrop-blur-2xl border border-border/[0.06] dark:border-border-strong shadow-[0_4px_24px_-1px_rgba(0,0,0,0.05),inset_0_1px_0_0_rgba(255,255,255,0.7)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.36),inset_0_1px_0_0_rgba(255,255,255,0.08)] transition-shadow duration-300 ${className}`}
       {...motionProps}
     >
       {/* Dynamic Cursor-Tracking Spotlight Border Layer */}

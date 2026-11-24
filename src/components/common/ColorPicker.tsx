@@ -19,9 +19,9 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ selectedColor, onSelec
             title={c.label}
             onClick={() => onSelect(c.hex)}
             style={{ backgroundColor: c.hex }}
-            className={`w-8 h-8 rounded-full transition-transform flex items-center justify-center text-white shadow-sm ${
+            className={`w-8 h-8 rounded-full transition-transform flex items-center justify-center text-content shadow-sm ${
               isSelected
-                ? 'scale-110 ring-2 ring-offset-2 ring-emerald-500 dark:ring-offset-slate-900'
+                ? 'scale-110 ring-2 ring-offset-2 ring-positive dark:ring-offset-text-content'
                 : 'hover:scale-105'
             }`}
           >

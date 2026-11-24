@@ -27,51 +27,51 @@ export interface KpiCardProps {
 
 const COLOR_MAP: Record<string, { iconBg: string; iconText: string; iconBorder: string; glow: string }> = {
   emerald: {
-    iconBg: 'bg-emerald-500/10',
-    iconText: 'text-emerald-400',
-    iconBorder: 'border-emerald-500/20',
+    iconBg: 'bg-positive/10',
+    iconText: 'text-positive',
+    iconBorder: 'border-positive/20',
     glow: 'radial-gradient(circle at 100% 0%, rgba(52,211,153,0.12), transparent 70%)',
   },
   rose: {
-    iconBg: 'bg-rose-500/10',
-    iconText: 'text-rose-400',
-    iconBorder: 'border-rose-500/20',
+    iconBg: 'bg-negative/10',
+    iconText: 'text-negative',
+    iconBorder: 'border-negative/20',
     glow: 'radial-gradient(circle at 100% 0%, rgba(244,63,94,0.12), transparent 70%)',
   },
   indigo: {
-    iconBg: 'bg-indigo-500/10',
-    iconText: 'text-indigo-400',
-    iconBorder: 'border-indigo-500/20',
+    iconBg: 'bg-accent/10',
+    iconText: 'text-accent',
+    iconBorder: 'border-accent/20',
     glow: 'radial-gradient(circle at 100% 0%, rgba(99,102,241,0.14), transparent 70%)',
   },
   amber: {
-    iconBg: 'bg-amber-500/10',
-    iconText: 'text-amber-400',
-    iconBorder: 'border-amber-500/20',
+    iconBg: 'bg-warning/10',
+    iconText: 'text-warning',
+    iconBorder: 'border-warning/20',
     glow: 'radial-gradient(circle at 100% 0%, rgba(245,158,11,0.12), transparent 70%)',
   },
   blue: {
-    iconBg: 'bg-blue-500/10',
-    iconText: 'text-blue-400',
-    iconBorder: 'border-blue-500/20',
+    iconBg: 'bg-info/10',
+    iconText: 'text-info',
+    iconBorder: 'border-info/20',
     glow: 'radial-gradient(circle at 100% 0%, rgba(59,130,246,0.12), transparent 70%)',
   },
   purple: {
-    iconBg: 'bg-purple-500/10',
-    iconText: 'text-purple-400',
-    iconBorder: 'border-purple-500/20',
+    iconBg: 'bg-accent/10',
+    iconText: 'text-accent',
+    iconBorder: 'border-accent/20',
     glow: 'radial-gradient(circle at 100% 0%, rgba(168,85,247,0.12), transparent 70%)',
   },
   teal: {
-    iconBg: 'bg-teal-500/10',
-    iconText: 'text-teal-400',
-    iconBorder: 'border-teal-500/20',
+    iconBg: 'bg-positive/10',
+    iconText: 'text-positive',
+    iconBorder: 'border-positive/20',
     glow: 'radial-gradient(circle at 100% 0%, rgba(20,184,166,0.12), transparent 70%)',
   },
   zinc: {
-    iconBg: 'bg-white/[0.04]',
-    iconText: 'text-zinc-400',
-    iconBorder: 'border-white/[0.08]',
+    iconBg: 'bg-surface-3',
+    iconText: 'text-text-subtle',
+    iconBorder: 'border-border-strong',
     glow: 'radial-gradient(circle at 100% 0%, rgba(255,255,255,0.04), transparent 70%)',
   },
 };
@@ -105,17 +105,17 @@ export const KpiCard: React.FC<KpiCardProps> = ({
   const isGood = isPositiveGood ? isPositive : !isPositive;
 
   const trendBadgeColor = isZero
-    ? 'bg-white/[0.04] text-zinc-400 border-white/[0.08]'
+    ? 'bg-surface-3 text-text-subtle border-border-strong'
     : isGood
-    ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/25'
-    : 'bg-rose-500/15 text-rose-300 border-rose-500/25';
+    ? 'bg-positive/15 text-positive border-positive/25'
+    : 'bg-negative/15 text-negative border-negative/25';
 
   const TrendIcon = isZero ? Minus : isPositive ? TrendingUp : TrendingDown;
 
   return (
     <div
       data-spotlight="true"
-      className="spotlight-card flex flex-col justify-between p-4 sm:p-5 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 overflow-hidden min-h-[142px] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_28px_-10px_rgba(0,0,0,0.5)] transition-all group relative"
+      className="spotlight-card flex flex-col justify-between p-4 sm:p-5 rounded-2xl bg-surface-3 backdrop-blur-xl border border-border overflow-hidden min-h-[142px] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_28px_-10px_rgba(0,0,0,0.5)] transition-all group relative"
       style={{ backgroundImage: themeStyles.glow }}
     >
       {/* 1. Header: Icon + Uppercase Label */}
@@ -126,13 +126,13 @@ export const KpiCard: React.FC<KpiCardProps> = ({
           >
             <Icon className="w-3.5 h-3.5 stroke-[2.4]" />
           </div>
-          <span className="text-[11px] font-medium tracking-[0.14em] uppercase text-zinc-400 truncate">
+          <span className="text-[11px] font-medium tracking-[0.14em] uppercase text-text-subtle truncate">
             {title}
           </span>
         </div>
 
         {badge && (
-          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/[0.05] text-zinc-300 border border-white/[0.08] shrink-0">
+          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-surface-3 text-muted border border-border-strong shrink-0">
             {badge}
           </span>
         )}
@@ -140,7 +140,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
 
       {/* 2. Main Value: Middle row on its own line */}
       <div className="my-2 min-w-0">
-        <div className="text-2xl sm:text-3xl font-bold tracking-tight text-white truncate tabular-nums">
+        <div className="text-2xl sm:text-3xl font-bold tracking-tight text-content truncate tabular-nums">
           {isMAD ? (
             typeof value === 'number' ? (
               <PrivacyCurrency amount={value} />
@@ -164,7 +164,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
       </div>
 
       {/* 3. Footer / Subtext: Clean unbreakable flex layout */}
-      <div className="pt-2.5 mt-auto border-t border-white/[0.06] flex items-center justify-between gap-2 text-xs">
+      <div className="pt-2.5 mt-auto border-t border-border flex items-center justify-between gap-2 text-xs">
         <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
           {hasChange ? (
             <span
@@ -179,13 +179,13 @@ export const KpiCard: React.FC<KpiCardProps> = ({
           ) : null}
 
           {changeLabel && (
-            <span className="text-[11px] text-zinc-400 font-medium whitespace-nowrap">
+            <span className="text-[11px] text-text-subtle font-medium whitespace-nowrap">
               {changeLabel}
             </span>
           )}
 
           {subtext && !changeLabel && (
-            <div className="text-[11px] text-zinc-400">
+            <div className="text-[11px] text-text-subtle">
               {subtext}
             </div>
           )}
@@ -196,11 +196,11 @@ export const KpiCard: React.FC<KpiCardProps> = ({
             {footerRight ? (
               footerRight
             ) : count !== undefined && countLabel ? (
-              <span className="text-[11px] font-medium text-zinc-400 tabular-nums">
+              <span className="text-[11px] font-medium text-text-subtle tabular-nums">
                 {count} {countLabel}
               </span>
             ) : extraLine ? (
-              <span className="text-[11px] font-medium text-zinc-400 block truncate max-w-[130px]">
+              <span className="text-[11px] font-medium text-text-subtle block truncate max-w-[130px]">
                 {extraLine}
               </span>
             ) : null}
