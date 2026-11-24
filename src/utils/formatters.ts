@@ -11,15 +11,17 @@ export function formatMAD(
   language: Language = 'fr'
 ): string {
   const currencySymbol = language === 'ar' ? 'د.م.' : 'MAD';
-  if (amount === null || amount === undefined || isNaN(amount)) {
+  // Normalize -0 to 0 so we don't display "-0,00 د.م."
+  const normalizedAmount = Object.is(amount, -0) || amount === 0 ? 0 : amount;
+  if (normalizedAmount === null || normalizedAmount === undefined || isNaN(normalizedAmount)) {
     return `0,00 ${currencySymbol}`;
   }
 
-  const parts = Math.abs(amount).toFixed(2).split('.');
+  const parts = Math.abs(normalizedAmount).toFixed(2).split('.');
   const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
   const decimalPart = parts[1];
 
-  const prefix = amount < 0 ? '-' : '';
+  const prefix = normalizedAmount < 0 ? '-' : '';
   return `${prefix}${integerPart},${decimalPart} ${currencySymbol}`;
 }
 
