@@ -176,7 +176,7 @@ export const CategoriesPage: React.FC = () => {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-white via-white to-indigo-200 bg-clip-text text-transparent">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-content">
             {tCat.title}
           </h1>
           <p className="text-xs sm:text-sm text-zinc-400 mt-1">
@@ -200,19 +200,19 @@ export const CategoriesPage: React.FC = () => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {/* Total Categories */}
         <div
-          className="rounded-2xl bg-white/5 p-4 sm:p-5 backdrop-blur-xl border border-white/10 relative overflow-hidden shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_28px_-10px_rgba(0,0,0,0.5)]"
-          style={{ backgroundImage: 'radial-gradient(circle at 100% 0%, rgba(99,102,241,0.12), transparent 70%)' }}
-        >
-          <div className="flex items-center justify-between text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-400 mb-1.5">
-            <span className="truncate">{language === 'ar' ? 'مجموع الأصناف' : 'Total Catégories'}</span>
-            <Layers className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-          </div>
-          <div className="text-2xl font-bold tracking-tight text-white tabular-nums">
-            {categoryStats.activeCategoriesCount}
-          </div>
-          <span className="text-[11px] text-zinc-500 block mt-1 truncate">
-            {categoryStats.activeGoalsCount} {language === 'ar' ? 'أهداف ادخار' : 'objectifs actifs'}
-          </span>
+          className="rounded-2xl bg-surface p-4 sm:p-5 backdrop-blur-xl border border-border-subtle shadow-xs dark:border-white/10 relative overflow-hidden"
+        style={{ backgroundImage: 'radial-gradient(circle at 100% 0%, rgba(99,102,241,0.12), transparent 70%)' }}
+      >
+        <div className="flex items-center justify-between text-[11px] font-medium uppercase tracking-[0.14em] text-muted mb-1.5">
+          <span className="truncate">{language === 'ar' ? 'مجموع الأصناف' : 'Total Catégories'}</span>
+          <Layers className="w-3.5 h-3.5 text-accent-400 shrink-0" />
+        </div>
+        <div className="text-2xl font-bold tracking-tight text-content tabular-nums">
+          {categoryStats.activeCategoriesCount}
+        </div>
+        <span className="text-[11px] text-muted block mt-1 truncate">
+          {categoryStats.activeGoalsCount} {language === 'ar' ? 'أهداف ادخار' : 'objectifs actifs'}
+        </span>
         </div>
 
         {/* Spent this month */}

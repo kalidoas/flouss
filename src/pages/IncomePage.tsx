@@ -128,7 +128,7 @@ export const IncomePage: React.FC = () => {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-white via-white to-emerald-200 bg-clip-text text-transparent">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-content">
             {t.title}
           </h1>
           <p className="text-xs sm:text-sm text-zinc-400 mt-1">
