@@ -78,9 +78,9 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
           icon: source?.icon || 'Briefcase',
           color: source?.color || '#059669',
           amountPrefix: '+ ',
-          amountClass: 'text-emerald-600 dark:text-emerald-400 font-bold',
+          amountClass: 'text-positive dark:text-positive font-bold',
           badgeText: translations[language].dashboard.addIncome,
-          badgeBg: 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300',
+          badgeBg: 'bg-positive dark:bg-positive/50 text-positive dark:text-positive',
         };
       }
       case 'expense': {
@@ -111,9 +111,9 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
           icon: category?.icon || 'Utensils',
           color: getCategoryVisualColor(category?.id),
           amountPrefix: '- ',
-          amountClass: 'text-rose-600 dark:text-rose-400 font-bold',
+          amountClass: 'text-negative dark:text-negative font-bold',
           badgeText: translations[language].dashboard.addExpense,
-          badgeBg: 'bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300',
+          badgeBg: 'bg-negative dark:bg-negative/50 text-negative dark:text-negative',
         };
       }
       case 'contribution': {
@@ -123,9 +123,9 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
           icon: category?.icon || 'Target',
           color: getCategoryVisualColor(category?.id),
           amountPrefix: '- ',
-          amountClass: 'text-blue-600 dark:text-blue-400 font-bold',
+          amountClass: 'text-info dark:text-info font-bold',
           badgeText: translations[language].dashboard.addContribution,
-          badgeBg: 'bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300',
+          badgeBg: 'bg-info dark:bg-info/50 text-info dark:text-info',
         };
       }
       case 'goal_withdraw': {
@@ -135,9 +135,9 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
           icon: 'Wallet',
           color: '#f59e0b',
           amountPrefix: '+ ',
-          amountClass: 'text-amber-600 dark:text-amber-400 font-bold',
+          amountClass: 'text-warning dark:text-warning font-bold',
           badgeText: translations[language].categories.returnToBalance,
-          badgeBg: 'bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300',
+          badgeBg: 'bg-warning dark:bg-warning/50 text-warning dark:text-warning',
         };
       }
       case 'adjustment': {
@@ -155,10 +155,10 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
           color: '#6366f1',
           amountPrefix: isPositive ? '+ ' : '- ',
           amountClass: isPositive
-            ? 'text-indigo-600 dark:text-indigo-400 font-bold'
-            : 'text-zinc-600 dark:text-zinc-400 font-bold',
+            ? 'text-accent dark:text-accent font-bold'
+            : 'text-muted dark:text-muted font-bold',
           badgeText: language === 'ar' ? 'تسوية' : language === 'en' ? 'Adjustment' : 'Ajustement',
-          badgeBg: 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300',
+          badgeBg: 'bg-accent dark:bg-accent/50 text-accent dark:text-accent',
         };
       }
     }
@@ -200,7 +200,7 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
           {/* Left: Icon & Names */}
           <div className="flex items-center gap-2.5 min-w-0 flex-1">
             <div
-              className="w-8 h-8 rounded-control flex items-center justify-center text-white shrink-0"
+              className="w-8 h-8 rounded-control flex items-center justify-center text-accent-contrast shrink-0"
               style={{ backgroundColor: details.color }}
             >
               <IconComp className="w-4 h-4" />
@@ -213,7 +213,7 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
                 </h4>
                 <span
                   title={transaction.type === 'adjustment' ? translations[language].summaryScopes.adjustment : undefined}
-                  className={`shrink-0 flex-shrink-0 whitespace-nowrap text-caption font-medium px-1.5 py-0.5 rounded-control border ${details.badgeBg} ${transaction.type === 'adjustment' ? 'bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/30' : ''}`}
+                  className={`shrink-0 flex-shrink-0 whitespace-nowrap text-caption font-medium px-1.5 py-0.5 rounded-control border ${details.badgeBg} ${transaction.type === 'adjustment' ? 'bg-accent/10 text-accent dark:text-accent border-accent/30' : ''}`}
                 >
                   {details.badgeText}
                 </span>
@@ -243,7 +243,7 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
             <button
               onClick={() => setShowDeleteConfirm(true)}
               title={t.deleteTransactionTitle}
-              className="opacity-0 group-hover:opacity-100 focus:opacity-100 p-1 rounded text-muted hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+              className="opacity-0 group-hover:opacity-100 focus:opacity-100 p-1 rounded text-muted hover:text-negative hover:bg-negative dark:hover:bg-negative/40 transition-colors cursor-pointer"
               aria-label={tCommon.delete}
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -260,11 +260,11 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
         maxWidth="sm"
       >
         <div className="text-center space-y-4">
-          <div className="w-12 h-12 mx-auto rounded-2xl bg-rose-100 dark:bg-rose-950/60 text-rose-600 flex items-center justify-center">
+          <div className="w-12 h-12 mx-auto rounded-2xl bg-negative dark:bg-negative/60 text-negative flex items-center justify-center">
             <AlertTriangle className="w-6 h-6" />
           </div>
 
-          <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+          <p className="text-xs text-muted dark:text-muted leading-relaxed">
             {t.deleteTransactionDesc}
           </p>
 

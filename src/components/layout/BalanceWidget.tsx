@@ -60,33 +60,33 @@ export const BalanceWidget: React.FC = () => {
             {/* Income */}
             <div className="flex items-center justify-between gap-2 pt-1">
               <span className="flex items-center gap-1.5 text-[#787774] dark:text-[#9b9a97]">
-                <ArrowUpRight className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                <ArrowUpRight className="w-3 h-3 text-positive dark:text-positive" />
                 <span>{isAr ? 'مداخيل الشهر' : 'Revenus'}</span>
               </span>
               <PrivacyCurrency
                 amount={incomeThisMonth}
                 showSign={true}
-                className="font-medium text-emerald-600 dark:text-emerald-400"
+                className="font-medium text-positive dark:text-positive"
               />
             </div>
 
             {/* Expenses */}
             <div className="flex items-center justify-between gap-2">
               <span className="flex items-center gap-1.5 text-[#787774] dark:text-[#9b9a97]">
-                <ArrowDownRight className="w-3 h-3 text-rose-600 dark:text-rose-400" />
+                <ArrowDownRight className="w-3 h-3 text-negative dark:text-negative" />
                 <span>{isAr ? 'مصاريف الشهر' : 'Dépenses'}</span>
               </span>
               <PrivacyCurrency
                 amount={expenseThisMonth}
                 prefix="-"
-                className="font-medium text-rose-600 dark:text-rose-400"
+                className="font-medium text-negative dark:text-negative"
               />
             </div>
 
             {/* Savings in Goals */}
             <div className="flex items-center justify-between gap-2 pt-1 border-t border-[#e3e2de] dark:border-[#2f2f2f]">
               <span className="flex items-center gap-1.5 text-[#787774] dark:text-[#9b9a97]">
-                <Target className="w-3 h-3 text-blue-600 dark:text-blue-400" />
+                <Target className="w-3 h-3 text-info dark:text-info" />
                 <span>{isAr ? 'في الأهداف' : 'En épargne'}</span>
               </span>
               <PrivacyCurrency

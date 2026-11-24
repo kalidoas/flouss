@@ -125,7 +125,7 @@ export const NewMeetingModal: React.FC<NewMeetingModalProps> = ({
       <form onSubmit={handleSubmit} className="space-y-4 pt-1">
         {/* Title */}
         <div>
-          <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+          <label className="block text-xs font-bold text-text dark:text-muted mb-1">
             {isAr ? 'عنوان الاجتماع' : isEn ? 'Meeting Title' : 'Titre de la réunion'} *
           </label>
           <input
@@ -140,14 +140,14 @@ export const NewMeetingModal: React.FC<NewMeetingModalProps> = ({
                 ? 'e.g., Client sync, project sprint review...'
                 : 'Ex : Point projet, réunion client...'
             }
-            className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3.5 py-2.5 rounded-xl bg-surface-3 dark:bg-surface border border-border dark:border-border text-text dark:text-text text-xs font-medium focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
 
         {/* Date & Time */}
         <div>
-          <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1 flex items-center gap-1.5">
-            <Calendar className="w-3.5 h-3.5 text-blue-500" />
+          <label className="block text-xs font-bold text-text dark:text-muted mb-1 flex items-center gap-1.5">
+            <Calendar className="w-3.5 h-3.5 text-info" />
             <span>{isAr ? 'التاريخ والوقت' : isEn ? 'Date & Time' : 'Date & Heure'} *</span>
           </label>
           <CustomDatePicker
@@ -162,13 +162,13 @@ export const NewMeetingModal: React.FC<NewMeetingModalProps> = ({
         {/* Duration & Reminder lead */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+            <label className="block text-xs font-bold text-text dark:text-muted mb-1">
               {isAr ? 'المدة' : isEn ? 'Duration' : 'Durée'}
             </label>
             <select
               value={durationMinutes}
               onChange={(e) => setDurationMinutes(parseInt(e.target.value, 10))}
-              className="w-full px-3 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2.5 rounded-xl bg-surface-3 dark:bg-surface border border-border dark:border-border text-text dark:text-text text-xs font-medium focus:outline-none focus:ring-2 focus:ring-ring"
             >
               <option value={15}>15 min</option>
               <option value={30}>30 min</option>
@@ -180,14 +180,14 @@ export const NewMeetingModal: React.FC<NewMeetingModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1 flex items-center gap-1.5">
-              <Bell className="w-3.5 h-3.5 text-blue-500" />
+            <label className="block text-xs font-bold text-text dark:text-muted mb-1 flex items-center gap-1.5">
+              <Bell className="w-3.5 h-3.5 text-info" />
               <span>{isAr ? 'تنبيه مبكر' : isEn ? 'Early Reminder' : 'Rappel anticipé'}</span>
             </label>
             <select
               value={reminderMinutes}
               onChange={(e) => setReminderMinutes(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2.5 rounded-xl bg-surface-3 dark:bg-surface border border-border dark:border-border text-text dark:text-text text-xs font-medium focus:outline-none focus:ring-2 focus:ring-ring"
             >
               <option value="5">{isAr ? 'قبل 5 دقائق' : isEn ? '5 min before' : '5 min avant'}</option>
               <option value="10">{isAr ? 'قبل 10 دقائق' : isEn ? '10 min before' : '10 min avant'}</option>
@@ -200,8 +200,8 @@ export const NewMeetingModal: React.FC<NewMeetingModalProps> = ({
 
         {/* Attendees Emails */}
         <div>
-          <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1 flex items-center gap-1.5">
-            <Mail className="w-3.5 h-3.5 text-blue-500" />
+          <label className="block text-xs font-bold text-text dark:text-muted mb-1 flex items-center gap-1.5">
+            <Mail className="w-3.5 h-3.5 text-info" />
             <span>
               {isAr
                 ? 'البريد الإلكتروني للمشاركين (مفصول بفاصلة)'
@@ -215,13 +215,13 @@ export const NewMeetingModal: React.FC<NewMeetingModalProps> = ({
             value={attendeesInput}
             onChange={(e) => setAttendeesInput(e.target.value)}
             placeholder="colleague@example.com, client@work.com"
-            className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-xs font-mono font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3.5 py-2.5 rounded-xl bg-surface-3 dark:bg-surface border border-border dark:border-border text-text dark:text-text text-xs font-mono font-medium focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
 
         {/* Notice */}
-        <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-[11px] text-blue-800 dark:text-blue-200 flex items-start gap-2">
-          <Sparkles className="w-3.5 h-3.5 text-blue-500 shrink-0 mt-0.5" />
+        <div className="p-3 rounded-xl bg-info/10 border border-info/20 text-[11px] text-info dark:text-info flex items-start gap-2">
+          <Sparkles className="w-3.5 h-3.5 text-info shrink-0 mt-0.5" />
           <span>
             {isAr
               ? 'سيتم إرسال دعوات الحضور تلقائياً إلى بريد جميع المشاركين عبر خوادم Google Calendar (sendUpdates=all).'
@@ -232,7 +232,7 @@ export const NewMeetingModal: React.FC<NewMeetingModalProps> = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center justify-end gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+        <div className="flex items-center justify-end gap-2 pt-2 border-t border-border dark:border-border">
           <Button type="button" variant="ghost" onClick={onClose} disabled={loading}>
             {isAr ? 'إلغاء' : isEn ? 'Cancel' : 'Annuler'}
           </Button>

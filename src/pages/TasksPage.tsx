@@ -65,90 +65,90 @@ const CATEGORY_CONFIG: Record<
     ar: 'روتين',
     en: 'Routine',
     icon: '⚡',
-    color: 'text-amber-600 dark:text-amber-400',
-    bg: 'bg-amber-500/10',
-    border: 'border-amber-500/20',
+    color: 'text-warning dark:text-warning',
+    bg: 'bg-warning/10',
+    border: 'border-warning/20',
   },
   deen: {
     fr: 'Deen & Spiritualité',
     ar: 'دين وصلاة',
     en: 'Faith & Prayer',
     icon: '🕌',
-    color: 'text-emerald-600 dark:text-emerald-400',
-    bg: 'bg-emerald-500/10',
-    border: 'border-emerald-500/20',
+    color: 'text-positive dark:text-positive',
+    bg: 'bg-positive/10',
+    border: 'border-positive/20',
   },
   sport: {
     fr: 'Sport & Santé',
     ar: 'رياضة وصحة',
     en: 'Sport & Fitness',
     icon: '🏋️',
-    color: 'text-rose-600 dark:text-rose-400',
-    bg: 'bg-rose-500/10',
-    border: 'border-rose-500/20',
+    color: 'text-negative dark:text-negative',
+    bg: 'bg-negative/10',
+    border: 'border-negative/20',
   },
   work: {
     fr: 'Travail & Études',
     ar: 'عمل ودراسة',
     en: 'Work & Career',
     icon: '💻',
-    color: 'text-blue-600 dark:text-blue-400',
-    bg: 'bg-blue-500/10',
-    border: 'border-blue-500/20',
+    color: 'text-info dark:text-info',
+    bg: 'bg-info/10',
+    border: 'border-info/20',
   },
   study: {
     fr: 'Apprentissage',
     ar: 'تعلّم',
     en: 'Learning & Reading',
     icon: '📚',
-    color: 'text-indigo-600 dark:text-indigo-400',
-    bg: 'bg-indigo-500/10',
-    border: 'border-indigo-500/20',
+    color: 'text-accent dark:text-accent',
+    bg: 'bg-accent/10',
+    border: 'border-accent/20',
   },
   finance: {
     fr: 'Finances',
     ar: 'مالية',
     en: 'Personal Finance',
     icon: '💰',
-    color: 'text-teal-600 dark:text-teal-400',
-    bg: 'bg-teal-500/10',
-    border: 'border-teal-500/20',
+    color: 'text-info dark:text-info',
+    bg: 'bg-info/10',
+    border: 'text-info/20',
   },
   health: {
     fr: 'Bien-être & Eau',
     ar: 'صحة وماء',
     en: 'Health & Hydration',
     icon: '💧',
-    color: 'text-cyan-600 dark:text-cyan-400',
-    bg: 'bg-cyan-500/10',
-    border: 'border-cyan-500/20',
+    color: 'text-info dark:text-info',
+    bg: 'bg-info/10',
+    border: 'border-info/20',
   },
   discipline: {
     fr: 'Discipline & Sobriété',
     ar: 'انضباط ووعي',
     en: 'Focus & Discipline',
     icon: '🛡️',
-    color: 'text-purple-600 dark:text-purple-400',
-    bg: 'bg-purple-500/10',
-    border: 'border-purple-500/20',
+    color: 'text-accent dark:text-accent',
+    bg: 'bg-accent/10',
+    border: 'border-accent/20',
   },
   running: {
     fr: 'Course / Jri',
     ar: 'جري',
     en: 'Running',
     icon: '🏃',
-    color: 'text-orange-600 dark:text-orange-400',
-    bg: 'bg-orange-500/10',
-    border: 'border-orange-500/20',
+    color: 'text-warning dark:text-warning',
+    bg: 'bg-warning/10',
+    border: 'border-warning/20',
   },
   other: {
     fr: 'Autre',
     ar: 'أخرى',
     en: 'Other',
     icon: '📌',
-    color: 'text-zinc-600 dark:text-muted',
-    bg: 'bg-zinc-500/10',
-    border: 'border-zinc-500/20',
+    color: 'text-muted dark:text-muted',
+    bg: 'bg-surface-2/10',
+    border: 'border-border/20',
   },
 };
 
@@ -249,7 +249,7 @@ const TaskActionDropdown: React.FC<TaskActionDropdownProps> = ({
           e.stopPropagation();
           setOpen((prev) => !prev);
         }}
-        className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-muted hover:text-white hover:bg-white/[0.06] focus-visible:outline-none transition-colors"
+        className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-muted hover:text-accent-contrast hover:bg-surface/[0.06] focus-visible:outline-none transition-colors"
       >
         <span className="text-base leading-none">⋯</span>
       </button>
@@ -260,7 +260,7 @@ const TaskActionDropdown: React.FC<TaskActionDropdownProps> = ({
         triggerRef={triggerRef}
         align="end"
         minWidth={176}
-        className="w-48 rounded-2xl border border-white/[0.12] bg-[#0E0F17]/95 backdrop-blur-2xl p-1.5 shadow-[0_16px_36px_-8px_rgba(0,0,0,0.8)]"
+        className="w-48 rounded-2xl border border-border/[0.12] bg-[#0E0F17]/95 backdrop-blur-2xl p-1.5 shadow-[0_16px_36px_-8px_rgba(0,0,0,0.8)]"
       >
         <div className="space-y-0.5">
           <button
@@ -269,9 +269,9 @@ const TaskActionDropdown: React.FC<TaskActionDropdownProps> = ({
               setOpen(false);
               onAlarm();
             }}
-            className="flex min-h-9 w-full items-center gap-2 rounded-xl px-3 text-start text-xs text-content hover:bg-white/[0.06] cursor-pointer"
+            className="flex min-h-9 w-full items-center gap-2 rounded-xl px-3 text-start text-xs text-content hover:bg-surface/[0.06] cursor-pointer"
           >
-            <Bell className="h-3.5 w-3.5 text-indigo-400 shrink-0" />
+            <Bell className="h-3.5 w-3.5 text-accent shrink-0" />
             <span className="truncate">{alarmLabel}</span>
           </button>
           <button
@@ -280,7 +280,7 @@ const TaskActionDropdown: React.FC<TaskActionDropdownProps> = ({
               setOpen(false);
               onEdit();
             }}
-            className="flex min-h-9 w-full items-center gap-2 rounded-xl px-3 text-start text-xs text-content hover:bg-white/[0.06] cursor-pointer"
+            className="flex min-h-9 w-full items-center gap-2 rounded-xl px-3 text-start text-xs text-content hover:bg-surface/[0.06] cursor-pointer"
           >
             <Edit2 className="h-3.5 w-3.5 shrink-0" />
             <span className="truncate">{editLabel}</span>
@@ -291,7 +291,7 @@ const TaskActionDropdown: React.FC<TaskActionDropdownProps> = ({
               setOpen(false);
               onDelete();
             }}
-            className="flex min-h-9 w-full items-center gap-2 rounded-xl px-3 text-start text-xs text-rose-400 hover:bg-rose-500/10 cursor-pointer"
+            className="flex min-h-9 w-full items-center gap-2 rounded-xl px-3 text-start text-xs text-negative hover:bg-negative/10 cursor-pointer"
           >
             <Trash2 className="h-3.5 w-3.5 shrink-0" />
             <span className="truncate">{deleteLabel}</span>
@@ -1267,7 +1267,7 @@ export const TasksPage: React.FC = () => {
             <h1 className="text-2xl sm:text-3xl font-bold text-content tracking-tight">
               {tTask.title}
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-caption font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">
+            <span className="px-2.5 py-0.5 rounded-full text-caption font-semibold bg-positive/15 text-positive border border-positive/20">
               {tTask.badge}
             </span>
           </div>
@@ -1292,23 +1292,23 @@ export const TasksPage: React.FC = () => {
         {/* Left Column: Progress %, XP & Streak Strip */}
         <div className="zawa-bento zawa-spotlight p-5 flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-xs font-semibold text-zinc-400">
-              <Sparkles className="w-4 h-4 text-indigo-400" />
+            <div className="flex items-center gap-2 text-xs font-semibold text-muted">
+              <Sparkles className="w-4 h-4 text-accent" />
               <span>{tTask.todayProgress}</span>
               <span>•</span>
-              <span className="font-mono text-white tabular-nums">
+              <span className="font-mono text-accent-contrast tabular-nums">
                 {getScheduleDateLabel(selectedDate)}
               </span>
             </div>
 
-            <span className="text-xs font-bold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-1 rounded-full tabular-nums">
+            <span className="text-xs font-bold text-accent bg-accent/10 border border-accent/20 px-2.5 py-1 rounded-full tabular-nums">
               {dailyStats.completed} / {dailyStats.total} {tTask.completedDays}
             </span>
           </div>
 
           <div className="space-y-2">
             <div className="flex items-baseline justify-between">
-              <span className="text-4xl sm:text-5xl font-black tracking-tight text-white tabular-nums">
+              <span className="text-4xl sm:text-5xl font-black tracking-tight text-accent-contrast tabular-nums">
                 {dailyStats.percentage}%
               </span>
               <span className="text-xs text-muted">
@@ -1319,34 +1319,34 @@ export const TasksPage: React.FC = () => {
             </div>
 
             {/* Glowing progress track */}
-            <div className="w-full h-2.5 bg-white/[0.06] rounded-full overflow-hidden p-0.5">
+            <div className="w-full h-2.5 bg-surface/[0.06] rounded-full overflow-hidden p-0.5">
               <div
-                className="h-full bg-gradient-to-r from-indigo-500 to-indigo-400 rounded-full transition-all duration-500 ease-out shadow-[0_0_12px_rgba(99,102,241,0.5)]"
+                className="h-full bg-gradient-to-r from-accent to-accent rounded-full transition-all duration-500 ease-out shadow-[0_0_12px_rgba(99,102,241,0.5)]"
                 style={{ width: `${dailyStats.percentage}%` }}
               />
             </div>
           </div>
 
           {/* Gamified metric chips */}
-          <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-white/[0.06] text-xs">
-            <span className="inline-flex items-center gap-1 font-bold text-zinc-200 bg-white/[0.04] border border-white/[0.08] px-2.5 py-1 rounded-full">
-              <Trophy className="w-3.5 h-3.5 text-amber-400" />
+          <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-border/[0.06] text-xs">
+            <span className="inline-flex items-center gap-1 font-bold text-text bg-surface/[0.04] border border-border/[0.08] px-2.5 py-1 rounded-full">
+              <Trophy className="w-3.5 h-3.5 text-warning" />
               <span>Lv {gamificationStats.level} · {gamificationStats.totalXP} {tTask.xpPoints}</span>
             </span>
 
-            <span className="inline-flex items-center gap-1 text-muted bg-white/[0.03] px-2 py-1 rounded-full">
+            <span className="inline-flex items-center gap-1 text-muted bg-surface/[0.03] px-2 py-1 rounded-full">
               {gamificationStats.progressPercent}% {tTask.xpNextLevel}
             </span>
 
             {overallStreak > 0 && (
-              <span className="inline-flex items-center gap-1 font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-1 rounded-full tabular-nums">
-                <Flame className="w-3.5 h-3.5 text-amber-400" />
+              <span className="inline-flex items-center gap-1 font-bold text-warning bg-warning/10 border border-warning/20 px-2 py-1 rounded-full tabular-nums">
+                <Flame className="w-3.5 h-3.5 text-warning" />
                 <span>{overallStreak} {tTask.streakDays}</span>
               </span>
             )}
 
-            <span className="inline-flex items-center gap-1 text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-full tabular-nums">
-              <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="inline-flex items-center gap-1 text-positive bg-positive/10 px-2 py-1 rounded-full tabular-nums">
+              <TrendingUp className="w-3.5 h-3.5 text-positive" />
               <span>{tTask.monthAverage} {monthStats.rate}%</span>
             </span>
           </div>
@@ -1354,7 +1354,7 @@ export const TasksPage: React.FC = () => {
 
         {/* Right Column: 7-Day Week Selector with Glowing Indigo Active Day Pill */}
         <div className="zawa-bento zawa-spotlight sticky top-2 z-30 p-4 flex flex-col justify-between bg-[#0D0E14]/95 backdrop-blur-2xl shadow-xl">
-          <div className="flex items-center justify-between pb-2 border-b border-white/[0.06]">
+          <div className="flex items-center justify-between pb-2 border-b border-border/[0.06]">
             <span className="text-xs font-semibold uppercase tracking-wider text-muted">
               {language === 'ar' ? 'أسبوع المهمة' : 'Week Schedule'}
             </span>
@@ -1368,7 +1368,7 @@ export const TasksPage: React.FC = () => {
                   dt.setDate(dt.getDate() - 1);
                   setSelectedDate(formatISODate(dt));
                 }}
-                className="p-1 rounded-lg text-muted hover:text-white hover:bg-white/[0.06] transition-colors cursor-pointer"
+                className="p-1 rounded-lg text-muted hover:text-accent-contrast hover:bg-surface/[0.06] transition-colors cursor-pointer"
                 title={language === 'ar' ? 'اليوم السابق' : 'Previous day'}
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -1380,8 +1380,8 @@ export const TasksPage: React.FC = () => {
                 title={selectedDate !== todayStr ? (language === 'ar' ? 'الرجوع إلى اليوم' : 'Jump to Today') : undefined}
                 className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full capitalize transition-colors ${
                   selectedDate === todayStr
-                    ? 'text-indigo-400 bg-indigo-500/10'
-                    : 'text-zinc-300 hover:text-white bg-white/[0.06] hover:bg-white/[0.12] cursor-pointer'
+                    ? 'text-accent bg-accent/10'
+                    : 'text-muted hover:text-accent-contrast bg-surface/[0.06] hover:bg-surface/[0.12] cursor-pointer'
                 }`}
               >
                 {getScheduleDateLabel(selectedDate)}
@@ -1395,7 +1395,7 @@ export const TasksPage: React.FC = () => {
                   dt.setDate(dt.getDate() + 1);
                   setSelectedDate(formatISODate(dt));
                 }}
-                className="p-1 rounded-lg text-muted hover:text-white hover:bg-white/[0.06] transition-colors cursor-pointer"
+                className="p-1 rounded-lg text-muted hover:text-accent-contrast hover:bg-surface/[0.06] transition-colors cursor-pointer"
                 title={language === 'ar' ? 'اليوم التالي' : 'Next day'}
               >
                 <ChevronRight className="w-4 h-4" />
@@ -1416,8 +1416,8 @@ export const TasksPage: React.FC = () => {
                   aria-label={`${item.dayName} ${item.dayNum}: ${item.completedCount} / ${item.taskCount}`}
                   className={`flex flex-col items-center justify-center py-2.5 px-1 rounded-2xl transition-all duration-200 ${
                     isSelected
-                      ? 'bg-gradient-to-b from-indigo-500 to-indigo-600 text-white font-bold shadow-[0_0_20px_rgba(99,102,241,0.5)] scale-105'
-                      : 'bg-white/[0.03] hover:bg-white/[0.08] text-zinc-400 hover:text-white border border-white/[0.04]'
+                      ? 'bg-gradient-to-b from-accent to-accent text-accent-contrast font-bold shadow-[0_0_20px_rgba(99,102,241,0.5)] scale-105'
+                      : 'bg-surface/[0.03] hover:bg-surface/[0.08] text-muted hover:text-accent-contrast border border-border/[0.04]'
                   }`}
                 >
                   <span className="text-[10px] uppercase font-bold tracking-wider opacity-80">
@@ -1426,7 +1426,7 @@ export const TasksPage: React.FC = () => {
                   <span className="text-sm font-bold mt-0.5 tabular-nums">
                     {item.dayNum}
                   </span>
-                  <span className={`mt-1 text-[8px] font-semibold tabular-nums ${isSelected ? 'text-white/85' : 'text-muted'}`}>
+                  <span className={`mt-1 text-[8px] font-semibold tabular-nums ${isSelected ? 'text-accent-contrast/85' : 'text-muted'}`}>
                     {item.taskCount > 0
                       ? `${item.completedCount}/${item.taskCount}`
                       : language === 'ar' ? 'راحة' : language === 'fr' ? 'Repos' : 'Off'}
@@ -1434,7 +1434,7 @@ export const TasksPage: React.FC = () => {
                   {item.isToday && (
                     <span
                       className={`w-1.5 h-1.5 rounded-full mt-1 ${
-                        isSelected ? 'bg-amber-300' : 'bg-indigo-400'
+                        isSelected ? 'bg-warning' : 'bg-accent'
                       }`}
                     />
                   )}
@@ -1443,7 +1443,7 @@ export const TasksPage: React.FC = () => {
             })}
           </div>
 
-          <div className="text-[11px] text-muted text-center pt-1 border-t border-white/[0.06]">
+          <div className="text-[11px] text-muted text-center pt-1 border-t border-border/[0.06]">
             {language === 'ar' ? 'حدد أي يوم لعرض وتحديث المهام' : 'Select any day to inspect & check off tasks'}
           </div>
         </div>
@@ -1458,8 +1458,8 @@ export const TasksPage: React.FC = () => {
             onClick={() => setActiveTab('daily')}
             className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
               activeTab === 'daily'
-                ? 'bg-white text-zinc-950 font-bold shadow-xs'
-                : 'text-zinc-400 hover:text-white hover:bg-white/[0.06]'
+                ? 'bg-surface text-text font-bold shadow-xs'
+                : 'text-muted hover:text-accent-contrast hover:bg-surface/[0.06]'
             }`}
           >
             <ListTodo className="w-3.5 h-3.5" />
@@ -1471,8 +1471,8 @@ export const TasksPage: React.FC = () => {
             onClick={() => setActiveTab('month')}
             className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
               activeTab === 'month'
-                ? 'bg-white text-zinc-950 font-bold shadow-xs'
-                : 'text-zinc-400 hover:text-white hover:bg-white/[0.06]'
+                ? 'bg-surface text-text font-bold shadow-xs'
+                : 'text-muted hover:text-accent-contrast hover:bg-surface/[0.06]'
             }`}
           >
             <Calendar className="w-3.5 h-3.5" />
@@ -1484,8 +1484,8 @@ export const TasksPage: React.FC = () => {
             onClick={() => setActiveTab('stats')}
             className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
               activeTab === 'stats'
-                ? 'bg-white text-zinc-950 font-bold shadow-xs'
-                : 'text-zinc-400 hover:text-white hover:bg-white/[0.06]'
+                ? 'bg-surface text-text font-bold shadow-xs'
+                : 'text-muted hover:text-accent-contrast hover:bg-surface/[0.06]'
             }`}
           >
             <BarChart2 className="w-3.5 h-3.5" />
@@ -1501,12 +1501,12 @@ export const TasksPage: React.FC = () => {
             type="button"
             aria-expanded={isTaskCategoryDropdownOpen}
             onClick={() => setIsTaskCategoryDropdownOpen((prev) => !prev)}
-            className="flex items-center gap-2 rounded-full border border-white/[0.08] bg-black/40 px-3.5 py-1.5 text-xs font-semibold text-zinc-200 outline-none shadow-xs hover:border-white/[0.18] hover:bg-white/[0.04] transition-all cursor-pointer"
+            className="flex items-center gap-2 rounded-full border border-border/[0.08] bg-canvas/40 px-3.5 py-1.5 text-xs font-semibold text-text outline-none shadow-xs hover:border-border/[0.18] hover:bg-surface/[0.04] transition-all cursor-pointer"
           >
             {selectedCategory !== 'all' && CATEGORY_CONFIG[selectedCategory as TaskCategory] ? (
               <span>{CATEGORY_CONFIG[selectedCategory as TaskCategory].icon}</span>
             ) : (
-              <ListTodo className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+              <ListTodo className="w-3.5 h-3.5 text-accent shrink-0" />
             )}
             <span className="truncate max-w-[130px]">
               {selectedCategory === 'all'
@@ -1516,8 +1516,8 @@ export const TasksPage: React.FC = () => {
                   selectedCategory}
             </span>
             <ChevronDown
-              className={`w-3.5 h-3.5 text-zinc-400 shrink-0 transition-transform duration-200 ${
-                isTaskCategoryDropdownOpen ? 'rotate-180 text-white' : ''
+              className={`w-3.5 h-3.5 text-muted shrink-0 transition-transform duration-200 ${
+                isTaskCategoryDropdownOpen ? 'rotate-180 text-accent-contrast' : ''
               }`}
             />
           </button>
@@ -1528,7 +1528,7 @@ export const TasksPage: React.FC = () => {
             triggerRef={taskCategoryDropdownTriggerRef}
             align="end"
             minWidth={210}
-            className="min-w-[210px] overflow-y-auto no-scrollbar rounded-2xl bg-[#12131C]/95 backdrop-blur-2xl border border-white/[0.12] p-1.5 shadow-[0_16px_36px_-8px_rgba(0,0,0,0.8)]"
+            className="min-w-[210px] overflow-y-auto no-scrollbar rounded-2xl bg-[#12131C]/95 backdrop-blur-2xl border border-border/[0.12] p-1.5 shadow-[0_16px_36px_-8px_rgba(0,0,0,0.8)]"
           >
             <div className="space-y-0.5">
               <button
@@ -1539,8 +1539,8 @@ export const TasksPage: React.FC = () => {
                 }}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-start cursor-pointer ${
                   selectedCategory === 'all'
-                    ? 'bg-white text-zinc-950 font-bold shadow-xs'
-                    : 'text-zinc-300 hover:text-white hover:bg-white/[0.06]'
+                    ? 'bg-surface text-text font-bold shadow-xs'
+                    : 'text-muted hover:text-accent-contrast hover:bg-surface/[0.06]'
                 }`}
               >
                 <div className="flex items-center gap-2">
@@ -1552,7 +1552,7 @@ export const TasksPage: React.FC = () => {
                 </span>
               </button>
 
-              <div className="h-px bg-white/[0.06] my-1" />
+              <div className="h-px bg-surface/[0.06] my-1" />
 
               {Object.entries(CATEGORY_CONFIG).map(([catKey, conf]) => {
                 const isSelected = selectedCategory === catKey;
@@ -1567,8 +1567,8 @@ export const TasksPage: React.FC = () => {
                     }}
                     className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-start cursor-pointer ${
                       isSelected
-                        ? 'bg-white text-zinc-950 font-bold shadow-xs'
-                        : 'text-zinc-300 hover:text-white hover:bg-white/[0.06]'
+                        ? 'bg-surface text-text font-bold shadow-xs'
+                        : 'text-muted hover:text-accent-contrast hover:bg-surface/[0.06]'
                     }`}
                   >
                     <div className="flex items-center gap-2 min-w-0">
@@ -1592,7 +1592,7 @@ export const TasksPage: React.FC = () => {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-xs font-bold uppercase tracking-wider text-muted flex items-center gap-2">
-              <ListTodo className="w-3.5 h-3.5 text-indigo-400" />
+              <ListTodo className="w-3.5 h-3.5 text-accent" />
               <span>{tTask.todayList} ({filteredTasks.length})</span>
             </h3>
             <span className="text-xs text-muted">
@@ -1638,8 +1638,8 @@ export const TasksPage: React.FC = () => {
                     onClick={() => setExpandedTaskId((prev) => (prev === task.id ? null : task.id))}
                     className={`zawa-bento zawa-spotlight p-4 cursor-pointer transition-all duration-300 ${
                       isCompleted
-                        ? 'border-emerald-500/30 bg-[#0B0C12]/95 shadow-[0_0_24px_-6px_rgba(16,185,129,0.2)]'
-                        : 'hover:border-white/[0.18]'
+                        ? 'border-positive/30 bg-[#0B0C12]/95 shadow-[0_0_24px_-6px_rgba(16,185,129,0.2)]'
+                        : 'hover:border-border/[0.18]'
                     }`}
                   >
                     {/* Main Row */}
@@ -1681,20 +1681,20 @@ export const TasksPage: React.FC = () => {
                               </svg>
                               <div className="absolute inset-0 flex items-center justify-center">
                                 {isCompleted ? (
-                                  <CheckCircle2 className="w-5 h-5 text-emerald-400 stroke-[2.5]" />
+                                  <CheckCircle2 className="w-5 h-5 text-positive stroke-[2.5]" />
                                 ) : (
-                                  <span className="text-[10px] font-bold text-indigo-400 tabular-nums">
+                                  <span className="text-[10px] font-bold text-accent tabular-nums">
                                     {completedCount}/{subtasksCount}
                                   </span>
                                 )}
                               </div>
                             </div>
                           ) : isCompleted ? (
-                            <div className="w-9 h-9 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center shadow-[0_0_16px_rgba(16,185,129,0.4)]">
+                            <div className="w-9 h-9 rounded-full bg-positive/20 text-positive border border-positive/40 flex items-center justify-center shadow-[0_0_16px_rgba(16,185,129,0.4)]">
                               <CheckCircle2 className="w-5 h-5 stroke-[2.5]" />
                             </div>
                           ) : (
-                            <div className="w-9 h-9 rounded-full bg-white/[0.03] text-zinc-500 border border-white/[0.12] hover:border-white/[0.25] flex items-center justify-center">
+                            <div className="w-9 h-9 rounded-full bg-surface/[0.03] text-muted border border-border/[0.12] hover:border-border/[0.25] flex items-center justify-center">
                               <Circle className="w-5 h-5 stroke-[1.8]" />
                             </div>
                           )}
@@ -1716,8 +1716,8 @@ export const TasksPage: React.FC = () => {
                               <span
                                 className={`text-[11px] font-bold px-2 py-0.5 rounded-full border tabular-nums ${
                                   isCompleted
-                                    ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/25'
-                                    : 'bg-indigo-500/15 text-indigo-400 border-indigo-500/25'
+                                    ? 'bg-positive/15 text-positive border-positive/25'
+                                    : 'bg-accent/15 text-accent border-accent/25'
                                 }`}
                               >
                                 {completedCount} / {subtasksCount}
@@ -1739,16 +1739,16 @@ export const TasksPage: React.FC = () => {
                             </span>
 
                             {streak > 0 && (
-                              <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded-full tabular-nums">
+                              <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-warning bg-warning/10 px-1.5 py-0.5 rounded-full tabular-nums">
                                 🔥 {streak} j
                               </span>
                             )}
 
                             {Boolean(task.scheduledTime && task.scheduledTime.trim() !== '') && (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-400 bg-indigo-500/10 px-1.5 py-0.5 rounded-full tabular-nums">
+                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-accent bg-accent/10 px-1.5 py-0.5 rounded-full tabular-nums">
                                 <Clock className="w-2.5 h-2.5" />
                                 <span>{task.scheduledTime}</span>
-                                {task.addToGoogleCalendar && <Bell className="w-2.5 h-2.5 text-indigo-400 animate-pulse" />}
+                                {task.addToGoogleCalendar && <Bell className="w-2.5 h-2.5 text-accent animate-pulse" />}
                               </span>
                             )}
 
@@ -1763,11 +1763,11 @@ export const TasksPage: React.FC = () => {
                       <div className="flex items-center gap-1 shrink-0">
                         <button
                           type="button"
-                          className="p-1.5 rounded-lg text-muted hover:text-white transition-colors"
+                          className="p-1.5 rounded-lg text-muted hover:text-accent-contrast transition-colors"
                           aria-label="Toggle drawer"
                         >
                           {isExpanded ? (
-                            <ChevronUp className="w-4 h-4 text-indigo-400" />
+                            <ChevronUp className="w-4 h-4 text-accent" />
                           ) : (
                             <ChevronDown className="w-4 h-4" />
                           )}
@@ -1800,25 +1800,25 @@ export const TasksPage: React.FC = () => {
                           exit={{ opacity: 0, height: 0 }}
                           transition={{ duration: 0.2 }}
                           onClick={(e) => e.stopPropagation()}
-                          className="mt-4 pt-3.5 border-t border-white/[0.08] space-y-3"
+                          className="mt-4 pt-3.5 border-t border-border/[0.08] space-y-3"
                         >
                           {/* Drawer Header & Mini Progress Bar */}
                           {hasSubtasks && (
                             <div className="space-y-1.5">
                               <div className="flex items-center justify-between text-xs">
-                                <span className="font-semibold text-zinc-300">
+                                <span className="font-semibold text-muted">
                                   {language === 'ar' ? 'تقدم المهام الفرعية' : 'Sub-tasks Progress'}
                                 </span>
-                                <span className="font-mono text-indigo-400 font-bold tabular-nums">
+                                <span className="font-mono text-accent font-bold tabular-nums">
                                   {completedCount} / {subtasksCount} ({percent}%)
                                 </span>
                               </div>
-                              <div className="w-full h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+                              <div className="w-full h-1.5 bg-surface/[0.06] rounded-full overflow-hidden">
                                 <div
                                   className={`h-full rounded-full transition-all duration-300 ${
                                     isCompleted
-                                      ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]'
-                                      : 'bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]'
+                                      ? 'bg-positive shadow-[0_0_10px_rgba(16,185,129,0.5)]'
+                                      : 'bg-accent shadow-[0_0_10px_rgba(99,102,241,0.5)]'
                                   }`}
                                   style={{ width: `${percent}%` }}
                                 />
@@ -1834,8 +1834,8 @@ export const TasksPage: React.FC = () => {
                                   key={sub.id}
                                   className={`flex items-center justify-between px-3 py-2 rounded-xl border transition-all ${
                                     sub.completed
-                                      ? 'bg-emerald-500/10 border-emerald-500/20 text-muted'
-                                      : 'bg-white/[0.03] border-white/[0.06] text-zinc-200 hover:bg-white/[0.06]'
+                                      ? 'bg-positive/10 border-positive/20 text-muted'
+                                      : 'bg-surface/[0.03] border-border/[0.06] text-text hover:bg-surface/[0.06]'
                                   }`}
                                 >
                                   <button
@@ -1846,8 +1846,8 @@ export const TasksPage: React.FC = () => {
                                     <div
                                       className={`w-4 h-4 rounded-md flex items-center justify-center transition-all ${
                                         sub.completed
-                                          ? 'bg-emerald-500 text-white shadow-xs'
-                                          : 'border border-white/20 hover:border-white/40'
+                                          ? 'bg-positive text-accent-contrast shadow-xs'
+                                          : 'border border-border/20 hover:border-border/40'
                                       }`}
                                     >
                                       {sub.completed && <Check className="w-3 h-3 stroke-[3]" />}
@@ -1864,7 +1864,7 @@ export const TasksPage: React.FC = () => {
                                   <button
                                     type="button"
                                     onClick={() => handleDeleteInlineSubTask(task.id, sub.id)}
-                                    className="p-1 text-zinc-500 hover:text-rose-400 transition-colors ml-2"
+                                    className="p-1 text-muted hover:text-negative transition-colors ml-2"
                                     title="Delete sub-task"
                                   >
                                     <Trash2 className="w-3.5 h-3.5" />
@@ -1885,7 +1885,7 @@ export const TasksPage: React.FC = () => {
                                   key={chip}
                                   type="button"
                                   onClick={() => handleAddInlineSubTask(task.id, chip)}
-                                  className="rounded-full bg-white/[0.04] hover:bg-white/[0.1] border border-white/[0.08] text-xs px-2.5 py-1 text-zinc-300 active:scale-95 transition-all"
+                                  className="rounded-full bg-surface/[0.04] hover:bg-surface/[0.1] border border-border/[0.08] text-xs px-2.5 py-1 text-muted active:scale-95 transition-all"
                                 >
                                   + {chip}
                                 </button>
@@ -1915,14 +1915,14 @@ export const TasksPage: React.FC = () => {
                                   ? '+ أضف مهمة فرعية (Enter)...'
                                   : '+ Add sub-task (press Enter)...'
                               }
-                              className="flex-1 bg-white/[0.04] border border-white/[0.08] focus:border-indigo-500/60 text-xs px-3.5 py-2 rounded-xl text-white placeholder-zinc-500 outline-none transition-all"
+                              className="flex-1 bg-surface/[0.04] border border-border/[0.08] focus:border-accent/60 text-xs px-3.5 py-2 rounded-xl text-accent-contrast placeholder:text-muted outline-none transition-all"
                             />
                             <button
                               type="button"
                               onClick={() =>
                                 handleAddInlineSubTask(task.id, inlineSubTaskInput[task.id] || '')
                               }
-                              className="rounded-xl bg-white text-zinc-950 font-semibold px-3 py-2 text-xs hover:bg-zinc-200 active:scale-95 transition-all shrink-0"
+                              className="rounded-xl bg-surface text-text font-semibold px-3 py-2 text-xs hover:bg-surface-2 active:scale-95 transition-all shrink-0"
                             >
                               {language === 'ar' ? 'إضافة' : language === 'en' ? 'Add' : 'Ajouter'}
                             </button>
@@ -1945,12 +1945,12 @@ export const TasksPage: React.FC = () => {
 
       {/* VIEW 2: MONTHLY HABIT TRACKING MATRIX (Habits as rows, days as columns) */}
       {activeTab === 'month' && (
-        <div className="zawa-bento p-5 border border-white/[0.08] shadow-2xl space-y-5">
+        <div className="zawa-bento p-5 border border-border/[0.08] shadow-2xl space-y-5">
           {/* Header with Month Selector */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h3 className="font-bold text-base text-white flex items-center gap-2.5 tracking-tight">
-                <LayoutGrid className="w-5 h-5 text-emerald-400" />
+              <h3 className="font-bold text-base text-accent-contrast flex items-center gap-2.5 tracking-tight">
+                <LayoutGrid className="w-5 h-5 text-positive" />
                 <span>
                   {language === 'ar'
                     ? 'مصفوفة تتبع العادات الشهرية'
@@ -1959,7 +1959,7 @@ export const TasksPage: React.FC = () => {
                     : 'Monthly Habit Tracking Matrix'}
                 </span>
               </h3>
-              <p className="text-xs text-zinc-400 mt-0.5">
+              <p className="text-xs text-muted mt-0.5">
                 {language === 'ar'
                   ? 'صفوف = عادات، أعمدة = أيام الشهر — اضغط على يوم لتفاصيل الإنجاز'
                   : 'Rows = habits, columns = days — tap a day for completion details'}
@@ -1975,22 +1975,22 @@ export const TasksPage: React.FC = () => {
           </div>
 
           {/* Legend & Stats */}
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-white/[0.06]">
-            <div className="flex items-center gap-3 text-xs text-zinc-400">
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-border/[0.06]">
+            <div className="flex items-center gap-3 text-xs text-muted">
               <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded bg-emerald-400" />
+                <span className="w-2.5 h-2.5 rounded bg-positive" />
                 <span>{language === 'ar' ? 'مكتملة' : language === 'fr' ? 'Terminé' : 'Done'}</span>
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded bg-amber-500/80 border border-amber-500" />
+                <span className="w-2.5 h-2.5 rounded bg-warning/80 border border-warning" />
                 <span>{language === 'ar' ? 'جزئية' : language === 'fr' ? 'Partielle' : 'Partial'}</span>
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded bg-white/[0.04] border border-white/[0.05]" />
+                <span className="w-2.5 h-2.5 rounded bg-surface/[0.04] border border-border/[0.05]" />
                 <span>{language === 'ar' ? 'غير مكتملة' : language === 'fr' ? 'Non fait' : 'Not done'}</span>
               </span>
             </div>
-            <div className="flex items-center gap-3 text-xs text-zinc-500 font-mono tabular-nums">
+            <div className="flex items-center gap-3 text-xs text-muted font-mono tabular-nums">
               <span>{matrixStats.completedTotal}/{matrixStats.taskDaysTotal} {language === 'ar' ? 'مهمة' : 'tasks'}</span>
             </div>
           </div>
@@ -1999,8 +1999,8 @@ export const TasksPage: React.FC = () => {
           <div className="overflow-x-auto overflow-y-auto max-h-[60vh]">
             <table className="w-full min-w-max border-collapse text-[11px] font-mono">
               <thead>
-                <tr className="sticky top-0 bg-black/40 backdrop-blur-sm border-b border-white/[0.08]">
-                  <th className="sticky left-0 z-10 w-44 sm:w-52 min-w-[160px] sm:min-w-[190px] px-2.5 py-1.5 text-left font-medium text-zinc-400 bg-black/40 border-r border-white/[0.06]">
+                <tr className="sticky top-0 bg-canvas/40 backdrop-blur-sm border-b border-border/[0.08]">
+                  <th className="sticky left-0 z-10 w-44 sm:w-52 min-w-[160px] sm:min-w-[190px] px-2.5 py-1.5 text-left font-medium text-muted bg-canvas/40 border-r border-border/[0.06]">
                     {language === 'ar' ? 'العادة / المهمة' : language === 'fr' ? 'Habitude / Tâche' : 'Habit / Task'}
                   </th>
                   {Array.from({ length: matrixDaysInMonth }, (_, i) => i + 1).map((day) => {
@@ -2011,7 +2011,7 @@ export const TasksPage: React.FC = () => {
                     const locale = language === 'ar' ? 'ar-MA' : language === 'fr' ? 'fr-FR' : 'en-US';
                     const dayNameShort = new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(new Date(Number(selectedMatrixMonth.slice(0,4)), Number(selectedMatrixMonth.slice(5,7)) - 1, day));
                     return (
-                      <th key={dateStr} className={`sticky top-0 w-8 min-w-[36px] px-1 py-1 text-center border-b border-white/[0.08] ${isWeekend ? 'text-zinc-500' : 'text-zinc-400'} ${isToday ? 'text-indigo-400 font-bold' : ''}`}>
+                      <th key={dateStr} className={`sticky top-0 w-8 min-w-[36px] px-1 py-1 text-center border-b border-border/[0.08] ${isWeekend ? 'text-muted' : 'text-muted'} ${isToday ? 'text-accent font-bold' : ''}`}>
                         <div className="font-medium text-[10px]">{day}</div>
                         <div className="text-[8px] uppercase opacity-60">{dayNameShort}</div>
                       </th>
@@ -2021,8 +2021,8 @@ export const TasksPage: React.FC = () => {
               </thead>
               <tbody>
                 {matrixHabits.map((habit) => (
-                  <tr key={habit.id} className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors">
-                    <td className="sticky left-0 z-10 w-44 sm:w-52 min-w-[160px] sm:min-w-[190px] px-2.5 py-1.5 text-left font-medium text-zinc-200 bg-black/40 border-r border-white/[0.06] whitespace-normal break-words leading-tight" title={habit.label}>
+                  <tr key={habit.id} className="border-b border-border/[0.04] hover:bg-surface/[0.02] transition-colors">
+                    <td className="sticky left-0 z-10 w-44 sm:w-52 min-w-[160px] sm:min-w-[190px] px-2.5 py-1.5 text-left font-medium text-text bg-canvas/40 border-r border-border/[0.06] whitespace-normal break-words leading-tight" title={habit.label}>
                       <span className="flex items-center gap-1.5">
                         <span className="shrink-0">{habit.icon}</span>
                         <span className="min-w-0">{habit.label}</span>
@@ -2048,10 +2048,10 @@ export const TasksPage: React.FC = () => {
                             onMouseEnter={() => setHoveredHeatmapDay({ dateStr, count: completedCount })}
                             onMouseLeave={() => setHoveredHeatmapDay(null)}
                             className={`w-full h-full rounded transition-all cursor-pointer ${dayCompleted
-                              ? 'bg-emerald-400 text-white font-bold shadow-[0_0_6px_rgba(52,211,153,0.4)]'
+                              ? 'bg-positive text-accent-contrast font-bold shadow-[0_0_6px_rgba(52,211,153,0.4)]'
                               : dayPartial
-                              ? 'bg-amber-500/80 border border-amber-500 text-white'
-                              : 'bg-white/[0.04] border border-white/[0.05] text-zinc-500'} ${isToday ? 'ring-2 ring-indigo-400 ring-offset-1 ring-offset-[#0B0C12]' : ''}`}
+                              ? 'bg-warning/80 border border-warning text-accent-contrast'
+                              : 'bg-surface/[0.04] border border-border/[0.05] text-muted'} ${isToday ? 'ring-2 ring-ring ring-offset-1 ring-offset-canvas' : ''}`}
                             title={totalCount > 0
                               ? `${formatDate(dateStr, language)}: ${dayTasks.map((t: any) => t.title).join(', ')} (${completedCount}/${totalCount} ${language === 'ar' ? 'مكتملة' : 'done'})`
                               : `${formatDate(dateStr, language)}: ${language === 'ar' ? 'لا توجد مهام' : language === 'fr' ? 'Aucune tâche' : 'No tasks'}`}
@@ -2059,7 +2059,7 @@ export const TasksPage: React.FC = () => {
                             {dayCompleted ? (
                               <Check className="w-3.5 h-3.5 mx-auto stroke-[2.5]" />
                             ) : dayPartial ? (
-                              <div className="w-2 h-2 rounded-full bg-white mx-auto" />
+                              <div className="w-2 h-2 rounded-full bg-surface mx-auto" />
                             ) : (
                               <span className="text-[9px]">{day}</span>
                             )}
@@ -2075,16 +2075,16 @@ export const TasksPage: React.FC = () => {
 
           {/* Inline Day Detail Panel */}
           {matrixDayDetail && (
-            <div className="animate-in slide-in-from-bottom-2 duration-200 p-4 bg-white/[0.03] border border-white/[0.08] rounded-xl space-y-3">
+            <div className="animate-in slide-in-from-bottom-2 duration-200 p-4 bg-surface/[0.03] border border-border/[0.08] rounded-xl space-y-3">
               <div className="flex items-center justify-between">
-                <h4 className="font-bold text-white flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-indigo-400" />
+                <h4 className="font-bold text-accent-contrast flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-accent" />
                   <span>{formatDate(matrixDayDetail, language)}</span>
                 </h4>
                 <button
                   type="button"
                   onClick={() => setMatrixDayDetail(null)}
-                  className="p-1 text-zinc-500 hover:text-white transition-colors"
+                  className="p-1 text-muted hover:text-accent-contrast transition-colors"
                   aria-label={language === 'ar' ? 'إغلاق' : language === 'fr' ? 'Fermer' : 'Close'}
                 >
                   <X className="w-4 h-4" />
@@ -2093,17 +2093,17 @@ export const TasksPage: React.FC = () => {
               {matrixDayTasks[matrixDayDetail]?.length > 0 ? (
                 <div className="space-y-2">
                   {matrixDayTasks[matrixDayDetail]?.map((task: any) => (
-                    <div key={task.id} className="flex items-center justify-between p-2.5 rounded-lg bg-white/[0.02] border border-white/[0.06]">
+                    <div key={task.id} className="flex items-center justify-between p-2.5 rounded-lg bg-surface/[0.02] border border-border/[0.06]">
                       <div className="flex items-center gap-2.5">
-                        <span className={task.completed ? 'text-emerald-400' : 'text-zinc-500'}>
+                        <span className={task.completed ? 'text-positive' : 'text-muted'}>
                           {task.completed ? <CheckCircle2 className="w-4 h-4" /> : <Circle className="w-4 h-4" />}
                         </span>
                         <div>
-                          <div className="text-sm font-medium text-zinc-100">{task.title}</div>
-                          <div className="text-[11px] text-zinc-500">{task.categoryLabel}</div>
+                          <div className="text-sm font-medium text-text">{task.title}</div>
+                          <div className="text-[11px] text-muted">{task.categoryLabel}</div>
                         </div>
                       </div>
-                      <span className="text-[11px] font-mono tabular-nums text-zinc-400">
+                      <span className="text-[11px] font-mono tabular-nums text-muted">
                         {task.completed
                           ? (language === 'ar' ? '✓ مكتملة' : language === 'fr' ? '✓ Terminé' : '✓ Done')
                           : (language === 'ar' ? '○ معلقة' : language === 'fr' ? '○ En attente' : '○ Pending')}
@@ -2112,7 +2112,7 @@ export const TasksPage: React.FC = () => {
                   ))}
                 </div>
               ) : (
-                <p className="text-zinc-500 text-center py-2">
+                <p className="text-muted text-center py-2">
                   {language === 'ar' ? 'لا توجد مهام مجدولة لهذا اليوم' : language === 'fr' ? 'Aucune tâche programmée pour ce jour' : 'No tasks scheduled for this day'}
                 </p>
               )}
@@ -2120,8 +2120,8 @@ export const TasksPage: React.FC = () => {
           )}
 
           {/* Bottom Legend (weekday names) */}
-          <div className="pt-2 border-t border-white/[0.06] text-xs">
-            <div className="flex items-center gap-2 text-zinc-500 flex-wrap">
+          <div className="pt-2 border-t border-border/[0.06] text-xs">
+            <div className="flex items-center gap-2 text-muted flex-wrap">
               <span className="font-medium">{language === 'ar' ? 'أيام الأسبوع:' : language === 'fr' ? 'Jours:' : 'Weekdays:'}</span>
               {(language === 'ar'
                 ? ['الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت', 'الأحد']
@@ -2129,7 +2129,7 @@ export const TasksPage: React.FC = () => {
                 ? ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche']
                 : ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
               ).map((d, i) => (
-                <span key={d} className={`px-2 py-0.5 rounded text-[10px] font-mono ${i >= 5 ? 'text-amber-400' : 'text-zinc-400'} bg-white/[0.03] border border-white/[0.05]`}>
+                <span key={d} className={`px-2 py-0.5 rounded text-[10px] font-mono ${i >= 5 ? 'text-warning' : 'text-muted'} bg-surface/[0.03] border border-border/[0.05]`}>
                   {d}
                 </span>
               ))}
@@ -2141,9 +2141,9 @@ export const TasksPage: React.FC = () => {
       {/* VIEW 3: STATS & EVALUATIONS */}
       {activeTab === 'stats' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="zawa-bento p-5 border border-white/[0.08] shadow-2xl space-y-4">
-            <h3 className="font-bold text-base text-white flex items-center gap-2 tracking-tight">
-              <Award className="w-5 h-5 text-amber-400" />
+          <div className="zawa-bento p-5 border border-border/[0.08] shadow-2xl space-y-4">
+            <h3 className="font-bold text-base text-accent-contrast flex items-center gap-2 tracking-tight">
+              <Award className="w-5 h-5 text-warning" />
               <span>{tTask.monthAverage}</span>
             </h3>
 
@@ -2157,14 +2157,14 @@ export const TasksPage: React.FC = () => {
                 return (
                   <div key={task.id} className="space-y-1.5">
                     <div className="flex items-center justify-between text-xs font-semibold">
-                      <span className="text-zinc-200">{task.title}</span>
-                      <span className="text-emerald-400 font-mono tabular-nums">
+                      <span className="text-text">{task.title}</span>
+                      <span className="text-positive font-mono tabular-nums">
                         {completedInMonth} / {monthDaysCount} j ({percentage}%)
                       </span>
                     </div>
-                    <div className="w-full h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+                    <div className="w-full h-1.5 rounded-full bg-surface/[0.06] overflow-hidden">
                       <div
-                        className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-300 shadow-[0_0_8px_rgba(16,185,129,0.4)]"
+                        className="h-full bg-gradient-to-r from-positive to-info rounded-full transition-all duration-300 shadow-[0_0_8px_rgba(16,185,129,0.4)]"
                         style={{ width: `${percentage}%` }}
                       />
                     </div>
@@ -2176,15 +2176,15 @@ export const TasksPage: React.FC = () => {
 
           <div className="bg-surface backdrop-blur-2xl rounded-card p-5 border border-border-subtle shadow-xs space-y-4">
             <h3 className="font-bold text-base text-content flex items-center gap-2 tracking-tight">
-              <Zap className="w-5 h-5 text-amber-500" />
+              <Zap className="w-5 h-5 text-warning" />
               <span>{tTask.consistencyTips}</span>
             </h3>
-            <div className="space-y-3 text-xs text-zinc-600 dark:text-muted leading-relaxed">
-              <div className="p-4 rounded-card bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-200">
+            <div className="space-y-3 text-xs text-muted dark:text-muted leading-relaxed">
+              <div className="p-4 rounded-card bg-warning/10 border border-warning/20 text-warning dark:text-warning">
                 <span className="font-bold block mb-1">🔥 {tTask.consistencyTips}</span>
                 {tTask.rule21Days}
               </div>
-              <div className="p-4 rounded-card bg-emerald-500/10 border border-emerald-500/20 text-emerald-900 dark:text-emerald-200">
+              <div className="p-4 rounded-card bg-positive/10 border border-positive/20 text-positive dark:text-positive">
                 <span className="font-bold block mb-1">⚡ {tTask.streak}</span>
                 {tTask.ruleNeverBreak}
               </div>
@@ -2211,7 +2211,7 @@ export const TasksPage: React.FC = () => {
               value={taskTitle}
               onChange={(e) => setTaskTitle(e.target.value)}
               placeholder={tTask.taskTitlePlaceholder}
-              className="w-full px-3.5 py-2.5 rounded-control bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-content font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
+              className="w-full px-3.5 py-2.5 rounded-control bg-surface-3 dark:bg-surface border border-border dark:border-border text-content font-medium focus:outline-none focus:ring-2 focus:ring-positive text-sm"
             />
           </div>
 
@@ -2223,7 +2223,7 @@ export const TasksPage: React.FC = () => {
               <select
                 value={taskCategory}
                 onChange={(e) => setTaskCategory(e.target.value as TaskCategory)}
-                className="w-full px-3 py-2 rounded-control bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-content text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-3 py-2 rounded-control bg-surface-3 dark:bg-surface border border-border dark:border-border text-content text-xs focus:outline-none focus:ring-2 focus:ring-positive"
               >
                 {Object.entries(CATEGORY_CONFIG).map(([k, c]) => (
                   <option key={k} value={k}>
@@ -2247,7 +2247,7 @@ export const TasksPage: React.FC = () => {
                     setSelectedDaysOfWeek([new Date(year, month - 1, day).getDay()]);
                   }
                 }}
-                className="w-full px-3 py-2 rounded-control bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-content text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-3 py-2 rounded-control bg-surface-3 dark:bg-surface border border-border dark:border-border text-content text-xs focus:outline-none focus:ring-2 focus:ring-positive"
               >
                 {Object.entries(FREQUENCY_LABELS).map(([k, v]) => (
                   <option key={k} value={k}>
@@ -2274,7 +2274,7 @@ export const TasksPage: React.FC = () => {
                       onClick={() => setSelectedDaysOfWeek((current) => selected
                         ? current.length > 1 ? current.filter((value) => value !== day.value) : current
                         : [...current, day.value].sort((a, b) => a - b))}
-                      className={`min-h-10 rounded-control border text-[10px] font-bold transition-colors ${selected ? 'border-indigo-500 bg-indigo-500 text-white' : 'border-border-subtle bg-canvas text-muted hover:text-content'}`}
+                      className={`min-h-10 rounded-control border text-[10px] font-bold transition-colors ${selected ? 'border-accent bg-accent text-accent-contrast' : 'border-border-subtle bg-canvas text-muted hover:text-content'}`}
                     >{day[language]}</button>
                   );
                 })}
@@ -2291,14 +2291,14 @@ export const TasksPage: React.FC = () => {
               value={taskNotes}
               onChange={(e) => setTaskNotes(e.target.value)}
               placeholder={tTask.notesPlaceholder}
-              className="w-full px-3.5 py-2 rounded-control bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-content text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-3.5 py-2 rounded-control bg-surface-3 dark:bg-surface border border-border dark:border-border text-content text-sm focus:outline-none focus:ring-2 focus:ring-positive"
             />
           </div>
 
           {/* Date & Time Picker */}
-          <div className="p-3.5 rounded-card bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200/70 dark:border-zinc-700/60 space-y-3">
+          <div className="p-3.5 rounded-card bg-surface-3 dark:bg-surface/60 border border-border/70 dark:border-border/60 space-y-3">
             <div className="flex items-center gap-2 text-xs font-bold text-content">
-              <Clock className="w-4 h-4 text-blue-500" />
+              <Clock className="w-4 h-4 text-info" />
               <span>{tTask.dateTimeLabel}</span>
             </div>
 
@@ -2311,7 +2311,7 @@ export const TasksPage: React.FC = () => {
                   type="date"
                   value={taskScheduledDate}
                   onChange={(e) => setTaskScheduledDate(e.target.value)}
-                  className="w-full min-w-[140px] px-4 py-2 rounded-xl bg-surface border border-zinc-200 dark:border-white/10 text-content text-xs font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full min-w-[140px] px-4 py-2 rounded-xl bg-surface border border-border dark:border-border/10 text-content text-xs font-mono focus:outline-none focus:ring-2 focus:ring-ring"
                 />
               </div>
 
@@ -2323,20 +2323,20 @@ export const TasksPage: React.FC = () => {
                   type="time"
                   value={taskScheduledTime}
                   onChange={(e) => setTaskScheduledTime(e.target.value)}
-                  className="w-full px-3 py-2 rounded-control bg-surface border border-zinc-200 dark:border-zinc-700 text-content text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 rounded-control bg-surface border border-border dark:border-border text-content text-xs font-mono focus:outline-none focus:ring-2 focus:ring-ring"
                 />
               </div>
             </div>
 
             {/* Direct Instant Action Button: Add Alarm via Google Calendar */}
-            <div className="pt-2 border-t border-zinc-200/50 dark:border-zinc-700/50 space-y-3">
+            <div className="pt-2 border-t border-border/50 dark:border-border/50 space-y-3">
               <button
                 type="button"
                 onClick={() => {
                   setAlarmModalTaskTitle(taskTitle || 'Tâche Routine');
                   setAlarmModalDescription(taskNotes || 'Rappel Flouss');
                 }}
-                className="w-full py-2.5 px-4 rounded-control bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98]"
+                className="w-full py-2.5 px-4 rounded-control bg-gradient-to-r from-info to-accent hover:from-info hover:to-accent text-accent-contrast font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98]"
               >
                 <Bell className="w-4 h-4" />
                 <span>{tTask.googleCalendarAlarmBtn}</span>
@@ -2345,7 +2345,7 @@ export const TasksPage: React.FC = () => {
               {/* Google Calendar Native Phone Alarm Toggle */}
               <div className="flex items-start justify-between gap-3 pt-1">
                 <div className="flex items-start gap-2.5">
-                  <div className="w-7 h-7 rounded-control bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-7 h-7 rounded-control bg-info/10 text-info dark:text-info flex items-center justify-center shrink-0 mt-0.5">
                     <Bell className="w-3.5 h-3.5" />
                   </div>
                   <div>
@@ -2366,13 +2366,13 @@ export const TasksPage: React.FC = () => {
                     onChange={(e) => setSyncToCalendar(e.target.checked)}
                     className="sr-only peer"
                   />
-                  <div className="w-10 h-6 bg-zinc-200 peer-focus:outline-none rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-zinc-600 peer-checked:bg-blue-600 shadow-xs"></div>
+                  <div className="w-10 h-6 bg-surface-2 peer-focus:outline-none rounded-full peer dark:bg-surface peer-checked:after:translate-x-full peer-checked:after:border-border after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-surface after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-border peer-checked:bg-info shadow-xs"></div>
                 </label>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-border dark:border-border">
             <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>
               {tTask.cancel}
             </Button>
@@ -2405,9 +2405,9 @@ export const TasksPage: React.FC = () => {
             {/* 1. SALAT TRACK DETAIL */}
             {activeTrack.type === 'salat' && (
               <div className="space-y-4">
-                <div className="p-4 rounded-card bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between gap-3">
+                <div className="p-4 rounded-card bg-positive/10 border border-positive/20 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-10 h-10 rounded-control bg-emerald-500 text-white flex items-center justify-center font-bold text-lg shadow-xs">
+                    <div className="w-10 h-10 rounded-control bg-positive text-accent-contrast flex items-center justify-center font-bold text-lg shadow-xs">
                       🕌
                     </div>
                     <div>
@@ -2420,7 +2420,7 @@ export const TasksPage: React.FC = () => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 block tabular-nums">
+                    <span className="text-xs font-black text-positive dark:text-positive block tabular-nums">
                       {selectedDatePrayers.length} / 5
                     </span>
                     <span className="text-caption font-bold text-muted">
@@ -2448,15 +2448,15 @@ export const TasksPage: React.FC = () => {
                         onClick={() => handleToggleSalat(prayer.key)}
                         className={`flex flex-col items-center justify-center p-3.5 rounded-card border transition-all duration-200 active:scale-95 ${
                           isCompleted
-                            ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 shadow-xs'
-                            : 'bg-zinc-50 dark:bg-zinc-800/60 text-zinc-600 dark:text-muted border-zinc-200/60 dark:border-zinc-700/60 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                            ? 'bg-positive/15 text-positive dark:text-positive border-positive/30 shadow-xs'
+                            : 'bg-surface-3 dark:bg-surface/60 text-muted dark:text-muted border-border/60 dark:border-border/60 hover:bg-surface-3 dark:hover:bg-surface'
                         }`}
                       >
                         <div
                           className={`w-9 h-9 rounded-control flex items-center justify-center mb-1.5 transition-colors ${
                             isCompleted
-                              ? 'bg-emerald-600 text-white shadow-xs'
-                              : 'bg-zinc-200/80 dark:bg-zinc-700 text-muted'
+                              ? 'bg-positive text-accent-contrast shadow-xs'
+                              : 'bg-surface-2/80 dark:bg-surface text-muted'
                           }`}
                         >
                           {isCompleted ? <Check className="w-4 h-4 stroke-[2.5]" /> : <Icon className="w-4 h-4" />}
@@ -2464,7 +2464,7 @@ export const TasksPage: React.FC = () => {
                         <span className="text-xs font-bold tracking-tight">{prayer.label}</span>
                         <span
                           className={`text-caption mt-0.5 font-bold tabular-nums ${
-                            isCompleted ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted'
+                            isCompleted ? 'text-positive dark:text-positive' : 'text-muted'
                           }`}
                         >
                           +50 XP
@@ -2479,15 +2479,15 @@ export const TasksPage: React.FC = () => {
                   <motion.div
                     initial={{ opacity: 0, scale: 0.98 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="p-3.5 rounded-card bg-gradient-to-r from-emerald-500/20 via-teal-500/15 to-emerald-500/20 border border-emerald-500/30 flex items-center justify-between gap-3 text-xs"
+                    className="p-3.5 rounded-card bg-gradient-to-r from-positive/20 via-info/15 to-positive/20 border border-positive/30 flex items-center justify-between gap-3 text-xs"
                   >
                     <div className="flex items-center gap-2">
                       <span className="text-base">✨</span>
-                      <span className="font-bold text-emerald-800 dark:text-emerald-200">
+                      <span className="font-bold text-positive dark:text-positive">
                         {tTask.salatCompletedAll}
                       </span>
                     </div>
-                    <span className="font-black text-emerald-600 dark:text-emerald-400 bg-surface px-2 py-0.5 rounded-control shadow-2xs">
+                    <span className="font-black text-positive dark:text-positive bg-surface px-2 py-0.5 rounded-control shadow-2xs">
                       +250 XP
                     </span>
                   </motion.div>
@@ -2498,12 +2498,12 @@ export const TasksPage: React.FC = () => {
             {/* 2. SUBTASKS TRACKS DETAIL (CODING, ENGLISH, CUSTOM) */}
             {(activeTrack.type === 'coding' || activeTrack.type === 'english' || activeTrack.type === 'custom') && (
               <div className="space-y-4">
-                <div className="p-3.5 rounded-card bg-blue-500/10 border border-blue-500/20 flex items-center justify-between gap-3 text-xs">
-                  <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300 font-semibold">
-                    <Sparkles className="w-4 h-4 text-blue-500 shrink-0" />
+                <div className="p-3.5 rounded-card bg-info/10 border border-info/20 flex items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-2 text-info dark:text-info font-semibold">
+                    <Sparkles className="w-4 h-4 text-info shrink-0" />
                     <span>{tTask.dynamicPointsNotice?.replace('{points}', '10') || '+10 XP par tâche réalisée'}</span>
                   </div>
-                  <span className="font-bold text-zinc-600 dark:text-zinc-300 tabular-nums">
+                  <span className="font-bold text-muted dark:text-muted tabular-nums">
                     {(activeTrack.subtasks || []).filter((s) => (s.completedDates || []).includes(selectedDate)).length} / {(activeTrack.subtasks || []).length}
                   </span>
                 </div>
@@ -2521,7 +2521,7 @@ export const TasksPage: React.FC = () => {
                         ? (language === 'ar' ? 'مثال: Listening, Grammar, Vocabulary...' : language === 'en' ? 'e.g. Listening, Grammar, Speaking...' : 'ex. : Listening, grammaire, expression orale...')
                         : (tTask.subTaskPlaceholder || 'ex : Nouvelle sous-tâche...')
                     }
-                    className="flex-1 px-3.5 py-2.5 rounded-control bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-content text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 px-3.5 py-2.5 rounded-control bg-surface-3 dark:bg-surface border border-border dark:border-border text-content text-xs font-medium focus:outline-none focus:ring-2 focus:ring-ring"
                   />
                   <Button type="submit" variant="primary" size="sm" icon={<Plus className="w-3.5 h-3.5" />}>
                     <span>{tTask.addSubTask || 'Ajouter'}</span>
@@ -2542,8 +2542,8 @@ export const TasksPage: React.FC = () => {
                           key={sub.id}
                           className={`flex items-center justify-between p-3 rounded-card border transition-all ${
                             isDone
-                              ? 'bg-blue-500/10 border-blue-500/25 text-muted dark:text-zinc-500'
-                              : 'bg-zinc-50 dark:bg-zinc-800/60 border-zinc-200/60 dark:border-zinc-700/60 text-content'
+                              ? 'bg-info/10 border-info/25 text-muted dark:text-muted'
+                              : 'bg-surface-3 dark:bg-surface/60 border-border/60 dark:border-border/60 text-content'
                           }`}
                         >
                           <div
@@ -2565,8 +2565,8 @@ export const TasksPage: React.FC = () => {
                               }}
                               className={`w-6 h-6 rounded-control flex items-center justify-center transition-all shrink-0 ${
                                 isDone
-                                  ? 'bg-blue-600 text-white shadow-xs'
-                                  : 'bg-zinc-200 dark:bg-zinc-700 text-transparent hover:text-muted'
+                                  ? 'bg-info text-accent-contrast shadow-xs'
+                                  : 'bg-surface-2 dark:bg-surface text-transparent hover:text-muted'
                               }`}
                             >
                               <Check className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -2583,7 +2583,7 @@ export const TasksPage: React.FC = () => {
                                 setAlarmModalTaskTitle(`${getProgramTrackTitle(activeTrack, language)}: ${sub.title}`);
                                 setAlarmModalDescription(`Rappel pour ${sub.title}`);
                               }}
-                              className="p-1 rounded-control text-blue-500 hover:text-blue-600 hover:bg-blue-500/10 transition-colors"
+                              className="p-1 rounded-control text-info hover:text-info hover:bg-info/10 transition-colors"
                               title={tTask.googleCalendarAlarmBtn}
                             >
                               <Bell className="w-3.5 h-3.5" />
@@ -2598,18 +2598,18 @@ export const TasksPage: React.FC = () => {
                                   points: sub.points || 10,
                                 })
                               }
-                              className="p-1 rounded-control text-muted hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
+                              className="p-1 rounded-control text-muted hover:text-text dark:hover:text-text transition-colors"
                               title="Modifier"
                             >
                               <Edit2 className="w-3.5 h-3.5" />
                             </button>
-                            <span className="text-caption font-bold text-blue-600 dark:text-blue-400 tabular-nums">
+                            <span className="text-caption font-bold text-info dark:text-info tabular-nums">
                               +{sub.points || 10} XP
                             </span>
                             <button
                               type="button"
                               onClick={() => deleteProgramSubTask(activeTrack.id, sub.id)}
-                              className="p-1 rounded-control text-muted hover:text-rose-500 transition-colors"
+                              className="p-1 rounded-control text-muted hover:text-negative transition-colors"
                               title={tCommon.delete}
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -2622,14 +2622,14 @@ export const TasksPage: React.FC = () => {
                 </div>
 
                 {activeTrack.type === 'custom' && (
-                  <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 flex justify-end">
+                  <div className="pt-3 border-t border-border dark:border-border flex justify-end">
                     <button
                       type="button"
                       onClick={() => {
                         deleteProgramTrack(activeTrack.id);
                         setSelectedTrackId(null);
                       }}
-                      className="text-xs text-rose-500 hover:text-rose-600 font-semibold flex items-center gap-1.5 p-1 rounded-control hover:bg-rose-500/10 transition-colors"
+                      className="text-xs text-negative hover:text-negative font-semibold flex items-center gap-1.5 p-1 rounded-control hover:bg-negative/10 transition-colors"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                       <span>{language === 'ar' ? 'حذف هذا البرنامج' : language === 'en' ? 'Delete this program' : 'Supprimer ce programme'}</span>
@@ -2642,24 +2642,24 @@ export const TasksPage: React.FC = () => {
             {/* 3. GYM TRACK DETAIL */}
             {activeTrack.type === 'gym' && (
               <div className="space-y-4">
-                <div className="p-3.5 rounded-card bg-rose-500/10 border border-rose-500/20 flex items-center justify-between gap-3 text-xs">
-                  <div className="flex items-center gap-2 text-rose-700 dark:text-rose-300 font-semibold">
-                    <Dumbbell className="w-4 h-4 text-rose-500 shrink-0" />
+                <div className="p-3.5 rounded-card bg-negative/10 border border-negative/20 flex items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-2 text-negative dark:text-negative font-semibold">
+                    <Dumbbell className="w-4 h-4 text-negative shrink-0" />
                     <span>+40 XP / {language === 'ar' ? 'حصة تدريبية' : language === 'en' ? 'workout logged' : 'séance validée'}</span>
                   </div>
-                  <span className="font-bold text-zinc-500 tabular-nums">
+                  <span className="font-bold text-muted tabular-nums">
                     {(gymLogs ?? []).length} {tTask.workoutHistory || 'séances'}
                   </span>
                 </div>
 
                 {/* Form */}
-                <form onSubmit={handleAddGym} className="p-3.5 rounded-card bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-700/60 space-y-3.5">
+                <form onSubmit={handleAddGym} className="p-3.5 rounded-card bg-surface-3 dark:bg-surface/40 border border-border/60 dark:border-border/60 space-y-3.5">
                   {/* 1-Click Apple-style Muscle Group Toggle Chips */}
                   <div>
-                    <label className="block text-caption font-bold text-zinc-600 dark:text-zinc-300 mb-1.5 flex items-center justify-between">
+                    <label className="block text-caption font-bold text-muted dark:text-muted mb-1.5 flex items-center justify-between">
                       <span>{tTask.muscleGroups} *</span>
                       {selectedGymMuscles.length > 0 && (
-                        <span className="text-caption text-rose-600 dark:text-rose-400 font-semibold tabular-nums">
+                        <span className="text-caption text-negative dark:text-negative font-semibold tabular-nums">
                           {selectedGymMuscles.length} {language === 'ar' ? 'محددة' : language === 'en' ? 'selected' : 'sélectionné(s)'}
                         </span>
                       )}
@@ -2677,8 +2677,8 @@ export const TasksPage: React.FC = () => {
                             onClick={() => toggleMuscleChip(chip)}
                             className={`px-2.5 py-2 rounded-control text-xs font-semibold transition-all border flex items-center justify-center gap-1.5 ${
                               isSelected
-                                ? 'bg-rose-600 text-white border-rose-600 shadow-xs scale-[1.02]'
-                                : 'bg-surface text-content border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                                ? 'bg-negative text-accent-contrast border-negative shadow-xs scale-[1.02]'
+                                : 'bg-surface text-content border-border dark:border-border hover:bg-surface-3 dark:hover:bg-surface'
                             }`}
                           >
                             <span>{chipMeta?.icon || '💪'}</span>
@@ -2692,7 +2692,7 @@ export const TasksPage: React.FC = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {/* Optional Exercise Details Textarea */}
                     <div>
-                      <label className="block text-caption font-bold text-zinc-600 dark:text-zinc-300 mb-1">
+                      <label className="block text-caption font-bold text-muted dark:text-muted mb-1">
                         {tTask.exercisesLabel} ({language === 'ar' ? 'اختياري' : language === 'en' ? 'optional' : 'optionnel'})
                       </label>
                       <textarea
@@ -2700,13 +2700,13 @@ export const TasksPage: React.FC = () => {
                         value={gymExercises}
                         onChange={(e) => setGymExercises(e.target.value)}
                         placeholder={tTask.exercisesPlaceholder || (language === 'ar' ? 'تفاصيل التمارين والأوزان...' : language === 'en' ? 'Workout details, sets and weights...' : 'Détails des exercices, séries et charges...')}
-                        className="w-full px-3 py-2 rounded-control bg-surface border border-zinc-200 dark:border-zinc-700 text-content text-xs font-medium focus:outline-none focus:ring-2 focus:ring-rose-500"
+                        className="w-full px-3 py-2 rounded-control bg-surface border border-border dark:border-border text-content text-xs font-medium focus:outline-none focus:ring-2 focus:ring-negative"
                       />
                     </div>
 
                     {/* Tomorrow's Plan */}
                     <div>
-                      <label className="block text-caption font-bold text-zinc-600 dark:text-zinc-300 mb-1">
+                      <label className="block text-caption font-bold text-muted dark:text-muted mb-1">
                         {tTask.tomorrowPlan} ({language === 'ar' ? 'اختياري' : language === 'en' ? 'optional' : 'optionnel'})
                       </label>
                       <textarea
@@ -2714,7 +2714,7 @@ export const TasksPage: React.FC = () => {
                         value={gymTomorrowPlan}
                         onChange={(e) => setGymTomorrowPlan(e.target.value)}
                         placeholder={tTask.tomorrowPlaceholder || (language === 'ar' ? 'خطة تمرين الغد...' : language === 'en' ? 'Plan for tomorrow...' : 'Programme pour demain...')}
-                        className="w-full px-3 py-2 rounded-control bg-surface border border-zinc-200 dark:border-zinc-700 text-content text-xs font-medium focus:outline-none focus:ring-2 focus:ring-rose-500"
+                        className="w-full px-3 py-2 rounded-control bg-surface border border-border dark:border-border text-content text-xs font-medium focus:outline-none focus:ring-2 focus:ring-negative"
                       />
                     </div>
                   </div>
@@ -2736,7 +2736,7 @@ export const TasksPage: React.FC = () => {
                     (gymLogs ?? []).map((log) => (
                       <div
                         key={log.id}
-                        className="p-2.5 rounded-control bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200/60 dark:border-zinc-700/60 text-xs flex items-center justify-between gap-3"
+                        className="p-2.5 rounded-control bg-surface-3 dark:bg-surface/60 border border-border/60 dark:border-border/60 text-xs flex items-center justify-between gap-3"
                       >
                         <div className="space-y-0.5 min-w-0">
                           <div className="flex items-center gap-2">
@@ -2753,7 +2753,7 @@ export const TasksPage: React.FC = () => {
                             </p>
                           )}
                           {log.tomorrowPlan && (
-                            <p className="text-caption text-rose-600 dark:text-rose-400 font-medium">
+                            <p className="text-caption text-negative dark:text-negative font-medium">
                               ➜ {log.tomorrowPlan}
                             </p>
                           )}
@@ -2766,18 +2766,18 @@ export const TasksPage: React.FC = () => {
                               setAlarmModalTaskTitle(`Séance Gym: ${log.muscleGroups}`);
                               setAlarmModalDescription(log.tomorrowPlan ? `Plan: ${log.tomorrowPlan}` : 'Séance de musculation');
                             }}
-                            className="p-1 rounded-control text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
+                            className="p-1 rounded-control text-negative hover:text-negative hover:bg-negative/10 transition-colors"
                             title={language === 'ar' ? 'تذكير عبر تقويم جوجل' : language === 'en' ? 'Add Google Calendar reminder' : 'Ajouter un rappel Google Calendar'}
                           >
                             <Bell className="w-3.5 h-3.5" />
                           </button>
-                          <span className="text-caption font-bold text-rose-600 dark:text-rose-400">
+                          <span className="text-caption font-bold text-negative dark:text-negative">
                             +40 XP
                           </span>
                           <button
                             type="button"
                             onClick={() => deleteGymLog(log.id)}
-                            className="p-1 rounded-control text-muted hover:text-rose-500 transition-colors"
+                            className="p-1 rounded-control text-muted hover:text-negative transition-colors"
                             title={tCommon.delete}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -2793,21 +2793,21 @@ export const TasksPage: React.FC = () => {
             {/* 4. STUDY TRACK DETAIL */}
             {activeTrack.type === 'study' && (
               <div className="space-y-4">
-                <div className="p-3.5 rounded-card bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-between gap-3 text-xs">
-                  <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300 font-semibold">
-                    <BookOpen className="w-4 h-4 text-indigo-500 shrink-0" />
+                <div className="p-3.5 rounded-card bg-accent/10 border border-accent/20 flex items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-2 text-accent dark:text-accent font-semibold">
+                    <BookOpen className="w-4 h-4 text-accent shrink-0" />
                     <span>+30 XP / {language === 'ar' ? 'وحدة دراسية' : language === 'en' ? 'module completed' : 'module terminé'}</span>
                   </div>
-                  <span className="font-bold text-zinc-500 tabular-nums">
+                  <span className="font-bold text-muted tabular-nums">
                     {(studyModules ?? []).filter((m) => m.completed).length} / {(studyModules ?? []).length}
                   </span>
                 </div>
 
                 {/* 1-Click Apple-style Economics & Management S3 Modules Chips */}
                 <div>
-                  <label className="block text-caption font-bold text-zinc-600 dark:text-zinc-300 mb-1.5 flex items-center justify-between">
+                  <label className="block text-caption font-bold text-muted dark:text-muted mb-1.5 flex items-center justify-between">
                     <span>{language === 'ar' ? 'وحدات الاقتصاد والتدبير (S3)' : language === 'en' ? 'Economics & Management (S3) Modules' : 'Modules Économie & Gestion (S3)'}</span>
-                    <span className="text-caption text-indigo-600 dark:text-indigo-400 font-semibold">{language === 'ar' ? 'إضافة سريعة بنقرة واحدة' : language === 'en' ? 'Quick add in one click' : 'Ajout rapide en un clic'}</span>
+                    <span className="text-caption text-accent dark:text-accent font-semibold">{language === 'ar' ? 'إضافة سريعة بنقرة واحدة' : language === 'en' ? 'Quick add in one click' : 'Ajout rapide en un clic'}</span>
                   </label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 mb-3">
                     {ECONOMICS_S3_MODULES.map((modName) => {
@@ -2821,11 +2821,11 @@ export const TasksPage: React.FC = () => {
                           onClick={() => handleQuickAddEconomicsModule(modName)}
                           className={`px-2.5 py-1.5 rounded-control text-xs font-semibold flex items-center gap-1.5 transition-all text-left rtl:text-right border ${
                             isAlreadyAdded
-                              ? 'bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-500/30 shadow-2xs'
-                              : 'bg-white dark:bg-zinc-800/80 text-content border-zinc-200 dark:border-zinc-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 hover:border-indigo-300'
+                              ? 'bg-accent/15 text-accent dark:text-accent border-accent/30 shadow-2xs'
+                              : 'bg-surface dark:bg-surface/80 text-content border-border dark:border-border hover:bg-accent dark:hover:bg-accent/30 hover:border-accent'
                           }`}
                         >
-                          <span className="text-indigo-500 font-bold shrink-0">{isAlreadyAdded ? '✓' : '+'}</span>
+                          <span className="text-accent font-bold shrink-0">{isAlreadyAdded ? '✓' : '+'}</span>
                           <span className="truncate">{modName}</span>
                         </button>
                       );
@@ -2840,14 +2840,14 @@ export const TasksPage: React.FC = () => {
                     value={moduleTitle}
                     onChange={(e) => setModuleTitle(e.target.value)}
                     placeholder={tTask.modulePlaceholder || 'Nom du module ou matière...'}
-                    className="flex-1 px-3.5 py-2 rounded-control bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-content text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="flex-1 px-3.5 py-2 rounded-control bg-surface-3 dark:bg-surface border border-border dark:border-border text-content text-xs font-medium focus:outline-none focus:ring-2 focus:ring-ring"
                   />
                   <input
                     type="text"
                     value={moduleSubject}
                     onChange={(e) => setModuleSubject(e.target.value)}
                     placeholder={tTask.subjectPlaceholder || 'Discipline (optionnel)...'}
-                    className="sm:w-44 px-3.5 py-2 rounded-control bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-content text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="sm:w-44 px-3.5 py-2 rounded-control bg-surface-3 dark:bg-surface border border-border dark:border-border text-content text-xs font-medium focus:outline-none focus:ring-2 focus:ring-ring"
                   />
                   <Button type="submit" variant="primary" size="sm" icon={<Plus className="w-3.5 h-3.5" />}>
                     <span>{tCommon.confirm}</span>
@@ -2866,8 +2866,8 @@ export const TasksPage: React.FC = () => {
                         key={mod.id}
                         className={`flex items-center justify-between p-3 rounded-card border transition-all ${
                           mod.completed
-                            ? 'bg-indigo-500/10 border-indigo-500/20 text-muted dark:text-zinc-500'
-                            : 'bg-zinc-50 dark:bg-zinc-800/60 border-zinc-200/60 dark:border-zinc-700/60 text-content'
+                            ? 'bg-accent/10 border-accent/20 text-muted dark:text-muted'
+                            : 'bg-surface-3 dark:bg-surface/60 border-border/60 dark:border-border/60 text-content'
                         }`}
                       >
                         <div
@@ -2882,8 +2882,8 @@ export const TasksPage: React.FC = () => {
                             }}
                             className={`w-6 h-6 rounded-control flex items-center justify-center transition-all shrink-0 ${
                               mod.completed
-                                ? 'bg-indigo-600 text-white'
-                                : 'bg-zinc-200 dark:bg-zinc-700 text-transparent hover:text-muted'
+                                ? 'bg-accent text-accent-contrast'
+                                : 'bg-surface-2 dark:bg-surface text-transparent hover:text-muted'
                             }`}
                           >
                             <Check className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -2907,7 +2907,7 @@ export const TasksPage: React.FC = () => {
                               setAlarmModalTaskTitle(`Révision: ${mod.title}${mod.subject ? ` (${mod.subject})` : ''}`);
                               setAlarmModalDescription(`Session de révision S3: ${mod.title}`);
                             }}
-                            className="p-1 rounded-control text-indigo-500 hover:text-indigo-600 hover:bg-indigo-500/10 transition-colors"
+                            className="p-1 rounded-control text-accent hover:text-accent hover:bg-accent/10 transition-colors"
                             title={tTask.googleCalendarAlarmBtn}
                           >
                             <Bell className="w-3.5 h-3.5" />
@@ -2915,18 +2915,18 @@ export const TasksPage: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => setEditingStudyModule(mod)}
-                            className="p-1 rounded-control text-muted hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
+                            className="p-1 rounded-control text-muted hover:text-text dark:hover:text-text transition-colors"
                             title="Modifier"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
                           </button>
-                          <span className="text-caption font-bold text-indigo-600 dark:text-indigo-400">
+                          <span className="text-caption font-bold text-accent dark:text-accent">
                             +30 XP
                           </span>
                           <button
                             type="button"
                             onClick={() => deleteStudyModule(mod.id)}
-                            className="p-1 rounded-control text-muted hover:text-rose-500 transition-colors"
+                            className="p-1 rounded-control text-muted hover:text-negative transition-colors"
                             title={tCommon.delete}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -2964,7 +2964,7 @@ export const TasksPage: React.FC = () => {
               value={newTrackTitle}
               onChange={(e) => setNewTrackTitle(e.target.value)}
               placeholder="ex : Deutsch (Allemand), Marketing, UI/UX..."
-              className="w-full px-3.5 py-2.5 rounded-control bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-content font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              className="w-full px-3.5 py-2.5 rounded-control bg-surface-3 dark:bg-surface border border-border dark:border-border text-content font-medium focus:outline-none focus:ring-2 focus:ring-ring text-sm"
             />
           </div>
 
@@ -2981,8 +2981,8 @@ export const TasksPage: React.FC = () => {
                     onClick={() => setNewTrackIcon(emoji)}
                     className={`w-9 h-9 rounded-control flex items-center justify-center text-lg border transition-all ${
                       newTrackIcon === emoji
-                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/60 scale-105'
-                        : 'border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                        ? 'border-info bg-info dark:bg-info/60 scale-105'
+                        : 'border-border dark:border-border hover:bg-surface-3 dark:hover:bg-surface'
                     }`}
                   >
                     {emoji}
@@ -3003,7 +3003,7 @@ export const TasksPage: React.FC = () => {
                     onClick={() => setNewTrackColor(color)}
                     className={`w-7 h-7 rounded-full transition-transform ${
                       newTrackColor === color
-                        ? 'scale-125 ring-2 ring-offset-2 ring-blue-500'
+                        ? 'scale-125 ring-2 ring-offset-2 ring-ring'
                         : 'hover:scale-110'
                     }`}
                     style={{ backgroundColor: color }}
@@ -3013,7 +3013,7 @@ export const TasksPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-border dark:border-border">
             <Button type="button" variant="ghost" onClick={() => setIsAddTrackModalOpen(false)}>
               {tTask.cancel}
             </Button>
@@ -3053,7 +3053,7 @@ export const TasksPage: React.FC = () => {
                 required
                 value={editingSubTask.title}
                 onChange={(e) => setEditingSubTask({ ...editingSubTask, title: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-control bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-content font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                className="w-full px-3.5 py-2.5 rounded-control bg-surface-3 dark:bg-surface border border-border dark:border-border text-content font-medium focus:outline-none focus:ring-2 focus:ring-ring text-sm"
               />
             </div>
 
@@ -3067,12 +3067,12 @@ export const TasksPage: React.FC = () => {
                 max={100}
                 value={editingSubTask.points}
                 onChange={(e) => setEditingSubTask({ ...editingSubTask, points: Number(e.target.value) })}
-                className="w-full px-3.5 py-2 rounded-control bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-content text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3.5 py-2 rounded-control bg-surface-3 dark:bg-surface border border-border dark:border-border text-content text-xs font-medium focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
 
             {/* Prominent Action Button: Add Alarm via Google Calendar */}
-            <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800">
+            <div className="pt-2 border-t border-border dark:border-border">
               <button
                 type="button"
                 onClick={() => {
@@ -3080,14 +3080,14 @@ export const TasksPage: React.FC = () => {
                   setAlarmModalTaskTitle(`${trackTitle}: ${editingSubTask.title}`);
                   setAlarmModalDescription(`Rappel pour ${editingSubTask.title}`);
                 }}
-                className="w-full py-2.5 px-4 rounded-control bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98]"
+                className="w-full py-2.5 px-4 rounded-control bg-gradient-to-r from-info to-accent hover:from-info hover:to-accent text-accent-contrast font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98]"
               >
                 <Bell className="w-4 h-4" />
                 <span>{tTask.googleCalendarAlarmBtn}</span>
               </button>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-border dark:border-border">
               <Button type="button" variant="ghost" onClick={() => setEditingSubTask(null)}>
                 {tTask.cancel}
               </Button>
@@ -3128,7 +3128,7 @@ export const TasksPage: React.FC = () => {
                 required
                 value={editingStudyModule.title}
                 onChange={(e) => setEditingStudyModule({ ...editingStudyModule, title: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-control bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-content font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                className="w-full px-3.5 py-2.5 rounded-control bg-surface-3 dark:bg-surface border border-border dark:border-border text-content font-medium focus:outline-none focus:ring-2 focus:ring-ring text-sm"
               />
             </div>
 
@@ -3140,26 +3140,26 @@ export const TasksPage: React.FC = () => {
                 type="text"
                 value={editingStudyModule.subject || ''}
                 onChange={(e) => setEditingStudyModule({ ...editingStudyModule, subject: e.target.value })}
-                className="w-full px-3.5 py-2 rounded-control bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-content text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3.5 py-2 rounded-control bg-surface-3 dark:bg-surface border border-border dark:border-border text-content text-xs font-medium focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
 
             {/* Prominent Action Button: Add Alarm via Google Calendar */}
-            <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800">
+            <div className="pt-2 border-t border-border dark:border-border">
               <button
                 type="button"
                 onClick={() => {
                   setAlarmModalTaskTitle(`Révision: ${editingStudyModule.title}${editingStudyModule.subject ? ` (${editingStudyModule.subject})` : ''}`);
                   setAlarmModalDescription(`Session de révision S3: ${editingStudyModule.title}`);
                 }}
-                className="w-full py-2.5 px-4 rounded-control bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98]"
+                className="w-full py-2.5 px-4 rounded-control bg-gradient-to-r from-info to-accent hover:from-info hover:to-accent text-accent-contrast font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98]"
               >
                 <Bell className="w-4 h-4" />
                 <span>{tTask.googleCalendarAlarmBtn}</span>
               </button>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-border dark:border-border">
               <Button type="button" variant="ghost" onClick={() => setEditingStudyModule(null)}>
                 {tTask.cancel}
               </Button>

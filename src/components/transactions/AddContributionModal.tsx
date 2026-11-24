@@ -144,15 +144,15 @@ export const AddContributionModal: React.FC<AddContributionModalProps> = ({
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Category Picker */}
         <div>
-          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+          <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-2">
             {t.goalToFund}
           </label>
           {goalCategories.length === 0 ? (
-            <div className="p-4 text-center text-xs text-slate-400 bg-slate-50 dark:bg-slate-800 rounded-2xl">
+            <div className="p-4 text-center text-xs text-muted bg-surface-3 dark:bg-surface rounded-2xl">
               {translations[language].dashboard.noGoalsYet}
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-44 overflow-y-auto p-1 rounded-2xl border border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/50">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-44 overflow-y-auto p-1 rounded-2xl border border-border dark:border-border/80 bg-surface-3/50 dark:bg-surface/50">
               {goalCategories.map((cat) => {
                 const IconComp = getCategoryIcon(cat.icon);
                 const isSelected = categoryId === cat.id;
@@ -167,17 +167,17 @@ export const AddContributionModal: React.FC<AddContributionModalProps> = ({
                     }}
                     className={`relative p-2.5 rounded-2xl text-center border flex flex-col items-center justify-center gap-1.5 transition-all text-xs font-semibold min-h-[76px] ${
                       isSelected
-                        ? 'border-emerald-500 bg-white dark:bg-slate-800 text-emerald-900 dark:text-emerald-200 ring-2 ring-emerald-500 shadow-sm'
-                        : 'border-slate-200/70 dark:border-slate-800 bg-white dark:bg-slate-800/40 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                        ? 'border-positive bg-surface dark:bg-surface text-positive dark:text-positive ring-2 ring-positive shadow-sm'
+                        : 'border-border/70 dark:border-border bg-surface dark:bg-surface/40 text-text dark:text-muted hover:bg-surface-3 dark:hover:bg-surface'
                     }`}
                   >
                     {isSelected && (
-                      <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-xs">
+                      <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-positive text-accent-contrast flex items-center justify-center shadow-xs">
                         <Check className="w-2.5 h-2.5 stroke-[3]" />
                       </div>
                     )}
                     <div
-                      className="w-8 h-8 rounded-xl flex items-center justify-center text-white shrink-0 shadow-xs"
+                      className="w-8 h-8 rounded-xl flex items-center justify-center text-accent-contrast shrink-0 shadow-xs"
                       style={{ backgroundColor: getCategoryVisualColor(cat.id) }}
                     >
                       <IconComp className="w-4 h-4" />
@@ -194,12 +194,12 @@ export const AddContributionModal: React.FC<AddContributionModalProps> = ({
 
         {/* Goal Quick Info Card & Monthly Auto-Fill */}
         {goalCalc && selectedCategory && (
-          <div className="p-3.5 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-900/40 flex items-center justify-between text-xs">
+          <div className="p-3.5 rounded-2xl bg-positive/50 dark:bg-positive/20 border border-positive/60 dark:border-positive/40 flex items-center justify-between text-xs">
             <div>
-              <p className="font-bold text-emerald-950 dark:text-emerald-200">
+              <p className="font-bold text-positive dark:text-positive">
                 {getCategoryName(selectedCategory, language)}
               </p>
-              <p className="text-[11px] text-emerald-700 dark:text-emerald-400 mt-0.5 tabular-nums">
+              <p className="text-[11px] text-positive dark:text-positive mt-0.5 tabular-nums">
                 {formatMAD(goalCalc.savedAmount, false, language)} /{' '}
                 {formatMAD(selectedCategory.targetAmount || 0, false, language)} ({goalCalc.progressPercent}%)
               </p>
@@ -209,7 +209,7 @@ export const AddContributionModal: React.FC<AddContributionModalProps> = ({
               <button
                 type="button"
                 onClick={handlePreFillMonthly}
-                className="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] flex items-center gap-1 shadow-xs transition-colors shrink-0"
+                className="px-2.5 py-1.5 rounded-xl bg-positive hover:bg-positive text-accent-contrast font-bold text-[11px] flex items-center gap-1 shadow-xs transition-colors shrink-0"
                 title="Pré-remplir avec la mensualité recommandée"
               >
                 <Sparkles className="w-3 h-3" />
@@ -223,7 +223,7 @@ export const AddContributionModal: React.FC<AddContributionModalProps> = ({
 
         {/* Amount */}
         <div>
-          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-1.5">
             {t.amount}
           </label>
           <div className="relative flex items-center">
@@ -237,9 +237,9 @@ export const AddContributionModal: React.FC<AddContributionModalProps> = ({
                 setAmountStr(e.target.value);
                 setError('');
               }}
-              className="w-full text-3xl font-bold py-3 px-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all pr-20 tabular-nums"
+              className="w-full text-3xl font-bold py-3 px-4 rounded-2xl border border-border dark:border-border bg-surface dark:bg-surface text-positive dark:text-positive focus:border-positive focus:ring-4 focus:ring-positive/10 outline-none transition-all pr-20 tabular-nums"
             />
-            <span className="absolute right-4 text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1.5 rounded-xl uppercase tracking-wider">
+            <span className="absolute right-4 text-xs font-bold text-muted dark:text-muted bg-surface-3 dark:bg-surface px-2.5 py-1.5 rounded-xl uppercase tracking-wider">
               {translations[language].currency}
             </span>
           </div>
@@ -251,20 +251,20 @@ export const AddContributionModal: React.FC<AddContributionModalProps> = ({
                 key={val}
                 type="button"
                 onClick={() => handleQuickAddAmount(val)}
-                className="px-2.5 py-1 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors"
+                className="px-2.5 py-1 rounded-xl text-xs font-bold bg-surface-3 hover:bg-surface-2 dark:bg-surface dark:hover:bg-surface text-text dark:text-muted transition-colors"
               >
                 +{val}
               </button>
             ))}
           </div>
 
-          {error && <p className="text-xs font-medium text-rose-500 mt-1.5">{error}</p>}
+          {error && <p className="text-xs font-medium text-negative mt-1.5">{error}</p>}
         </div>
 
         {/* Warning if exceeds available balance */}
         {isOverBalance && numericAmount > 0 && (
-          <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200/80 dark:border-rose-800 rounded-2xl flex items-start gap-2.5 text-xs text-rose-800 dark:text-rose-200">
-            <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+          <div className="p-3 bg-negative dark:bg-negative/40 border border-negative/80 dark:border-negative rounded-2xl flex items-start gap-2.5 text-xs text-negative dark:text-negative">
+            <AlertTriangle className="w-4 h-4 text-negative shrink-0 mt-0.5" />
             <div>
               <p className="font-bold">{t.insufficientBalance}</p>
               <p className="mt-0.5 text-[11px] opacity-90">

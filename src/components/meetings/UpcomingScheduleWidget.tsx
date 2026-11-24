@@ -66,18 +66,18 @@ export const UpcomingScheduleWidget: React.FC = () => {
   const token = getStoredGoogleAccessToken();
 
   return (
-    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-5 shadow-xs space-y-4">
+    <div className="bg-surface dark:bg-surface border border-border dark:border-border rounded-3xl p-5 shadow-xs space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-xl bg-info/10 text-info dark:text-info flex items-center justify-center">
             <Calendar className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-sm font-extrabold text-zinc-900 dark:text-white">
+            <h3 className="text-sm font-extrabold text-text dark:text-text">
               {tCommon.upcomingSchedule}
             </h3>
-            <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+            <p className="text-[11px] text-muted dark:text-muted">
               {tCommon.syncedWithCalendar}
             </p>
           </div>
@@ -91,7 +91,7 @@ export const UpcomingScheduleWidget: React.FC = () => {
               fetchSchedule();
             }}
             disabled={loading}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+            className="p-1.5 rounded-lg text-muted hover:text-muted dark:hover:text-text hover:bg-surface-3 dark:hover:bg-surface transition-colors"
             title={tCommon.refresh}
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
@@ -103,7 +103,7 @@ export const UpcomingScheduleWidget: React.FC = () => {
               playHapticFeedback('selection');
               setIsNewMeetingOpen(true);
             }}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-all shadow-xs"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-info hover:bg-info text-accent-contrast text-xs font-bold transition-all shadow-xs"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>{tCommon.newMeeting}</span>
@@ -113,8 +113,8 @@ export const UpcomingScheduleWidget: React.FC = () => {
 
       {/* Content */}
       {!token ? (
-        <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-700/40 text-center space-y-2">
-          <p className="text-xs text-zinc-600 dark:text-zinc-400">
+        <div className="p-4 rounded-2xl bg-surface-3 dark:bg-surface/40 border border-border/60 dark:border-border/40 text-center space-y-2">
+          <p className="text-xs text-muted dark:text-muted">
             {isAr
               ? 'قم بربط حساب Google Calendar لعرض جدول مواعيدك واجتماعاتك هنا مباشرة.'
               : isEn
@@ -123,17 +123,17 @@ export const UpcomingScheduleWidget: React.FC = () => {
           </p>
         </div>
       ) : loading ? (
-        <div className="py-6 flex items-center justify-center gap-2 text-xs text-zinc-400">
-          <RefreshCw className="w-4 h-4 animate-spin text-blue-500" />
+        <div className="py-6 flex items-center justify-center gap-2 text-xs text-muted">
+          <RefreshCw className="w-4 h-4 animate-spin text-info" />
           <span>{tCommon.loadingSchedule}</span>
         </div>
       ) : error ? (
-        <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-2">
+        <div className="p-3 rounded-xl bg-negative/10 border border-negative/20 text-xs text-negative dark:text-negative flex items-center gap-2">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>{error}</span>
         </div>
       ) : events.length === 0 ? (
-        <div className="py-6 text-center text-xs text-zinc-400">
+        <div className="py-6 text-center text-xs text-muted">
           {isAr
             ? 'لا توجد مواعيد أو اجتماعات مبرمجة في الأيام الـ 7 القادمة 👍'
             : isEn
@@ -145,17 +145,17 @@ export const UpcomingScheduleWidget: React.FC = () => {
           {events.slice(0, 5).map((ev) => (
             <div
               key={ev.id}
-              className="p-2.5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200/60 dark:border-zinc-700/50 flex items-center justify-between gap-3 text-xs"
+              className="p-2.5 rounded-2xl bg-surface-3 dark:bg-surface/60 border border-border/60 dark:border-border/50 flex items-center justify-between gap-3 text-xs"
             >
               <div className="min-w-0 space-y-0.5">
-                <p className="font-bold text-zinc-900 dark:text-white truncate">
+                <p className="font-bold text-text dark:text-text truncate">
                   {ev.summary || tCommon.untitledEvent}
                 </p>
-                <div className="flex items-center gap-2 text-[11px] text-zinc-500 dark:text-zinc-400 font-mono">
-                  <Clock className="w-3 h-3 text-blue-500" />
+                <div className="flex items-center gap-2 text-[11px] text-muted dark:text-muted font-mono">
+                  <Clock className="w-3 h-3 text-info" />
                   <span>{formatEventTime(ev)}</span>
                   {ev.attendees && ev.attendees.length > 0 && (
-                    <span className="flex items-center gap-1 text-zinc-400">
+                    <span className="flex items-center gap-1 text-muted">
                       <Users className="w-3 h-3" />
                       <span>{ev.attendees.length}</span>
                     </span>
@@ -168,7 +168,7 @@ export const UpcomingScheduleWidget: React.FC = () => {
                   href={ev.htmlLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-1.5 rounded-lg text-zinc-400 hover:text-blue-500 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors shrink-0"
+                  className="p-1.5 rounded-lg text-muted hover:text-info hover:bg-surface-3 dark:hover:bg-surface transition-colors shrink-0"
                   title="Ouvrir dans Google Calendar"
                 >
                   <ExternalLink className="w-3.5 h-3.5" />

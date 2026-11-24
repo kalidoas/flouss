@@ -113,10 +113,10 @@ export const HistoryPage: React.FC = () => {
       {/* Page Title & Excel Export */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-white via-white to-indigo-200 bg-clip-text text-transparent">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-surface via-surface to-accent bg-clip-text text-transparent">
             {t.title}
           </h1>
-          <p className="text-xs sm:text-sm text-zinc-400 mt-1">
+          <p className="text-xs sm:text-sm text-muted mt-1">
             {t.subtitle}
           </p>
         </div>
@@ -124,73 +124,73 @@ export const HistoryPage: React.FC = () => {
         <button
           type="button"
           onClick={handleExportExcel}
-          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-surface border border-border-subtle text-content hover:bg-emerald-500/10 hover:border-emerald-500/30 hover:text-emerald-600 dark:bg-white/[0.04] dark:hover:bg-emerald-500/15 dark:border-white/[0.08] dark:hover:border-emerald-500/30 dark:text-zinc-200 dark:hover:text-emerald-300 px-4 py-2 text-xs font-semibold backdrop-blur-md transition-all active:scale-[0.98] self-start sm:self-auto"
+          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-surface border border-border-subtle text-content hover:bg-positive/10 hover:border-positive/30 hover:text-positive dark:bg-surface/[0.04] dark:hover:bg-positive/15 dark:border-border/[0.08] dark:hover:border-positive/30 dark:text-text dark:hover:text-positive px-4 py-2 text-xs font-semibold backdrop-blur-md transition-all active:scale-[0.98] self-start sm:self-auto"
         >
-          <FileSpreadsheet className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
+          <FileSpreadsheet className="w-4 h-4 text-positive dark:text-positive" />
           <span>{language === 'ar' ? 'تصدير إلى Excel' : language === 'en' ? 'Export to Excel' : 'Exporter Excel (.xlsx)'}</span>
         </button>
       </div>
 
       {/* 3-Column Bento Metric Bar with Subtle Radial Corner Glows */}
-      <div className="rounded-2xl bg-surface border border-border-subtle p-5 sm:p-6 shadow-xs dark:bg-white/5 dark:backdrop-blur-xl dark:border-white/10 relative overflow-hidden dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)]">
-        <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-white/[0.06] rtl:sm:divide-x-reverse gap-y-4 sm:gap-y-0">
+      <div className="rounded-2xl bg-surface border border-border-subtle p-5 sm:p-6 shadow-xs dark:bg-surface/5 dark:backdrop-blur-xl dark:border-border/10 relative overflow-hidden dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)]">
+        <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-border/[0.06] rtl:sm:divide-x-reverse gap-y-4 sm:gap-y-0">
           {/* Total In */}
           <div className="sm:px-4 first:ps-0 last:pe-0">
-            <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-400 block truncate">
+            <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted block truncate">
               {t.totalIn}
             </span>
             <MoneyText
               amount={totalIn}
               showSign={true}
-              className="mt-2 block max-w-full truncate text-2xl font-bold tracking-tight tabular-nums text-emerald-400"
+              className="mt-2 block max-w-full truncate text-2xl font-bold tracking-tight tabular-nums text-positive"
             />
           </div>
 
           {/* Total Out */}
           <div className="pt-3 sm:pt-0 sm:px-4 first:ps-0 last:pe-0">
-            <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-400 block truncate">
+            <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted block truncate">
               {t.totalOut}
             </span>
             <MoneyText
               amount={totalOut}
               prefix="− "
-              className="mt-2 block max-w-full truncate text-2xl font-bold tracking-tight tabular-nums text-rose-400"
+              className="mt-2 block max-w-full truncate text-2xl font-bold tracking-tight tabular-nums text-negative"
             />
           </div>
 
           {/* Net Total */}
           <div className="pt-3 sm:pt-0 sm:px-4 first:ps-0 last:pe-0">
-            <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-400 block truncate">
+            <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted block truncate">
               {t.netTotal}
             </span>
             <MoneyText
               amount={netTotal}
               className={`mt-2 block max-w-full truncate text-2xl font-bold tracking-tight tabular-nums ${
                 netTotal >= 0
-                  ? 'text-indigo-300'
-                  : 'text-rose-400'
+                  ? 'text-accent'
+                  : 'text-negative'
               }`}
             />
           </div>
         </div>
 
-        <p className="mt-4 pt-3 border-t border-white/[0.05] text-[11px] text-zinc-500">
+        <p className="mt-4 pt-3 border-t border-border/[0.05] text-[11px] text-muted">
           {translations[language].summaryScopes.history}
         </p>
       </div>
 
       {/* Unified Filter Bar (Single Horizontal Glass Container) */}
-      <div className="relative z-50 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 p-3 shadow-xl space-y-2.5">
+      <div className="relative z-50 rounded-2xl bg-surface/5 backdrop-blur-xl border border-border/10 p-3 shadow-xl space-y-2.5">
         <div className="flex flex-col lg:flex-row gap-2.5 items-stretch lg:items-center justify-between">
           {/* Search Input */}
           <div className="relative min-w-[220px] flex-1">
-            <Search className="w-3.5 h-3.5 text-zinc-400 absolute start-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-3.5 h-3.5 text-muted absolute start-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={t.searchPlaceholder}
-              className="w-full text-xs ps-8 pe-3 py-1.5 rounded-full border border-white/[0.08] bg-black/40 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all"
+              className="w-full text-xs ps-8 pe-3 py-1.5 rounded-full border border-border/[0.08] bg-canvas/40 text-accent-contrast placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-ring/30 transition-all"
             />
           </div>
 
@@ -216,7 +216,7 @@ export const HistoryPage: React.FC = () => {
                   setSelectedMonth('all');
                   setSelectedCategory('all');
                 }}
-                className="min-h-8 px-3 rounded-full bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-400 font-medium flex items-center gap-1 transition-colors"
+                className="min-h-8 px-3 rounded-full bg-negative/10 hover:bg-negative/20 text-xs text-negative font-medium flex items-center gap-1 transition-colors"
               >
                 <RotateCcw className="w-3 h-3" />
                 <span>{language === 'ar' ? 'مسح الفلاتر' : language === 'en' ? 'Clear' : 'Effacer'}</span>
@@ -226,13 +226,13 @@ export const HistoryPage: React.FC = () => {
         </div>
 
         {/* Type Filter Pills Row */}
-        <div className="flex items-center gap-1 p-1 bg-black/[0.04] dark:bg-white/[0.04] rounded-full overflow-x-auto scrollbar-none border border-black/[0.06] dark:border-white/[0.06]">
+        <div className="flex items-center gap-1 p-1 bg-canvas/[0.04] dark:bg-surface/[0.04] rounded-full overflow-x-auto scrollbar-none border border-border/[0.06] dark:border-border/[0.06]">
           <button
             onClick={() => setTypeFilter('all')}
             className={`px-3 py-1 rounded-full text-xs font-medium transition-all shrink-0 ${
               typeFilter === 'all'
-                ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 font-semibold shadow-xs'
-                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+                ? 'bg-surface text-accent-contrast dark:bg-surface dark:text-text font-semibold shadow-xs'
+                : 'text-muted dark:text-muted hover:text-text dark:hover:text-accent-contrast'
             }`}
           >
             {t.filterAll}
@@ -241,8 +241,8 @@ export const HistoryPage: React.FC = () => {
             onClick={() => setTypeFilter('expense')}
             className={`px-3 py-1 rounded-full text-xs font-medium transition-all shrink-0 ${
               typeFilter === 'expense'
-                ? 'bg-rose-500/20 text-rose-600 dark:text-rose-300 border border-rose-500/30 font-semibold'
-                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+                ? 'bg-negative/20 text-negative dark:text-negative border border-negative/30 font-semibold'
+                : 'text-muted dark:text-muted hover:text-text dark:hover:text-accent-contrast'
             }`}
           >
             {t.filterExpenses}
@@ -251,8 +251,8 @@ export const HistoryPage: React.FC = () => {
             onClick={() => setTypeFilter('income')}
             className={`px-3 py-1 rounded-full text-xs font-medium transition-all shrink-0 ${
               typeFilter === 'income'
-                ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30 font-semibold'
-                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+                ? 'bg-positive/20 text-positive dark:text-positive border border-positive/30 font-semibold'
+                : 'text-muted dark:text-muted hover:text-text dark:hover:text-accent-contrast'
             }`}
           >
             {t.filterIncome}
@@ -261,8 +261,8 @@ export const HistoryPage: React.FC = () => {
             onClick={() => setTypeFilter('contribution')}
             className={`px-3 py-1 rounded-full text-xs font-medium transition-all shrink-0 ${
               typeFilter === 'contribution'
-                ? 'bg-blue-500/20 text-blue-600 dark:text-blue-300 border border-blue-500/30 font-semibold'
-                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+                ? 'bg-info/20 text-info dark:text-info border border-info/30 font-semibold'
+                : 'text-muted dark:text-muted hover:text-text dark:hover:text-accent-contrast'
             }`}
           >
             {t.filterSavings}
@@ -271,8 +271,8 @@ export const HistoryPage: React.FC = () => {
             onClick={() => setTypeFilter('adjustment')}
             className={`px-3 py-1 rounded-full text-xs font-medium transition-all shrink-0 ${
               typeFilter === 'adjustment'
-                ? 'bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border border-indigo-500/30 font-semibold'
-                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+                ? 'bg-accent/20 text-accent dark:text-accent border border-accent/30 font-semibold'
+                : 'text-muted dark:text-muted hover:text-text dark:hover:text-accent-contrast'
             }`}
           >
             {t.filterAdjustments}
@@ -282,9 +282,9 @@ export const HistoryPage: React.FC = () => {
 
       {/* Date-Grouped Financial Ledger List */}
       {sortedDates.length === 0 ? (
-        <div className="p-8 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 text-center">
+        <div className="p-8 rounded-2xl bg-surface/5 backdrop-blur-xl border border-border/10 text-center">
           <EmptyState
-            icon={<Receipt className="w-6 h-6 text-indigo-400" />}
+            icon={<Receipt className="w-6 h-6 text-accent" />}
             title={t.noTransactionsFound}
           />
         </div>
@@ -304,15 +304,15 @@ export const HistoryPage: React.FC = () => {
             return (
               <div key={dateStr} className="space-y-2">
                 <div className="flex items-center justify-between px-1">
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-400">
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
                     {dateLabel}
                   </span>
-                  <span className="text-[11px] text-zinc-500 font-medium">
+                  <span className="text-[11px] text-muted font-medium">
                     {dayTransactions.length} {language === 'ar' ? 'معاملات' : 'transaction(s)'}
                   </span>
                 </div>
 
-                <div className="rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 divide-y divide-white/[0.05] overflow-hidden shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">
+                <div className="rounded-2xl bg-surface/5 backdrop-blur-xl border border-border/10 divide-y divide-border/[0.05] overflow-hidden shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">
                   {dayTransactions.map((tx: Transaction) => (
                     <TransactionItem
                       key={tx.id}

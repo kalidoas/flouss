@@ -134,7 +134,7 @@ export const Header: React.FC = () => {
       aria-label={hideBalance ? tCommon.showAmounts : tCommon.hideAmounts}
       className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-surface/5 transition-all duration-150 cursor-pointer ${
         hideBalance
-          ? 'text-emerald-400'
+          ? 'text-positive'
           : 'text-muted hover:text-content hover:bg-surface/10'
       }`}
     >
@@ -153,11 +153,11 @@ export const Header: React.FC = () => {
       aria-label={isDark ? tCommon.switchToLight : tCommon.switchToDark}
       className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-bg bg-surface/5 transition-colors hover:bg-surface/10 cursor-pointer ${
         isDark
-          ? 'text-indigo-400'
-          : 'text-amber-400'
+          ? 'text-accent'
+          : 'text-warning'
       }`}
     >
-      {isDark ? <Moon className="h-4 w-4 text-indigo-400" /> : <Sun className="h-4 w-4 text-amber-400" />}
+      {isDark ? <Moon className="h-4 w-4 text-accent" /> : <Sun className="h-4 w-4 text-warning" />}
     </button>
   );
 
@@ -203,7 +203,7 @@ export const Header: React.FC = () => {
             onClick={() => window.dispatchEvent(new Event('flouss:open-more'))}
             aria-label={tNav.morePages}
             title={tNav.morePages}
-            className="flex h-9 w-9 md:hidden shrink-0 items-center justify-center rounded-xl border border-bg bg-surface/5 hover:bg-surface/10 text-zinc-400 hover:text-content transition-colors cursor-pointer"
+            className="flex h-9 w-9 md:hidden shrink-0 items-center justify-center rounded-xl border border-bg bg-surface/5 hover:bg-surface/10 text-muted hover:text-content transition-colors cursor-pointer"
           >
             <Menu className="h-4 w-4" />
           </button>
@@ -218,7 +218,7 @@ export const Header: React.FC = () => {
               }}
               aria-label={tCommon.back}
               title={tCommon.back}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-bg bg-surface/5 hover:bg-surface/10 text-zinc-400 hover:text-content transition-colors cursor-pointer"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-bg bg-surface/5 hover:bg-surface/10 text-muted hover:text-content transition-colors cursor-pointer"
             >
               <ChevronLeft className={`h-4 w-4 ${language === 'ar' ? 'rotate-180' : ''}`} />
             </button>

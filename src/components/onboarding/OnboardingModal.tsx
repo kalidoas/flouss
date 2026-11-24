@@ -164,14 +164,14 @@ export const OnboardingModal: React.FC = () => {
   const quickPills = [2000, 5000, 10000, 20000, 35000];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="w-full max-w-md bg-white dark:bg-[#202020] rounded-2xl p-6 sm:p-7 shadow-2xl border border-[#e3e2de] dark:border-[#2f2f2f] text-center relative overflow-hidden animate-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-canvas/60 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="w-full max-w-md bg-surface dark:bg-[#202020] rounded-2xl p-6 sm:p-7 shadow-2xl border border-[#e3e2de] dark:border-[#2f2f2f] text-center relative overflow-hidden animate-in zoom-in-95 duration-200">
 
         {/* Header & Step Tracker */}
         <div className="flex items-center justify-between mb-5 pb-3 border-b border-[#e3e2de] dark:border-[#2f2f2f]">
           <Logo size="md" showWordmark={true} />
           <div className="flex items-center gap-1.5 text-xs text-[#787774] dark:text-[#9b9a97]">
-            <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+            <span className="font-semibold text-positive dark:text-positive">
               {step === 'pin' ? '1' : '2'}
             </span>
             <span>/</span>
@@ -183,7 +183,7 @@ export const OnboardingModal: React.FC = () => {
         {step === 'pin' && (
           <div className="space-y-4">
             <div>
-              <div className="w-11 h-11 mx-auto rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/40 flex items-center justify-center mb-2.5">
+              <div className="w-11 h-11 mx-auto rounded-xl bg-positive dark:bg-positive/40 text-positive dark:text-positive border border-positive/50 dark:border-positive/40 flex items-center justify-center mb-2.5">
                 <KeyRound className="w-5 h-5" />
               </div>
               <h2 className="text-base font-bold text-[#37352f] dark:text-[#ecebed]">
@@ -211,7 +211,7 @@ export const OnboardingModal: React.FC = () => {
                     key={idx}
                     className={`w-3.5 h-3.5 rounded-full border transition-all duration-150 ${
                       isFilled
-                        ? 'bg-emerald-600 border-emerald-600 scale-110 shadow-xs'
+                        ? 'bg-positive border-positive scale-110 shadow-xs'
                         : 'border-[#e3e2de] dark:border-[#3f3f3f] bg-transparent'
                     }`}
                   />
@@ -219,7 +219,7 @@ export const OnboardingModal: React.FC = () => {
               })}
             </div>
 
-            {error && <p className="text-xs text-rose-500 font-medium">{error}</p>}
+            {error && <p className="text-xs text-negative font-medium">{error}</p>}
 
             {/* Numeric Keypad */}
             <div className="grid grid-cols-3 gap-2 max-w-[230px] mx-auto pt-1">
@@ -278,7 +278,7 @@ export const OnboardingModal: React.FC = () => {
         {step === 'biometrics' && (
           <div className="space-y-4 py-2">
             <div>
-              <div className="w-14 h-14 mx-auto rounded-2xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center justify-center mb-3">
+              <div className="w-14 h-14 mx-auto rounded-2xl bg-accent/10 text-accent border border-accent/20 flex items-center justify-center mb-3">
                 <ScanFace className="w-7 h-7" />
               </div>
               <h2 className="text-base font-bold text-[#37352f] dark:text-[#ecebed]">
@@ -298,7 +298,7 @@ export const OnboardingModal: React.FC = () => {
                   }
                   setStep('balance');
                 }}
-                className="w-full py-2.5 px-4 rounded-full bg-[#37352f] dark:bg-white text-white dark:text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-md active:scale-[0.98] transition-all"
+                className="w-full py-2.5 px-4 rounded-full bg-[#37352f] dark:bg-surface text-accent-contrast dark:text-text font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-md active:scale-[0.98] transition-all"
               >
                 <ScanFace className="w-4 h-4" />
                 <span>{translations[language].auth.enableBiometricsBtn}</span>
@@ -324,7 +324,7 @@ export const OnboardingModal: React.FC = () => {
             className="space-y-4 text-left"
           >
             <div>
-              <div className="w-11 h-11 mx-auto rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/40 flex items-center justify-center mb-2.5">
+              <div className="w-11 h-11 mx-auto rounded-xl bg-positive dark:bg-positive/40 text-positive dark:text-positive border border-positive/50 dark:border-positive/40 flex items-center justify-center mb-2.5">
                 <Coins className="w-5 h-5" />
               </div>
               <h2 className="text-base font-bold text-content text-center">
@@ -353,7 +353,7 @@ export const OnboardingModal: React.FC = () => {
                 </span>
               </div>
 
-              {error && <p className="text-xs text-rose-500 font-medium">{error}</p>}
+              {error && <p className="text-xs text-negative font-medium">{error}</p>}
 
               {/* Quick Suggestions */}
               <div className="flex flex-wrap gap-1.5 pt-1">
@@ -381,9 +381,9 @@ export const OnboardingModal: React.FC = () => {
               </div>
 
               {/* Security Lock Note */}
-              <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-800/40 rounded-xl flex items-start gap-2 text-right">
-                <Lock className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                <p className="text-[11px] text-amber-900 dark:text-amber-200 leading-relaxed">
+              <div className="p-3 bg-warning dark:bg-warning/30 border border-warning/60 dark:border-warning/40 rounded-xl flex items-start gap-2 text-right">
+                <Lock className="w-4 h-4 text-warning shrink-0 mt-0.5" />
+                <p className="text-[11px] text-warning dark:text-warning leading-relaxed">
                   {t.warning}
                 </p>
               </div>
@@ -424,7 +424,7 @@ export const OnboardingModal: React.FC = () => {
         maxWidth="sm"
       >
         <div className="text-center space-y-4">
-          <div className="w-11 h-11 mx-auto rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 flex items-center justify-center">
+          <div className="w-11 h-11 mx-auto rounded-xl bg-warning dark:bg-warning/40 text-warning flex items-center justify-center">
             <AlertTriangle className="w-5 h-5" />
           </div>
 

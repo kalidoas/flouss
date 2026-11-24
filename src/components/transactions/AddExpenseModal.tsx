@@ -164,12 +164,12 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
           currency={translations[language].currency}
         />
 
-        {error && <p className="text-xs font-semibold text-rose-500">{error}</p>}
+        {error && <p className="text-xs font-semibold text-negative">{error}</p>}
 
         {/* Over balance warning */}
         {isOverBalance && numericAmount > 0 && (
-          <div className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex items-start gap-2.5 text-xs text-rose-600 dark:text-rose-300">
-            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-rose-500" />
+          <div className="p-3 bg-negative/10 border border-negative/20 rounded-2xl flex items-start gap-2.5 text-xs text-negative dark:text-negative">
+            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-negative" />
             <div>
               <p className="font-semibold">{t.insufficientBalance}</p>
               <p className="mt-0.5 text-[11px] opacity-90">
@@ -205,7 +205,7 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
                   onClick={() => setSubCategoryId(isSelected ? null : sub.id)}
                   className={`min-h-[36px] px-3 rounded-full text-xs font-medium transition-all cursor-pointer ${
                     isSelected
-                      ? 'bg-rose-500 text-white font-bold'
+                      ? 'bg-negative text-accent-contrast font-bold'
                       : 'bg-surface-raised border border-border-subtle text-muted hover:text-content'
                   }`}
                 >
@@ -245,7 +245,7 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
         </label>
 
         {/* 5. Sticky Full-Width Save Button */}
-        <div className="sticky bottom-0 bg-surface/95 dark:bg-[#0A0A0C]/95 pt-2 border-t border-border-subtle dark:border-white/10 backdrop-blur-md">
+        <div className="sticky bottom-0 bg-surface/95 dark:bg-[#0A0A0C]/95 pt-2 border-t border-border-subtle dark:border-border/10 backdrop-blur-md">
           <Button
             type="submit"
             variant="danger"

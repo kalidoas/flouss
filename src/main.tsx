@@ -86,23 +86,23 @@ class RootErrorBoundary extends Component<Props, State> {
         .replace(/[A-Za-z0-9+/=]{20,}/g, '[REDACTED_TOKEN]');
 
       return (
-        <div className="min-h-screen flex items-center justify-center bg-[#050505] text-white p-4 sm:p-6 font-sans">
-          <div className="max-w-lg w-full bg-[#0D0E14]/95 backdrop-blur-2xl rounded-3xl p-6 sm:p-8 border border-white/10 text-center shadow-2xl space-y-5">
-            <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-500/15 border border-amber-500/25 text-amber-400 flex items-center justify-center text-2xl shadow-sm">
+        <div className="min-h-screen flex items-center justify-center bg-[#050505] text-accent-contrast p-4 sm:p-6 font-sans">
+          <div className="max-w-lg w-full bg-[#0D0E14]/95 backdrop-blur-2xl rounded-3xl p-6 sm:p-8 border border-border/10 text-center shadow-2xl space-y-5">
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-warning/15 border border-warning/25 text-warning flex items-center justify-center text-2xl shadow-sm">
               ⚡
             </div>
 
             <div>
-              <h2 className="text-lg font-bold text-white tracking-tight">
+              <h2 className="text-lg font-bold text-accent-contrast tracking-tight">
                 Mode de Récupération Local (Flouss)
               </h2>
-              <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
+              <p className="text-xs text-muted mt-1 leading-relaxed">
                 Une exception a été interceptée lors du chargement. Vos données locales restent sécurisées.
               </p>
             </div>
 
             {/* Sanitized Error Message Box */}
-            <div className="p-3.5 rounded-xl bg-black/40 border border-white/5 text-left text-xs font-mono text-rose-300 break-words max-h-32 overflow-y-auto">
+            <div className="p-3.5 rounded-xl bg-canvas/40 border border-border/5 text-left text-xs font-mono text-negative break-words max-h-32 overflow-y-auto">
               {sanitizedMsg}
             </div>
 
@@ -116,7 +116,7 @@ class RootErrorBoundary extends Component<Props, State> {
                   } catch (e) {}
                   window.location.reload();
                 }}
-                className="flex-1 py-3 px-4 rounded-xl text-xs font-bold bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-white/10 transition-all cursor-pointer"
+                className="flex-1 py-3 px-4 rounded-xl text-xs font-bold bg-surface hover:bg-surface text-text border border-border/10 transition-all cursor-pointer"
               >
                 Mode Hors-Ligne
               </button>
@@ -124,7 +124,7 @@ class RootErrorBoundary extends Component<Props, State> {
               <button
                 type="button"
                 onClick={() => window.location.reload()}
-                className="flex-1 py-3 px-4 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white transition-all shadow-md shadow-indigo-600/30 cursor-pointer"
+                className="flex-1 py-3 px-4 rounded-xl text-xs font-bold bg-accent hover:bg-accent text-accent-contrast transition-all shadow-md shadow-md cursor-pointer"
               >
                 Recharger l'application
               </button>
