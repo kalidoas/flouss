@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#f6f7f4"/>
+  <circle cx="930" cy="320" r="230" fill="#d8e9dc"/>
+  <circle cx="930" cy="320" r="160" fill="#e9f1ea"/>
+  <rect x="788" y="130" width="290" height="370" rx="34" fill="#fff" stroke="#d8e3d9" stroke-width="3"/>
+  <rect x="825" y="182" width="212" height="16" rx="8" fill="#e2ece4"/>
+  <rect x="825" y="230" width="178" height="34" rx="10" fill="#087f5b"/>
+  <rect x="825" y="310" width="212" height="3" fill="#edf1ed"/>
+  <rect x="825" y="345" width="212" height="52" rx="14" fill="#f3f6f2"/>
+  <rect x="825" y="415" width="212" height="52" rx="14" fill="#f3f6f2"/>
+  <text x="98" y="270" font-family="Arial,sans-serif" font-size="68" font-weight="700" fill="#123d30">Flouss</text>
+  <text x="98" y="365" font-family="Arial,sans-serif" font-size="36" fill="#385a4d">Money, on your terms.</text>
+</svg>

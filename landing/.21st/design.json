@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "project": {
+    "name": "Flouss public landing",
+    "productType": "Moroccan personal-finance marketing site",
+    "stack": [
+      "React 18",
+      "TypeScript",
+      "Vite",
+      "Three.js (lazy-loaded WebGL2 hero)"
+    ]
+  },
+  "sources": {
+    "tokens": [],
+    "components": [],
+    "assets": [
+      "public/images/hero-poster.svg",
+      "public/favicon.svg"
+    ],
+    "instructions": [
+      "../docs/DESIGN_SKILL.md",
+      "../AGENTS.md"
+    ]
+  },
+  "design": {
+    "colorMode": "light and dark",
+    "colors": {
+      "page": "#f6f7f4",
+      "surface": "#ffffff",
+      "text": "#18372d",
+      "accent": "#087f5b",
+      "darkPage": "#101a15",
+      "darkSurface": "#17241d",
+      "darkText": "#f1f5ef",
+      "darkAccent": "#75cba0",
+      "warmAccent": "#d5a35b"
+    },
+    "typography": {
+      "latin": "system UI",
+      "arabic": "Geeza Pro, Noto Sans Arabic, Tahoma, Segoe UI",
+      "arabicLetterSpacing": "normal"
+    },
+    "spacing": {
+      "sectionDesktop": "104px–126px",
+      "sectionMobile": "62px–82px",
+      "contentMaxWidth": "1200px"
+    },
+    "radius": {
+      "controls": "999px",
+      "cards": "18px–20px",
+      "featurePanels": "28px–30px"
+    },
+    "shadows": {
+      "surface": "0 24px 70px rgba(27,59,43,.1)"
+    },
+    "motion": {
+      "hero": "Scroll-linked Three.js camera; render only on scroll, resize, or visibility changes",
+      "fallback": "Bundled static SVG poster; WebGL skipped on mobile and for reduced motion"
+    },
+    "density": "comfortable"
+  },
+  "components": {
+    "installed": [],
+    "preferredPrimitives": [],
+    "patterns": [
+      "Single-page responsive marketing story",
+      "Arabic-default locale selector with RTL",
+      "Light/dark theme toggle",
+      "Product-mockup hero with static fallback"
+    ]
+  },
+  "constraints": {
+    "must": [
+      "Arabic is the default locale and uses RTL layout",
+      "Support Arabic, French, and English",
+      "Meet WCAG AA text contrast in both themes",
+      "Respect reduced motion, keep the hero static on mobile, and pause WebGL outside the viewport",
+      "Keep all landing implementation files inside /landing and /qa/feat-landing"
+    ],
+    "avoid": [
+      "Unverified product, security, or privacy promises",
+      "Remote images and unnecessary remote font dependencies",
+      "Heavy animation outside the hero"
+    ]
+  },
+  "decisions": [],
+  "evidence": [
+    "docs/DESIGN_SKILL.md",
+    "src/i18n/translations.ts",
+    "src/App.tsx",
+    "src/LegalPages.tsx",
+    "firestore.rules"
+  ],
+  "generatedAt": "2026-11-24T18:46:00.000Z"
+}
