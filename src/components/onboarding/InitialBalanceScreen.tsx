@@ -66,7 +66,7 @@ export const InitialBalanceScreen: React.FC = () => {
   return (
     <div
       dir={isAr ? 'rtl' : 'ltr'}
-      className="min-h-screen bg-[#050505] text-white flex items-center justify-center p-4 sm:p-6 font-sans select-none relative overflow-hidden"
+      className="min-h-screen bg-[#050505] text-accent-contrast flex items-center justify-center p-4 sm:p-6 font-sans select-none relative overflow-hidden"
     >
       {/* Background ambient lighting */}
       <div
@@ -74,22 +74,22 @@ export const InitialBalanceScreen: React.FC = () => {
         style={{ background: 'radial-gradient(circle, #6366f1, #10b981)' }}
       />
 
-      <div className="w-full max-w-md rounded-3xl bg-[#0D0E14]/95 border border-white/10 p-6 sm:p-8 text-center shadow-[0_24px_60px_rgba(0,0,0,0.8),inset_0_1px_0_0_rgba(255,255,255,0.1)] relative z-10 animate-in fade-in zoom-in-95 duration-300">
+      <div className="w-full max-w-md rounded-3xl bg-[#0D0E14]/95 border border-border/10 p-6 sm:p-8 text-center shadow-[0_24px_60px_rgba(0,0,0,0.8),inset_0_1px_0_0_rgba(255,255,255,0.1)] relative z-10 animate-in fade-in zoom-in-95 duration-300">
 
         {/* Wallet Icon with subtle glow */}
-        <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-tr from-indigo-500/20 to-emerald-500/20 border border-white/10 flex items-center justify-center text-emerald-400 mb-5 shadow-lg shadow-indigo-500/10">
+        <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-tr from-accent/20 to-positive/20 border border-border/10 flex items-center justify-center text-positive mb-5 shadow-lg shadow-md">
           <Wallet className="w-8 h-8" />
         </div>
 
         {/* Title & Subtitle */}
-        <h1 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight mb-2">
+        <h1 className="text-xl sm:text-2xl font-extrabold text-accent-contrast tracking-tight mb-2">
           {isAr
             ? 'ما هو رصيدك المالي الحالي؟'
             : language === 'fr'
             ? 'Quel est votre solde actuel ?'
             : 'What is your current balance?'}
         </h1>
-        <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed max-w-xs mx-auto mb-6">
+        <p className="text-xs sm:text-sm text-muted leading-relaxed max-w-xs mx-auto mb-6">
           {isAr
             ? 'أدخل المبلغ المتوفر لديك حالياً لبدء تتبع دقيق لأموالك، أو تخطَّ هذه الخطوة للبدء برصيد 0.'
             : language === 'fr'
@@ -99,8 +99,8 @@ export const InitialBalanceScreen: React.FC = () => {
 
         <form onSubmit={handleContinue} className="space-y-5">
           {/* Amount input card */}
-          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 focus-within:border-indigo-500/50 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
-            <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider block mb-2">
+          <div className="p-4 rounded-2xl bg-surface/[0.03] border border-border/10 focus-within:border-accent/50 focus-within:ring-2 focus-within:ring-ring/20 transition-all">
+            <label className="text-[11px] font-bold text-muted uppercase tracking-wider block mb-2">
               {isAr ? 'الرصيد المتاح' : language === 'fr' ? 'Solde disponible' : 'Available balance'}
             </label>
             <div className="flex items-center justify-center gap-2">
@@ -111,9 +111,9 @@ export const InitialBalanceScreen: React.FC = () => {
                 placeholder="0.00"
                 value={amountStr}
                 onChange={(e) => handleAmountChange(e.target.value)}
-                className="w-full text-center text-3xl sm:text-4xl font-extrabold tracking-tight bg-transparent text-white placeholder-zinc-700 outline-none tabular-nums"
+                className="w-full text-center text-3xl sm:text-4xl font-extrabold tracking-tight bg-transparent text-accent-contrast placeholder:text-muted outline-none tabular-nums"
               />
-              <span className="text-sm sm:text-base font-bold text-emerald-400 shrink-0">
+              <span className="text-sm sm:text-base font-bold text-positive shrink-0">
                 {isAr ? 'د.م.' : 'MAD'}
               </span>
             </div>
@@ -126,7 +126,7 @@ export const InitialBalanceScreen: React.FC = () => {
                 key={pill}
                 type="button"
                 onClick={() => setAmountStr(String(pill))}
-                className="py-1 px-3 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 text-xs font-semibold text-zinc-300 hover:text-white transition-all active:scale-95 cursor-pointer tabular-nums"
+                className="py-1 px-3 rounded-full bg-surface/[0.04] hover:bg-surface/[0.08] border border-border/10 hover:border-border/20 text-xs font-semibold text-muted hover:text-accent-contrast transition-all active:scale-95 cursor-pointer tabular-nums"
               >
                 +{pill.toLocaleString('fr-FR')} {isAr ? 'د.م.' : 'MAD'}
               </button>
@@ -134,7 +134,7 @@ export const InitialBalanceScreen: React.FC = () => {
           </div>
 
           {error && (
-            <p className="text-xs text-rose-400 font-medium bg-rose-500/10 py-2 px-3 rounded-xl border border-rose-500/20">
+            <p className="text-xs text-negative font-medium bg-negative/10 py-2 px-3 rounded-xl border border-negative/20">
               {error}
             </p>
           )}
@@ -144,7 +144,7 @@ export const InitialBalanceScreen: React.FC = () => {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full py-3.5 px-4 rounded-full bg-white text-zinc-950 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 hover:bg-zinc-200 transition-all shadow-[0_0_25px_rgba(255,255,255,0.25)] active:scale-95 duration-200 cursor-pointer disabled:opacity-50"
+              className="w-full py-3.5 px-4 rounded-full bg-surface text-text font-bold text-xs sm:text-sm flex items-center justify-center gap-2 hover:bg-surface-2 transition-all shadow-[0_0_25px_rgba(255,255,255,0.25)] active:scale-95 duration-200 cursor-pointer disabled:opacity-50"
             >
               <span>{isAr ? 'متابعة' : language === 'fr' ? 'Continuer' : 'Continue'}</span>
               <ArrowRight className="w-4 h-4 rtl:rotate-180" />
@@ -154,7 +154,7 @@ export const InitialBalanceScreen: React.FC = () => {
               type="button"
               disabled={submitting}
               onClick={handleSkip}
-              className="w-full py-2 px-4 rounded-full text-xs font-medium text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
+              className="w-full py-2 px-4 rounded-full text-xs font-medium text-muted hover:text-muted transition-colors cursor-pointer"
             >
               {isAr
                 ? 'تخطي الآن (بدء برصيد 0)'

@@ -64,81 +64,81 @@ const TASK_CATEGORY_META: Record<
   deen: {
     label: { ar: 'دين وصلاة', fr: 'Deen & Spiritualité', en: 'Faith & Prayer' },
     icon: '🕌',
-    color: 'text-emerald-600 dark:text-emerald-400',
-    bg: 'bg-emerald-500/10 dark:bg-emerald-500/15',
-    border: 'border-emerald-500/20',
+    color: 'text-positive dark:text-positive',
+    bg: 'bg-positive/10 dark:bg-positive/15',
+    border: 'border-positive/20',
     barColor: '#10b981',
   },
   sport: {
     label: { ar: 'رياضة وصحة', fr: 'Sport & Santé', en: 'Sport & Fitness' },
     icon: '🏋️',
-    color: 'text-rose-600 dark:text-rose-400',
-    bg: 'bg-rose-500/10 dark:bg-rose-500/15',
-    border: 'border-rose-500/20',
+    color: 'text-negative dark:text-negative',
+    bg: 'bg-negative/10 dark:bg-negative/15',
+    border: 'border-negative/20',
     barColor: '#f43f5e',
   },
   work: {
     label: { ar: 'عمل ودراسة', fr: 'Travail & Études', en: 'Work & Career' },
     icon: '💻',
-    color: 'text-blue-600 dark:text-blue-400',
-    bg: 'bg-blue-500/10 dark:bg-blue-500/15',
-    border: 'border-blue-500/20',
+    color: 'text-info dark:text-info',
+    bg: 'bg-info/10 dark:bg-info/15',
+    border: 'border-info/20',
     barColor: '#3b82f6',
   },
   study: {
     label: { ar: 'تعلّم', fr: 'Apprentissage', en: 'Learning & Reading' },
     icon: '📚',
-    color: 'text-indigo-600 dark:text-indigo-400',
-    bg: 'bg-indigo-500/10 dark:bg-indigo-500/15',
-    border: 'border-indigo-500/20',
+    color: 'text-accent dark:text-accent',
+    bg: 'bg-accent/10 dark:bg-accent/15',
+    border: 'border-accent/20',
     barColor: '#6366f1',
   },
   running: {
     label: { ar: 'جري', fr: 'Course / Jri', en: 'Running' },
     icon: '🏃',
-    color: 'text-orange-600 dark:text-orange-400',
-    bg: 'bg-orange-500/10 dark:bg-orange-500/15',
-    border: 'border-orange-500/20',
+    color: 'text-warning dark:text-warning',
+    bg: 'bg-warning/10 dark:bg-warning/15',
+    border: 'border-warning/20',
     barColor: '#f97316',
   },
   discipline: {
     label: { ar: 'انضباط ووعي', fr: 'Discipline & Sobriété', en: 'Focus & Discipline' },
     icon: '🛡️',
-    color: 'text-purple-600 dark:text-purple-400',
-    bg: 'bg-purple-500/10 dark:bg-purple-500/15',
-    border: 'border-purple-500/20',
+    color: 'text-accent dark:text-accent',
+    bg: 'bg-accent/10 dark:bg-accent/15',
+    border: 'border-accent/20',
     barColor: '#a855f7',
   },
   routine: {
     label: { ar: 'روتين', fr: 'Routine', en: 'Routine' },
     icon: '⚡',
-    color: 'text-amber-600 dark:text-amber-400',
-    bg: 'bg-amber-500/10 dark:bg-amber-500/15',
-    border: 'border-amber-500/20',
+    color: 'text-warning dark:text-warning',
+    bg: 'bg-warning/10 dark:bg-warning/15',
+    border: 'border-warning/20',
     barColor: '#f59e0b',
   },
   health: {
     label: { ar: 'صحة وماء', fr: 'Bien-être & Eau', en: 'Health & Hydration' },
     icon: '💧',
-    color: 'text-cyan-600 dark:text-cyan-400',
-    bg: 'bg-cyan-500/10 dark:bg-cyan-500/15',
-    border: 'border-cyan-500/20',
+    color: 'text-info dark:text-info',
+    bg: 'bg-info/10 dark:bg-info/15',
+    border: 'border-info/20',
     barColor: '#06b6d4',
   },
   finance: {
     label: { ar: 'مالية', fr: 'Finances', en: 'Personal Finance' },
     icon: '💰',
-    color: 'text-teal-600 dark:text-teal-400',
-    bg: 'bg-teal-500/10 dark:bg-teal-500/15',
-    border: 'border-teal-500/20',
+    color: 'text-info dark:text-info',
+    bg: 'bg-info/10 dark:bg-info/15',
+    border: 'text-info/20',
     barColor: '#14b8a6',
   },
   other: {
     label: { ar: 'أخرى', fr: 'Autre', en: 'Other' },
     icon: '📌',
-    color: 'text-zinc-600 dark:text-muted',
-    bg: 'bg-zinc-500/10 dark:bg-zinc-500/15',
-    border: 'border-zinc-500/20',
+    color: 'text-muted dark:text-muted',
+    bg: 'bg-surface-2/10 dark:bg-surface-30/15',
+    border: 'border-border/20',
     barColor: '#71717a',
   },
 };
@@ -286,10 +286,10 @@ export const StatsPage: React.FC = () => {
       {/* ── Page Header & Period Selector ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-50">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-white via-white to-indigo-200 bg-clip-text text-transparent">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-surface via-surface to-accent bg-clip-text text-transparent">
             {t.title}
           </h1>
-          <p className="text-xs sm:text-sm text-zinc-400 mt-1">
+          <p className="text-xs sm:text-sm text-muted mt-1">
             {t.subtitle}
           </p>
         </div>
@@ -361,21 +361,21 @@ export const StatsPage: React.FC = () => {
 
         {/* 4. Savings Rate */}
         <div
-          className="flex flex-col justify-between p-4 sm:p-5 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 overflow-hidden min-h-[142px] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_28px_-10px_rgba(0,0,0,0.5)] transition-all relative"
+          className="flex flex-col justify-between p-4 sm:p-5 rounded-2xl bg-surface/5 backdrop-blur-xl border border-border/10 overflow-hidden min-h-[142px] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_28px_-10px_rgba(0,0,0,0.5)] transition-all relative"
           style={{ backgroundImage: 'radial-gradient(circle at 100% 0%, rgba(99,102,241,0.12), transparent 70%)' }}
         >
-          <div className="flex items-center justify-between text-[11px] font-medium tracking-[0.14em] uppercase text-zinc-400">
+          <div className="flex items-center justify-between text-[11px] font-medium tracking-[0.14em] uppercase text-muted">
             <span>{t.savingsRate}</span>
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center border border-indigo-500/20 bg-indigo-500/10 text-indigo-400">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center border border-accent/20 bg-accent/10 text-accent">
               <Percent className="h-3.5 w-3.5 stroke-[2.4]" />
             </div>
           </div>
           <div className="my-2">
-            <div className="text-2xl sm:text-3xl font-bold tracking-tight text-white tabular-nums">
+            <div className="text-2xl sm:text-3xl font-bold tracking-tight text-accent-contrast tabular-nums">
               {savingsRate}%
             </div>
           </div>
-          <div className="pt-2.5 mt-auto border-t border-white/[0.06] text-[11px] text-zinc-400 truncate">
+          <div className="pt-2.5 mt-auto border-t border-border/[0.06] text-[11px] text-muted truncate">
             {currentSavings > 0 ? (
               <span className="flex items-center gap-1">
                 <MoneyText amount={currentSavings} /> {t.savedForGoals}
@@ -387,7 +387,7 @@ export const StatsPage: React.FC = () => {
         </div>
       </div>
 
-      <p className="-mt-3 text-[11px] leading-relaxed text-zinc-500">
+      <p className="-mt-3 text-[11px] leading-relaxed text-muted">
         {translations[language].summaryScopes.analytics}
       </p>
 
@@ -395,14 +395,14 @@ export const StatsPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Top Spending Category Card */}
         <div
-          className="p-5 sm:p-6 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_28px_-10px_rgba(0,0,0,0.5)] flex flex-col justify-between min-h-[170px] relative overflow-hidden"
+          className="p-5 sm:p-6 rounded-2xl bg-surface/5 backdrop-blur-xl border border-border/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_28px_-10px_rgba(0,0,0,0.5)] flex flex-col justify-between min-h-[170px] relative overflow-hidden"
           style={{ backgroundImage: 'radial-gradient(circle at 100% 0%, rgba(244,63,94,0.12), transparent 70%)' }}
         >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-400">
+            <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted">
               {t.topSpendingCategory}
             </span>
-            <div className="w-8 h-8 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-negative/10 border border-negative/20 text-negative flex items-center justify-center">
               <ShoppingBag className="w-4 h-4 stroke-[2]" />
             </div>
           </div>
@@ -410,63 +410,63 @@ export const StatsPage: React.FC = () => {
           <div className="my-2">
             {topCategory ? (
               <div>
-                <div className="text-xl sm:text-2xl font-bold text-white tracking-tight truncate">
+                <div className="text-xl sm:text-2xl font-bold text-accent-contrast tracking-tight truncate">
                   {(() => {
                     const cat = categories.find((c) => c.id === topCategory.id);
                     return cat ? getCategoryName(cat, language) : topCategory.name;
                   })()}
                 </div>
-                <div className="text-xs text-zinc-400 mt-2 flex items-center gap-2 flex-wrap">
-                  <span className="font-bold text-rose-400 text-sm tabular-nums">
+                <div className="text-xs text-muted mt-2 flex items-center gap-2 flex-wrap">
+                  <span className="font-bold text-negative text-sm tabular-nums">
                     <MoneyText amount={topCategory.amount} />
                   </span>
-                  <span className="px-2.5 py-0.5 rounded-full bg-rose-500/15 border border-rose-500/20 text-[11px] font-bold text-rose-300 tabular-nums">
+                  <span className="px-2.5 py-0.5 rounded-full bg-negative/15 border border-negative/20 text-[11px] font-bold text-negative tabular-nums">
                     {topCategory.percentage}% {isAr ? 'من المصاريف' : language === 'fr' ? 'du total' : 'of spending'}
                   </span>
                 </div>
               </div>
             ) : (
-              <div className="text-xs text-zinc-500 font-medium">
+              <div className="text-xs text-muted font-medium">
                 {t.noExpensesRecorded}
               </div>
             )}
           </div>
 
-          <div className="pt-2.5 border-t border-border-subtle dark:border-white/[0.06] text-[11px] text-muted dark:text-zinc-400">
+          <div className="pt-2.5 border-t border-border-subtle dark:border-border/[0.06] text-[11px] text-muted dark:text-muted">
             {t.topCategoryImpact}
           </div>
         </div>
 
         {/* Financial Health Status Card */}
         <div
-          className="p-5 sm:p-6 rounded-2xl bg-surface dark:bg-white/5 backdrop-blur-xl border border-border-subtle dark:border-white/10 shadow-xs dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_28px_-10px_rgba(0,0,0,0.5)] flex flex-col justify-between min-h-[170px] relative overflow-hidden"
+          className="p-5 sm:p-6 rounded-2xl bg-surface dark:bg-surface/5 backdrop-blur-xl border border-border-subtle dark:border-border/10 shadow-xs dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_28px_-10px_rgba(0,0,0,0.5)] flex flex-col justify-between min-h-[170px] relative overflow-hidden"
           style={{ backgroundImage: currentIncome >= currentExpense ? 'radial-gradient(circle at 100% 0%, rgba(52,211,153,0.12), transparent 70%)' : 'radial-gradient(circle at 100% 0%, rgba(245,158,11,0.12), transparent 70%)' }}
         >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted dark:text-zinc-400">
+            <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted dark:text-muted">
               {t.summary}
             </span>
-            <div className={`w-8 h-8 rounded-xl border flex items-center justify-center ${currentIncome >= currentExpense ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-amber-500/10 border-amber-500/20 text-amber-400'}`}>
+            <div className={`w-8 h-8 rounded-xl border flex items-center justify-center ${currentIncome >= currentExpense ? 'bg-positive/10 border-positive/20 text-positive' : 'bg-warning/10 border-warning/20 text-warning'}`}>
               <Award className="w-4 h-4 stroke-[2]" />
             </div>
           </div>
 
           <div className="my-2">
             <div className="flex items-center gap-2 mb-1.5">
-              <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${currentIncome >= currentExpense ? 'bg-emerald-500/15 border-emerald-500/25 text-emerald-600 dark:text-emerald-300' : 'bg-amber-500/15 border-amber-500/25 text-amber-600 dark:text-amber-300'}`}>
+              <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${currentIncome >= currentExpense ? 'bg-positive/15 border-positive/25 text-positive dark:text-positive' : 'bg-warning/15 border-warning/25 text-warning dark:text-warning'}`}>
                 {currentIncome >= currentExpense ? t.healthyFinances : t.attentionRequired}
               </span>
             </div>
-            <p className="text-sm font-semibold text-content dark:text-zinc-200 leading-snug">
+            <p className="text-sm font-semibold text-content dark:text-text leading-snug">
               {currentIncome >= currentExpense
                 ? (isAr ? 'واصل ادخار جزء من فائضك هذا الشهر.' : language === 'fr' ? 'Continuez à épargner une part de votre solde positif.' : 'Keep saving part of this month’s surplus.')
                 : (isAr ? 'راجع مصروفاتك لتقليل العجز هذا الشهر.' : language === 'fr' ? 'Réduisez une dépense pour limiter le déficit du mois.' : 'Trim one expense to reduce this month’s shortfall.')}
             </p>
           </div>
 
-          <div className="pt-2.5 border-t border-border-subtle dark:border-white/[0.06] flex items-center justify-between text-[11px] text-muted dark:text-zinc-400">
+          <div className="pt-2.5 border-t border-border-subtle dark:border-border/[0.06] flex items-center justify-between text-[11px] text-muted dark:text-muted">
             <span>{t.flowBalance}</span>
-            <span className="font-semibold text-content dark:text-zinc-300 tabular-nums">
+            <span className="font-semibold text-content dark:text-muted tabular-nums">
               {currentIncome > 0 ? `${Math.min(100, Math.round((currentExpense / currentIncome) * 100))}% ${t.consumedPercent}` : '—'}
             </span>
           </div>
@@ -476,34 +476,34 @@ export const StatsPage: React.FC = () => {
       {/* ── SECTION C: VISUAL CHARTS & BREAKDOWNS ── */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 items-stretch">
         {/* 1. Monthly income and expense trend */}
-        <div className="p-5 sm:p-6 h-full rounded-2xl bg-surface border border-border-subtle shadow-xs dark:bg-white/5 dark:backdrop-blur-xl dark:border-white/10 dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_28px_-10px_rgba(0,0,0,0.5)] space-y-4">
+        <div className="p-5 sm:p-6 h-full rounded-2xl bg-surface border border-border-subtle shadow-xs dark:bg-surface/5 dark:backdrop-blur-xl dark:border-border/10 dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_28px_-10px_rgba(0,0,0,0.5)] space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <h2 className="text-base font-bold text-zinc-900 dark:text-white tracking-tight">
+              <h2 className="text-base font-bold text-text dark:text-text tracking-tight">
                 {t.incomeVsExpense}
               </h2>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+              <p className="text-xs text-muted dark:text-muted mt-0.5">
                 {t.incomeVsExpenseSubtitle}
               </p>
             </div>
 
             {/* Minimalist Legend Pills */}
             <div className="flex items-center gap-2.5 text-xs">
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/[0.04] dark:bg-white/[0.04] border border-black/[0.06] dark:border-white/[0.06]">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400" />
-                <span className="text-zinc-700 dark:text-zinc-300 font-medium text-[11px]">
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-canvas/[0.04] dark:bg-surface/[0.04] border border-border/[0.06] dark:border-border/[0.06]">
+                <span className="w-2 h-2 rounded-full bg-positive dark:bg-positive" />
+                <span className="text-text dark:text-muted font-medium text-[11px]">
                   {t.incomeLabel}
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/[0.04] dark:bg-white/[0.04] border border-black/[0.06] dark:border-white/[0.06]">
-                <span className="w-2 h-2 rounded-full bg-rose-500 dark:bg-rose-400" />
-                <span className="text-zinc-700 dark:text-zinc-300 font-medium text-[11px]">
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-canvas/[0.04] dark:bg-surface/[0.04] border border-border/[0.06] dark:border-border/[0.06]">
+                <span className="w-2 h-2 rounded-full bg-negative dark:bg-negative" />
+                <span className="text-text dark:text-muted font-medium text-[11px]">
                   {t.expenseLabel}
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/[0.04] dark:bg-white/[0.04] border border-black/[0.06] dark:border-white/[0.06]">
-                <span className="w-2 h-2 rounded-full bg-blue-500 dark:bg-blue-400" />
-                <span className="text-zinc-700 dark:text-zinc-300 font-medium text-[11px]">
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-canvas/[0.04] dark:bg-surface/[0.04] border border-border/[0.06] dark:border-border/[0.06]">
+                <span className="w-2 h-2 rounded-full bg-info dark:bg-info" />
+                <span className="text-text dark:text-muted font-medium text-[11px]">
                   {t.savingsLabel}
                 </span>
               </div>
@@ -581,18 +581,18 @@ export const StatsPage: React.FC = () => {
         </div>
 
         {/* 2. Category spending breakdown Donut & Progress list */}
-        <div className="p-5 sm:p-6 h-full rounded-2xl bg-surface border border-border-subtle shadow-xs dark:bg-white/5 dark:backdrop-blur-xl dark:border-white/10 dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_28px_-10px_rgba(0,0,0,0.5)] space-y-4">
+        <div className="p-5 sm:p-6 h-full rounded-2xl bg-surface border border-border-subtle shadow-xs dark:bg-surface/5 dark:backdrop-blur-xl dark:border-border/10 dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_28px_-10px_rgba(0,0,0,0.5)] space-y-4">
           <div>
-            <h2 className="text-base font-bold text-zinc-900 dark:text-white tracking-tight">
+            <h2 className="text-base font-bold text-text dark:text-text tracking-tight">
               {t.categoryBreakdown}
             </h2>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+            <p className="text-xs text-muted dark:text-muted mt-0.5">
               {t.categoryBreakdownSubtitle}
             </p>
           </div>
 
           {breakdownToDisplay.length === 0 ? (
-            <div className="py-12 text-center text-xs text-zinc-500">
+            <div className="py-12 text-center text-xs text-muted">
               {t.noExpensesRecorded}
             </div>
           ) : (
@@ -642,13 +642,13 @@ export const StatsPage: React.FC = () => {
 
                   {/* Donut Center Totals */}
                   <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-muted dark:text-muted">
                       {t.donutCenterTotal}
                     </span>
-                    <div className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white tabular-nums mt-0.5">
+                    <div className="text-base sm:text-lg font-bold text-text dark:text-text tabular-nums mt-0.5">
                       <MoneyText
                         amount={totalCategorySpent}
-                        className="font-bold text-zinc-900 dark:text-white"
+                        className="font-bold text-text dark:text-text"
                       />
                     </div>
                   </div>
@@ -668,25 +668,25 @@ export const StatsPage: React.FC = () => {
                             className="w-2.5 h-2.5 rounded-full shrink-0 shadow-xs"
                             style={{ backgroundColor: item.color }}
                           />
-                          <span className="font-semibold text-zinc-700 dark:text-zinc-200">
+                          <span className="font-semibold text-text dark:text-text">
                             {displayName}
                           </span>
                         </div>
 
                         <div className="flex items-center gap-2">
-                          <span className="text-zinc-500 text-[11px] font-medium tabular-nums">
+                          <span className="text-muted text-[11px] font-medium tabular-nums">
                             {item.percentage}%
                           </span>
-                          <span className="font-bold text-zinc-900 dark:text-white tabular-nums">
+                          <span className="font-bold text-text dark:text-text tabular-nums">
                             <MoneyText
                               amount={item.amount}
-                              className="font-bold text-zinc-900 dark:text-white"
+                              className="font-bold text-text dark:text-text"
                             />
                           </span>
                         </div>
                       </div>
 
-                      <div className="w-full bg-black/[0.06] dark:bg-white/[0.06] rounded-full h-1.5 overflow-hidden">
+                      <div className="w-full bg-canvas/[0.06] dark:bg-surface/[0.06] rounded-full h-1.5 overflow-hidden">
                         <div
                           className="h-full rounded-full transition-all duration-500 ease-out"
                           style={{
@@ -707,17 +707,17 @@ export const StatsPage: React.FC = () => {
       {/* ── SECTION D: TOP 5 EXPENSES & TOP INFLOWS ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Top 5 Expenses (Outflows) - Grouped by Parent Category */}
-        <div className="p-5 sm:p-6 rounded-2xl bg-surface border border-border-subtle shadow-xs dark:bg-white/5 dark:backdrop-blur-xl dark:border-white/10 dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_28px_-10px_rgba(0,0,0,0.5)] space-y-4">
+        <div className="p-5 sm:p-6 rounded-2xl bg-surface border border-border-subtle shadow-xs dark:bg-surface/5 dark:backdrop-blur-xl dark:border-border/10 dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_28px_-10px_rgba(0,0,0,0.5)] space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-rose-500/10 text-rose-500 dark:text-rose-400 border border-rose-500/20 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-xl bg-negative/10 text-negative dark:text-negative border border-negative/20 flex items-center justify-center">
                 <Flame className="w-4 h-4 stroke-[2]" />
               </div>
               <div>
-                <h2 className="text-base font-bold text-zinc-900 dark:text-white tracking-tight">
+                <h2 className="text-base font-bold text-text dark:text-text tracking-tight">
                   {t.topSpends}
                 </h2>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                <p className="text-xs text-muted dark:text-muted">
                   {t.topSpendsSubtitle}
                 </p>
               </div>
@@ -725,7 +725,7 @@ export const StatsPage: React.FC = () => {
           </div>
 
           {top5ParentCategories.length === 0 ? (
-            <div className="py-8 text-center text-xs text-zinc-500">
+            <div className="py-8 text-center text-xs text-muted">
               {t.noTopSpends}
             </div>
           ) : (
@@ -737,17 +737,17 @@ export const StatsPage: React.FC = () => {
 
                 const rankBg =
                   idx === 0
-                    ? 'bg-rose-500/20 text-rose-600 dark:text-rose-300 border border-rose-500/30'
+                    ? 'bg-negative/20 text-negative dark:text-negative border border-negative/30'
                     : idx === 1
-                    ? 'bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/30'
+                    ? 'bg-warning/20 text-warning dark:text-warning border border-warning/30'
                     : idx === 2
-                    ? 'bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border border-indigo-500/30'
-                    : 'bg-black/[0.04] text-zinc-600 border border-black/[0.06] dark:bg-white/[0.06] dark:text-zinc-400 dark:border-white/[0.08]';
+                    ? 'bg-accent/20 text-accent dark:text-accent border border-accent/30'
+                    : 'bg-canvas/[0.04] text-muted border border-border/[0.06] dark:bg-surface/[0.06] dark:text-muted dark:border-border/[0.08]';
 
                 return (
                   <div
                     key={item.id}
-                    className="p-3 rounded-2xl bg-black/[0.02] border border-black/[0.06] dark:bg-white/[0.02] dark:border-white/[0.06] flex items-center justify-between gap-3 relative overflow-hidden group hover:border-black/[0.12] dark:hover:border-white/[0.12] hover:bg-black/[0.04] dark:hover:bg-white/[0.04] transition-all"
+                    className="p-3 rounded-2xl bg-canvas/[0.02] border border-border/[0.06] dark:bg-surface/[0.02] dark:border-border/[0.06] flex items-center justify-between gap-3 relative overflow-hidden group hover:border-border/[0.12] dark:hover:border-border/[0.12] hover:bg-canvas/[0.04] dark:hover:bg-surface/[0.04] transition-all"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
                       {/* Rank Badge */}
@@ -759,18 +759,18 @@ export const StatsPage: React.FC = () => {
 
                       {/* Category Icon */}
                       <div
-                        className="w-8 h-8 rounded-xl flex items-center justify-center text-white shrink-0 shadow-xs"
+                        className="w-8 h-8 rounded-xl flex items-center justify-center text-accent-contrast shrink-0 shadow-xs"
                         style={{ backgroundColor: getCategoryVisualColor(cat?.id || item.id) }}
                       >
                         <IconComp className="w-4 h-4 stroke-[2]" />
                       </div>
 
                       <div className="min-w-0">
-                        <h4 className="text-xs sm:text-sm font-semibold text-zinc-900 dark:text-zinc-200 truncate group-hover:text-black dark:group-hover:text-white transition-colors">
+                        <h4 className="text-xs sm:text-sm font-semibold text-text dark:text-text truncate group-hover:text-text dark:group-hover:text-accent-contrast transition-colors">
                           {catName}
                         </h4>
-                        <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5 flex-wrap">
-                          <span className="font-semibold text-rose-600 dark:text-rose-400 tabular-nums">
+                        <div className="flex items-center gap-1.5 text-[11px] text-muted dark:text-muted mt-0.5 flex-wrap">
+                          <span className="font-semibold text-negative dark:text-negative tabular-nums">
                             {item.percentage}% {t.ofSpending}
                           </span>
                           <span>•</span>
@@ -782,11 +782,11 @@ export const StatsPage: React.FC = () => {
                     </div>
 
                     <div className="text-end shrink-0">
-                      <span className="text-sm font-bold text-rose-600 dark:text-rose-400 tabular-nums">
+                      <span className="text-sm font-bold text-negative dark:text-negative tabular-nums">
                         <MoneyText
                           amount={Number(item.amount)}
                           prefix="− "
-                          className="font-bold text-rose-600 dark:text-rose-400"
+                          className="font-bold text-negative dark:text-negative"
                         />
                       </span>
                     </div>
@@ -798,17 +798,17 @@ export const StatsPage: React.FC = () => {
         </div>
 
         {/* Top 5 Inflows (Income) */}
-        <div className="p-5 sm:p-6 rounded-2xl bg-surface border border-border-subtle shadow-xs dark:bg-white/5 dark:backdrop-blur-xl dark:border-white/10 dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_28px_-10px_rgba(0,0,0,0.5)] space-y-4">
+        <div className="p-5 sm:p-6 rounded-2xl bg-surface border border-border-subtle shadow-xs dark:bg-surface/5 dark:backdrop-blur-xl dark:border-border/10 dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_28px_-10px_rgba(0,0,0,0.5)] space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 border border-emerald-500/20 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-xl bg-positive/10 text-positive dark:text-positive border border-positive/20 flex items-center justify-center">
                 <ArrowUpRight className="w-4 h-4 stroke-[2]" />
               </div>
               <div>
-                <h2 className="text-base font-bold text-zinc-900 dark:text-white tracking-tight">
+                <h2 className="text-base font-bold text-text dark:text-text tracking-tight">
                   {t.topInflows || (isAr ? 'أكبر الواردات' : 'Top Inflows')}
                 </h2>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                <p className="text-xs text-muted dark:text-muted">
                   {t.topInflowsSubtitle ||
                     (isAr ? 'أكبر المداخيل المسجلة هذا الشهر' : 'Top income transactions')}
                 </p>
@@ -817,7 +817,7 @@ export const StatsPage: React.FC = () => {
           </div>
 
           {top5Incomes.length === 0 ? (
-            <div className="py-8 text-center text-xs text-zinc-500">
+            <div className="py-8 text-center text-xs text-muted">
               {t.noInflows || (isAr ? 'لا توجد واردات مسجلة' : 'No income recorded')}
             </div>
           ) : (
@@ -828,33 +828,33 @@ export const StatsPage: React.FC = () => {
                 return (
                   <div
                     key={tx.id}
-                    className="p-3 rounded-2xl bg-black/[0.02] border border-black/[0.06] dark:bg-white/[0.02] dark:border-white/[0.06] flex items-center justify-between gap-3 relative overflow-hidden group hover:border-black/[0.12] dark:hover:border-white/[0.12] hover:bg-black/[0.04] dark:hover:bg-white/[0.04] transition-all"
+                    className="p-3 rounded-2xl bg-canvas/[0.02] border border-border/[0.06] dark:bg-surface/[0.02] dark:border-border/[0.06] flex items-center justify-between gap-3 relative overflow-hidden group hover:border-border/[0.12] dark:hover:border-border/[0.12] hover:bg-canvas/[0.04] dark:hover:bg-surface/[0.04] transition-all"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30">
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 bg-positive/20 text-positive dark:text-positive border border-positive/30">
                         {idx + 1}
                       </div>
 
-                      <div className="w-8 h-8 rounded-xl flex items-center justify-center text-emerald-600 dark:text-emerald-300 bg-emerald-500/15 border border-emerald-500/25 shrink-0">
+                      <div className="w-8 h-8 rounded-xl flex items-center justify-center text-positive dark:text-positive bg-positive/15 border border-positive/25 shrink-0">
                         <Wallet className="w-4 h-4" />
                       </div>
 
                       <div className="min-w-0">
-                        <h4 className="text-xs sm:text-sm font-semibold text-zinc-900 dark:text-zinc-200 truncate group-hover:text-black dark:group-hover:text-white transition-colors">
+                        <h4 className="text-xs sm:text-sm font-semibold text-text dark:text-text truncate group-hover:text-text dark:group-hover:text-accent-contrast transition-colors">
                           {incomeTitle}
                         </h4>
-                        <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+                        <div className="flex items-center gap-1.5 text-[11px] text-muted dark:text-muted mt-0.5">
                           <span className="tabular-nums">{formatDate(tx.date, language)}</span>
                         </div>
                       </div>
                     </div>
 
                     <div className="text-end shrink-0">
-                      <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
+                      <span className="text-sm font-bold text-positive dark:text-positive tabular-nums">
                         <MoneyText
                           amount={Number(tx.amount)}
                           prefix="+ "
-                          className="font-bold text-emerald-600 dark:text-emerald-400"
+                          className="font-bold text-positive dark:text-positive"
                         />
                       </span>
                     </div>

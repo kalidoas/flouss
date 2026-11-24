@@ -150,7 +150,7 @@ export const AddIncomeModal: React.FC<AddIncomeModalProps> = ({
           currency={translations[language].currency}
         />
 
-        {error && <p className="text-xs font-semibold text-rose-500">{error}</p>}
+        {error && <p className="text-xs font-semibold text-negative">{error}</p>}
 
         {/* 2. One-Row Income Source Chips */}
         <div className="space-y-1">
@@ -178,7 +178,7 @@ export const AddIncomeModal: React.FC<AddIncomeModalProps> = ({
                   onClick={() => setSubSourceId(isSelected ? null : sub.id)}
                   className={`min-h-[36px] px-3 rounded-full text-xs font-medium transition-all cursor-pointer ${
                     isSelected
-                      ? 'bg-emerald-500 text-white font-bold'
+                      ? 'bg-positive text-accent-contrast font-bold'
                       : 'bg-surface-raised border border-border-subtle text-muted hover:text-content'
                   }`}
                 >
@@ -218,13 +218,13 @@ export const AddIncomeModal: React.FC<AddIncomeModalProps> = ({
         </label>
 
         {/* 5. Sticky Full-Width Save Button */}
-        <div className="sticky bottom-0 bg-surface/95 dark:bg-[#0A0A0C]/95 pt-2 border-t border-border-subtle dark:border-white/10 backdrop-blur-md">
+        <div className="sticky bottom-0 bg-surface/95 dark:bg-[#0A0A0C]/95 pt-2 border-t border-border-subtle dark:border-border/10 backdrop-blur-md">
           <Button
             type="submit"
             variant="income"
             fullWidth
             icon={<Check className="w-4 h-4 stroke-[2.5]" />}
-            className="min-h-[48px] text-sm font-bold bg-emerald-500 hover:bg-emerald-600 text-white"
+            className="min-h-[48px] text-sm font-bold bg-positive hover:bg-positive text-accent-contrast"
           >
             {t.save}
           </Button>

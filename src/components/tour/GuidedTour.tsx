@@ -45,7 +45,7 @@ const TOUR_STEPS: TourStepConfig[] = [
       'Votre to-do list intégrée : notez vos factures urgentes, cochez les tâches réglées, fixez des dates d’échéance et épinglez vos priorités.',
     descAr:
       'قائمتك للمهام المالية اليومية: سجل فواتيرك المستعجلة، حدد تواريخ الخلاص، وقم بشطب ما تم إنجازه.',
-    icon: <CheckSquare className="w-4 h-4 text-emerald-600" />,
+    icon: <CheckSquare className="w-4 h-4 text-positive" />,
   },
   {
     screen: 'dashboard',
@@ -55,7 +55,7 @@ const TOUR_STEPS: TourStepConfig[] = [
       'Ajoutez instantanément un revenu (+ Revenu), une dépense (+ Dépense), ou alimentez votre cagnotte d’épargne (+ Épargner).',
     descAr:
       'سجل بضغطة زر واحدة: مداخيلك الجديدة، مصاريفك اليومية، أو مبالغ تدخرها لأهدافك.',
-    icon: <PlusCircle className="w-4 h-4 text-amber-500" />,
+    icon: <PlusCircle className="w-4 h-4 text-warning" />,
   },
   {
     screen: 'categories',
@@ -65,7 +65,7 @@ const TOUR_STEPS: TourStepConfig[] = [
       'Organisez vos postes de dépenses avec des plafonds mensuels et suivez vos objectifs d’épargne avec jauges de progression automatiques.',
     descAr:
       'قسم مصاريفك حسب الفئات مع تحديد سقف ميزانية شهري، وتتبع نسبة وصولك لأهداف الادخار.',
-    icon: <FolderTree className="w-4 h-4 text-purple-500" />,
+    icon: <FolderTree className="w-4 h-4 text-accent" />,
   },
   {
     screen: 'debts',
@@ -75,7 +75,7 @@ const TOUR_STEPS: TourStepConfig[] = [
       'Ne perdez plus jamais la trace de votre argent : notez ce que vos proches vous doivent et ce que vous devez rembourser.',
     descAr:
       'تتبع بدقة المبالغ التي سلفتها للغير والأموال التي عليك إرجاعها مع إمكانية تسجيل الدفعات الجزئية.',
-    icon: <HandCoins className="w-4 h-4 text-emerald-600" />,
+    icon: <HandCoins className="w-4 h-4 text-positive" />,
   },
   {
     screen: 'subscriptions',
@@ -85,7 +85,7 @@ const TOUR_STEPS: TourStepConfig[] = [
       'Centralisez vos factures régulières (Wifi, loyer, salle de sport) et cochez chaque mois dès que le paiement est effectué.',
     descAr:
       'سجل كل مصاريفك القارة (الويفي، النادي الرياضي، الهاتف) وقم بتأكيد الدفع كل شهر لتفادي أي نسيان.',
-    icon: <CreditCard className="w-4 h-4 text-blue-500" />,
+    icon: <CreditCard className="w-4 h-4 text-info" />,
   },
   {
     screen: 'notes',
@@ -95,7 +95,7 @@ const TOUR_STEPS: TourStepConfig[] = [
       'Un bloc-notes minimaliste pour consigner vos projets d’investissements, calculs prévisionnels ou réflexions personnelles.',
     descAr:
       'مساحة لتدوين أفكارك، مشاريعك المالية أو ملاحظاتك اليومية بتصميم هادئ ومريح للعين.',
-    icon: <FileText className="w-4 h-4 text-teal-600" />,
+    icon: <FileText className="w-4 h-4 text-info" />,
   },
   {
     screen: 'dashboard',
@@ -105,7 +105,7 @@ const TOUR_STEPS: TourStepConfig[] = [
       'Appuyez sur la touche "H" ou cliquez sur l’œil en haut pour flouter immédiatement vos montants et protéger votre vie privée.',
     descAr:
       'اضغط على زر "H" في لوحة المفاتيح أو رمز العين لإخفاء مبالغك بالضبابية فوراً في الأماكن العامة.',
-    icon: <Eye className="w-4 h-4 text-indigo-500" />,
+    icon: <Eye className="w-4 h-4 text-accent" />,
   },
   {
     screen: 'dashboard',
@@ -115,7 +115,7 @@ const TOUR_STEPS: TourStepConfig[] = [
       'Votre compte est protégé par votre code PIN. Vous pouvez configurer jusqu’à 2 comptes pour séparer vos finances personnelles et pros !',
     descAr:
       'حسابك محمي برمز PIN السري. يمكنك أيضاً إدارة حسابين منفصلين تماماً وبسرية تامة.',
-    icon: <ShieldCheck className="w-4 h-4 text-emerald-600" />,
+    icon: <ShieldCheck className="w-4 h-4 text-positive" />,
   },
 ];
 
@@ -155,8 +155,8 @@ export const GuidedTour: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 pointer-events-none flex items-end sm:items-center justify-center p-4 bg-black/35 backdrop-blur-[1px] animate-in fade-in duration-200">
-      <div className="pointer-events-auto w-full max-w-sm bg-white dark:bg-[#202020] rounded-lg p-4 sm:p-5 shadow-2xl border border-[#e3e2de] dark:border-[#2f2f2f] space-y-3.5 mb-16 sm:mb-0 animate-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 pointer-events-none flex items-end sm:items-center justify-center p-4 bg-canvas/35 backdrop-blur-[1px] animate-in fade-in duration-200">
+      <div className="pointer-events-auto w-full max-w-sm bg-surface dark:bg-[#202020] rounded-lg p-4 sm:p-5 shadow-2xl border border-[#e3e2de] dark:border-[#2f2f2f] space-y-3.5 mb-16 sm:mb-0 animate-in zoom-in-95 duration-200">
         {/* Header with Step and Close */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -223,7 +223,7 @@ export const GuidedTour: React.FC = () => {
 
             <button
               onClick={handleNext}
-              className="px-3 py-1 rounded text-xs font-medium bg-[#2383e2] hover:bg-[#1a73cb] text-white transition-colors flex items-center gap-1 shadow-xs"
+              className="px-3 py-1 rounded text-xs font-medium bg-[#2383e2] hover:bg-[#1a73cb] text-accent-contrast transition-colors flex items-center gap-1 shadow-xs"
             >
               <span>{isLast ? (isAr ? 'إنهاء واستخدام التطبيق' : 'Terminer') : isAr ? 'التالي' : 'Suivant'}</span>
               <ChevronRight className="w-3 h-3" />

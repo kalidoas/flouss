@@ -176,10 +176,10 @@ export const CategoriesPage: React.FC = () => {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-white via-white to-indigo-200 bg-clip-text text-transparent">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-surface via-surface to-accent bg-clip-text text-transparent">
             {tCat.title}
           </h1>
-          <p className="text-xs sm:text-sm text-zinc-400 mt-1">
+          <p className="text-xs sm:text-sm text-muted mt-1">
             {tCat.subtitle}
           </p>
         </div>
@@ -189,7 +189,7 @@ export const CategoriesPage: React.FC = () => {
             setCategoryToEdit(null);
             setIsCreateModalOpen(true);
           }}
-          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-white text-zinc-950 font-semibold px-5 py-2 text-sm shadow-sm hover:bg-zinc-200 transition-all active:scale-[0.98] self-start sm:self-auto"
+          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-surface text-text font-semibold px-5 py-2 text-sm shadow-sm hover:bg-surface-2 transition-all active:scale-[0.98] self-start sm:self-auto"
         >
           <Plus className="w-4 h-4 stroke-[2.5]" />
           <span>{tCat.newCategory}</span>
@@ -200,84 +200,84 @@ export const CategoriesPage: React.FC = () => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {/* Total Categories */}
         <div
-          className="rounded-2xl bg-white/5 p-4 sm:p-5 backdrop-blur-xl border border-white/10 relative overflow-hidden shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_28px_-10px_rgba(0,0,0,0.5)]"
+          className="rounded-2xl bg-surface/5 p-4 sm:p-5 backdrop-blur-xl border border-border/10 relative overflow-hidden shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_28px_-10px_rgba(0,0,0,0.5)]"
           style={{ backgroundImage: 'radial-gradient(circle at 100% 0%, rgba(99,102,241,0.12), transparent 70%)' }}
         >
-          <div className="flex items-center justify-between text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-400 mb-1.5">
+          <div className="flex items-center justify-between text-[11px] font-medium uppercase tracking-[0.14em] text-muted mb-1.5">
             <span className="truncate">{language === 'ar' ? 'مجموع الأصناف' : 'Total Catégories'}</span>
-            <Layers className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+            <Layers className="w-3.5 h-3.5 text-accent shrink-0" />
           </div>
-          <div className="text-2xl font-bold tracking-tight text-white tabular-nums">
+          <div className="text-2xl font-bold tracking-tight text-accent-contrast tabular-nums">
             {categoryStats.activeCategoriesCount}
           </div>
-          <span className="text-[11px] text-zinc-500 block mt-1 truncate">
+          <span className="text-[11px] text-muted block mt-1 truncate">
             {categoryStats.activeGoalsCount} {language === 'ar' ? 'أهداف ادخار' : 'objectifs actifs'}
           </span>
         </div>
 
         {/* Spent this month */}
         <div
-          className="rounded-2xl bg-white/5 p-4 sm:p-5 backdrop-blur-xl border border-white/10 relative overflow-hidden shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_28px_-10px_rgba(0,0,0,0.5)]"
+          className="rounded-2xl bg-surface/5 p-4 sm:p-5 backdrop-blur-xl border border-border/10 relative overflow-hidden shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_28px_-10px_rgba(0,0,0,0.5)]"
           style={{ backgroundImage: 'radial-gradient(circle at 100% 0%, rgba(244,63,94,0.14), transparent 70%)' }}
         >
-          <div className="flex items-center justify-between text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-400 mb-1.5">
+          <div className="flex items-center justify-between text-[11px] font-medium uppercase tracking-[0.14em] text-muted mb-1.5">
             <span className="truncate">{tCat.spentThisMonth}</span>
-            <TrendingDown className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+            <TrendingDown className="w-3.5 h-3.5 text-negative shrink-0" />
           </div>
-          <div className="text-2xl font-bold tracking-tight text-rose-400 tabular-nums">
+          <div className="text-2xl font-bold tracking-tight text-negative tabular-nums">
             <MoneyText amount={categoryStats.totalSpent} />
           </div>
-          <span className="text-[11px] text-zinc-500 block mt-1 truncate">
+          <span className="text-[11px] text-muted block mt-1 truncate">
             {language === 'ar' ? 'خلال هذا الشهر' : 'Total dépenses du mois'}
           </span>
         </div>
 
         {/* Plus forte dépense */}
         <div
-          className="rounded-2xl bg-white/5 p-4 sm:p-5 backdrop-blur-xl border border-white/10 relative overflow-hidden shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_28px_-10px_rgba(0,0,0,0.5)]"
+          className="rounded-2xl bg-surface/5 p-4 sm:p-5 backdrop-blur-xl border border-border/10 relative overflow-hidden shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_28px_-10px_rgba(0,0,0,0.5)]"
           style={{ backgroundImage: 'radial-gradient(circle at 100% 0%, rgba(245,158,11,0.12), transparent 70%)' }}
         >
-          <div className="flex items-center justify-between text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-400 mb-1.5">
+          <div className="flex items-center justify-between text-[11px] font-medium uppercase tracking-[0.14em] text-muted mb-1.5">
             <span className="truncate">{language === 'ar' ? 'الأكثر استهلاكاً' : 'Plus forte dépense'}</span>
-            <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+            <Sparkles className="w-3.5 h-3.5 text-warning shrink-0" />
           </div>
-          <div className="text-base font-bold text-white truncate">
+          <div className="text-base font-bold text-accent-contrast truncate">
             {categoryStats.topCategory ? getCategoryName(categoryStats.topCategory, language) : '—'}
           </div>
-          <span className="text-xs text-amber-400 font-semibold block mt-1 tabular-nums">
+          <span className="text-xs text-warning font-semibold block mt-1 tabular-nums">
             <MoneyText amount={categoryStats.topCatAmount} />
           </span>
         </div>
 
         {/* Objectifs Actifs */}
         <div
-          className="rounded-2xl bg-white/5 p-4 sm:p-5 backdrop-blur-xl border border-white/10 relative overflow-hidden shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_28px_-10px_rgba(0,0,0,0.5)]"
+          className="rounded-2xl bg-surface/5 p-4 sm:p-5 backdrop-blur-xl border border-border/10 relative overflow-hidden shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_28px_-10px_rgba(0,0,0,0.5)]"
           style={{ backgroundImage: 'radial-gradient(circle at 100% 0%, rgba(52,211,153,0.14), transparent 70%)' }}
         >
-          <div className="flex items-center justify-between text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-400 mb-1.5">
+          <div className="flex items-center justify-between text-[11px] font-medium uppercase tracking-[0.14em] text-muted mb-1.5">
             <span className="truncate">{language === 'ar' ? 'أهداف الادخار' : 'Objectifs Actifs'}</span>
-            <PiggyBank className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+            <PiggyBank className="w-3.5 h-3.5 text-positive shrink-0" />
           </div>
-          <div className="text-2xl font-bold tracking-tight text-emerald-400 tabular-nums">
+          <div className="text-2xl font-bold tracking-tight text-positive tabular-nums">
             {categoryStats.activeGoalsCount}
           </div>
-          <span className="text-[11px] text-zinc-500 block mt-1 truncate">
+          <span className="text-[11px] text-muted block mt-1 truncate">
             {language === 'ar' ? 'قيد الإنجاز' : 'En cours d’épargne'}
           </span>
         </div>
       </div>
 
       {/* Non-sticky Glass Toolbar: Filter Tabs + Search + Group Popover (No bleed-through or overlap) */}
-      <div className="rounded-2xl bg-surface p-3 sm:p-4 border border-border-subtle shadow-xs dark:bg-white/5 dark:backdrop-blur-2xl dark:border-white/10 space-y-3">
+      <div className="rounded-2xl bg-surface p-3 sm:p-4 border border-border-subtle shadow-xs dark:bg-surface/5 dark:backdrop-blur-2xl dark:border-border/10 space-y-3">
         <div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center justify-between">
           {/* Segmented Tab Control */}
-          <div className="flex flex-wrap items-center gap-1 p-1 bg-black/[0.04] dark:bg-white/[0.04] rounded-full border border-black/[0.06] dark:border-white/[0.06]">
+          <div className="flex flex-wrap items-center gap-1 p-1 bg-canvas/[0.04] dark:bg-surface/[0.04] rounded-full border border-border/[0.06] dark:border-border/[0.06]">
             <button
               onClick={() => setActiveTab('all')}
               className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'all'
-                  ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 shadow-xs'
-                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+                  ? 'bg-surface text-accent-contrast dark:bg-surface dark:text-text shadow-xs'
+                  : 'text-muted dark:text-muted hover:text-text dark:hover:text-accent-contrast'
               }`}
             >
               <Layers className="w-3.5 h-3.5" />
@@ -294,8 +294,8 @@ export const CategoriesPage: React.FC = () => {
               onClick={() => setActiveTab('goals')}
               className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'goals'
-                  ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 shadow-xs'
-                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+                  ? 'bg-surface text-accent-contrast dark:bg-surface dark:text-text shadow-xs'
+                  : 'text-muted dark:text-muted hover:text-text dark:hover:text-accent-contrast'
               }`}
             >
               <Target className="w-3.5 h-3.5" />
@@ -312,8 +312,8 @@ export const CategoriesPage: React.FC = () => {
               onClick={() => setActiveTab('expenses')}
               className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'expenses'
-                  ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 shadow-xs'
-                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+                  ? 'bg-surface text-accent-contrast dark:bg-surface dark:text-text shadow-xs'
+                  : 'text-muted dark:text-muted hover:text-text dark:hover:text-accent-contrast'
               }`}
             >
               <ShoppingBag className="w-3.5 h-3.5" />
@@ -330,8 +330,8 @@ export const CategoriesPage: React.FC = () => {
               onClick={() => setActiveTab('archived')}
               className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'archived'
-                  ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 shadow-xs'
-                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+                  ? 'bg-surface text-accent-contrast dark:bg-surface dark:text-text shadow-xs'
+                  : 'text-muted dark:text-muted hover:text-text dark:hover:text-accent-contrast'
               }`}
             >
               <Archive className="w-3.5 h-3.5" />
@@ -354,7 +354,7 @@ export const CategoriesPage: React.FC = () => {
                 type="button"
                 aria-expanded={isGroupDropdownOpen}
                 onClick={() => setIsGroupDropdownOpen((prev) => !prev)}
-                className="flex items-center gap-2 rounded-full border border-border-subtle bg-surface px-3.5 py-1.5 text-xs font-semibold text-content outline-none shadow-xs hover:border-black/15 dark:border-white/[0.08] dark:bg-black/40 dark:text-zinc-200 dark:hover:border-white/[0.18] transition-all cursor-pointer"
+                className="flex items-center gap-2 rounded-full border border-border-subtle bg-surface px-3.5 py-1.5 text-xs font-semibold text-content outline-none shadow-xs hover:border-border/15 dark:border-border/[0.08] dark:bg-canvas/40 dark:text-text dark:hover:border-border/[0.18] transition-all cursor-pointer"
               >
                 {selectedGroup !== 'all' ? (
                   <span
@@ -362,7 +362,7 @@ export const CategoriesPage: React.FC = () => {
                     style={{ backgroundColor: getCategoryVisualColor(selectedGroup) }}
                   />
                 ) : (
-                  <Folder className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                  <Folder className="w-3.5 h-3.5 text-muted shrink-0" />
                 )}
                 <span className="truncate max-w-[130px]">
                   {selectedGroup === 'all'
@@ -370,8 +370,8 @@ export const CategoriesPage: React.FC = () => {
                     : getCategoryGroupName(selectedGroup, language)}
                 </span>
                 <ChevronDown
-                  className={`w-3.5 h-3.5 text-zinc-400 shrink-0 transition-transform duration-200 ${
-                    isGroupDropdownOpen ? 'rotate-180 text-white' : ''
+                  className={`w-3.5 h-3.5 text-muted shrink-0 transition-transform duration-200 ${
+                    isGroupDropdownOpen ? 'rotate-180 text-accent-contrast' : ''
                   }`}
                 />
               </button>
@@ -382,7 +382,7 @@ export const CategoriesPage: React.FC = () => {
                 triggerRef={groupDropdownTriggerRef}
                 align="end"
                 minWidth={210}
-                className="min-w-[210px] overflow-y-auto no-scrollbar rounded-2xl bg-[#12131C]/95 backdrop-blur-2xl border border-white/[0.12] p-1.5 shadow-[0_16px_36px_-8px_rgba(0,0,0,0.8)]"
+                className="min-w-[210px] overflow-y-auto no-scrollbar rounded-2xl bg-[#12131C]/95 backdrop-blur-2xl border border-border/[0.12] p-1.5 shadow-[0_16px_36px_-8px_rgba(0,0,0,0.8)]"
               >
                 <div className="space-y-0.5">
                   <button
@@ -393,8 +393,8 @@ export const CategoriesPage: React.FC = () => {
                     }}
                     className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-start cursor-pointer ${
                       selectedGroup === 'all'
-                        ? 'bg-white text-zinc-950 font-bold shadow-xs'
-                        : 'text-zinc-300 hover:text-white hover:bg-white/[0.06]'
+                        ? 'bg-surface text-text font-bold shadow-xs'
+                        : 'text-muted hover:text-accent-contrast hover:bg-surface/[0.06]'
                     }`}
                   >
                     <div className="flex items-center gap-2">
@@ -402,11 +402,11 @@ export const CategoriesPage: React.FC = () => {
                       <span>{tCat.groupFilterAll}</span>
                     </div>
                     {selectedGroup === 'all' && (
-                      <Check className="w-3.5 h-3.5 text-zinc-950 stroke-[2.5]" />
+                      <Check className="w-3.5 h-3.5 text-text stroke-[2.5]" />
                     )}
                   </button>
 
-                  <div className="h-px bg-white/[0.06] my-1" />
+                  <div className="h-px bg-surface/[0.06] my-1" />
 
                   {groupKeys.map((groupId) => {
                     const isSelected = selectedGroup === groupId;
@@ -423,8 +423,8 @@ export const CategoriesPage: React.FC = () => {
                         }}
                         className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-start cursor-pointer ${
                           isSelected
-                            ? 'bg-white text-zinc-950 font-bold shadow-xs'
-                            : 'text-zinc-300 hover:text-white hover:bg-white/[0.06]'
+                            ? 'bg-surface text-text font-bold shadow-xs'
+                            : 'text-muted hover:text-accent-contrast hover:bg-surface/[0.06]'
                         }`}
                       >
                         <div className="flex items-center gap-2 min-w-0">
@@ -435,7 +435,7 @@ export const CategoriesPage: React.FC = () => {
                           <span className="truncate">{groupLabel}</span>
                         </div>
                         {isSelected && (
-                          <Check className="w-3.5 h-3.5 text-zinc-950 stroke-[2.5] shrink-0" />
+                          <Check className="w-3.5 h-3.5 text-text stroke-[2.5] shrink-0" />
                         )}
                       </button>
                     );
@@ -446,13 +446,13 @@ export const CategoriesPage: React.FC = () => {
 
             {/* Search Input */}
             <div className="relative min-w-[180px] sm:min-w-[220px] flex-1">
-              <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <Search className="w-3.5 h-3.5 text-muted absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder={tCat.filterPlaceholder}
-                className="w-full text-xs pl-8 pr-3 py-1.5 rounded-full border border-white/[0.08] bg-black/40 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all"
+                className="w-full text-xs pl-8 pr-3 py-1.5 rounded-full border border-border/[0.08] bg-canvas/40 text-accent-contrast placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-ring/30 transition-all"
               />
             </div>
           </div>
@@ -495,7 +495,7 @@ export const CategoriesPage: React.FC = () => {
             const goalCalc = category.isGoal ? calculateGoalProgress(category, transactions) : null;
             const monthlyBudget = Number(category.monthlyBudget) || 0;
             const budgetProgress = monthlyBudget > 0 ? Math.min(100, Math.round((spentThisMonth / monthlyBudget) * 100)) : 0;
-            const progressColor = spentThisMonth > monthlyBudget && monthlyBudget > 0 ? 'bg-rose-500' : budgetProgress >= 80 ? 'bg-amber-500' : 'bg-indigo-500';
+            const progressColor = spentThisMonth > monthlyBudget && monthlyBudget > 0 ? 'bg-negative' : budgetProgress >= 80 ? 'bg-warning' : 'bg-accent';
             const catColor = getCategoryVisualColor(category.id);
 
             return (
@@ -503,7 +503,7 @@ export const CategoriesPage: React.FC = () => {
                 key={category.id}
                 variants={itemVariants}
                 onClick={() => setSelectedCategory(category)}
-                className="group relative flex flex-col justify-between gap-3 p-4 sm:p-5 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 hover:border-white/20 transition-all cursor-pointer shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_28px_-10px_rgba(0,0,0,0.5)]"
+                className="group relative flex flex-col justify-between gap-3 p-4 sm:p-5 rounded-2xl bg-surface/5 backdrop-blur-xl border border-border/10 hover:border-border/20 transition-all cursor-pointer shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_28px_-10px_rgba(0,0,0,0.5)]"
               >
                 {/* Top Row: Icon + Names + Spent Total */}
                 <div className="flex items-start justify-between gap-3">
@@ -521,19 +521,19 @@ export const CategoriesPage: React.FC = () => {
 
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-1.5">
-                        <h4 className="font-semibold text-sm text-zinc-100 truncate group-hover:text-white transition-colors" title={categoryName}>
+                        <h4 className="font-semibold text-sm text-text truncate group-hover:text-accent-contrast transition-colors" title={categoryName}>
                           {categoryName}
                         </h4>
                         {groupName && (
-                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-white/[0.05] text-zinc-400 border border-white/[0.06] shrink-0">
+                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-surface/[0.05] text-muted border border-border/[0.06] shrink-0">
                             {groupName}
                           </span>
                         )}
                         <span
                           className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
                             category.isGoal
-                              ? 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/20'
-                              : 'bg-white/[0.04] text-zinc-400 border border-white/[0.06]'
+                              ? 'bg-accent/15 text-accent border border-accent/20'
+                              : 'bg-surface/[0.04] text-muted border border-border/[0.06]'
                           }`}
                         >
                           {category.isGoal ? tCat.goalBadge : tCat.expenseBadge}
@@ -549,14 +549,14 @@ export const CategoriesPage: React.FC = () => {
                               <div
                                 key={sub.id}
                                 title={getSubCategoryName(sub, language)}
-                                className="w-5 h-5 rounded-lg bg-white/[0.04] border border-white/[0.06] flex items-center justify-center text-zinc-400"
+                                className="w-5 h-5 rounded-lg bg-surface/[0.04] border border-border/[0.06] flex items-center justify-center text-muted"
                               >
                                 <SubIcon className="w-3 h-3 stroke-[2]" />
                               </div>
                             );
                           })}
                           {category.subcategories.length > 5 && (
-                            <span className="text-[10px] text-zinc-500 font-mono">
+                            <span className="text-[10px] text-muted font-mono">
                               +{category.subcategories.length - 5}
                             </span>
                           )}
@@ -566,10 +566,10 @@ export const CategoriesPage: React.FC = () => {
                   </div>
 
                   <div className="flex flex-col items-end shrink-0">
-                    <div className="text-sm sm:text-base font-bold text-white tabular-nums">
+                    <div className="text-sm sm:text-base font-bold text-accent-contrast tabular-nums">
                       <MoneyText amount={category.isGoal && goalCalc ? goalCalc.savedAmount : spentThisMonth} />
                     </div>
-                    <span className="text-[10px] text-zinc-500">
+                    <span className="text-[10px] text-muted">
                       {category.isGoal ? (language === 'ar' ? 'المدخر' : 'Épargné') : (language === 'ar' ? 'مصروف الشهر' : 'Dépensé')}
                     </span>
                   </div>
@@ -578,34 +578,34 @@ export const CategoriesPage: React.FC = () => {
                 {/* Middle: Progress Bar */}
                 {!category.isGoal ? (
                   <div className="space-y-1">
-                    <div className="flex items-center justify-between text-[11px] text-zinc-400">
+                    <div className="flex items-center justify-between text-[11px] text-muted">
                       <span>{language === 'ar' ? 'استهلاك الميزانية' : 'Budget consommé'}</span>
-                      <span className="font-semibold tabular-nums text-zinc-300">
+                      <span className="font-semibold tabular-nums text-muted">
                         {monthlyBudget > 0 ? `${budgetProgress}%` : '—'}
                       </span>
                     </div>
-                    <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.06]" role="progressbar" aria-valuemin={0} aria-valuemax={monthlyBudget || 100} aria-valuenow={monthlyBudget ? Math.min(spentThisMonth, monthlyBudget) : 0}>
+                    <div className="h-1.5 overflow-hidden rounded-full bg-surface/[0.06]" role="progressbar" aria-valuemin={0} aria-valuemax={monthlyBudget || 100} aria-valuenow={monthlyBudget ? Math.min(spentThisMonth, monthlyBudget) : 0}>
                       <div className={`h-full rounded-full transition-all duration-300 ${progressColor}`} style={{ width: `${monthlyBudget > 0 ? budgetProgress : 0}%` }} />
                     </div>
                   </div>
                 ) : (
                   <div className="space-y-1">
-                    <div className="flex items-center justify-between text-[11px] text-zinc-400">
+                    <div className="flex items-center justify-between text-[11px] text-muted">
                       <span>{language === 'ar' ? 'الهدف' : 'Objectif'}: <MoneyText amount={category.targetAmount || 0} /></span>
-                      <span className="font-semibold tabular-nums text-indigo-300">{goalCalc ? `${goalCalc.progressPercent}%` : '0%'}</span>
+                      <span className="font-semibold tabular-nums text-accent">{goalCalc ? `${goalCalc.progressPercent}%` : '0%'}</span>
                     </div>
-                    <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
-                      <div className="h-full rounded-full bg-indigo-500 transition-all duration-300" style={{ width: `${goalCalc ? Math.min(100, goalCalc.progressPercent) : 0}%` }} />
+                    <div className="h-1.5 overflow-hidden rounded-full bg-surface/[0.06]">
+                      <div className="h-full rounded-full bg-accent transition-all duration-300" style={{ width: `${goalCalc ? Math.min(100, goalCalc.progressPercent) : 0}%` }} />
                     </div>
                   </div>
                 )}
 
                 {/* Bottom Row: Inline Budget Stepper / Goal Details + Quick Action */}
-                <div className="flex items-center justify-between pt-2 border-t border-white/[0.05] gap-2" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center justify-between pt-2 border-t border-border/[0.05] gap-2" onClick={(e) => e.stopPropagation()}>
                   {!category.isGoal ? (
                     <div className="flex items-center gap-1.5">
-                      <span className="text-[11px] text-zinc-400">{language === 'ar' ? 'الميزانية:' : 'Budget:'}</span>
-                      <div className="flex items-center rounded-lg bg-black/40 border border-white/[0.08] p-0.5">
+                      <span className="text-[11px] text-muted">{language === 'ar' ? 'الميزانية:' : 'Budget:'}</span>
+                      <div className="flex items-center rounded-lg bg-canvas/40 border border-border/[0.08] p-0.5">
                         <button
                           type="button"
                           onClick={() => {
@@ -613,7 +613,7 @@ export const CategoriesPage: React.FC = () => {
                             const next = Math.max(0, cur - 50);
                             updateCategory(category.id, { monthlyBudget: next > 0 ? next : null });
                           }}
-                          className="h-6 w-6 rounded flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/[0.08] transition-colors"
+                          className="h-6 w-6 rounded flex items-center justify-center text-muted hover:text-accent-contrast hover:bg-surface/[0.08] transition-colors"
                           title="-50 MAD"
                         >
                           <Minus className="w-3 h-3" />
@@ -622,7 +622,7 @@ export const CategoriesPage: React.FC = () => {
                           type="button"
                           onClick={() => handleOpenEdit(category)}
                           aria-label={`${categoryName} monthly budget`}
-                          className="px-2 h-6 rounded flex items-center justify-center text-xs font-semibold text-zinc-800 dark:text-zinc-200 hover:bg-black/[0.04] dark:hover:bg-white/[0.08] transition-colors tabular-nums"
+                          className="px-2 h-6 rounded flex items-center justify-center text-xs font-semibold text-text dark:text-text hover:bg-canvas/[0.04] dark:hover:bg-surface/[0.08] transition-colors tabular-nums"
                         >
                           {category.monthlyBudget ? `${category.monthlyBudget} MAD` : '0 MAD'}
                         </button>
@@ -633,7 +633,7 @@ export const CategoriesPage: React.FC = () => {
                             const next = cur + 50;
                             updateCategory(category.id, { monthlyBudget: next });
                           }}
-                          className="h-6 w-6 rounded flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/[0.08] transition-colors"
+                          className="h-6 w-6 rounded flex items-center justify-center text-muted hover:text-accent-contrast hover:bg-surface/[0.08] transition-colors"
                           title="+50 MAD"
                         >
                           <Plus className="w-3 h-3" />
@@ -641,7 +641,7 @@ export const CategoriesPage: React.FC = () => {
                       </div>
                     </div>
                   ) : (
-                    <div className="text-[11px] text-zinc-400">
+                    <div className="text-[11px] text-muted">
                       {category.targetDate ? `${language === 'ar' ? 'التاريخ المستهدف:' : 'Cible:'} ${category.targetDate}` : ''}
                     </div>
                   )}
@@ -651,7 +651,7 @@ export const CategoriesPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleQuickContribute(category)}
-                        className="inline-flex items-center gap-1 rounded-full bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-500/30 text-indigo-300 text-xs font-medium px-3 py-1 transition-all"
+                        className="inline-flex items-center gap-1 rounded-full bg-accent/15 hover:bg-accent/25 border border-accent/30 text-accent text-xs font-medium px-3 py-1 transition-all"
                       >
                         <Plus className="w-3 h-3" />
                         <span>{language === 'ar' ? 'ادخار' : 'Épargner'}</span>
@@ -660,7 +660,7 @@ export const CategoriesPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleQuickExpense(category)}
-                        className="inline-flex items-center gap-1 rounded-full bg-white/[0.04] hover:bg-rose-500/15 border border-white/[0.08] hover:border-rose-500/30 text-zinc-300 hover:text-rose-300 text-xs font-medium px-3 py-1 transition-all"
+                        className="inline-flex items-center gap-1 rounded-full bg-surface/[0.04] hover:bg-negative/15 border border-border/[0.08] hover:border-negative/30 text-muted hover:text-negative text-xs font-medium px-3 py-1 transition-all"
                         title={tCat.quickExpense}
                       >
                         <Plus className="w-3 h-3" />
@@ -675,7 +675,7 @@ export const CategoriesPage: React.FC = () => {
         </motion.div>
       )}
       {unusedCount > 0 && activeTab !== 'archived' && (
-        <button type="button" onClick={() => setShowUnused((value) => !value)} className="min-h-10 rounded-full px-4 text-xs font-medium text-indigo-300 hover:bg-white/[0.04] border border-white/[0.06] transition-all">
+        <button type="button" onClick={() => setShowUnused((value) => !value)} className="min-h-10 rounded-full px-4 text-xs font-medium text-accent hover:bg-surface/[0.04] border border-border/[0.06] transition-all">
           {language === 'ar' ? `${showUnused ? 'إخفاء' : 'عرض'} ${unusedCount} فئات غير مستخدمة` : language === 'fr' ? `${showUnused ? 'Masquer' : 'Afficher'} ${unusedCount} catégories inutilisées` : `${showUnused ? 'Hide' : 'Show'} ${unusedCount} unused`}
         </button>
       )}

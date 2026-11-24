@@ -678,10 +678,10 @@ export const SettingsPage: React.FC = () => {
     <div className="max-w-[1200px] mx-auto space-y-6 sm:space-y-8 animate-page">
       {/* Title */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-text dark:text-text tracking-tight">
           {t.title}
         </h1>
-        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+        <p className="text-xs sm:text-sm text-muted dark:text-muted mt-1">
           {t.subtitle}
         </p>
       </div>
@@ -690,8 +690,8 @@ export const SettingsPage: React.FC = () => {
         <div
           className={`p-4 rounded-2xl flex items-center justify-between text-xs font-semibold ${
             feedbackMsg.type === 'success'
-              ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800'
-              : 'bg-rose-50 text-rose-800 dark:bg-rose-950/60 dark:text-rose-200 border border-rose-200 dark:border-rose-800'
+              ? 'bg-positive text-positive dark:bg-positive/60 dark:text-positive border border-positive dark:border-positive'
+              : 'bg-negative text-negative dark:bg-negative/60 dark:text-negative border border-negative dark:border-negative'
           }`}
         >
           <span>{feedbackMsg.text}</span>
@@ -706,15 +706,15 @@ export const SettingsPage: React.FC = () => {
 
       {/* 30-Day Backup Reminder Alert */}
       {isBackupDue && (
-        <div className="p-4 rounded-3xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-700/60 flex items-start gap-3.5">
-          <div className="w-10 h-10 rounded-2xl bg-amber-100 dark:bg-amber-900/60 text-amber-600 dark:text-amber-300 flex items-center justify-center shrink-0">
+        <div className="p-4 rounded-3xl bg-warning dark:bg-warning/40 border border-warning dark:border-warning/60 flex items-start gap-3.5">
+          <div className="w-10 h-10 rounded-2xl bg-warning dark:bg-warning/60 text-warning dark:text-warning flex items-center justify-center shrink-0">
             <Calendar className="w-5 h-5 stroke-[2.2]" />
           </div>
           <div className="flex-1">
-            <h4 className="text-sm font-bold text-amber-900 dark:text-amber-200">
+            <h4 className="text-sm font-bold text-warning dark:text-warning">
               {t.backupReminder}
             </h4>
-            <p className="text-xs text-amber-800/80 dark:text-amber-300/80 mt-0.5">
+            <p className="text-xs text-warning/80 dark:text-warning/80 mt-0.5">
               Dernière exportation :{' '}
               {lastBackupDate ? formatDate(lastBackupDate, language) : 'Aucune sauvegarde effectuée'}.
             </p>
@@ -747,7 +747,7 @@ export const SettingsPage: React.FC = () => {
                 {('locked')}
               </span>
             </div>
-            <div className={`text-xl sm:text-2xl font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums mt-1 transition-[filter] duration-200 ${hideBalance ? 'privacy-blur' : ''}`}>
+            <div className={`text-xl sm:text-2xl font-semibold text-positive dark:text-positive tabular-nums mt-1 transition-[filter] duration-200 ${hideBalance ? 'privacy-blur' : ''}`}>
               {formatMAD(initialBalance, false, language)}
             </div>
             <p className="text-xs text-[#787774] dark:text-[#9b9a97] mt-0.5">
@@ -762,25 +762,25 @@ export const SettingsPage: React.FC = () => {
       <Card padding="lg">
         <div className="flex items-start justify-between gap-4 mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-2xl bg-surface-3 dark:bg-surface text-text dark:text-muted flex items-center justify-center shrink-0">
               <KeyRound className="w-5 h-5 stroke-[2]" />
             </div>
             <div>
-              <h2 className="text-base font-extrabold text-slate-900 dark:text-white">
+              <h2 className="text-base font-extrabold text-text dark:text-text">
                 {t.securityTitle}
               </h2>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-muted">
                 {t.securityDesc}
               </p>
             </div>
           </div>
 
           {pinEnabled ? (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 text-xs font-bold">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-positive dark:bg-positive text-positive dark:text-positive text-xs font-bold">
               <ShieldCheck className="w-3.5 h-3.5" /> Actif
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 text-xs font-bold">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-3 dark:bg-surface text-muted text-xs font-bold">
               Désactivé
             </span>
           )}
@@ -842,16 +842,16 @@ export const SettingsPage: React.FC = () => {
 
         {/* Biometrics Toggle (Only available when PIN is set and device supports platform authenticators) */}
         {pinEnabled && biometricsAvailable && (
-          <div className="mt-5 pt-4 border-t border-slate-200 dark:border-white/5 flex items-center justify-between gap-4">
+          <div className="mt-5 pt-4 border-t border-border dark:border-border/5 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 flex items-center justify-center shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-accent/10 text-accent dark:text-accent border border-accent/20 flex items-center justify-center shrink-0">
                 <ScanFace className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                <h3 className="text-sm font-bold text-text dark:text-text">
                   {language === 'ar' ? 'بصمة الوجه / الإصبع (Face ID / Touch ID)' : 'Face ID / Touch ID'}
                 </h3>
-                <p className="text-xs text-slate-500 dark:text-zinc-400">
+                <p className="text-xs text-muted dark:text-muted">
                   {language === 'ar'
                     ? 'افتح مساحة عملك بسرعة وأمان عبر البصمة البيومترية لجهازك'
                     : language === 'en'
@@ -866,12 +866,12 @@ export const SettingsPage: React.FC = () => {
               role="switch"
               aria-checked={biometricsActive}
               onClick={handleToggleBiometrics}
-              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                biometricsActive ? 'bg-purple-600' : 'bg-slate-200 dark:bg-zinc-800'
+              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-border transition-colors duration-200 ease-in-out focus:outline-none ${
+                biometricsActive ? 'bg-accent' : 'bg-surface-2 dark:bg-surface'
               }`}
             >
               <span
-                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-surface shadow-lg ring-0 transition duration-200 ease-in-out ${
                   biometricsActive ? 'translate-x-5 rtl:-translate-x-5' : 'translate-x-0'
                 }`}
               />
@@ -884,29 +884,29 @@ export const SettingsPage: React.FC = () => {
       <Card padding="lg">
         <div className="flex items-start justify-between gap-4 mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-2xl bg-warning/10 text-warning dark:text-warning border border-warning/20 flex items-center justify-center shrink-0">
               <BellRing className="w-5 h-5 stroke-[2.2]" />
             </div>
             <div>
-              <h2 className="text-base font-extrabold text-zinc-900 dark:text-white">
+              <h2 className="text-base font-extrabold text-text dark:text-text">
                 {tNotif.title}
               </h2>
-              <p className="text-xs text-zinc-400">
+              <p className="text-xs text-muted">
                 {tNotif.subtitle}
               </p>
             </div>
           </div>
 
           {notificationPermission === 'granted' ? (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 text-xs font-bold border border-emerald-500/30">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-positive/15 text-positive dark:text-positive text-xs font-bold border border-positive/30">
               <CheckCircle2 className="w-3.5 h-3.5" /> {tNotif.statusGranted}
             </span>
           ) : notificationPermission === 'denied' ? (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/15 text-rose-700 dark:text-rose-300 text-xs font-bold border border-rose-500/30">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-negative/15 text-negative dark:text-negative text-xs font-bold border border-negative/30">
               <AlertTriangle className="w-3.5 h-3.5" /> {tNotif.statusDenied}
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 text-xs font-bold border border-black/[0.06] dark:border-white/[0.08]">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-3 dark:bg-surface text-muted text-xs font-bold border border-border/[0.06] dark:border-border/[0.08]">
               {tNotif.statusDefault}
             </span>
           )}
@@ -914,20 +914,20 @@ export const SettingsPage: React.FC = () => {
 
         {/* iOS Safari Home Screen Requirement Banner */}
         {isIOS() && !isStandalonePWA() && (
-          <div className="p-3.5 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-950 dark:text-blue-200 flex items-start gap-3 my-2">
-            <Apple className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+          <div className="p-3.5 rounded-2xl bg-info/10 border border-info/20 text-info dark:text-info flex items-start gap-3 my-2">
+            <Apple className="w-4 h-4 text-info dark:text-info shrink-0 mt-0.5" />
             <div className="space-y-1">
-              <p className="font-bold text-xs text-blue-900 dark:text-blue-100">
+              <p className="font-bold text-xs text-info dark:text-info">
                 {tNotif.addToHomeScreenTitle}
               </p>
-              <p className="text-[11px] text-blue-800/80 dark:text-blue-200/80 leading-relaxed">
+              <p className="text-[11px] text-info/80 dark:text-info/80 leading-relaxed">
                 {tNotif.addToHomeScreenSubtitle}
               </p>
               <button
                 type="button"
                 onClick={() => setIsAddToHomeScreenOpen(true)}
 
-                className="text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1 mt-0.5"
+                className="text-[11px] font-bold text-info dark:text-info hover:underline inline-flex items-center gap-1 mt-0.5"
               >
                 <span>{tNotif.addToHomeScreenConfirm}</span>
                 <ChevronRight className="w-3 h-3" />
@@ -937,17 +937,17 @@ export const SettingsPage: React.FC = () => {
         )}
 
         {/* Features Checklist */}
-        <div className="space-y-2 py-2 text-xs text-zinc-600 dark:text-zinc-300 border-t border-b border-black/[0.05] dark:border-white/[0.06] my-3">
+        <div className="space-y-2 py-2 text-xs text-muted dark:text-muted border-t border-b border-border/[0.05] dark:border-border/[0.06] my-3">
           <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
+            <span className="w-1.5 h-1.5 rounded-full bg-negative shrink-0" />
             <span>{tNotif.feature1}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
+            <span className="w-1.5 h-1.5 rounded-full bg-warning shrink-0" />
             <span>{tNotif.feature2}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
+            <span className="w-1.5 h-1.5 rounded-full bg-info shrink-0" />
             <span>{tNotif.feature3}</span>
           </div>
         </div>
@@ -978,7 +978,7 @@ export const SettingsPage: React.FC = () => {
             variant="outline"
             size="sm"
             onClick={() => setIsPhoneGuideOpen(true)}
-            icon={<HelpCircle className="w-4 h-4 text-blue-500" />}
+            icon={<HelpCircle className="w-4 h-4 text-info" />}
           >
             {tNotif.phoneGuideBtn}
           </Button>
@@ -987,36 +987,36 @@ export const SettingsPage: React.FC = () => {
             variant="outline"
             size="sm"
             onClick={() => setIsIOSGuideOpen(true)}
-            icon={<Apple className="w-4 h-4 text-zinc-800 dark:text-zinc-200" />}
+            icon={<Apple className="w-4 h-4 text-text dark:text-text" />}
           >
             {tNotif.iosGuideBtn}
           </Button>
         </div>
 
         {/* Google Calendar Section (Offline Native Alarms) */}
-        <div className="pt-4 border-t border-black/[0.06] dark:border-white/[0.08] space-y-3">
+        <div className="pt-4 border-t border-border/[0.06] dark:border-border/[0.08] space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-blue-500" />
-                <h3 className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-white">
+                <Calendar className="w-4 h-4 text-info" />
+                <h3 className="text-xs sm:text-sm font-bold text-text dark:text-text">
                   {tNotif.googleCalendarTitle}
                 </h3>
                 {googleConnected ? (
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold border border-emerald-500/30">
+                  <span className="px-2 py-0.5 rounded-full bg-positive/15 text-positive dark:text-positive text-[10px] font-bold border border-positive/30">
                     {tNotif.googleConnected} ✓
                   </span>
                 ) : (
-                  <span className="px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 text-[10px] font-bold">
+                  <span className="px-2 py-0.5 rounded-full bg-surface-3 dark:bg-surface text-muted text-[10px] font-bold">
                     {tNotif.googleNotConnected}
                   </span>
                 )}
               </div>
-              <p className="text-[11px] text-zinc-400 mt-0.5">
+              <p className="text-[11px] text-muted mt-0.5">
                 {tNotif.googleCalendarSubtitle}
               </p>
               {googleConnected && googleEmail && (
-                <p className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400 mt-1">
+                <p className="text-[11px] font-mono text-muted dark:text-muted mt-1">
                   {googleEmail}
                 </p>
               )}
@@ -1028,7 +1028,7 @@ export const SettingsPage: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={handleDisconnectGoogle}
-                  icon={<LogOut className="w-3.5 h-3.5 text-rose-500" />}
+                  icon={<LogOut className="w-3.5 h-3.5 text-negative" />}
                 >
                   {tNotif.disconnectGoogleBtn}
                 </Button>
@@ -1048,11 +1048,11 @@ export const SettingsPage: React.FC = () => {
         </div>
 
         {/* In-App Synthesized Tone Selector */}
-        <div className="pt-4 border-t border-black/[0.06] dark:border-white/[0.08] space-y-3">
+        <div className="pt-4 border-t border-border/[0.06] dark:border-border/[0.08] space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Volume2 className="w-4 h-4 text-indigo-500" />
-              <h3 className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-white">
+              <Volume2 className="w-4 h-4 text-accent" />
+              <h3 className="text-xs sm:text-sm font-bold text-text dark:text-text">
                 {tNotif.inAppSoundTitle}
               </h3>
             </div>
@@ -1065,11 +1065,11 @@ export const SettingsPage: React.FC = () => {
                 playHapticFeedback('selection');
               }}
               className={`w-11 h-6 rounded-full transition-colors relative flex items-center p-0.5 ${
-                notificationSettings?.soundEnabled !== false ? 'bg-indigo-600' : 'bg-zinc-300 dark:bg-zinc-700'
+                notificationSettings?.soundEnabled !== false ? 'bg-accent' : 'bg-surface-2 dark:bg-surface'
               }`}
             >
               <div
-                className={`w-5 h-5 rounded-full bg-white shadow-md transition-transform ${
+                className={`w-5 h-5 rounded-full bg-surface shadow-md transition-transform ${
                   notificationSettings?.soundEnabled !== false
                     ? language === 'ar'
                       ? '-translate-x-5'
@@ -1102,8 +1102,8 @@ export const SettingsPage: React.FC = () => {
                     }}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
                       isSelected
-                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
-                        : 'bg-zinc-50 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700'
+                        ? 'bg-accent text-accent-contrast border-accent shadow-xs'
+                        : 'bg-surface-3 dark:bg-surface text-text dark:text-muted border-border dark:border-border hover:bg-surface-3 dark:hover:bg-surface'
                     }`}
                   >
                     <span>{toneLabel}</span>
@@ -1116,22 +1116,22 @@ export const SettingsPage: React.FC = () => {
         </div>
 
         {/* Default Lead Times Summary */}
-        <div className="pt-4 border-t border-black/[0.06] dark:border-white/[0.08] space-y-1.5 text-xs text-zinc-500 dark:text-zinc-400">
-          <span className="font-bold text-zinc-700 dark:text-zinc-300 block">
+        <div className="pt-4 border-t border-border/[0.06] dark:border-border/[0.08] space-y-1.5 text-xs text-muted dark:text-muted">
+          <span className="font-bold text-text dark:text-muted block">
             {tNotif.leadTimesTitle} :
           </span>
           <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+            <span className="w-1.5 h-1.5 rounded-full bg-warning" />
             <span>{tNotif.billLeadTime}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+            <span className="w-1.5 h-1.5 rounded-full bg-info" />
             <span>{tNotif.taskLeadTime}</span>
           </div>
 
           {/* iOS Background Reminder Reality Check Note */}
-          <div className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-black/[0.04] dark:border-white/[0.05] text-[11px] text-zinc-500 dark:text-zinc-400 flex items-start gap-2 mt-2">
-            <Apple className="w-3.5 h-3.5 text-zinc-400 shrink-0 mt-0.5" />
+          <div className="p-3 rounded-xl bg-surface-3 dark:bg-surface/40 border border-border/[0.04] dark:border-border/[0.05] text-[11px] text-muted dark:text-muted flex items-start gap-2 mt-2">
+            <Apple className="w-3.5 h-3.5 text-muted shrink-0 mt-0.5" />
             <p className="leading-relaxed">{tNotif.iosNoticeBackground}</p>
           </div>
         </div>
@@ -1139,7 +1139,7 @@ export const SettingsPage: React.FC = () => {
 
       {/* 3. Appearance & Preferences */}
       <Card padding="lg">
-        <h2 className="text-base font-extrabold text-slate-900 dark:text-white mb-4">
+        <h2 className="text-base font-extrabold text-text dark:text-text mb-4">
           {t.appearance}
         </h2>
 
@@ -1147,24 +1147,24 @@ export const SettingsPage: React.FC = () => {
           {/* Theme selector */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
+              <p className="text-sm font-bold text-text dark:text-text">
                 {t.theme}
               </p>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-muted">
                 Clair, sombre ou synchronisé avec votre système
               </p>
             </div>
 
-            <div className="flex items-center gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl">
+            <div className="flex items-center gap-2 p-1 bg-surface-3 dark:bg-surface rounded-2xl">
               <button
                 onClick={() => setTheme('light')}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                   theme === 'light'
-                    ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm'
-                    : 'text-slate-500'
+                    ? 'bg-surface dark:bg-surface text-text dark:text-text shadow-sm'
+                    : 'text-muted'
                 }`}
               >
-                <Sun className="w-3.5 h-3.5 text-amber-500" />
+                <Sun className="w-3.5 h-3.5 text-warning" />
                 <span>{t.themeLight}</span>
               </button>
 
@@ -1172,11 +1172,11 @@ export const SettingsPage: React.FC = () => {
                 onClick={() => setTheme('dark')}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                   theme === 'dark'
-                    ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm'
-                    : 'text-slate-500'
+                    ? 'bg-surface dark:bg-surface text-text dark:text-text shadow-sm'
+                    : 'text-muted'
                 }`}
               >
-                <Moon className="w-3.5 h-3.5 text-blue-400" />
+                <Moon className="w-3.5 h-3.5 text-info" />
                 <span>{t.themeDark}</span>
               </button>
 
@@ -1184,8 +1184,8 @@ export const SettingsPage: React.FC = () => {
                 onClick={() => setTheme('system')}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                   theme === 'system'
-                    ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm'
-                    : 'text-slate-500'
+                    ? 'bg-surface dark:bg-surface text-text dark:text-text shadow-sm'
+                    : 'text-muted'
                 }`}
               >
                 <Laptop className="w-3.5 h-3.5" />
@@ -1195,34 +1195,34 @@ export const SettingsPage: React.FC = () => {
           </div>
 
           {/* Language selector (Système Auto / Français / العربية RTL / English) */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-border dark:border-border">
             <div>
               <div className="flex items-center gap-2">
-                <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                <p className="text-sm font-bold text-text dark:text-text">
                   {t.language}
                 </p>
                 {!localStorage.getItem('flouss_manual_language_selected') && (
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-info/15 text-info dark:text-info border border-info/20">
                     {language === 'ar' ? 'تلقائي (لغة الجهاز)' : language === 'en' ? 'Auto (System)' : 'Auto (Système)'}
                   </span>
                 )}
               </div>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-muted">
                 {language === 'ar'
                   ? 'يتبع النظام تلقائياً أو يمكنك تحديد لغتك المفضلة'
                   : 'Synchronisé avec votre appareil par défaut ou sélection manuelle'}
               </p>
             </div>
 
-            <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl flex-wrap">
+            <div className="flex items-center gap-1.5 p-1 bg-surface-3 dark:bg-surface rounded-2xl flex-wrap">
               <button
                 onClick={() => {
                   resetLanguageToSystem();
                 }}
                 className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${
                   !localStorage.getItem('flouss_manual_language_selected')
-                    ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-sm'
-                    : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                    ? 'bg-surface dark:bg-surface text-info dark:text-info shadow-sm'
+                    : 'text-muted hover:text-text dark:hover:text-muted'
                 }`}
                 title="Langue automatique du système"
               >
@@ -1233,8 +1233,8 @@ export const SettingsPage: React.FC = () => {
                 onClick={() => setLanguage('fr')}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                   language === 'fr' && localStorage.getItem('flouss_manual_language_selected')
-                    ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-sm'
-                    : 'text-slate-500'
+                    ? 'bg-surface dark:bg-surface text-positive dark:text-positive shadow-sm'
+                    : 'text-muted'
                 }`}
               >
                 Français
@@ -1243,8 +1243,8 @@ export const SettingsPage: React.FC = () => {
                 onClick={() => setLanguage('ar')}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold font-['Cairo',sans-serif] transition-all ${
                   language === 'ar' && localStorage.getItem('flouss_manual_language_selected')
-                    ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-sm'
-                    : 'text-slate-500'
+                    ? 'bg-surface dark:bg-surface text-positive dark:text-positive shadow-sm'
+                    : 'text-muted'
                 }`}
               >
                 العربية
@@ -1253,8 +1253,8 @@ export const SettingsPage: React.FC = () => {
                 onClick={() => setLanguage('en')}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                   language === 'en' && localStorage.getItem('flouss_manual_language_selected')
-                    ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-sm'
-                    : 'text-slate-500'
+                    ? 'bg-surface dark:bg-surface text-positive dark:text-positive shadow-sm'
+                    : 'text-muted'
                 }`}
               >
                 English
@@ -1263,25 +1263,25 @@ export const SettingsPage: React.FC = () => {
           </div>
 
           {/* Currency Display Info */}
-          <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800 text-xs">
+          <div className="flex items-center justify-between pt-4 border-t border-border dark:border-border text-xs">
             <div>
-              <p className="font-bold text-slate-800 dark:text-slate-200">
+              <p className="font-bold text-text dark:text-text">
                 {t.currency}
               </p>
-              <p className="text-slate-400">{t.currencyDesc}</p>
+              <p className="text-muted">{t.currencyDesc}</p>
             </div>
-            <span className="font-bold text-sm text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950 px-2.5 py-1 rounded-xl border border-emerald-200 dark:border-emerald-800">
+            <span className="font-bold text-sm text-positive dark:text-positive bg-positive dark:bg-positive px-2.5 py-1 rounded-xl border border-positive dark:border-positive">
               MAD (د.م.)
             </span>
           </div>
 
           {/* Haptic Feedback Toggle (Default: ON) */}
-          <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800 text-xs">
+          <div className="flex items-center justify-between pt-4 border-t border-border dark:border-border text-xs">
             <div className="max-w-[75%]">
-              <p className="font-bold text-slate-800 dark:text-slate-200">
+              <p className="font-bold text-text dark:text-text">
                 {t.hapticsTitle}
               </p>
-              <p className="text-slate-400 text-[11px] leading-relaxed">{t.hapticsDesc}</p>
+              <p className="text-muted text-[11px] leading-relaxed">{t.hapticsDesc}</p>
             </div>
             <button
               type="button"
@@ -1294,11 +1294,11 @@ export const SettingsPage: React.FC = () => {
                 if (next) playHapticFeedback('medium');
               }}
               className={`w-11 h-6 rounded-full transition-colors relative flex items-center p-0.5 cursor-pointer ${
-                hapticsOn ? 'bg-emerald-600' : 'bg-slate-300 dark:bg-slate-700'
+                hapticsOn ? 'bg-positive' : 'bg-surface-2 dark:bg-surface'
               }`}
             >
               <span
-                className={`w-5 h-5 rounded-full bg-white shadow-md transition-transform ${
+                className={`w-5 h-5 rounded-full bg-surface shadow-md transition-transform ${
                   hapticsOn ? (language === 'ar' ? '-translate-x-5' : 'translate-x-5') : 'translate-x-0'
                 }`}
               />
@@ -1306,23 +1306,23 @@ export const SettingsPage: React.FC = () => {
           </div>
 
           {/* Hardware Haptic Status & Live Test Tick */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-slate-100 dark:border-slate-800 text-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-border dark:border-border text-xs">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <span className="font-bold text-slate-800 dark:text-slate-200">
+                <span className="font-bold text-text dark:text-text">
                   {tNotif.hapticStatusTitle}
                 </span>
                 {hapticsSupported ? (
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold border border-emerald-500/30">
+                  <span className="px-2 py-0.5 rounded-full bg-positive/15 text-positive dark:text-positive text-[10px] font-bold border border-positive/30">
                     {tNotif.hapticSupported}
                   </span>
                 ) : (
-                  <span className="px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 text-[10px] font-bold">
+                  <span className="px-2 py-0.5 rounded-full bg-surface-3 dark:bg-surface text-muted text-[10px] font-bold">
                     {tNotif.hapticNotSupported}
                   </span>
                 )}
               </div>
-              <p className="text-slate-400 text-[11px] leading-relaxed">
+              <p className="text-muted text-[11px] leading-relaxed">
                 {language === 'ar'
                   ? 'تم الفحص بنبضة اختبار: محرك Taptic Engine (iOS) أو اهتزاز النظام.'
                   : language === 'en'
@@ -1339,19 +1339,19 @@ export const SettingsPage: React.FC = () => {
                 setHapticsSupported(supported);
                 showToast({ message: tNotif.hapticTestSent });
               }}
-              icon={<Sparkles className="w-3.5 h-3.5 text-emerald-500" />}
+              icon={<Sparkles className="w-3.5 h-3.5 text-positive" />}
             >
               {tNotif.testHapticBtn}
             </Button>
           </div>
 
           {/* Sound Effects Toggle (Default: OFF) */}
-          <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800 text-xs">
+          <div className="flex items-center justify-between pt-4 border-t border-border dark:border-border text-xs">
             <div className="max-w-[75%]">
-              <p className="font-bold text-slate-800 dark:text-slate-200">
+              <p className="font-bold text-text dark:text-text">
                 {t.soundTitle}
               </p>
-              <p className="text-slate-400 text-[11px] leading-relaxed">{t.soundDesc}</p>
+              <p className="text-muted text-[11px] leading-relaxed">{t.soundDesc}</p>
             </div>
             <button
               type="button"
@@ -1364,11 +1364,11 @@ export const SettingsPage: React.FC = () => {
                 if (next) playHapticFeedback('success');
               }}
               className={`w-11 h-6 rounded-full transition-colors relative flex items-center p-0.5 cursor-pointer ${
-                soundOn ? 'bg-emerald-600' : 'bg-slate-300 dark:bg-slate-700'
+                soundOn ? 'bg-positive' : 'bg-surface-2 dark:bg-surface'
               }`}
             >
               <span
-                className={`w-5 h-5 rounded-full bg-white shadow-md transition-transform ${
+                className={`w-5 h-5 rounded-full bg-surface shadow-md transition-transform ${
                   soundOn ? (language === 'ar' ? '-translate-x-5' : 'translate-x-5') : 'translate-x-0'
                 }`}
               />
@@ -1382,14 +1382,14 @@ export const SettingsPage: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-base font-extrabold text-slate-900 dark:text-white">
+              <h2 className="text-base font-extrabold text-text dark:text-text">
                 {translations[language].userProfileModal.title}
               </h2>
-              <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/60">
+              <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-positive dark:bg-positive text-positive dark:text-positive border border-positive/60 dark:border-positive/60">
                 Cloud Sync
               </span>
             </div>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-muted mt-1">
               {translations[language].userProfileModal.subtitle}
             </p>
           </div>
@@ -1398,38 +1398,38 @@ export const SettingsPage: React.FC = () => {
             variant="outline"
             size="sm"
             onClick={() => setIsAccountModalOpen(true)}
-            icon={<Users className="w-4 h-4 text-emerald-600" />}
+            icon={<Users className="w-4 h-4 text-positive" />}
           >
             {translations[language].userProfileModal.title}
           </Button>
         </div>
 
         {/* Profile Details Card */}
-        <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+        <div className="pt-2 border-t border-border dark:border-border">
           <div
             onClick={() => setIsAccountModalOpen(true)}
-            className="p-3.5 rounded-2xl border border-slate-200/60 dark:border-slate-700/60 bg-slate-50/60 dark:bg-slate-800/30 hover:border-slate-300 transition-all cursor-pointer flex items-center justify-between"
+            className="p-3.5 rounded-2xl border border-border/60 dark:border-border/60 bg-surface-3/60 dark:bg-surface/30 hover:border-border transition-all cursor-pointer flex items-center justify-between"
           >
             <div className="flex items-center gap-3 min-w-0">
               <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-xs"
+                className="w-10 h-10 rounded-xl flex items-center justify-center text-accent-contrast font-bold text-sm shrink-0 shadow-xs"
                 style={{ backgroundColor: activeAccount?.avatarColor || '#10b981' }}
               >
                 {activeAccount?.name?.charAt(0).toUpperCase() || 'U'}
               </div>
               <div className="min-w-0">
-                <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white block truncate">
+                <span className="font-bold text-xs sm:text-sm text-text dark:text-text block truncate">
                   {activeAccount?.name || firebaseUser?.displayName || 'Flouss Account'}
                 </span>
-                <span className="text-[11px] text-slate-400 block truncate">
+                <span className="text-[11px] text-muted block truncate">
                   {activeAccount?.email || firebaseUser?.email || translations[language].userProfileModal.authenticatedUser}
                 </span>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+              <span className="w-2 h-2 rounded-full bg-positive animate-pulse" />
+              <span className="text-xs font-semibold text-positive dark:text-positive">
                 {translations[language].userProfileModal.syncedRealtime}
               </span>
             </div>
@@ -1439,10 +1439,10 @@ export const SettingsPage: React.FC = () => {
 
       {/* 5. Backup & Data Management */}
       <Card padding="lg">
-        <h2 className="text-base font-extrabold text-slate-900 dark:text-white mb-2">
+        <h2 className="text-base font-extrabold text-text dark:text-text mb-2">
           {t.backupTitle}
         </h2>
-        <p className="text-xs text-slate-400 mb-6">
+        <p className="text-xs text-muted mb-6">
           {t.backupDesc}
         </p>
 
@@ -1472,11 +1472,11 @@ export const SettingsPage: React.FC = () => {
           />
 
           {isAdvancedBackupOpen && (
-            <div className="w-full basis-full rounded-xl border border-slate-200/70 bg-slate-50/70 p-3 dark:border-slate-800 dark:bg-slate-900/40">
+            <div className="w-full basis-full rounded-xl border border-border/70 bg-surface-3/70 p-3 dark:border-border dark:bg-surface/40">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{t.advancedBackup}</p>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">{t.advancedBackupDesc}</p>
+                  <p className="text-xs font-bold text-text dark:text-text">{t.advancedBackup}</p>
+                  <p className="text-[11px] text-muted dark:text-muted">{t.advancedBackupDesc}</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <Button
@@ -1501,10 +1501,10 @@ export const SettingsPage: React.FC = () => {
 
         {/* Rolling Local Snapshots (7 Days) */}
         {rollingBackups.length > 0 && (
-          <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
+          <div className="mt-6 pt-6 border-t border-border dark:border-border">
             <div className="flex items-center gap-2 mb-3">
-              <History className="w-4 h-4 text-sky-500" />
-              <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200">
+              <History className="w-4 h-4 text-info" />
+              <h3 className="text-xs font-bold text-text dark:text-text">
                 {language === 'ar'
                   ? 'النسخ الاحتياطية التلقائية (آخر 7 أيام)'
                   : language === 'en'
@@ -1516,11 +1516,11 @@ export const SettingsPage: React.FC = () => {
               {rollingBackups.map((snap) => (
                 <div
                   key={snap.date}
-                  className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 text-xs"
+                  className="flex items-center justify-between p-2.5 rounded-xl bg-surface-3 dark:bg-surface/60 border border-border/60 dark:border-border/60 text-xs"
                 >
                   <div>
-                    <span className="font-semibold text-slate-800 dark:text-slate-200">{snap.date}</span>
-                    <span className="text-[11px] text-slate-400 ml-2">
+                    <span className="font-semibold text-text dark:text-text">{snap.date}</span>
+                    <span className="text-[11px] text-muted ml-2">
                       ({snap.transactionCount} {language === 'ar' ? 'معاملة' : 'tx'}, {formatMAD(snap.balance, false, language)})
                     </span>
                   </div>
@@ -1528,7 +1528,7 @@ export const SettingsPage: React.FC = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => handleRestoreRollingSnapshot(snap)}
-                    icon={<Archive className="w-3.5 h-3.5 text-sky-500" />}
+                    icon={<Archive className="w-3.5 h-3.5 text-info" />}
                   >
                     {language === 'ar' ? 'استعادة' : language === 'en' ? 'Restore' : 'Restaurer'}
                   </Button>
@@ -1539,12 +1539,12 @@ export const SettingsPage: React.FC = () => {
         )}
 
         {/* Demo Data button */}
-        <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="mt-6 pt-6 border-t border-border dark:border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
+            <p className="text-xs font-bold text-text dark:text-text">
               {t.demoDataButton}
             </p>
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[11px] text-muted">
               {t.demoDataDesc}
             </p>
           </div>
@@ -1553,7 +1553,7 @@ export const SettingsPage: React.FC = () => {
             variant="outline"
             size="sm"
             onClick={loadDemoData}
-            icon={<Sparkles className="w-4 h-4 text-emerald-500" />}
+            icon={<Sparkles className="w-4 h-4 text-positive" />}
           >
             {t.demoDataButton}
           </Button>
@@ -1561,13 +1561,13 @@ export const SettingsPage: React.FC = () => {
       </Card>
 
       {/* 5. Danger Zone: Reset App & Delete Account */}
-      <Card padding="lg" className="border-rose-500/20 bg-rose-500/5 space-y-5">
+      <Card padding="lg" className="border-negative/20 bg-negative/5 space-y-5">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-base font-extrabold text-rose-600 dark:text-rose-400 flex items-center gap-2">
+            <h2 className="text-base font-extrabold text-negative dark:text-negative flex items-center gap-2">
               <Trash2 className="w-5 h-5" /> {t.dangerZone}
             </h2>
-            <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 max-w-lg">
+            <p className="text-xs text-muted dark:text-muted mt-1 max-w-lg">
               {t.resetDesc}
             </p>
           </div>
@@ -1582,12 +1582,12 @@ export const SettingsPage: React.FC = () => {
         </div>
 
         {firebaseUser && (
-          <div className="pt-4 border-t border-rose-500/15 flex items-start justify-between gap-4">
+          <div className="pt-4 border-t border-negative/15 flex items-start justify-between gap-4">
             <div>
-              <h3 className="text-sm font-bold text-rose-600 dark:text-rose-400">
+              <h3 className="text-sm font-bold text-negative dark:text-negative">
                 {translations[language].auth?.deleteAccount || 'Supprimer mon compte'}
               </h3>
-              <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5 max-w-lg">
+              <p className="text-xs text-muted dark:text-muted mt-0.5 max-w-lg">
                 {translations[language].auth?.deleteAccountDesc ||
                   'Supprime définitivement votre compte, vos transactions et toutes vos données de nos serveurs.'}
               </p>
@@ -1779,12 +1779,12 @@ export const SettingsPage: React.FC = () => {
         maxWidth="sm"
       >
         <div className="space-y-4">
-          <div className="w-14 h-14 mx-auto rounded-3xl bg-rose-100 dark:bg-rose-950/60 text-rose-600 flex items-center justify-center">
+          <div className="w-14 h-14 mx-auto rounded-3xl bg-negative dark:bg-negative/60 text-negative flex items-center justify-center">
             <AlertTriangle className="w-7 h-7" />
           </div>
 
           <div className="text-center">
-            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+            <p className="text-xs text-muted dark:text-muted leading-relaxed">
               {t.resetConfirmDesc}
             </p>
           </div>
@@ -1824,17 +1824,17 @@ export const SettingsPage: React.FC = () => {
         maxWidth="sm"
       >
         <div className="space-y-4">
-          <div className="w-14 h-14 mx-auto rounded-3xl bg-rose-500/15 text-rose-500 border border-rose-500/20 flex items-center justify-center">
+          <div className="w-14 h-14 mx-auto rounded-3xl bg-negative/15 text-negative border border-negative/20 flex items-center justify-center">
             <AlertTriangle className="w-7 h-7" />
           </div>
 
           <div className="text-center space-y-1">
-            <p className="text-xs text-rose-500 font-semibold">
+            <p className="text-xs text-negative font-semibold">
               {language === 'ar'
                 ? 'تحذير : هذا الإجراء نهائي ولا يمكن التراجع عنه'
                 : 'Attention : cette action est définitive et irréversible.'}
             </p>
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-xs text-muted leading-relaxed">
               {translations[language].auth?.deleteAccountDesc ||
                 'Toutes vos données seront supprimées de nos serveurs.'}
             </p>
@@ -1852,7 +1852,7 @@ export const SettingsPage: React.FC = () => {
           )}
 
           <div className="space-y-1.5">
-            <label className="text-xs text-slate-400">
+            <label className="text-xs text-muted">
               {translations[language].auth?.deleteAccountConfirm || 'Tapez "SUPPRIMER" pour confirmer'}
             </label>
             <Input
@@ -1865,7 +1865,7 @@ export const SettingsPage: React.FC = () => {
           </div>
 
           {deleteError && (
-            <p className="text-xs text-rose-500 text-center font-medium bg-rose-500/10 py-2 px-3 rounded-xl border border-rose-500/20">
+            <p className="text-xs text-negative text-center font-medium bg-negative/10 py-2 px-3 rounded-xl border border-negative/20">
               {deleteError}
             </p>
           )}
@@ -1911,22 +1911,22 @@ export const SettingsPage: React.FC = () => {
       >
         {importPreview && (
           <div className="space-y-4">
-            <div className="p-3.5 rounded-2xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200/60 dark:border-sky-800/60 space-y-2 text-xs">
+            <div className="p-3.5 rounded-2xl bg-info dark:bg-info/40 border border-info/60 dark:border-info/60 space-y-2 text-xs">
               <div className="flex justify-between">
-                <span className="text-slate-500">{language === 'ar' ? 'الحساب :' : 'Compte :'}</span>
-                <span className="font-bold text-slate-800 dark:text-slate-200">{importPreview.accountName || 'Flouss'}</span>
+                <span className="text-muted">{language === 'ar' ? 'الحساب :' : 'Compte :'}</span>
+                <span className="font-bold text-text dark:text-text">{importPreview.accountName || 'Flouss'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">{language === 'ar' ? 'عدد المعاملات :' : 'Transactions :'}</span>
-                <span className="font-bold text-slate-800 dark:text-slate-200">{importPreview.transactionCount}</span>
+                <span className="text-muted">{language === 'ar' ? 'عدد المعاملات :' : 'Transactions :'}</span>
+                <span className="font-bold text-text dark:text-text">{importPreview.transactionCount}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">{language === 'ar' ? 'الرصيد :' : 'Solde :'}</span>
-                <span className="font-bold text-emerald-600 dark:text-emerald-400">{formatMAD(importPreview.balance, false, language)}</span>
+                <span className="text-muted">{language === 'ar' ? 'الرصيد :' : 'Solde :'}</span>
+                <span className="font-bold text-positive dark:text-positive">{formatMAD(importPreview.balance, false, language)}</span>
               </div>
             </div>
 
-            <p className="text-xs text-slate-500 text-center leading-relaxed">
+            <p className="text-xs text-muted text-center leading-relaxed">
               {language === 'ar'
                 ? 'هل تريد بالتأكيد تطبيق هذه النسخة الاحتياطية؟ ستتم مزامنة البيانات تلقائياً مع السحابة.'
                 : language === 'en'
@@ -1956,19 +1956,19 @@ export const SettingsPage: React.FC = () => {
 
       {/* Dev Mode: Haptics & Sensory Playground */}
       {isDevMode && (
-        <Card padding="lg" className="border-indigo-300/80 dark:border-indigo-800/60 bg-indigo-50/20 dark:bg-indigo-950/20 shadow-md">
+        <Card padding="lg" className="border-accent/80 dark:border-accent/60 bg-accent/20 dark:bg-accent/20 shadow-md">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-base font-extrabold text-indigo-900 dark:text-indigo-200">
+                  <h2 className="text-base font-extrabold text-accent dark:text-accent">
                     {t.hapticsPlayground}
                   </h2>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-accent/20 text-accent dark:text-accent border border-accent/30">
                     DEV MODE
                   </span>
                 </div>
-                <p className="text-xs text-indigo-600/80 dark:text-indigo-300/80 mt-0.5">
+                <p className="text-xs text-accent/80 dark:text-accent/80 mt-0.5">
                   {t.hapticsPlaygroundDesc}
                 </p>
               </div>
@@ -2026,15 +2026,15 @@ export const SettingsPage: React.FC = () => {
             </div>
 
             {/* Native Switch Test */}
-            <div className="pt-3 border-t border-indigo-200/50 dark:border-indigo-800/40 flex items-center justify-between text-xs">
-              <span className="font-semibold text-indigo-900 dark:text-indigo-200">
+            <div className="pt-3 border-t border-accent/50 dark:border-accent/40 flex items-center justify-between text-xs">
+              <span className="font-semibold text-accent dark:text-accent">
                 {t.toggleTest}
               </span>
               <input
                 type="checkbox"
                 checked={playgroundToggle}
                 onChange={(e) => setPlaygroundToggle(e.target.checked)}
-                className="w-5 h-5 rounded accent-indigo-600 cursor-pointer"
+                className="w-5 h-5 rounded accent-accent cursor-pointer"
               />
             </div>
           </div>
@@ -2046,7 +2046,7 @@ export const SettingsPage: React.FC = () => {
         <button
           type="button"
           onClick={handleVersionTap}
-          className="text-xs text-zinc-400 dark:text-zinc-500 font-mono hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors cursor-pointer"
+          className="text-xs text-muted dark:text-muted font-mono hover:text-muted dark:hover:text-muted transition-colors cursor-pointer"
         >
           v1.0.0 · {__BUILD_SHA__} {isDevMode ? '(Dev Unlocked ⚡)' : ''}
         </button>

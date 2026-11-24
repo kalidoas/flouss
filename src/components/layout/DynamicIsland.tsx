@@ -73,20 +73,20 @@ export const DynamicIsland: React.FC = () => {
   const getIcon = (type: IslandNotification['type']) => {
     switch (type) {
       case 'check':
-        return <CheckCircle2 className="w-4 h-4 text-emerald-400 stroke-[2.5]" />;
+        return <CheckCircle2 className="w-4 h-4 text-positive stroke-[2.5]" />;
       case 'cloud':
       case 'sync':
-        return <Cloud className="w-4 h-4 text-sky-400 stroke-[2.5]" />;
+        return <Cloud className="w-4 h-4 text-info stroke-[2.5]" />;
       case 'pin':
-        return <Pin className="w-4 h-4 text-amber-400 fill-amber-400 stroke-[2.5]" />;
+        return <Pin className="w-4 h-4 text-warning fill-amber-400 stroke-[2.5]" />;
       case 'bill':
-        return <CreditCard className="w-4 h-4 text-purple-400 stroke-[2.5]" />;
+        return <CreditCard className="w-4 h-4 text-accent stroke-[2.5]" />;
       case 'lang':
-        return <Globe className="w-4 h-4 text-emerald-400 stroke-[2.5]" />;
+        return <Globe className="w-4 h-4 text-positive stroke-[2.5]" />;
       case 'wallet':
-        return <Wallet className="w-4 h-4 text-emerald-400 stroke-[2.5]" />;
+        return <Wallet className="w-4 h-4 text-positive stroke-[2.5]" />;
       default:
-        return <Sparkles className="w-4 h-4 text-blue-400 stroke-[2.5]" />;
+        return <Sparkles className="w-4 h-4 text-info stroke-[2.5]" />;
     }
   };
 
@@ -99,10 +99,10 @@ export const DynamicIsland: React.FC = () => {
       ? tDashboard.syncSynced
       : tDashboard.syncSyncing;
   const syncDotClass = isOffline
-    ? 'bg-emerald-600'
+    ? 'bg-positive'
     : syncStatus === 'synced'
-    ? 'bg-emerald-400'
-    : 'bg-emerald-300';
+    ? 'bg-positive'
+    : 'bg-positive';
 
   return (
     <div className="flex justify-center shrink-0 pointer-events-none select-none">
@@ -121,7 +121,7 @@ export const DynamicIsland: React.FC = () => {
           damping: 32,
           mass: 0.8,
         }}
-        className={`pointer-events-auto relative max-w-full appearance-none bg-black/95 text-white backdrop-blur-2xl border border-white/20 shadow-[0_4px_16px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.2)] rounded-full flex items-center justify-between overflow-hidden px-3 py-1 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A84FF] ${
+        className={`pointer-events-auto relative max-w-full appearance-none bg-canvas/95 text-accent-contrast backdrop-blur-2xl border border-border/20 shadow-[0_4px_16px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.2)] rounded-full flex items-center justify-between overflow-hidden px-3 py-1 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
           isExpanded ? 'w-[min(260px,60vw)] sm:w-[280px] px-3.5 py-1.5' : 'w-[118px]'
         }`}
       >
@@ -137,15 +137,15 @@ export const DynamicIsland: React.FC = () => {
               className="flex items-center justify-between w-full gap-3"
             >
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+                <div className="w-7 h-7 rounded-full bg-surface/10 flex items-center justify-center shrink-0">
                   {getIcon(notification.type)}
                 </div>
                 <div className="min-w-0 text-left">
-                  <div className="text-xs font-semibold text-white tracking-tight truncate">
+                  <div className="text-xs font-semibold text-accent-contrast tracking-tight truncate">
                     {notification.title}
                   </div>
                   {notification.subtitle && (
-                    <div className="text-[10px] text-zinc-400 truncate">
+                    <div className="text-[10px] text-muted truncate">
                       {notification.subtitle}
                     </div>
                   )}
@@ -164,8 +164,8 @@ export const DynamicIsland: React.FC = () => {
               className="flex items-center justify-between w-full gap-3 text-xs"
             >
               <div className="flex items-center gap-2">
-                <Cloud className="w-3.5 h-3.5 text-sky-400" />
-                <span className="text-[11px] font-medium text-zinc-200">{idleSyncText}</span>
+                <Cloud className="w-3.5 h-3.5 text-info" />
+                <span className="text-[11px] font-medium text-text">{idleSyncText}</span>
               </div>
               <span className={`w-2 h-2 rounded-full shrink-0 ${syncDotClass}`} />
             </motion.div>
@@ -179,7 +179,7 @@ export const DynamicIsland: React.FC = () => {
               className="flex items-center justify-center gap-2 text-[11px] md:justify-between"
             >
               <div className="flex items-center gap-1.5">
-                <span className="hidden text-[10px] font-medium text-zinc-400 md:inline">
+                <span className="hidden text-[10px] font-medium text-muted md:inline">
                   {idleSyncText}
                 </span>
                 <span aria-hidden="true" className={`h-1.5 w-1.5 rounded-full shrink-0 ${syncDotClass} ${syncStatus === 'syncing' ? 'animate-pulse' : ''}`} />

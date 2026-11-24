@@ -79,7 +79,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onQuickAdd }) => {
           aria-label={translations[language].common.quickAdd}
           className={`mx-auto flex h-11 w-11 items-center justify-center rounded-full font-semibold transition-all duration-300 active:scale-95 ${
             isOmniFabOpen
-              ? 'bg-gradient-to-tr from-accent to-purple-600 text-content shadow-[0_0_25px_rgba(139,92,246,0.6)] rotate-45'
+              ? 'bg-gradient-to-tr from-accent to-accent text-content shadow-[0_0_25px_rgba(139,92,246,0.6)] rotate-45'
               : 'bg-surface text-content shadow-[0_0_20px_rgba(255,255,255,0.4)] hover:shadow-[0_0_25px_rgba(255,255,255,0.6)]'
           }`}
         >
@@ -108,7 +108,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onQuickAdd }) => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsOmniFabOpen(false)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[95]"
+              className="fixed inset-0 bg-canvas/60 backdrop-blur-sm z-[95]"
             />
 
             {/* Omni Action Menu Panel */}
@@ -117,7 +117,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onQuickAdd }) => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="fixed bottom-[96px] inset-x-4 mx-auto z-[105] w-[calc(100vw-2rem)] max-w-sm rounded-[28px] bg-[#0D0E14]/95 backdrop-blur-2xl border border-white/10 p-3.5 shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_0_0_rgba(255,255,255,0.1)]"
+              className="fixed bottom-[96px] inset-x-4 mx-auto z-[105] w-[calc(100vw-2rem)] max-w-sm rounded-[28px] bg-[#0D0E14]/95 backdrop-blur-2xl border border-border/10 p-3.5 shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_0_0_rgba(255,255,255,0.1)]"
             >
               <div className="grid grid-cols-2 gap-2.5">
                 {/* Action 1: Add Expense */}
@@ -128,16 +128,16 @@ export const Navbar: React.FC<NavbarProps> = ({ onQuickAdd }) => {
                     setIsOmniFabOpen(false);
                     window.dispatchEvent(new CustomEvent('flouss:quick-add', { detail: { type: 'expense' } }));
                   }}
-                  className="flex items-center gap-2.5 p-3 rounded-2xl bg-white/[0.04] hover:bg-rose-500/15 border border-white/[0.06] hover:border-rose-500/30 text-start transition-all active:scale-95 duration-200 group"
+                  className="flex items-center gap-2.5 p-3 rounded-2xl bg-surface/[0.04] hover:bg-negative/15 border border-border/[0.06] hover:border-negative/30 text-start transition-all active:scale-95 duration-200 group"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-rose-500/15 text-rose-400 border border-rose-500/25 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                  <div className="w-10 h-10 rounded-xl bg-negative/15 text-negative border border-negative/25 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                     <TrendingDown className="w-5 h-5" />
                   </div>
                   <div className="min-w-0">
-                    <span className="block text-xs font-bold text-zinc-100 group-hover:text-rose-300 truncate">
+                    <span className="block text-xs font-bold text-text group-hover:text-negative truncate">
                       {tCommon.addExpense}
                     </span>
-                    <span className="block text-[10px] text-zinc-400 truncate">
+                    <span className="block text-[10px] text-muted truncate">
                       {language === 'ar' ? 'مصروف جديد' : 'Nouvelle dépense'}
                     </span>
                   </div>
@@ -151,16 +151,16 @@ export const Navbar: React.FC<NavbarProps> = ({ onQuickAdd }) => {
                     setIsOmniFabOpen(false);
                     window.dispatchEvent(new CustomEvent('flouss:quick-add', { detail: { type: 'income' } }));
                   }}
-                  className="flex items-center gap-2.5 p-3 rounded-2xl bg-white/[0.04] hover:bg-emerald-500/15 border border-white/[0.06] hover:border-emerald-500/30 text-start transition-all active:scale-95 duration-200 group"
+                  className="flex items-center gap-2.5 p-3 rounded-2xl bg-surface/[0.04] hover:bg-positive/15 border border-border/[0.06] hover:border-positive/30 text-start transition-all active:scale-95 duration-200 group"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                  <div className="w-10 h-10 rounded-xl bg-positive/15 text-positive border border-positive/25 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                     <TrendingUp className="w-5 h-5" />
                   </div>
                   <div className="min-w-0">
-                    <span className="block text-xs font-bold text-zinc-100 group-hover:text-emerald-300 truncate">
+                    <span className="block text-xs font-bold text-text group-hover:text-positive truncate">
                       {tCommon.addIncome}
                     </span>
-                    <span className="block text-[10px] text-zinc-400 truncate">
+                    <span className="block text-[10px] text-muted truncate">
                       {language === 'ar' ? 'دخل أو إيداع' : 'Entrée de fonds'}
                     </span>
                   </div>
@@ -177,16 +177,16 @@ export const Navbar: React.FC<NavbarProps> = ({ onQuickAdd }) => {
                       window.dispatchEvent(new CustomEvent('flouss:open-add-task'));
                     }, 60);
                   }}
-                  className="flex items-center gap-2.5 p-3 rounded-2xl bg-white/[0.04] hover:bg-indigo-500/15 border border-white/[0.06] hover:border-indigo-500/30 text-start transition-all active:scale-95 duration-200 group"
+                  className="flex items-center gap-2.5 p-3 rounded-2xl bg-surface/[0.04] hover:bg-accent/15 border border-border/[0.06] hover:border-accent/30 text-start transition-all active:scale-95 duration-200 group"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-indigo-500/15 text-indigo-400 border border-indigo-500/25 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                  <div className="w-10 h-10 rounded-xl bg-accent/15 text-accent border border-accent/25 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                     <CheckSquare className="w-5 h-5" />
                   </div>
                   <div className="min-w-0">
-                    <span className="block text-xs font-bold text-zinc-100 group-hover:text-indigo-300 truncate">
+                    <span className="block text-xs font-bold text-text group-hover:text-accent truncate">
                       {translations[language].tasks.addTask}
                     </span>
-                    <span className="block text-[10px] text-zinc-400 truncate">
+                    <span className="block text-[10px] text-muted truncate">
                       {language === 'ar' ? 'مهمة أو عادة' : 'Tâche ou habitude'}
                     </span>
                   </div>
@@ -203,16 +203,16 @@ export const Navbar: React.FC<NavbarProps> = ({ onQuickAdd }) => {
                       window.dispatchEvent(new CustomEvent('flouss:open-add-note'));
                     }, 60);
                   }}
-                  className="flex items-center gap-2.5 p-3 rounded-2xl bg-white/[0.04] hover:bg-amber-500/15 border border-white/[0.06] hover:border-amber-500/30 text-start transition-all active:scale-95 duration-200 group"
+                  className="flex items-center gap-2.5 p-3 rounded-2xl bg-surface/[0.04] hover:bg-warning/15 border border-border/[0.06] hover:border-warning/30 text-start transition-all active:scale-95 duration-200 group"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-400 border border-amber-500/25 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                  <div className="w-10 h-10 rounded-xl bg-warning/15 text-warning border border-warning/25 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                     <FileText className="w-5 h-5" />
                   </div>
                   <div className="min-w-0">
-                    <span className="block text-xs font-bold text-zinc-100 group-hover:text-amber-300 truncate">
+                    <span className="block text-xs font-bold text-text group-hover:text-warning truncate">
                       {translations[language].notes.newNote}
                     </span>
-                    <span className="block text-[10px] text-zinc-400 truncate">
+                    <span className="block text-[10px] text-muted truncate">
                       {language === 'ar' ? 'فكرة أو قائمة' : 'Idée ou mémo'}
                     </span>
                   </div>
@@ -229,7 +229,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onQuickAdd }) => {
             <div className="flex items-center gap-1 rounded-control border border-border-subtle bg-surface-raised p-0.5" role="group" aria-label={language === 'ar' ? 'اللغة' : language === 'fr' ? 'Langue' : 'Language'}>
               {([{ code: 'fr', label: 'FR' }, { code: 'ar', label: 'AR' }, { code: 'en', label: 'EN' }] as { code: Language; label: string }[]).map((item) => <button type="button" key={item.code} aria-pressed={language === item.code} onClick={() => setLanguage(item.code)} className={`min-h-11 rounded-control px-3 text-xs font-semibold ${language === item.code ? 'bg-surface text-content shadow-sm' : 'text-muted hover:text-content'}`}>{item.label}</button>)}
             </div>
-            <button type="button" onClick={toggleTheme} aria-label={isDarkMode ? tCommon.switchToLight : tCommon.switchToDark} title={isDarkMode ? tCommon.switchToLight : tCommon.switchToDark} className="flex min-h-11 min-w-11 items-center justify-center rounded-control border border-border-subtle text-content hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">{isDarkMode ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}</button>
+            <button type="button" onClick={toggleTheme} aria-label={isDarkMode ? tCommon.switchToLight : tCommon.switchToDark} title={isDarkMode ? tCommon.switchToLight : tCommon.switchToDark} className="flex min-h-11 min-w-11 items-center justify-center rounded-control border border-border-subtle text-content hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{isDarkMode ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}</button>
             <DynamicIsland />
           </div>
           <div className="grid grid-cols-2 gap-2">
@@ -244,7 +244,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onQuickAdd }) => {
           </div>
           <div className="space-y-2 border-t border-border-subtle pt-3">
             <button type="button" onClick={() => { setIsMoreMenuOpen(false); setIsProfileModalOpen(true); }} className="flex min-h-11 w-full items-center justify-between rounded-control border border-border-subtle bg-surface px-3 text-sm font-medium text-content">
-              <span className="flex items-center gap-2"><span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-xs font-bold text-white">{activeAccount?.name?.charAt(0).toUpperCase() || 'U'}</span>{activeAccount?.name || 'Profile'}</span><User className="h-4 w-4 text-muted" />
+              <span className="flex items-center gap-2"><span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-xs font-bold text-accent-contrast">{activeAccount?.name?.charAt(0).toUpperCase() || 'U'}</span>{activeAccount?.name || 'Profile'}</span><User className="h-4 w-4 text-muted" />
             </button>
             <button type="button" onClick={() => { playHapticFeedback('medium'); setIsMoreMenuOpen(false); setIsLogoutModalOpen(true); }} className="flex min-h-11 w-full items-center justify-center gap-2 rounded-control border border-negative/30 bg-negative/10 px-3 text-sm font-semibold text-negative cursor-pointer">
               <LogOut className="h-4 w-4" />{isAr ? 'تسجيل الخروج' : language === 'fr' ? 'Se déconnecter' : 'Log out'}

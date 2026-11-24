@@ -82,7 +82,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
               <button
                 onClick={onToggleCollapse}
                 title={tCommon.collapseSidebar}
-                className="flex h-9 w-9 items-center justify-center rounded-xl text-muted hover:text-content hover:bg-surface-raised transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                className="flex h-9 w-9 items-center justify-center rounded-xl text-muted hover:text-content hover:bg-surface-raised transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <PanelLeftClose className="w-4 h-4" />
               </button>
@@ -92,7 +92,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
               <button
                 onClick={onToggleCollapse}
                 title={tCommon.expandSidebar}
-                className="flex h-9 w-9 items-center justify-center rounded-xl text-muted hover:text-content hover:bg-surface-raised transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                className="flex h-9 w-9 items-center justify-center rounded-xl text-muted hover:text-content hover:bg-surface-raised transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <PanelLeftOpen className="w-4 h-4" />
               </button>
@@ -142,7 +142,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
                     <Icon
                       className={`w-4 h-4 shrink-0 transition-colors ${
                         isActive
-                          ? 'text-indigo-400'
+                          ? 'text-accent'
                           : 'text-muted'
                       }`}
                     />
@@ -193,7 +193,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
                     <Icon
                       className={`w-4 h-4 shrink-0 transition-colors ${
                         isActive
-                          ? 'text-indigo-400'
+                          ? 'text-accent'
                           : 'text-muted'
                       }`}
                     />
@@ -205,7 +205,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
           </div>
 
           {/* Settings Tab */}
-          <div className="pt-2 border-t border-white/[0.06]">
+          <div className="pt-2 border-t border-border/[0.06]">
             <button
               onClick={() => setActiveScreen('settings')}
               aria-label={t.settings}
@@ -233,7 +233,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
               <Settings
                 className={`w-4 h-4 shrink-0 transition-colors ${
                   activeScreen === 'settings'
-                    ? 'text-indigo-400'
+                    ? 'text-accent'
                     : 'text-muted'
                 }`}
               />
@@ -249,7 +249,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
               onClick={() => setIsProfileModalOpen(true)}
               aria-label={activeAccount.name}
               title={collapsed ? activeAccount.name : undefined}
-              className={`flex min-h-10 min-w-0 flex-1 items-center rounded-xl p-1.5 text-start transition-colors hover:bg-surface/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
+              className={`flex min-h-10 min-w-0 flex-1 items-center rounded-xl p-1.5 text-start transition-colors hover:bg-surface/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                 collapsed ? 'justify-center' : 'justify-between gap-2 md:max-lg:justify-center'
               }`}
             >
@@ -276,7 +276,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
                 onClick={() => setIsLogoutModalOpen(true)}
                 title={tCommon.logOut}
                 aria-label={tCommon.logOut}
-                className="hidden min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-xl text-muted transition-colors hover:bg-rose-500/10 hover:text-rose-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 lg:flex cursor-pointer"
+                className="hidden min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-xl text-muted transition-colors hover:bg-negative/10 hover:text-negative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-negative lg:flex cursor-pointer"
               >
                 <LogOut className="w-4 h-4" />
               </button>

@@ -113,8 +113,8 @@ export const QuickAddSheet: React.FC<QuickAddSheetProps> = ({ isOpen, onClose, i
               className={`min-h-[44px] rounded-control px-3 text-xs sm:text-sm font-bold transition-all cursor-pointer ${
                 type === entryType
                   ? entryType === 'income'
-                    ? 'bg-emerald-500 text-white shadow-xs'
-                    : 'bg-rose-500 text-white shadow-xs'
+                    ? 'bg-positive text-accent-contrast shadow-xs'
+                    : 'bg-negative text-accent-contrast shadow-xs'
                   : 'text-muted hover:text-content hover:bg-surface'
               }`}
             >
@@ -179,11 +179,11 @@ export const QuickAddSheet: React.FC<QuickAddSheetProps> = ({ isOpen, onClose, i
         {error && <p role="alert" className="text-xs font-semibold text-negative">{error}</p>}
 
         {/* 5. Sticky Full-Width Save Button */}
-        <div className="sticky bottom-0 bg-surface/95 dark:bg-[#0A0A0C]/95 pt-2 border-t border-border-subtle dark:border-white/10 backdrop-blur-md">
+        <div className="sticky bottom-0 bg-surface/95 dark:bg-[#0A0A0C]/95 pt-2 border-t border-border-subtle dark:border-border/10 backdrop-blur-md">
           <button
             type="submit"
-            className={`flex min-h-[48px] w-full items-center justify-center gap-2 rounded-2xl px-5 text-sm font-bold text-white shadow-md transition-all active:scale-[0.98] cursor-pointer ${
-              type === 'expense' ? 'bg-rose-500 hover:bg-rose-600' : 'bg-emerald-500 hover:bg-emerald-600'
+            className={`flex min-h-[48px] w-full items-center justify-center gap-2 rounded-2xl px-5 text-sm font-bold text-accent-contrast shadow-md transition-all active:scale-[0.98] cursor-pointer ${
+              type === 'expense' ? 'bg-negative hover:bg-negative' : 'bg-positive hover:bg-positive'
             }`}
           >
             <Check className="h-4 w-4 stroke-[2.5]" />
