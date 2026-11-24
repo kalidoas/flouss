@@ -138,7 +138,7 @@ export const ExpensesPage: React.FC = () => {
           : language === 'en'
           ? 'Expense deleted'
           : 'Dépense supprimée',
-      actionText: language === 'ar' ? 'تراجع' : language === 'en' ? 'Undo' : 'Annuler',
+      actionText: tCommon.undo,
       onAction: () => {
         addTransaction(tx);
       },
@@ -201,7 +201,7 @@ export const ExpensesPage: React.FC = () => {
               />
             </div>
             <p className="text-xs text-muted mt-1.5 font-medium">
-              {viewScope === 'month' ? formatMonthYear(selectedMonth, language) : (language === 'ar' ? 'كل الأوقات' : 'Toutes les périodes')}
+              {viewScope === 'month' ? formatMonthYear(selectedMonth, language) : (tCommon.allTimes)}
             </p>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-negative/10 text-negative border border-negative/20 flex items-center justify-center shrink-0">
@@ -222,7 +222,7 @@ export const ExpensesPage: React.FC = () => {
               {filteredExpenses.length}
             </div>
             <p className="text-xs text-muted mt-1.5 font-medium">
-              {language === 'ar' ? 'عملية مسجلة' : 'opérations enregistrées'}
+              {tCommon.recordedOperations}
             </p>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-accent/10 text-accent border border-accent/20 flex items-center justify-center shrink-0">
@@ -268,7 +268,7 @@ export const ExpensesPage: React.FC = () => {
                 value={selectedMonth}
                 onChange={setSelectedMonth}
                 options={monthOptions}
-                ariaLabel={language === 'ar' ? 'اختر الشهر' : language === 'fr' ? 'Choisir le mois' : 'Choose month'}
+                ariaLabel={tCommon.chooseMonth}
               />
             )}
 
@@ -323,9 +323,9 @@ export const ExpensesPage: React.FC = () => {
             const yesterdayKey = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
             let dateLabel = formatDate(dateKey, language);
             if (dateKey === todayKey) {
-              dateLabel = language === 'ar' ? 'اليوم' : language === 'fr' ? "Aujourd'hui" : 'Today';
+              dateLabel = t.today
             } else if (dateKey === yesterdayKey) {
-              dateLabel = language === 'ar' ? 'أمس' : language === 'fr' ? 'Hier' : 'Yesterday';
+              dateLabel = t.yesterday
             }
 
             return (
