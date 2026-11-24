@@ -9,6 +9,7 @@ import { getCurrentMonthStr, isTransactionInMonth } from '../../utils/formatters
 import { getDailyRateInsight, getNetPresentation } from '../../utils/dashboard';
 import { translations } from '../../i18n/translations';
 import { ArrowDownRight, ArrowUpRight, Pencil, PiggyBank, TrendingDown, TrendingUp } from 'lucide-react';
+import { Reveal } from '../../motion';
 
 interface Props {
   selectedMonth: string;
@@ -54,7 +55,8 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
     window.dispatchEvent(new CustomEvent('flouss:quick-add', { detail: { type } }));
 
   return (
-    <>
+    <div className="relative z-0 min-w-0">
+      {/* Hero Balance Card */}
       <div
         data-spotlight="true"
         className="spotlight-card group relative overflow-hidden rounded-2xl bg-surface dark:bg-white/5 p-4 sm:p-5 backdrop-blur-xl border border-border-subtle dark:border-white/10 shadow-xs dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] min-w-0"
@@ -84,7 +86,6 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
             <MoneyText
               amount={summary.balance}
               className="text-[52px] sm:text-[56px] lg:text-[64px] font-bold leading-none tracking-tight tabular-nums text-content dark:text-white min-w-0"
-              currencyClassName="text-xl sm:text-2xl font-semibold tracking-normal text-muted dark:text-zinc-400 ms-1.5"
             />
           </div>
 
@@ -111,103 +112,105 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
               </div>
             )}
           </div>
-
-          {/* Quick Actions (44px Buttons) */}
-          <div className="grid grid-cols-3 gap-2 sm:gap-2.5 pt-1 w-full min-w-0">
-            <button
-              type="button"
-              onClick={() => quickAdd('income')}
-              className="inline-flex min-h-[44px] items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-2.5 sm:px-3 py-2 text-xs sm:text-sm font-semibold transition-all active:scale-[0.98] cursor-pointer min-w-0"
-            >
-              <ArrowUpRight className="h-4 w-4 shrink-0" />
-              <span className="truncate">{tCommon.addIncome}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => quickAdd('expense')}
-              className="inline-flex min-h-[44px] items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/15 border border-rose-500/20 text-rose-600 dark:text-rose-400 px-2.5 sm:px-3 py-2 text-xs sm:text-sm font-semibold transition-all active:scale-[0.98] cursor-pointer min-w-0"
-            >
-              <ArrowDownRight className="h-4 w-4 shrink-0" />
-              <span className="truncate">{tCommon.addExpense}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setContributionOpen(true)}
-              className="inline-flex min-h-[44px] items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/15 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 px-2.5 sm:px-3 py-2 text-xs sm:text-sm font-semibold transition-all active:scale-[0.98] cursor-pointer min-w-0"
-            >
-              <PiggyBank className="h-4 w-4 shrink-0" />
-              <span className="truncate">{tWallet.saveGoal}</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Embedded Sparkline (Full Card Width) */}
-        <div className="-mx-4 sm:-mx-5 mt-2">
-          <BalanceSparkline
-            initialBalance={initialBalance}
-            transactions={transactions}
-            selectedMonth={selectedMonth}
-            currentMonth={currentMonth}
-            language={language}
-            chartLabel={t.chartBalanceTrend}
-            balanceLabel={t.totalBalance}
-            changeLabel={t.dailyChange}
-          />
-        </div>
-
-        {/* Three Stat Tiles (Income, Expenses, Net) Inside the Hero Card */}
-        <div className="grid grid-cols-3 divide-x divide-border-subtle dark:divide-white/10 rtl:divide-x-reverse pt-3.5 border-t border-border-subtle dark:border-white/10 -mx-4 -mb-4 sm:-mx-5 sm:-mb-5 px-4 sm:px-5 pb-4 sm:pb-5 bg-surface-raised/40 dark:bg-white/[0.02]">
-          {/* Income */}
-          <div className="pe-2 sm:pe-3 first:ps-0 min-w-0">
-            <p className="text-xs font-medium text-muted dark:text-zinc-400 truncate">
-              {t.incomeThisMonth}
-            </p>
-            <MoneyText
-              amount={summary.income}
-              showSign={true}
-              className="mt-1 block max-w-full truncate text-base sm:text-lg font-bold tracking-tight tabular-nums text-positive"
-            />
-            <p className="mt-0.5 text-[11px] text-muted dark:text-zinc-400 truncate">
-              {t.incomeCount ? t.incomeCount.replace('{count}', String(incomeCount)) : `${incomeCount}`}
-            </p>
-          </div>
-
-          {/* Expenses */}
-          <div className="px-2 sm:px-3 min-w-0">
-            <p className="text-xs font-medium text-muted dark:text-zinc-400 truncate">
-              {t.expensesThisMonth}
-            </p>
-            <MoneyText
-              amount={summary.expenses}
-              prefix="− "
-              showSign={false}
-              className="mt-1 block max-w-full truncate text-base sm:text-lg font-bold tracking-tight tabular-nums text-negative"
-            />
-            <p className="mt-0.5 text-[11px] text-muted dark:text-zinc-400 truncate">
-              {t.expenseCount ? t.expenseCount.replace('{count}', String(expenseCount)) : `${expenseCount}`}
-            </p>
-          </div>
-
-          {/* Net */}
-          <div className="ps-2 sm:ps-3 last:pe-0 min-w-0">
-            <p className="text-xs font-medium text-muted dark:text-zinc-400 truncate">
-              {t.netLabel}
-            </p>
-            <MoneyText
-              amount={summary.net}
-              showSign={true}
-              className={`mt-1 block max-w-full truncate text-base sm:text-lg font-bold tracking-tight tabular-nums ${
-                summary.net >= 0 ? 'text-indigo-500 dark:text-indigo-300' : 'text-negative'
-              }`}
-            />
-            <p className="mt-0.5 text-[11px] text-muted dark:text-zinc-400 truncate">
-              {netCaption}
-            </p>
-          </div>
         </div>
       </div>
-      <AdjustBalanceModal isOpen={adjustOpen} onClose={() => setAdjustOpen(false)} currentBalance={summary.balance} />
-      <AddContributionModal isOpen={contributionOpen} onClose={() => setContributionOpen(false)} />
-    </>
+
+      {/* Quick Actions (44px Buttons) */}
+      <div className="grid grid-cols-3 gap-2 sm:gap-2.5 pt-1 w-full min-w-0">
+        <button
+          type="button"
+          onClick={() => quickAdd('income')}
+          className="inline-flex min-h-[44px] items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-2.5 sm:px-3 py-2 text-xs sm:text-sm font-semibold transition-all active:scale-[0.98] cursor-pointer min-w-0"
+        >
+          <ArrowUpRight className="h-4 w-4 shrink-0" />
+          <span className="truncate">{tCommon.addIncome}</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => quickAdd('expense')}
+          className="inline-flex min-h-[44px] items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/15 border border-rose-500/20 text-rose-600 dark:text-rose-400 px-2.5 sm:px-3 py-2 text-xs sm:text-sm font-semibold transition-all active:scale-[0.98] cursor-pointer min-w-0"
+        >
+          <ArrowDownRight className="h-4 w-4 shrink-0" />
+          <span className="truncate">{tCommon.addExpense}</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setContributionOpen(true)}
+          className="inline-flex min-h-[44px] items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/15 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 px-2.5 sm:px-3 py-2 text-xs sm:text-sm font-semibold transition-all active:scale-[0.98] cursor-pointer min-w-0"
+        >
+          <PiggyBank className="h-4 w-4 shrink-0" />
+          <span className="truncate">{tWallet.saveGoal}</span>
+        </button>
+      </div>
+
+      {/* Embedded Sparkline (Full Card Width) */}
+      <div className="relative z-10 -mx-4 sm:-mx-5 mt-2">
+        <BalanceSparkline
+          initialBalance={initialBalance}
+          transactions={transactions}
+          selectedMonth={selectedMonth}
+          currentMonth={currentMonth}
+          language={language}
+          chartLabel={t.chartBalanceTrend}
+          balanceLabel={t.totalBalance}
+          changeLabel={t.dailyChange}
+        />
+      </div>
+
+      {/* Three Stat Tiles (Income, Expenses, Net) Inside the Hero Card */}
+      <div className="grid grid-cols-3 divide-x divide-border-subtle dark:divide-white/10 rtl:divide-x-reverse pt-3.5 border-t border-border-subtle dark:border-white/10 -mx-4 -mb-4 sm:-mx-5 sm:-mb-5 px-4 sm:px-5 pb-4 sm:pb-5 bg-surface-raised/40 dark:bg-white/[0.02]">
+        {/* Income */}
+        <div className="pe-2 sm:pe-3 first:ps-0 min-w-0">
+          <p className="text-xs font-medium text-muted dark:text-zinc-400 truncate">
+            {t.incomeThisMonth}
+          </p>
+          <MoneyText
+            amount={summary.income}
+            showSign={true}
+            className="mt-1 block max-w-full truncate text-base sm:text-lg font-bold tracking-tight tabular-nums text-positive"
+          />
+          <p className="mt-0.5 text-[11px] text-muted dark:text-zinc-400 truncate">
+            {t.incomeCount ? t.incomeCount.replace('{count}', String(incomeCount)) : `${incomeCount}`}
+          </p>
+        </div>
+
+        {/* Expenses */}
+        <div className="px-2 sm:px-3 min-w-0">
+          <p className="text-xs font-medium text-muted dark:text-zinc-400 truncate">
+            {t.expensesThisMonth}
+          </p>
+          <MoneyText
+            amount={summary.expenses}
+            prefix="− "
+            showSign={false}
+            className="mt-1 block max-w-full truncate text-base sm:text-lg font-bold tracking-tight tabular-nums text-negative"
+          />
+          <p className="mt-0.5 text-[11px] text-muted dark:text-zinc-400 truncate">
+            {t.expenseCount ? t.expenseCount.replace('{count}', String(expenseCount)) : `${expenseCount}`}
+          </p>
+        </div>
+
+        {/* Net */}
+        <div className="ps-2 sm:ps-3 last:pe-0 min-w-0">
+          <p className="text-xs font-medium text-muted dark:text-zinc-400 truncate">
+            {t.netLabel}
+          </p>
+          <MoneyText
+            amount={summary.net}
+            showSign={true}
+            className={`mt-1 block max-w-full truncate text-base sm:text-lg font-bold tracking-tight tabular-nums ${
+              summary.net >= 0 ? 'text-indigo-500 dark:text-indigo-300' : 'text-negative'
+            }`}
+          />
+          <p className="mt-0.5 text-[11px] text-muted dark:text-zinc-400 truncate">
+            {netCaption}
+          </p>
+        </div>
+      </div>
+    </div>
   );
 };
+
+export const HeroModals = AdjustBalanceModal;
+export { AdjustBalanceModal };
+export { AddContributionModal };
