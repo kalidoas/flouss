@@ -1478,6 +1478,7 @@ export const useAppStore = create<AppState>()(
           try {
             localStorage.removeItem('flouss_user_default');
             localStorage.removeItem('flouss-store');
+            localStorage.removeItem('flouss_last_account_hint');
           } catch (e) {}
           try {
             await auth.signOut();

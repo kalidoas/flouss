@@ -24,7 +24,6 @@ import {
   Eye,
   EyeOff,
   CheckCircle2,
-  Sparkles,
 } from 'lucide-react';
 import { Language } from '../../types';
 
@@ -57,19 +56,10 @@ export const Login: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Remembered account hint (non-sensitive: displayName, email, photoURL)
-  const [accountHint, setAccountHint] = useState<{ displayName?: string; email?: string } | null>(null);
-
+  // Clear any stale account hint on mount (no prefilling from localStorage)
   useEffect(() => {
     try {
-      const raw = localStorage.getItem('flouss_last_account_hint');
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed?.email) {
-          setAccountHint(parsed);
-          setEmail(parsed.email);
-        }
-      }
+      localStorage.removeItem('flouss_last_account_hint');
     } catch {}
   }, []);
 
@@ -105,13 +95,9 @@ export const Login: React.FC = () => {
     setLoadingGoogle(true);
 
     try {
-      // If we have a hint, pass login_hint
-      if (accountHint?.email) {
-        googleProvider.setCustomParameters({
-          prompt: 'select_account',
-          login_hint: accountHint.email,
-        });
-      }
+      googleProvider.setCustomParameters({
+        prompt: 'select_account',
+      });
 
       const res = await signInWithPopup(auth, googleProvider);
       try {
@@ -120,18 +106,6 @@ export const Login: React.FC = () => {
           setStoredGoogleAccessToken(credential.accessToken);
         }
       } catch {}
-
-      // Save non-sensitive hint
-      if (res.user) {
-        localStorage.setItem(
-          'flouss_last_account_hint',
-          JSON.stringify({
-            uid: res.user.uid,
-            email: res.user.email,
-            displayName: res.user.displayName,
-          })
-        );
-      }
     } catch (err: any) {
       const code = err?.code || '';
       const msg = err?.message || '';
@@ -222,18 +196,7 @@ export const Login: React.FC = () => {
     if (activeTab === 'login') {
       // ── LOGIN FLOW: Validate credentials FIRST! ────────────────────
       try {
-        const cred = await signInWithEmailAndPassword(auth, cleanEmail, password);
-        // Save non-sensitive hint
-        if (cred.user) {
-          localStorage.setItem(
-            'flouss_last_account_hint',
-            JSON.stringify({
-              uid: cred.user.uid,
-              email: cred.user.email,
-              displayName: cred.user.displayName,
-            })
-          );
-        }
+        await signInWithEmailAndPassword(auth, cleanEmail, password);
       } catch (err: any) {
         const errCode = err?.code || '';
         console.warn('[Flouss Auth] Sign in failed:', errCode);
@@ -275,16 +238,6 @@ export const Login: React.FC = () => {
             displayName: fullName.trim(),
           });
         } catch {}
-
-        // Save non-sensitive hint
-        localStorage.setItem(
-          'flouss_last_account_hint',
-          JSON.stringify({
-            uid: userCred.user.uid,
-            email: userCred.user.email,
-            displayName: fullName.trim(),
-          })
-        );
         // initAuthSession will pick up unverified email and transition authGate -> needsEmailVerif
       } catch (err: any) {
         const errCode = err?.code || '';
@@ -340,23 +293,9 @@ export const Login: React.FC = () => {
           </div>
         </div>
 
-        {/* Welcome back hint if returning user */}
-        {accountHint?.displayName && activeTab === 'login' ? (
-          <div className="w-full flex items-center justify-center gap-2 py-1.5 px-3 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-xs text-indigo-300">
-            <Sparkles className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-            <span className="truncate">
-              {isAr
-                ? `مرحباً بعودتك، ${accountHint.displayName}`
-                : language === 'fr'
-                ? `Bon retour, ${accountHint.displayName}`
-                : `Welcome back, ${accountHint.displayName}`}
-            </span>
-          </div>
-        ) : (
-          <p className="text-xs text-zinc-400 text-center leading-relaxed font-normal">
-            {translations[language].tagline}
-          </p>
-        )}
+        <p className="text-xs text-zinc-400 text-center leading-relaxed font-normal">
+          {translations[language].tagline}
+        </p>
 
         {/* Error Banner */}
         {errorMessage && (
