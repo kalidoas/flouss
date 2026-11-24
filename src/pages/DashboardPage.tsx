@@ -6,7 +6,6 @@ import { DashboardTodayCard } from '../components/dashboard/DashboardTodayCard';
 import { DashboardPinnedNote } from '../components/dashboard/DashboardPinnedNote';
 import { DashboardSpendingCard } from '../components/dashboard/DashboardSpendingCard';
 import { DashboardBillsCard } from '../components/dashboard/DashboardBillsCard';
-import { DashboardRecentTransactions } from '../components/dashboard/DashboardRecentTransactions';
 import { DashboardAiWidget } from '../components/dashboard/DashboardAiWidget';
 import { ProtectWorkspacePinCard } from '../components/dashboard/ProtectWorkspacePinCard';
 import { AdjustBalanceModal } from '../components/dashboard/AdjustBalanceModal';
@@ -14,6 +13,8 @@ import { Wallet, Pencil } from 'lucide-react';
 import { selectDashboardFinancials } from '../utils/calculations';
 import { getCurrentMonthStr } from '../utils/formatters';
 import { useDashboardHeader } from '../components/layout/DashboardHeaderContext';
+import { DashboardKpis } from '../components/dashboard/DashboardKpis';
+import { RunwayGauge } from '../components/dashboard/RunwayGauge';
 
 export const DashboardPage: React.FC = () => {
   const {
@@ -30,8 +31,8 @@ export const DashboardPage: React.FC = () => {
   const safeMonth = selectedMonth || getCurrentMonthStr();
 
   const summary = useMemo(
-    () => selectDashboardFinancials(initialBalance, txList, safeMonth),
-    [initialBalance, txList, safeMonth]
+    () => selectDashboardFinancials(initialBalance, txList, selectedMonth),
+    [initialBalance, txList, selectedMonth]
   );
 
   const recentTransactions = useMemo(
@@ -56,7 +57,7 @@ export const DashboardPage: React.FC = () => {
         <div className="spotlight-card rounded-2xl bg-gradient-to-r from-emerald-950/40 via-teal-950/20 to-zinc-900/40 p-4 sm:p-5 backdrop-blur-xl border border-emerald-500/20 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] relative overflow-hidden mb-5 animate-in fade-in duration-300 min-w-0">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 min-w-0 flex-wrap">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0 shadow-sm shadow-emerald-500/20">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shadow-sm shadow-emerald-500/20">
                 <Wallet className="w-5 h-5 stroke-[2.2]" />
               </div>
               <div className="min-w-0">
@@ -99,20 +100,21 @@ export const DashboardPage: React.FC = () => {
         className="grid grid-cols-1 min-[1100px]:grid-cols-12 gap-5 min-w-0 items-start"
         dir={language === 'ar' ? 'rtl' : 'ltr'}
       >
-        {/* Main Column (7 cols): Balance hero, Spending, Recent */}
+        {/* Main Column (7 cols): Balance hero, KPIs, Recent */}
         <div className="min-[1100px]:col-span-7 flex flex-col gap-5 min-w-0">
           <DashboardHero selectedMonth={safeMonth} />
-          <DashboardSpendingCard
+          <DashboardKpis
+            initialBalance={initialBalance}
+            transactions={txList}
             categories={categories}
-            transactions={transactions}
-            selectedMonth={safeMonth}
-            totalExpense={summary.expenses}
+            subscriptions={subscriptions}
             language={language}
-            onOpenBudgets={() => setActiveScreen('categories')}
+            selectedMonth={safeMonth}
           />
-          <DashboardRecentTransactions
-            transactions={recentTransactions}
-            onViewAll={() => setActiveScreen('history')}
+          <RunwayGauge
+            initialBalance={initialBalance}
+            transactions={txList}
+            language={language}
           />
         </div>
 
