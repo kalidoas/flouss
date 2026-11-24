@@ -3,6 +3,7 @@ import { Transaction, Language } from '../../types';
 import { MoneyText } from '../common/PrivacyCurrency';
 import { selectDashboardFinancials, selectFinancialSummary } from '../../utils/calculations';
 import { formatDate, getIntlLocale } from '../../utils/formatters';
+import { Sparkles } from 'lucide-react';
 
 export interface BalancePoint {
   date: string;
@@ -46,6 +47,7 @@ export const buildBalanceSeries = (
   }
   return points;
 };
+
 export const BalanceSparkline: React.FC<Props> = ({
   initialBalance, transactions, selectedMonth, currentMonth, language,
   chartLabel, balanceLabel, changeLabel,
@@ -79,49 +81,62 @@ export const BalanceSparkline: React.FC<Props> = ({
   const xRatio = dimensions.width > 0 ? (coordinate?.x || 0) / dimensions.width : 0.5;
   const clampedPercent = Math.max(12, Math.min(88, xRatio * 100));
 
+  const emptyState = points.length === 0 || points.every((p) => p.balance === 0);
+
   return (
     <div className="relative mt-2 pt-2 w-full overflow-hidden">
-      <div
-        className="pointer-events-none absolute top-0 z-10 rounded-xl border border-border-subtle bg-surface/95 dark:bg-zinc-900/95 dark:border-white/10 px-3 py-1.5 text-xs shadow-xl backdrop-blur-md text-content dark:text-white transition-[left] duration-75"
-        style={{
-          left: `${clampedPercent}%`,
-          transform: 'translateX(-50%)',
-        }}
-      >
-        <p className="mb-0.5 text-[10px] text-muted dark:text-zinc-400">{tooltipDate}</p>
-        <p className="font-semibold text-content dark:text-white leading-tight"><span className="sr-only">{balanceLabel}: </span><MoneyText amount={point?.balance || 0} /></p>
-        <p className="text-[10px] text-muted dark:text-zinc-400"><span>{changeLabel}: </span><MoneyText amount={point?.change || 0} showSign /></p>
-      </div>
-      <svg
-        viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
-        preserveAspectRatio="none"
-        role="slider"
-        aria-label={summary}
-        aria-valuemin={1}
-        aria-valuemax={Math.max(points.length, 1)}
-        aria-valuenow={safeIndex + 1}
-        aria-valuetext={`${tooltipDate}, ${balanceLabel} ${formatMADForAria(point?.balance || 0, language)}, ${changeLabel} ${formatMADForAria(point?.change || 0, language)}`}
-        tabIndex={0}
-        onFocus={() => setActiveIndex(points.length - 1)}
-        onKeyDown={(event) => {
-          if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
-          event.preventDefault();
-          const direction = event.key === 'ArrowRight' ? 1 : -1;
-          setActiveIndex(Math.max(0, Math.min(points.length - 1, safeIndex + direction)));
-        }}
-        className="h-24 w-full touch-pan-y outline-none focus-visible:rounded-control focus-visible:ring-2 focus-visible:ring-[#0A84FF]"
-      >
-        <defs>
-          <linearGradient id="balance-sparkline-fill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#0A84FF" stopOpacity=".28" />
-            <stop offset="100%" stopColor="#0A84FF" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        <path d={areaPath} fill="url(#balance-sparkline-fill)" />
-        <path d={linePath} fill="none" stroke="#0A84FF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
-        {endpoint && <circle cx={endpoint.x} cy={endpoint.y} r="6" fill="#0A84FF" stroke="#F5F5F7" strokeWidth="2" vectorEffect="non-scaling-stroke" />}
-        {coordinate && safeIndex !== points.length - 1 && <circle cx={coordinate.x} cy={coordinate.y} r="4" fill="#F5F5F7" stroke="#0A84FF" strokeWidth="2" vectorEffect="non-scaling-stroke" />}
-      </svg>
+      {emptyState ? (
+        <div className="h-24 flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border-subtle dark:border-border-subtle/30 bg-surface-3/40 dark:bg-surface-3/10 text-muted">
+          <Sparkles className="w-8 h-8 opacity-20 shrink-0" />
+          <p className="text-[11px] font-medium text-muted dark:text-muted">
+            {language === 'ar' ? 'لا بيانات حالياً' : language === 'fr' ? 'Aucune donnée' : 'No data yet'}
+          </p>
+        </div>
+      ) : (
+        <>
+          <div
+            className="pointer-events-none absolute top-0 z-10 rounded-xl border border-border-subtle bg-surface-3/95 dark:bg-surface-3/95 dark:border-white/10 px-3 py-1.5 text-xs shadow-xl backdrop-blur-md text-content dark:text-content transition-[left] duration-75"
+            style={{
+              left: `${clampedPercent}%`,
+              transform: 'translateX(-50%)',
+            }}
+          >
+            <p className="mb-0.5 text-[10px] text-muted dark:text-muted">{tooltipDate}</p>
+            <p className="font-semibold text-content dark:text-content leading-tight"><span className="sr-only">{balanceLabel}: </span><MoneyText amount={point?.balance || 0} /></p>
+            <p className="text-[10px] text-muted dark:text-muted"><span>{changeLabel}: </span><MoneyText amount={point?.change || 0} showSign /></p>
+          </div>
+          <svg
+            viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
+            preserveAspectRatio="none"
+            role="slider"
+            aria-label={summary}
+            aria-valuemin={1}
+            aria-valuemax={Math.max(points.length, 1)}
+            aria-valuenow={safeIndex + 1}
+            aria-valuetext={`${tooltipDate}, ${balanceLabel} ${formatMADForAria(point?.balance || 0, language)}, ${changeLabel} ${formatMADForAria(point?.change || 0, language)}`}
+            tabIndex={0}
+            onFocus={() => setActiveIndex(points.length - 1)}
+            onKeyDown={(event) => {
+              if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+              event.preventDefault();
+              const direction = event.key === 'ArrowRight' ? 1 : -1;
+              setActiveIndex(Math.max(0, Math.min(points.length - 1, safeIndex + direction)));
+            }}
+            className="h-24 w-full touch-pan-y outline-none focus-visible:rounded-control focus-visible:ring-2 focus-visible:ring-[#0A84FF]"
+          >
+            <defs>
+              <linearGradient id="balance-sparkline-fill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#0A84FF" stopOpacity=".28" />
+                <stop offset="100%" stopColor="#0A84FF" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            <path d={areaPath} fill="url(#balance-sparkline-fill)" />
+            <path d={linePath} fill="none" stroke="#0A84FF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+            {endpoint && <circle cx={endpoint.x} cy={endpoint.y} r="6" fill="#0A84FF" stroke="#F5F5F7" strokeWidth="2" vectorEffect="non-scaling-stroke" />}
+            {coordinate && safeIndex !== points.length - 1 && <circle cx={coordinate.x} cy={coordinate.y} r="4" fill="#F5F5F7" stroke="#0A84FF" strokeWidth="2" vectorEffect="non-scaling-stroke" />}
+          </svg>
+        </>
+      )}
     </div>
   );
 };
