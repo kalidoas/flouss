@@ -52,6 +52,7 @@ export const translations = {
       confirmButton: 'Confirmer et verrouiller',
       cancelButton: 'Modifier le montant',
       enterAmountPlaceholder: '0,00',
+      skipBalance: 'Commencer avec 0',
     },
 
     dashboard: {
@@ -1209,6 +1210,7 @@ export const translations = {
       confirmButton: 'تأكيد وقفل الرصيد',
       cancelButton: 'تعديل المبلغ',
       enterAmountPlaceholder: '0.00',
+      skipBalance: 'ابدأ بـ 0',
     },
 
     dashboard: {
@@ -2363,6 +2365,7 @@ export const translations = {
       confirmButton: 'Confirm and Lock',
       cancelButton: 'Edit amount',
       enterAmountPlaceholder: '0.00',
+      skipBalance: 'Start with 0',
     },
 
     dashboard: {

@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { useReducedMotion } from 'framer-motion';
 import { useAppStore } from '../../store/useAppStore';
 import { translations } from '../../i18n/translations';
 import { formatMAD } from '../../utils/formatters';
@@ -25,7 +27,14 @@ import {
 type OnboardingStep = 'pin' | 'biometrics' | 'balance';
 
 export const OnboardingModal: React.FC = () => {
-  const { isOnboarded, lockInitialBalance, language, firebaseUser } = useAppStore();
+  const {
+    isOnboarded,
+    lockInitialBalance,
+    skipInitialBalance,
+    language,
+    firebaseUser,
+  } = useAppStore();
+  const reducedMotion = useReducedMotion();
   const t = translations[language].onboarding;
   const isAr = language === 'ar';
 
@@ -102,6 +111,8 @@ export const OnboardingModal: React.FC = () => {
   // --- Step 2: Submit Starting Balance ---
   const numericAmount = parseFloat(balanceVal.replace(/\s/g, '').replace(',', '.')) || 0;
 
+  const isValidAmount = numericAmount > 0 && numericAmount <= 1000000;
+
   const executeLockBalance = async () => {
     setIsSubmitting(true);
     setError('');
@@ -126,15 +137,28 @@ export const OnboardingModal: React.FC = () => {
 
   const handleBalanceSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (isNaN(numericAmount) || numericAmount < 0) {
+    if (isNaN(numericAmount) || numericAmount <= 0) {
       setError(
         isAr
-          ? 'يرجى إدخال مبلغ صحيح (≥ 0 د.م.)'
-          : 'Veuillez entrer un montant valide (≥ 0 MAD)'
+          ? 'يرجى إدخال مبلغ صحيح (> 0 د.م.)'
+          : 'Veuillez entrer un montant valide (> 0 MAD)'
       );
       return;
     }
     executeLockBalance();
+  };
+
+  const handleSkipBalance = async () => {
+    try {
+      await skipInitialBalance();
+    } catch (err: any) {
+      setError(
+        err?.message ||
+          (isAr
+            ? 'حدث خطأ أثناء حفظ الرصيد، يرجى المحاولة مجدداً'
+            : 'Erreur lors de l’enregistrement du solde')
+      );
+    }
   };
 
   const quickPills = [2000, 5000, 10000, 20000, 35000];
@@ -293,15 +317,20 @@ export const OnboardingModal: React.FC = () => {
 
         {/* ================= STEP 2: Initial Balance Setup ================= */}
         {step === 'balance' && (
-          <div className="space-y-4 text-left">
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: reducedMotion ? 0 : 0.25, ease: reducedMotion ? undefined : 'easeOut' }}
+            className="space-y-4 text-left"
+          >
             <div>
               <div className="w-11 h-11 mx-auto rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/40 flex items-center justify-center mb-2.5">
                 <Coins className="w-5 h-5" />
               </div>
-              <h2 className="text-base font-bold text-[#37352f] dark:text-[#ecebed] text-center">
+              <h2 className="text-base font-bold text-content text-center">
                 {t.question}
               </h2>
-              <p className="text-xs text-[#787774] dark:text-[#9b9a97] mt-1 text-center leading-relaxed">
+              <p className="text-xs text-muted mt-1 text-center leading-relaxed">
                 {t.hint}
               </p>
             </div>
@@ -311,16 +340,15 @@ export const OnboardingModal: React.FC = () => {
                 <input
                   type="text"
                   inputMode="decimal"
-                  autoFocus
                   placeholder="0,00"
                   value={balanceVal}
                   onChange={(e) => {
                     setBalanceVal(e.target.value);
                     setError('');
                   }}
-                  className="w-full text-2xl font-bold py-3 px-3.5 rounded-xl border border-[#e3e2de] dark:border-[#2f2f2f] bg-[#fbfbfa] dark:bg-[#1a1a1a] text-[#37352f] dark:text-[#ecebed] focus:border-emerald-600 outline-none transition-all pr-16 tabular-nums shadow-xs"
+                  className="w-full text-2xl font-bold py-3 px-3.5 rounded-xl border border-border bg-surface text-content focus:border-accent outline-none transition-all pr-12 tabular-nums shadow-xs"
                 />
-                <span className="absolute right-3 text-xs font-bold text-[#787774] bg-[#f1f0ee] dark:bg-[#282828] px-2.5 py-1 rounded-lg">
+                <span className="absolute right-3 text-xs font-bold text-muted bg-surface/20 px-2.5 py-1 rounded-lg bdi">
                   {translations[language].currency}
                 </span>
               </div>
@@ -329,16 +357,27 @@ export const OnboardingModal: React.FC = () => {
 
               {/* Quick Suggestions */}
               <div className="flex flex-wrap gap-1.5 pt-1">
-                {quickPills.map((pill) => (
-                  <button
-                    key={pill}
-                    type="button"
-                    onClick={() => setBalanceVal(pill.toString())}
-                    className="text-xs px-2.5 py-1 rounded-lg bg-white dark:bg-[#1c1c1c] border border-[#e3e2de] dark:border-[#2f2f2f] hover:border-emerald-600 hover:text-emerald-600 text-[#5f5e5b] dark:text-[#9b9a97] transition-all tabular-nums cursor-pointer"
-                  >
-                    +{pill.toLocaleString('fr-FR')} {translations[language].currency}
-                  </button>
-                ))}
+                {quickPills.map((pill) => {
+                  const isActive = balanceVal === String(pill);
+                  return (
+                    <button
+                      key={pill}
+                      type="button"
+                      aria-pressed={isActive}
+                      onClick={() => {
+                        setBalanceVal(String(pill));
+                        setError('');
+                      }}
+                      className={`min-h-[44px] py-2 px-3 rounded-lg border text-sm font-medium transition-colors cursor-pointer tabular-nums ${
+                        isActive
+                          ? 'border-accent bg-accent/10 text-content'
+                          : 'border-border bg-surface/20 text-muted hover:text-content hover:bg-surface/10'
+                      }`}
+                    >
+                      +{pill.toLocaleString('fr-FR')} {translations[language].currency}
+                    </button>
+                  );
+                })}
               </div>
 
               {/* Security Lock Note */}
@@ -354,7 +393,7 @@ export const OnboardingModal: React.FC = () => {
                   type="submit"
                   variant="primary"
                   fullWidth
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !isValidAmount}
                   icon={<CheckCircle2 className="w-4 h-4" />}
                 >
                   {isSubmitting
@@ -363,7 +402,17 @@ export const OnboardingModal: React.FC = () => {
                 </Button>
               </div>
             </form>
-          </div>
+
+            <div className="pt-1">
+              <button
+                type="button"
+                onClick={handleSkipBalance}
+                className="w-full min-h-[44px] py-2 px-4 rounded-lg text-xs font-medium text-muted hover:text-content hover:bg-surface/10 transition-colors cursor-pointer"
+              >
+                {t.skipBalance}
+              </button>
+            </div>
+          </motion.div>
         )}
       </div>
 
