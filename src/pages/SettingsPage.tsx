@@ -266,7 +266,7 @@ export const SettingsPage: React.FC = () => {
       playHapticFeedback('success');
       showToast({ message: tNotif.testSuccess });
       NotificationService.showNotification(
-        language === 'ar' ? 'فلوس - إشعارات النظام' : 'Flouss - Notifications Système',
+        tCommon.notificationTitle,
         {
           body: tNotif.testSuccess,
           tag: 'flouss-permission-granted',
@@ -278,7 +278,7 @@ export const SettingsPage: React.FC = () => {
   const handleTestNotification = async () => {
     playHapticFeedback('medium');
     const sent = await NotificationService.showNotification(
-      language === 'ar' ? 'فلوس - إشعار تجريبي' : 'Flouss - Test Notification',
+      tCommon.notificationTestTitle,
       {
         body: tNotif.testSuccess,
         tag: 'flouss-test',
@@ -330,12 +330,12 @@ export const SettingsPage: React.FC = () => {
         notes,
       });
       setFeedbackMsg({
-        text: language === 'ar' ? 'تم تصدير ملف Excel بنجاح!' : language === 'en' ? 'Excel exported successfully!' : 'Fichier Excel exporté avec succès !',
+        text: tCommon.feedbackExcelSuccess,
         type: 'success',
       });
     } catch (e) {
       setFeedbackMsg({
-        text: language === 'ar' ? 'حدث خطأ أثناء تصدير Excel' : language === 'en' ? 'Error exporting Excel file' : 'Erreur lors de l’export Excel',
+        text: tCommon.feedbackExcelError,
         type: 'error',
       });
     }
@@ -390,7 +390,7 @@ export const SettingsPage: React.FC = () => {
           }
         } catch (e) {}
         setFeedbackMsg({
-          text: language === 'ar' ? 'الملف غير صالح أو تالف' : language === 'en' ? 'Invalid or corrupted file' : 'Fichier invalide ou corrompu.',
+          text: tCommon.feedbackImportError,
           type: 'error',
         });
       }
@@ -405,13 +405,13 @@ export const SettingsPage: React.FC = () => {
     setImportPreview(null);
     if (success) {
       setFeedbackMsg({
-        text: language === 'ar' ? 'تم استيراد ومزامنة النسخة الاحتياطية بنجاح!' : language === 'en' ? 'Backup imported and synced successfully!' : 'Sauvegarde importée et synchronisée avec succès !',
+        text: tCommon.feedbackImportSuccess,
         type: 'success',
       });
       setRollingBackups(getRollingBackups(firebaseUser?.uid));
     } else {
       setFeedbackMsg({
-        text: language === 'ar' ? 'حدث خطأ أثناء الاستيراد' : language === 'en' ? 'Error importing backup' : 'Erreur lors de l’import.',
+        text: tCommon.feedbackImportError,
         type: 'error',
       });
     }
@@ -420,28 +420,22 @@ export const SettingsPage: React.FC = () => {
   const handleRestoreRollingSnapshot = async (snapshot: RollingBackupEntry) => {
     if (snapshot.account?.id && firebaseUser?.uid && snapshot.account.id !== firebaseUser.uid) {
       setFeedbackMsg({
-        text:
-          language === 'ar'
-            ? 'لا يمكن استعادة نسخة حساب آخر'
-            : language === 'en'
-            ? 'Cannot restore a snapshot from another account'
-            : 'Impossible de restaurer la sauvegarde d’un autre compte.',
+        text: tCommon.restoreSnapshotError,
         type: 'error',
       });
       return;
     }
 
-    const confirmMsg = language === 'ar'
-      ? `هل تريد استعادة نسخة ${snapshot.date} (${snapshot.transactionCount} معاملة، الرصيد: ${formatMAD(snapshot.balance, false, language)})؟`
-      : language === 'en'
-      ? `Restore snapshot from ${snapshot.date} (${snapshot.transactionCount} transactions, balance: ${formatMAD(snapshot.balance, false, language)})?`
-      : `Restaurer l'instantané du ${snapshot.date} (${snapshot.transactionCount} transactions, solde : ${formatMAD(snapshot.balance, false, language)}) ?`;
+    const confirmMsg = tCommon.restoreBackupConfirm
+        .replace('${snapshot.date}', snapshot.date)
+        .replace('${snapshot.transactionCount}', String(snapshot.transactionCount))
+        .replace('${formatMAD(snapshot.balance, false, language)}', formatMAD(snapshot.balance, false, language));
 
     if (window.confirm(confirmMsg)) {
       const success = await importBackup(JSON.stringify({ accounts: [snapshot.account] }));
       if (success) {
         setFeedbackMsg({
-          text: language === 'ar' ? 'تمت استعادة النسخة بنجاح ومزامنتها مع السحابة!' : language === 'en' ? 'Snapshot restored and synced to cloud successfully!' : 'Instantané restauré et synchronisé au cloud avec succès !',
+          text: tCommon.restoreSnapshotSuccess,
           type: 'success',
         });
       }
@@ -465,7 +459,7 @@ export const SettingsPage: React.FC = () => {
         });
       } else {
         showToast({
-          message: res.error || (language === 'ar' ? 'فشل تفعيل البصمة' : 'Échec de l’activation biométrique'),
+          message: res.error || tCommon.biometricsEnableError,
         });
       }
     } else {
@@ -661,15 +655,11 @@ export const SettingsPage: React.FC = () => {
     } catch (err: any) {
       setIsDeletingAccount(false);
       if (err?.code === 'auth/wrong-password' || err?.code === 'auth/invalid-credential') {
-        setDeleteError(language === 'ar' ? 'كلمة المرور غير صحيحة.' : 'Mot de passe incorrect.');
+        setDeleteError(tCommon.deleteAccountPasswordError);
       } else if (err?.code === 'auth/popup-closed-by-user') {
-        setDeleteError(
-          language === 'ar'
-            ? 'تم إلغاء عملية المصادقة مع Google'
-            : 'Authentification Google annulée.'
-        );
+        setDeleteError(tCommon.googleAuthCancelled);
       } else {
-        setDeleteError(err?.message || 'Erreur lors de la suppression du compte.');
+        setDeleteError(err?.message || tCommon.deleteAccountError);
       }
     }
   };
@@ -715,7 +705,7 @@ export const SettingsPage: React.FC = () => {
               {t.backupReminder}
             </h4>
             <p className="text-xs text-warning/80 dark:text-warning/80 mt-0.5">
-              Dernière exportation :{' '}
+              {tCommon.lastBackup}{' '}
               {lastBackupDate ? formatDate(lastBackupDate, language) : 'Aucune sauvegarde effectuée'}.
             </p>
             <div className="mt-2.5">
@@ -725,7 +715,7 @@ export const SettingsPage: React.FC = () => {
                 onClick={handleExport}
                 icon={<Download className="w-3.5 h-3.5" />}
               >
-                Exporter maintenant
+                {tCommon.exportNow}
               </Button>
             </div>
           </div>
@@ -777,11 +767,11 @@ export const SettingsPage: React.FC = () => {
 
           {pinEnabled ? (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-positive dark:bg-positive text-positive dark:text-positive text-xs font-bold">
-              <ShieldCheck className="w-3.5 h-3.5" /> Actif
+              <ShieldCheck className="w-3.5 h-3.5" /> {tCommon.pinActive}
             </span>
           ) : (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-3 dark:bg-surface text-muted text-xs font-bold">
-              Désactivé
+              {tCommon.pinInactive}
             </span>
           )}
         </div>
@@ -811,7 +801,7 @@ export const SettingsPage: React.FC = () => {
                   setShowDisablePinModal(true);
                 }}
               >
-                {language === 'ar' ? 'تعطيل رمز PIN' : language === 'en' ? 'Disable PIN' : 'Désactiver le PIN'}
+                {tCommon.disablePin}
               </Button>
               <Button
                 variant="outline"
@@ -819,7 +809,7 @@ export const SettingsPage: React.FC = () => {
                 onClick={() => lockApp()}
                 icon={<Lock className="w-4 h-4" />}
               >
-                {language === 'ar' ? 'قفل التطبيق الآن' : language === 'en' ? 'Lock app now' : "Verrouiller l'application"}
+                {tCommon.lockAppNow}
               </Button>
             </>
           ) : (
@@ -849,7 +839,7 @@ export const SettingsPage: React.FC = () => {
               </div>
               <div>
                 <h3 className="text-sm font-bold text-text dark:text-text">
-                  {language === 'ar' ? 'بصمة الوجه / الإصبع (Face ID / Touch ID)' : 'Face ID / Touch ID'}
+                  {tCommon.faceIdTouchId}
                 </h3>
                 <p className="text-xs text-muted dark:text-muted">
                   {language === 'ar'
@@ -1203,7 +1193,7 @@ export const SettingsPage: React.FC = () => {
                 </p>
                 {!localStorage.getItem('flouss_manual_language_selected') && (
                   <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-info/15 text-info dark:text-info border border-info/20">
-                    {language === 'ar' ? 'تلقائي (لغة الجهاز)' : language === 'en' ? 'Auto (System)' : 'Auto (Système)'}
+                    {tCommon.autoSystemLang}
                   </span>
                 )}
               </div>
@@ -1521,7 +1511,7 @@ export const SettingsPage: React.FC = () => {
                   <div>
                     <span className="font-semibold text-text dark:text-text">{snap.date}</span>
                     <span className="text-[11px] text-muted ml-2">
-                      ({snap.transactionCount} {language === 'ar' ? 'معاملة' : 'tx'}, {formatMAD(snap.balance, false, language)})
+                      ({snap.transactionCount} {tCommon.transactionsShort}, {formatMAD(snap.balance, false, language)})
                     </span>
                   </div>
                   <Button
@@ -1530,7 +1520,7 @@ export const SettingsPage: React.FC = () => {
                     onClick={() => handleRestoreRollingSnapshot(snap)}
                     icon={<Archive className="w-3.5 h-3.5 text-info" />}
                   >
-                    {language === 'ar' ? 'استعادة' : language === 'en' ? 'Restore' : 'Restaurer'}
+                    {tCommon.restoreSnapshot}
                   </Button>
                 </div>
               ))}
@@ -1856,7 +1846,7 @@ export const SettingsPage: React.FC = () => {
               {translations[language].auth?.deleteAccountConfirm || 'Tapez "SUPPRIMER" pour confirmer'}
             </label>
             <Input
-              placeholder={language === 'ar' ? 'حذف' : 'SUPPRIMER'}
+              placeholder={tCommon.delete}
               value={deleteInputText}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDeleteInputText(e.target.value)}
               disabled={isDeletingAccount}
@@ -1900,28 +1890,22 @@ export const SettingsPage: React.FC = () => {
       <Modal
         isOpen={Boolean(importPreview)}
         onClose={() => setImportPreview(null)}
-        title={
-          language === 'ar'
-            ? 'معاينة واستعادة النسخة الاحتياطية'
-            : language === 'en'
-            ? 'Backup Preview & Restore'
-            : 'Aperçu et Restauration de Sauvegarde'
-        }
+        title={tCommon.backupPreviewTitle}
         maxWidth="sm"
       >
         {importPreview && (
           <div className="space-y-4">
             <div className="p-3.5 rounded-2xl bg-info dark:bg-info/40 border border-info/60 dark:border-info/60 space-y-2 text-xs">
               <div className="flex justify-between">
-                <span className="text-muted">{language === 'ar' ? 'الحساب :' : 'Compte :'}</span>
+                <span className="text-muted">{tCommon.accountLabel}</span>
                 <span className="font-bold text-text dark:text-text">{importPreview.accountName || 'Flouss'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted">{language === 'ar' ? 'عدد المعاملات :' : 'Transactions :'}</span>
+                <span className="text-muted">{tCommon.transactionsCountLabel}</span>
                 <span className="font-bold text-text dark:text-text">{importPreview.transactionCount}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted">{language === 'ar' ? 'الرصيد :' : 'Solde :'}</span>
+                <span className="text-muted">{tCommon.balanceLabel}</span>
                 <span className="font-bold text-positive dark:text-positive">{formatMAD(importPreview.balance, false, language)}</span>
               </div>
             </div>
@@ -1947,7 +1931,7 @@ export const SettingsPage: React.FC = () => {
                 fullWidth
                 onClick={handleConfirmImport}
               >
-                {language === 'ar' ? 'استعادة ومزامنة' : language === 'en' ? 'Restore & Sync' : 'Restaurer & Synchroniser'}
+                {tCommon.restoreAndSync}
               </Button>
             </div>
           </div>
