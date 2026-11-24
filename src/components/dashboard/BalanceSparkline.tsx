@@ -78,12 +78,12 @@ export const BalanceSparkline: React.FC<Props> = ({
     ? `${chartLabel}: ${formatDate(points[0].date, language)} – ${formatDate(points[points.length - 1].date, language)}`
     : chartLabel;
   const xRatio = dimensions.width > 0 ? (coordinate?.x || 0) / dimensions.width : 0.5;
-  const clampedPercent = Math.max(16, Math.min(84, xRatio * 100));
+  const clampedPercent = Math.max(12, Math.min(88, xRatio * 100));
 
   return (
     <div className="relative mt-2 pt-2 w-full overflow-hidden">
       <div
-        className="pointer-events-none absolute top-1 z-10 rounded-xl border border-border-subtle bg-surface/95 dark:bg-zinc-900/95 dark:border-white/10 px-3 py-1.5 text-xs shadow-xl backdrop-blur-md text-content dark:text-white transition-[left] duration-75"
+        className="pointer-events-none absolute top-0 z-10 rounded-xl border border-border-subtle bg-surface/95 dark:bg-zinc-900/95 dark:border-white/10 px-3 py-1.5 text-xs shadow-xl backdrop-blur-md text-content dark:text-white transition-[left] duration-75"
         style={{
           left: `${clampedPercent}%`,
           transform: 'translateX(-50%)',
@@ -103,11 +103,6 @@ export const BalanceSparkline: React.FC<Props> = ({
         aria-valuenow={safeIndex + 1}
         aria-valuetext={`${tooltipDate}, ${balanceLabel} ${formatMADForAria(point?.balance || 0, language)}, ${changeLabel} ${formatMADForAria(point?.change || 0, language)}`}
         tabIndex={0}
-        onPointerMove={(event) => {
-          const rect = event.currentTarget.getBoundingClientRect();
-          const ratio = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
-          setActiveIndex(Math.round(ratio * Math.max(points.length - 1, 0)));
-        }}
         onFocus={() => setActiveIndex(points.length - 1)}
         onKeyDown={(event) => {
           if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;

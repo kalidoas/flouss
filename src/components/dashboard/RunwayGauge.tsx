@@ -29,13 +29,13 @@ export const RunwayGauge: React.FC<Props> = ({
 
   if (!hasEnoughHistory || balance <= 0) {
     return (
-      <div className="spotlight-card rounded-2xl bg-surface dark:bg-white/5 p-4 sm:p-5 backdrop-blur-xl border border-border-subtle dark:border-white/10 shadow-xs dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] min-w-0">
+      <div className="spotlight-card rounded-2xl bg-surface dark:bg-surface-3/5 p-4 sm:p-5 backdrop-blur-xl border border-border-subtle dark:border-border-subtle/10 shadow-xs dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] min-w-0">
         <div className="flex items-center justify-between gap-2 min-w-0">
-          <h2 className="text-[15px] sm:text-base font-semibold text-content dark:text-white truncate">
+          <h2 className="text-[15px] sm:text-base font-semibold text-content dark:text-content truncate">
             {t.runwayGauge}
           </h2>
         </div>
-        <p className="mt-4 text-xs text-muted dark:text-zinc-400 text-center">
+        <p className="mt-4 text-xs text-muted dark:text-muted text-center">
           {t.runwayNeedsHistory}
         </p>
       </div>
@@ -46,9 +46,9 @@ export const RunwayGauge: React.FC<Props> = ({
   const arcColor = runwayDays && runwayDays <= 30 ? 'var(--color-negative)' : 'var(--color-positive)';
 
   return (
-    <div className="spotlight-card rounded-2xl bg-surface dark:bg-white/5 p-4 sm:p-5 backdrop-blur-xl border border-border-subtle dark:border-white/10 shadow-xs dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] min-w-0">
+    <div className="spotlight-card rounded-2xl bg-surface dark:bg-surface-3/5 p-4 sm:p-5 backdrop-blur-xl border border-border-subtle dark:border-border-subtle/10 shadow-xs dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] min-w-0">
       <div className="flex items-center justify-between gap-2 min-w-0">
-        <h2 className="text-[15px] sm:text-base font-semibold text-content dark:text-white truncate">
+        <h2 className="text-[15px] sm:text-base font-semibold text-content dark:text-content truncate">
           {t.runwayGauge}
         </h2>
       </div>
@@ -64,17 +64,17 @@ export const RunwayGauge: React.FC<Props> = ({
             className="transform -rotate-90"
           >
             <div className="text-center">
-              <div className="text-3xl font-bold text-content dark:text-white tabular-nums">
+              <div className="text-3xl font-bold text-content dark:text-content tabular-nums">
                 {runwayDays !== null ? runwayDays : '—'}
               </div>
-              <div className="text-[11px] text-muted dark:text-zinc-400 mt-1">
+              <div className="text-[11px] text-muted dark:text-content mt-1">
                 {t.days}
               </div>
             </div>
           </GaugeArc>
         </div>
 
-        <div className="text-center text-xs text-muted dark:text-zinc-400">
+        <div className="text-center text-xs text-muted dark:text-content">
           <p>{t.dailyBurn}: {dailyBurn.toFixed(2)} {t.perDay}</p>
           <p>{t.historyDays}: {historyDays} {t.days}</p>
         </div>
