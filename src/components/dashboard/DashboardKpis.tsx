@@ -38,38 +38,38 @@ export const DashboardKpis: React.FC<Props> = ({
   const { dailyBudget } = dailyBudgetKpi;
 
   return (
-    <div className="spotlight-card rounded-2xl bg-surface dark:bg-white/5 p-4 sm:p-5 backdrop-blur-xl border border-border-subtle dark:border-white/10 shadow-xs dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] min-w-0">
+    <div className="spotlight-card rounded-2xl bg-surface dark:bg-surface-3/5 p-4 sm:p-5 backdrop-blur-xl border border-border-subtle dark:border-border-subtle/10 shadow-xs dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] min-w-0">
       <div className="grid grid-cols-3 gap-3 min-w-0">
         {/* Net */}
         <div className="min-w-0">
-          <p className="text-xs font-medium text-muted dark:text-zinc-400 truncate">
+          <p className="text-xs font-medium text-muted dark:text-muted truncate">
             {t.netLabel}
           </p>
           <MoneyText
             amount={net}
             showSign={true}
             className={`mt-1 block max-w-full truncate text-base sm:text-lg font-bold tracking-tight tabular-nums ${
-              net >= 0 ? 'text-indigo-500 dark:text-indigo-300' : 'text-negative'
+              net >= 0 ? 'text-accent-500 dark:text-accent-300' : 'text-negative'
             }`}
           />
         </div>
 
         {/* Savings Rate */}
         <div className="min-w-0">
-          <p className="text-xs font-medium text-muted dark:text-zinc-400 truncate">
+          <p className="text-xs font-medium text-muted dark:text-muted truncate">
             {t.savingsRateLabel}
           </p>
-          <div className="mt-1 block max-w-full truncate text-base sm:text-lg font-bold tracking-tight tabular-nums text-content dark:text-white">
+          <div className="mt-1 block max-w-full truncate text-base sm:text-lg font-bold tracking-tight tabular-nums text-content dark:text-content">
             {savingsRate !== null ? `${savingsRate}%` : '—'}
           </div>
         </div>
 
         {/* Safe-to-spend / Daily Budget */}
         <div className="min-w-0">
-          <p className="text-xs font-medium text-muted dark:text-zinc-400 truncate">
+          <p className="text-xs font-medium text-muted dark:text-muted truncate">
             {t.safeToSpend}
           </p>
-          <div className="mt-1 block max-w-full truncate text-base sm:text-lg font-bold tracking-tight tabular-nums text-content dark:text-white">
+          <div className="mt-1 block max-w-full truncate text-base sm:text-lg font-bold tracking-tight tabular-nums text-content dark:text-content">
             {dailyBudget !== null ? (
               <MoneyText amount={dailyBudget} showSign={true} className="inline" />
             ) : (

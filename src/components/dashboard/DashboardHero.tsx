@@ -59,13 +59,13 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
       {/* Hero Balance Card */}
       <div
         data-spotlight="true"
-        className="spotlight-card group relative overflow-hidden rounded-2xl bg-surface dark:bg-white/5 p-4 sm:p-5 backdrop-blur-xl border border-border-subtle dark:border-white/10 shadow-xs dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] min-w-0"
+        className="spotlight-card group relative overflow-hidden rounded-2xl bg-surface dark:bg-surface-3/5 p-4 sm:p-5 backdrop-blur-xl border border-border-subtle dark:border-white/10 shadow-xs dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] min-w-0"
         style={{ backgroundImage: 'radial-gradient(ellipse 75% 65% at 0% 0%, rgba(99,102,241,0.14), transparent 70%)' }}
       >
         <div className="relative z-10 flex flex-col gap-3 min-w-0">
           {/* Title & Edit Button (sentence case, 15-17px, font-semibold) */}
           <div className="flex items-center justify-between gap-2 min-w-0">
-            <h1 className="text-[15px] sm:text-base font-semibold text-muted dark:text-zinc-300 truncate">
+            <h1 className="text-[15px] sm:text-base font-semibold text-muted dark:text-muted truncate">
               {t.totalBalance}
             </h1>
             {isCurrentMonth && (
@@ -74,7 +74,7 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
                 onClick={() => setAdjustOpen(true)}
                 aria-label={tWallet.adjustBalance}
                 title={tWallet.adjustBalance}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted hover:text-content hover:bg-surface-raised dark:text-zinc-400 dark:hover:bg-white/[0.08] dark:hover:text-white transition-all active:scale-95 duration-200 cursor-pointer"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted hover:text-content hover:bg-surface-raised dark:text-content dark:hover:bg-surface-raised/[0.08] dark:hover:text-content transition-all active:scale-95 duration-200 cursor-pointer"
               >
                 <Pencil className="h-3.5 w-3.5" />
               </button>
@@ -85,7 +85,7 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
           <div className="flex items-baseline flex-wrap gap-x-2 gap-y-1 min-w-0">
             <MoneyText
               amount={summary.balance}
-              className="text-[52px] sm:text-[56px] lg:text-[64px] font-bold leading-none tracking-tight tabular-nums text-content dark:text-white min-w-0"
+              className="text-[52px] sm:text-[56px] lg:text-[64px] font-bold leading-none tracking-tight tabular-nums text-content dark:text-content min-w-0"
             />
           </div>
 
@@ -94,8 +94,8 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
             <span
               className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold shrink-0 ${
                 deltaPositive
-                  ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                  : 'border-rose-500/20 bg-rose-500/10 text-rose-600 dark:text-rose-400'
+                  ? 'border-accent-500/20 bg-accent-500/10 text-positive dark:text-positive'
+                  : 'border-negative-500/20 bg-negative-500/10 text-negative dark:text-negative'
               }`}
             >
               {deltaPositive ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
@@ -103,11 +103,11 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
             </span>
 
             {dailyInsight && (
-              <div className="inline-flex items-center gap-1.5 rounded-full bg-surface-raised/80 dark:bg-white/[0.04] border border-border-subtle dark:border-white/[0.08] px-2.5 py-1 text-xs font-medium text-muted dark:text-zinc-300 min-w-0">
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-surface-raised/80 dark:bg-surface-raised/[0.04] border border-border-subtle dark:border-border-subtle/[0.08] px-2.5 py-1 text-xs font-medium text-muted dark:text-content min-w-0">
                 <span>{t.about}</span>
-                <MoneyText amount={dailyInsight.amountPerDay} className="font-semibold text-content dark:text-white tabular-nums" />
+                <MoneyText amount={dailyInsight.amountPerDay} className="font-semibold text-content dark:text-content tabular-nums" />
                 <span>/ {t.perDay.replace('/', '').trim()}</span>
-                <span className="text-zinc-400 dark:text-zinc-500">·</span>
+                <span className="text-muted dark:text-muted">·</span>
                 <span className="truncate">{dailyInsight.daysLeft} {t.daysLeft}</span>
               </div>
             )}
@@ -120,7 +120,7 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
         <button
           type="button"
           onClick={() => quickAdd('income')}
-          className="inline-flex min-h-[44px] items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-2.5 sm:px-3 py-2 text-xs sm:text-sm font-semibold transition-all active:scale-[0.98] cursor-pointer min-w-0"
+          className="inline-flex min-h-[44px] items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/20 text-positive dark:text-positive px-2.5 sm:px-3 py-2 text-xs sm:text-sm font-semibold transition-all active:scale-[0.98] cursor-pointer min-w-0"
         >
           <ArrowUpRight className="h-4 w-4 shrink-0" />
           <span className="truncate">{tCommon.addIncome}</span>
@@ -128,7 +128,7 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
         <button
           type="button"
           onClick={() => quickAdd('expense')}
-          className="inline-flex min-h-[44px] items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/15 border border-rose-500/20 text-rose-600 dark:text-rose-400 px-2.5 sm:px-3 py-2 text-xs sm:text-sm font-semibold transition-all active:scale-[0.98] cursor-pointer min-w-0"
+          className="inline-flex min-h-[44px] items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/15 border border-negative-500/20 text-negative dark:text-negative px-2.5 sm:px-3 py-2 text-xs sm:text-sm font-semibold transition-all active:scale-[0.98] cursor-pointer min-w-0"
         >
           <ArrowDownRight className="h-4 w-4 shrink-0" />
           <span className="truncate">{tCommon.addExpense}</span>
@@ -136,7 +136,7 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
         <button
           type="button"
           onClick={() => setContributionOpen(true)}
-          className="inline-flex min-h-[44px] items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/15 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 px-2.5 sm:px-3 py-2 text-xs sm:text-sm font-semibold transition-all active:scale-[0.98] cursor-pointer min-w-0"
+          className="inline-flex min-h-[44px] items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-accent-500/10 hover:bg-accent-500/15 border border-accent-500/20 text-accent-600 dark:text-accent-400 px-2.5 sm:px-3 py-2 text-xs sm:text-sm font-semibold transition-all active:scale-[0.98] cursor-pointer min-w-0"
         >
           <PiggyBank className="h-4 w-4 shrink-0" />
           <span className="truncate">{tWallet.saveGoal}</span>
@@ -158,10 +158,10 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
       </div>
 
       {/* Three Stat Tiles (Income, Expenses, Net) Inside the Hero Card */}
-      <div className="grid grid-cols-3 divide-x divide-border-subtle dark:divide-white/10 rtl:divide-x-reverse pt-3.5 border-t border-border-subtle dark:border-white/10 -mx-4 -mb-4 sm:-mx-5 sm:-mb-5 px-4 sm:px-5 pb-4 sm:pb-5 bg-surface-raised/40 dark:bg-white/[0.02]">
+      <div className="grid grid-cols-3 divide-x divide-border-subtle dark:divide-white/10 rtl:divide-x-reverse pt-3.5 border-t border-border-subtle dark:border-white/10 -mx-4 -mb-4 sm:-mx-5 sm:-mb-5 px-4 sm:px-5 pb-4 sm:pb-5 bg-surface-raised/40 dark:bg-surface-raised/[0.02]">
         {/* Income */}
         <div className="pe-2 sm:pe-3 first:ps-0 min-w-0">
-          <p className="text-xs font-medium text-muted dark:text-zinc-400 truncate">
+          <p className="text-xs font-medium text-muted dark:text-muted truncate">
             {t.incomeThisMonth}
           </p>
           <MoneyText
@@ -169,14 +169,14 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
             showSign={true}
             className="mt-1 block max-w-full truncate text-base sm:text-lg font-bold tracking-tight tabular-nums text-positive"
           />
-          <p className="mt-0.5 text-[11px] text-muted dark:text-zinc-400 truncate">
+          <p className="mt-0.5 text-[11px] text-muted dark:text-muted truncate">
             {t.incomeCount ? t.incomeCount.replace('{count}', String(incomeCount)) : `${incomeCount}`}
           </p>
         </div>
 
         {/* Expenses */}
         <div className="px-2 sm:px-3 min-w-0">
-          <p className="text-xs font-medium text-muted dark:text-zinc-400 truncate">
+          <p className="text-xs font-medium text-muted dark:text-muted truncate">
             {t.expensesThisMonth}
           </p>
           <MoneyText
@@ -185,32 +185,39 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
             showSign={false}
             className="mt-1 block max-w-full truncate text-base sm:text-lg font-bold tracking-tight tabular-nums text-negative"
           />
-          <p className="mt-0.5 text-[11px] text-muted dark:text-zinc-400 truncate">
+          <p className="mt-0.5 text-[11px] text-muted dark:text-muted truncate">
             {t.expenseCount ? t.expenseCount.replace('{count}', String(expenseCount)) : `${expenseCount}`}
           </p>
         </div>
 
         {/* Net */}
         <div className="ps-2 sm:ps-3 last:pe-0 min-w-0">
-          <p className="text-xs font-medium text-muted dark:text-zinc-400 truncate">
+          <p className="text-xs font-medium text-muted dark:text-muted truncate">
             {t.netLabel}
           </p>
           <MoneyText
             amount={summary.net}
             showSign={true}
             className={`mt-1 block max-w-full truncate text-base sm:text-lg font-bold tracking-tight tabular-nums ${
-              summary.net >= 0 ? 'text-indigo-500 dark:text-indigo-300' : 'text-negative'
+              summary.net >= 0 ? 'text-accent-500 dark:text-accent-300' : 'text-negative'
             }`}
           />
-          <p className="mt-0.5 text-[11px] text-muted dark:text-zinc-400 truncate">
+          <p className="mt-0.5 text-[11px] text-muted dark:text-muted truncate">
             {netCaption}
           </p>
         </div>
       </div>
+
+      {/* Modals */}
+      <AdjustBalanceModal
+        isOpen={adjustOpen}
+        onClose={() => setAdjustOpen(false)}
+        currentBalance={summary.balance}
+      />
+      <AddContributionModal
+        isOpen={contributionOpen}
+        onClose={() => setContributionOpen(false)}
+      />
     </div>
   );
 };
-
-export const HeroModals = AdjustBalanceModal;
-export { AdjustBalanceModal };
-export { AddContributionModal };
