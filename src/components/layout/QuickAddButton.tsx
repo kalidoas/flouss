@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Plus, TrendingDown, TrendingUp, PiggyBank } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Plus, TrendingDown, TrendingUp, PiggyBank, CheckSquare, FileText } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { translations } from '../../i18n/translations';
 import { triggerHaptic } from '../../utils/haptics';
@@ -18,7 +19,7 @@ export const QuickAddButton: React.FC<QuickAddButtonProps> = ({
   onAddIncome,
   onAddContribution,
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
   const [mounted, setMounted] = useState(() => typeof document !== 'undefined');
   const { language, setActiveScreen } = useAppStore();
   const tCommon = translations[language].common;
