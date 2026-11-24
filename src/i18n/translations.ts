@@ -287,6 +287,8 @@ export const translations = {
       cashIn: "+ Encaisser",
       allMonths: "Tous les mois",
       allSources: "Toutes les sources",
+      today: "Aujourd'hui",
+      yesterday: 'Hier',
     },
 
     history: {
@@ -1520,6 +1522,8 @@ export const translations = {
       cashIn: "+ تحصيل",
       allMonths: "جميع الأشهر",
       allSources: "جميع المصادر",
+      today: "اليوم",
+      yesterday: "أمس",
     },
 
     history: {
@@ -2751,6 +2755,8 @@ export const translations = {
       cashIn: "+ Receive",
       allMonths: "All months",
       allSources: "All sources",
+      today: 'Today',
+      yesterday: 'Yesterday',
     },
 
     history: {

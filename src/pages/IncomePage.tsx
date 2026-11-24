@@ -109,9 +109,9 @@ export const IncomePage: React.FC = () => {
       if (!map.has(d)) {
         let label = formatDate(d, language);
         if (d === todayKey) {
-          label = language === 'ar' ? 'اليوم' : language === 'fr' ? "Aujourd'hui" : 'Today';
+          label = t.today;
         } else if (d === yesterdayKey) {
-          label = language === 'ar' ? 'أمس' : language === 'fr' ? 'Hier' : 'Yesterday';
+          label = t.yesterday;
         }
         map.set(d, { dateKey: d, label, total: 0, transactions: [] });
       }
