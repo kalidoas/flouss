@@ -115,18 +115,18 @@ export const BalanceSparkline: React.FC<Props> = ({
           const direction = event.key === 'ArrowRight' ? 1 : -1;
           setActiveIndex(Math.max(0, Math.min(points.length - 1, safeIndex + direction)));
         }}
-        className="h-24 w-full touch-pan-y outline-none focus-visible:rounded-control focus-visible:ring-2 focus-visible:ring-[#0A84FF]"
+        className="h-24 w-full touch-pan-y outline-none focus-visible:rounded-control focus-visible:ring-2 focus-visible:ring-info"
       >
         <defs>
           <linearGradient id="balance-sparkline-fill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#0A84FF" stopOpacity=".28" />
-            <stop offset="100%" stopColor="#0A84FF" stopOpacity="0" />
+            <stop offset="0%" stopColor="var(--info)" stopOpacity=".28" />
+            <stop offset="100%" stopColor="var(--info)" stopOpacity="0" />
           </linearGradient>
         </defs>
         <path d={areaPath} fill="url(#balance-sparkline-fill)" />
-        <path d={linePath} fill="none" stroke="#0A84FF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
-        {endpoint && <circle cx={endpoint.x} cy={endpoint.y} r="6" fill="#0A84FF" stroke="#F5F5F7" strokeWidth="2" vectorEffect="non-scaling-stroke" />}
-        {coordinate && safeIndex !== points.length - 1 && <circle cx={coordinate.x} cy={coordinate.y} r="4" fill="#F5F5F7" stroke="#0A84FF" strokeWidth="2" vectorEffect="non-scaling-stroke" />}
+        <path d={linePath} fill="none" stroke="var(--info)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+        {endpoint && <circle cx={endpoint.x} cy={endpoint.y} r="6" fill="var(--info)" stroke="var(--surface-3)" strokeWidth="2" vectorEffect="non-scaling-stroke" />}
+        {coordinate && safeIndex !== points.length - 1 && <circle cx={coordinate.x} cy={coordinate.y} r="4" fill="var(--surface-3)" stroke="var(--info)" strokeWidth="2" vectorEffect="non-scaling-stroke" />}
       </svg>
     </div>
   );

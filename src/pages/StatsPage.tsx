@@ -67,7 +67,7 @@ const TASK_CATEGORY_META: Record<
     color: 'text-positive dark:text-positive',
     bg: 'bg-positive/10 dark:bg-positive/15',
     border: 'border-positive/20',
-    barColor: '#10b981',
+    barColor: 'bg-positive',
   },
   sport: {
     label: { ar: 'رياضة وصحة', fr: 'Sport & Santé', en: 'Sport & Fitness' },
@@ -83,7 +83,7 @@ const TASK_CATEGORY_META: Record<
     color: 'text-info dark:text-info',
     bg: 'bg-info/10 dark:bg-info/15',
     border: 'border-info/20',
-    barColor: '#3b82f6',
+    barColor: 'bg-info',
   },
   study: {
     label: { ar: 'تعلّم', fr: 'Apprentissage', en: 'Learning & Reading' },
@@ -91,7 +91,7 @@ const TASK_CATEGORY_META: Record<
     color: 'text-accent dark:text-accent',
     bg: 'bg-accent/10 dark:bg-accent/15',
     border: 'border-accent/20',
-    barColor: '#6366f1',
+    barColor: 'bg-accent',
   },
   running: {
     label: { ar: 'جري', fr: 'Course / Jri', en: 'Running' },
@@ -520,7 +520,7 @@ export const StatsPage: React.FC = () => {
                 <CartesianGrid
                   strokeDasharray="4 4"
                   vertical={false}
-                  stroke="#ffffff"
+                  stroke="text-content"
                   opacity={0.06}
                 />
                 <XAxis
@@ -559,7 +559,7 @@ export const StatsPage: React.FC = () => {
                 />
                 <Bar
                   dataKey="income"
-                  fill="#10b981"
+                  fill="bg-positive"
                   radius={[6, 6, 6, 6]}
                   maxBarSize={28}
                 />
@@ -571,7 +571,7 @@ export const StatsPage: React.FC = () => {
                 />
                 <Bar
                   dataKey="savings"
-                  fill="#3b82f6"
+                  fill="bg-info"
                   radius={[6, 6, 6, 6]}
                   maxBarSize={28}
                 />

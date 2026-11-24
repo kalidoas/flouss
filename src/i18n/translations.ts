@@ -56,6 +56,7 @@ export const translations = {
     },
 
     dashboard: {
+      monthlySummary: 'Le solde disponible inclut toutes les opérations et régularisations. Le net mensuel inclut les transferts d’épargne et les régularisations ; revenus et dépenses les excluent. Mois sélectionné.',
       title: 'Tableau de bord',
       greeting: 'Salam',
       greetingMorning: 'Bonjour, {firstName}',
@@ -120,7 +121,6 @@ export const translations = {
       saveNote: 'Enregistrer la note',
       spendingTitle: 'Dépenses',
       netLabel: 'Net',
-      monthlySummary: 'Résumé mensuel',
       noteContent: 'Contenu',
       notePosition: '{current} sur {total}',
       spendingMode: 'Dépenses',
@@ -1222,6 +1222,7 @@ export const translations = {
     },
 
     dashboard: {
+      monthlySummary: 'الرصيد المتاح يشمل جميع المعاملات والتسويات. الصافي الشهري يشمل تحويلات الادخار والتسويات؛ المداخيل والمصاريف تستثنيها. الشهر المحدد.',
       title: 'لوحة التحكم',
       greeting: 'السلام عليكم',
       greetingMorning: 'صباح الخير، {firstName}',
@@ -1286,7 +1287,6 @@ export const translations = {
       saveNote: 'حفظ الملاحظة',
       spendingTitle: 'المصاريف',
       netLabel: 'الصافي',
-      monthlySummary: 'الملخص الشهري',
       noteContent: 'المحتوى',
       notePosition: '{current} من {total}',
       spendingMode: 'المصاريف',
@@ -2385,6 +2385,7 @@ export const translations = {
     },
 
     dashboard: {
+      monthlySummary: 'Available balance includes all transactions and adjustments. Monthly net includes savings transfers and adjustments; income and expenses exclude them. Selected month.',
       title: 'Dashboard',
       greeting: 'Salam',
       greetingMorning: 'Good morning, {firstName}',

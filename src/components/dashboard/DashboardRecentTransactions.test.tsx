@@ -19,7 +19,7 @@ describe('DashboardRecentTransactions', () => {
       name: 'Food',
       key: 'food',
       icon: 'Utensils',
-      color: '#f97316',
+      color: 'var(--warning)',
       isGoal: false,
       isArchived: false,
       createdAt: new Date().toISOString(),

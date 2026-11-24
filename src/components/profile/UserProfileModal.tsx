@@ -100,7 +100,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             </div>
           </div>
 
-          <span className="w-2.5 h-2.5 rounded-full bg-positive shadow-[0_0_8px_#10b981] animate-pulse" />
+          <span className="w-2.5 h-2.5 rounded-full bg-positive shadow-[0_0_8px_bg-positive] animate-pulse" />
         </div>
 
         {/* 2FA PIN Security */}

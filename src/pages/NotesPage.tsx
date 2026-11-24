@@ -28,9 +28,9 @@ import {
 } from 'lucide-react';
 
 const NOTE_COLORS = [
-  '#6366f1', // indigo
-  '#10b981', // emerald
-  '#3b82f6', // blue
+  'bg-accent', // indigo
+  'bg-positive', // emerald
+  'bg-info', // blue
   '#f59e0b', // amber
   '#8b5cf6', // purple
   '#ec4899', // pink
@@ -59,7 +59,7 @@ export const NotesPage: React.FC = () => {
   const [editingNote, setEditingNote] = useState<NoteItem | null>(null);
   const [noteTitle, setNoteTitle] = useState('');
   const [noteContent, setNoteContent] = useState('');
-  const [noteColor, setNoteColor] = useState('#6366f1');
+  const [noteColor, setNoteColor] = useState('bg-accent');
   const [noteCategory, setNoteCategory] = useState('');
   const [modalChecklist, setModalChecklist] = useState<NoteChecklistItem[]>([]);
   const [newChecklistText, setNewChecklistText] = useState('');
@@ -111,7 +111,7 @@ export const NotesPage: React.FC = () => {
     setEditingNote(null);
     setNoteTitle('');
     setNoteContent('');
-    setNoteColor('#6366f1');
+    setNoteColor('bg-accent');
     setNoteCategory('');
     setModalChecklist([]);
     setNewChecklistText('');
@@ -128,7 +128,7 @@ export const NotesPage: React.FC = () => {
     setEditingNote(note);
     setNoteTitle(note.title);
     setNoteContent(note.content);
-    setNoteColor(note.color || '#6366f1');
+    setNoteColor(note.color || 'bg-accent');
     setNoteCategory(note.category || '');
     setModalChecklist(note.checklist || []);
     setNewChecklistText('');
@@ -664,7 +664,7 @@ const NoteBentoCard: React.FC<NoteBentoCardProps> = ({
   generalLabel,
   language,
 }) => {
-  const accentColor = note.color || '#6366f1';
+  const accentColor = note.color || 'bg-accent';
   const checklist = note.checklist || [];
   const totalChecklist = checklist.length;
   const completedChecklist = checklist.filter((c) => c.completed).length;

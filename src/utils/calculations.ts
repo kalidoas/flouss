@@ -119,7 +119,7 @@ export function reconcileIncomeAndInitialBalance(account: UserAccount): {
       key: 'otherWork',
       name: 'أعمال أخرى',
       icon: 'Briefcase',
-      color: '#6366f1',
+      color: 'bg-accent',
       isDefault: true,
       createdAt: new Date().toISOString(),
       subcategories: [
@@ -234,13 +234,13 @@ export function calculateCategoryBudgetStatus(
 ): { hasBudget: boolean; budget: number; spent: number; remaining: number; percent: number; status: 'normal' | 'warning' | 'exceeded'; barColor: string; } {
   const budget = category.monthlyBudget || 0;
   if (!budget || budget <= 0) {
-    return { hasBudget: false, budget: 0, spent: spentThisMonth, remaining: 0, percent: 0, status: 'normal', barColor: '#10b981' };
+    return { hasBudget: false, budget: 0, spent: spentThisMonth, remaining: 0, percent: 0, status: 'normal', barColor: 'bg-positive' };
   }
   const percent = Math.min(100, Math.round((spentThisMonth / budget) * 100));
   const remaining = Math.max(0, budget - spentThisMonth);
   let status: 'normal' | 'warning' | 'exceeded' = 'normal';
-  let barColor = '#10b981';
-  if (spentThisMonth >= budget) { status = 'exceeded'; barColor = '#ef4444'; }
+  let barColor = 'bg-positive';
+  if (spentThisMonth >= budget) { status = 'exceeded'; barColor = 'bg-negative'; }
   else if (percent >= 80) { status = 'warning'; barColor = '#f59e0b'; }
   return { hasBudget: true, budget, spent: spentThisMonth, remaining, percent, status, barColor };
 }

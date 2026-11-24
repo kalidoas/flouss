@@ -179,7 +179,7 @@ export const QuickAddSheet: React.FC<QuickAddSheetProps> = ({ isOpen, onClose, i
         {error && <p role="alert" className="text-xs font-semibold text-negative">{error}</p>}
 
         {/* 5. Sticky Full-Width Save Button */}
-        <div className="sticky bottom-0 bg-surface/95 dark:bg-[#0A0A0C]/95 pt-2 border-t border-border-subtle dark:border-border/10 backdrop-blur-md">
+        <div className="sticky bottom-0 bg-surface/95 dark:bg-[bg-bg]/95 pt-2 border-t border-border-subtle dark:border-border/10 backdrop-blur-md">
           <button
             type="submit"
             className={`flex min-h-[48px] w-full items-center justify-center gap-2 rounded-2xl px-5 text-sm font-bold text-accent-contrast shadow-md transition-all active:scale-[0.98] cursor-pointer ${

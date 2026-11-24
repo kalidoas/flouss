@@ -159,7 +159,7 @@ describe('calculateCategoryBudgetStatus', () => {
     id: 'cat_groceries',
     name: 'Groceries',
     icon: 'Utensils',
-    color: '#10b981',
+    color: 'bg-positive',
     isGoal: false,
     isArchived: false,
     createdAt: '2025-01-01',
@@ -180,7 +180,7 @@ describe('calculateCategoryBudgetStatus', () => {
     expect(res.status).toBe('normal');
     expect(res.percent).toBe(60);
     expect(res.remaining).toBe(400);
-    expect(res.barColor).toBe('#10b981');
+    expect(res.barColor).toBe('bg-positive');
   });
 
   it('returns warning status when spent is between 80% and 99%', () => {
@@ -198,15 +198,15 @@ describe('calculateCategoryBudgetStatus', () => {
     expect(res.status).toBe('exceeded');
     expect(res.percent).toBe(100);
     expect(res.remaining).toBe(0);
-    expect(res.barColor).toBe('#ef4444');
+    expect(res.barColor).toBe('bg-negative');
   });
 });
 
 describe('calculateNetWorth & calculateTotalSavingsInGoals', () => {
   it('computes net worth as available cash + total saved across goals', () => {
     const categories: Category[] = [
-      { id: 'goal_car', name: 'Car', icon: 'Car', color: '#3b82f6', isGoal: true, targetAmount: 50000, isArchived: false, createdAt: '2025-01-01' },
-      { id: 'cat_rent', name: 'Rent', icon: 'Home', color: '#10b981', isGoal: false, isArchived: false, createdAt: '2025-01-01' },
+      { id: 'goal_car', name: 'Car', icon: 'Car', color: 'bg-info', isGoal: true, targetAmount: 50000, isArchived: false, createdAt: '2025-01-01' },
+      { id: 'cat_rent', name: 'Rent', icon: 'Home', color: 'bg-positive', isGoal: false, isArchived: false, createdAt: '2025-01-01' },
     ];
 
     const transactions: Transaction[] = [
@@ -230,7 +230,7 @@ describe('calculateGoalProgress', () => {
       id: 'goal_laptop',
       name: 'MacBook',
       icon: 'Laptop',
-      color: '#6366f1',
+      color: 'bg-accent',
       isGoal: true,
       targetAmount: 12000,
       targetMonths: 6,
@@ -275,7 +275,7 @@ describe('reconcileIncomeAndInitialBalance (Critical Balance & Income Fix)', () 
     const rawAccount: UserAccount = {
       id: 'user_123',
       name: 'Khalid',
-      avatarColor: '#2383e2',
+      avatarColor: 'bg-info',
       initialBalance: 0,
       initialBalanceLockedAt: null,
       balance: 174.6,

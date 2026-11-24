@@ -245,7 +245,7 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
         </label>
 
         {/* 5. Sticky Full-Width Save Button */}
-        <div className="sticky bottom-0 bg-surface/95 dark:bg-[#0A0A0C]/95 pt-2 border-t border-border-subtle dark:border-border/10 backdrop-blur-md">
+        <div className="sticky bottom-0 bg-surface/95 dark:bg-[bg-bg]/95 pt-2 border-t border-border-subtle dark:border-border/10 backdrop-blur-md">
           <Button
             type="submit"
             variant="danger"

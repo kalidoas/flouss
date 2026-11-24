@@ -22,7 +22,7 @@ export const CATEGORY_GROUPS_META: Record<CategoryGroupId, CategoryGroupMeta> = 
     id: 'food_dining',
     translationKey: 'food_dining',
     iconName: 'Utensils',
-    color: '#10b981', // emerald-500
+    color: 'bg-positive', // emerald-500
     badgeClass: 'bg-positive/15 text-positive dark:text-positive border-positive/20',
     borderClass: 'border-positive/20',
   },
@@ -46,7 +46,7 @@ export const CATEGORY_GROUPS_META: Record<CategoryGroupId, CategoryGroupMeta> = 
     id: 'subscriptions_utilities',
     translationKey: 'subscriptions_utilities',
     iconName: 'CreditCard',
-    color: '#6366f1', // indigo-500
+    color: 'bg-accent', // indigo-500
     badgeClass: 'bg-accent/15 text-accent dark:text-accent border-accent/20',
     borderClass: 'border-accent/20',
   },
@@ -62,7 +62,7 @@ export const CATEGORY_GROUPS_META: Record<CategoryGroupId, CategoryGroupMeta> = 
     id: 'savings',
     translationKey: 'savings',
     iconName: 'PiggyBank',
-    color: '#3b82f6', // blue-500
+    color: 'bg-info', // blue-500
     badgeClass: 'bg-info/15 text-info dark:text-info border-info/20',
     borderClass: 'border-info/20',
   },

@@ -36,7 +36,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onQuickAdd }) => {
 
   const activeAccount = (accounts || []).find((account) => account.id === activeAccountId)
     || (accounts || [])[0]
-    || (firebaseUser ? { id: firebaseUser.uid, name: firebaseUser.displayName || 'User', email: firebaseUser.email || '', avatarColor: '#2383e2' } : null);
+    || (firebaseUser ? { id: firebaseUser.uid, name: firebaseUser.displayName || 'User', email: firebaseUser.email || '', avatarColor: 'bg-info' } : null);
 
   const items: { id: ScreenId; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
     { id: 'dashboard', label: language === 'ar' ? 'الرئيسية' : language === 'fr' ? 'Accueil' : 'Home', icon: LayoutDashboard },
@@ -117,7 +117,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onQuickAdd }) => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="fixed bottom-[96px] inset-x-4 mx-auto z-[105] w-[calc(100vw-2rem)] max-w-sm rounded-[28px] bg-[#0D0E14]/95 backdrop-blur-2xl border border-border/10 p-3.5 shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_0_0_rgba(255,255,255,0.1)]"
+              className="fixed bottom-[96px] inset-x-4 mx-auto z-[105] w-[calc(100vw-2rem)] max-w-sm rounded-[28px] bg-surface/95 backdrop-blur-2xl border border-border/10 p-3.5 shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_0_0_rgba(255,255,255,0.1)]"
             >
               <div className="grid grid-cols-2 gap-2.5">
                 {/* Action 1: Add Expense */}

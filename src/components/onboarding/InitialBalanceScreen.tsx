@@ -66,15 +66,15 @@ export const InitialBalanceScreen: React.FC = () => {
   return (
     <div
       dir={isAr ? 'rtl' : 'ltr'}
-      className="min-h-screen bg-[#050505] text-accent-contrast flex items-center justify-center p-4 sm:p-6 font-sans select-none relative overflow-hidden"
+      className="min-h-screen bg-bg text-accent-contrast flex items-center justify-center p-4 sm:p-6 font-sans select-none relative overflow-hidden"
     >
       {/* Background ambient lighting */}
       <div
         className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 pointer-events-none rounded-full opacity-20 blur-3xl"
-        style={{ background: 'radial-gradient(circle, #6366f1, #10b981)' }}
+        style={{ background: 'radial-gradient(circle, bg-accent, bg-positive)' }}
       />
 
-      <div className="w-full max-w-md rounded-3xl bg-[#0D0E14]/95 border border-border/10 p-6 sm:p-8 text-center shadow-[0_24px_60px_rgba(0,0,0,0.8),inset_0_1px_0_0_rgba(255,255,255,0.1)] relative z-10 animate-in fade-in zoom-in-95 duration-300">
+      <div className="w-full max-w-md rounded-3xl bg-surface/95 border border-border/10 p-6 sm:p-8 text-center shadow-[0_24px_60px_rgba(0,0,0,0.8),inset_0_1px_0_0_rgba(255,255,255,0.1)] relative z-10 animate-in fade-in zoom-in-95 duration-300">
 
         {/* Wallet Icon with subtle glow */}
         <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-tr from-accent/20 to-positive/20 border border-border/10 flex items-center justify-center text-positive mb-5 shadow-lg shadow-md">

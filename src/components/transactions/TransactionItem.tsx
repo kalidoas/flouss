@@ -76,7 +76,7 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
         return {
           title: subName ? `${srcName} › ${subName}` : srcName,
           icon: source?.icon || 'Briefcase',
-          color: source?.color || '#059669',
+          color: source?.color || 'bg-positive',
           amountPrefix: '+ ',
           amountClass: 'text-positive dark:text-positive font-bold',
           badgeText: translations[language].dashboard.addIncome,
@@ -152,7 +152,7 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
         return {
           title: adjTitle,
           icon: 'SlidersHorizontal',
-          color: '#6366f1',
+          color: 'bg-accent',
           amountPrefix: isPositive ? '+ ' : '- ',
           amountClass: isPositive
             ? 'text-accent dark:text-accent font-bold'

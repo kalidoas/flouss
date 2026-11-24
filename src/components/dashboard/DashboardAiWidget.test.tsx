@@ -24,7 +24,7 @@ describe('DashboardAiWidget', () => {
   });
 
   const mockCategories: Category[] = [
-    { id: 'cat_food', name: 'Food', icon: 'Utensils', color: '#f00', isGoal: false, isArchived: false, createdAt: '2026-01-01' },
+    { id: 'cat_food', name: 'Food', icon: 'Utensils', color: 'var(--color-negative)', isGoal: false, isArchived: false, createdAt: '2026-01-01' },
   ];
 
   it('renders dismissible onboarding tip (NOT styled as an AI insight) when transactions < 3', async () => {

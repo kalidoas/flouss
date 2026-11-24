@@ -91,7 +91,7 @@ export const BalanceWidget: React.FC = () => {
               </span>
               <PrivacyCurrency
                 amount={totalInGoals}
-                className="font-medium text-[#37352f] dark:text-[#ecebed]"
+                className="font-medium text-[text-content] dark:text-[#ecebed]"
               />
             </div>
           </div>

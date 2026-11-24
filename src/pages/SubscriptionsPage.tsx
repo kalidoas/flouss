@@ -508,7 +508,7 @@ export const SubscriptionsPage: React.FC = () => {
                     <div className={`w-3.5 h-3.5 rounded-full border-2 transition-transform duration-200 group-hover:scale-150 ${nodeColor}`} />
 
                     {/* Hover Floating Tooltip Card */}
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none absolute -bottom-16 left-1/2 -translate-x-1/2 bg-surface text-content border border-border-subtle dark:bg-[#12131C] dark:border-border/10 rounded-xl px-2.5 py-1.5 shadow-xl text-center whitespace-nowrap z-30">
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none absolute -bottom-16 left-1/2 -translate-x-1/2 bg-surface text-content border border-border-subtle dark:bg-bg dark:border-border/10 rounded-xl px-2.5 py-1.5 shadow-xl text-center whitespace-nowrap z-30">
                       <div className="text-[11px] font-bold text-text dark:text-text">
                         {tSub.dayNumber.replace('{day}', String(day))} • {formatMAD(info.total)}
                       </div>

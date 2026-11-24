@@ -110,7 +110,7 @@ export const QuickAddButton: React.FC<QuickAddButtonProps> = ({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 12 }}
               transition={{ type: 'spring', damping: 25, stiffness: 320 }}
-              className="fixed bottom-24 end-6 z-[9999] w-72 rounded-[24px] bg-[#0D0E14]/95 backdrop-blur-2xl border border-border/10 p-2 shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_0_0_rgba(255,255,255,0.1)] select-none pointer-events-auto"
+              className="fixed bottom-24 end-6 z-[9999] w-72 rounded-[24px] bg-surface/95 backdrop-blur-2xl border border-border/10 p-2 shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_0_0_rgba(255,255,255,0.1)] select-none pointer-events-auto"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="space-y-1">

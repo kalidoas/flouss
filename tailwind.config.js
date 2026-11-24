@@ -27,6 +27,7 @@ export default {
         info: 'var(--info)',
         'info-contrast': 'var(--info-contrast)',
         ring: 'var(--ring)',
+        indigo: 'var(--indigo)',
         primary: {
           50: '#eff6ff',
           100: '#dbeafe',
@@ -39,6 +40,12 @@ export default {
           800: '#1e40af',
           900: '#1e3a8a',
         },
+      },
+      shadow: {
+        glow: 'var(--shadow-glow-accent)',
+        'glow-positive': 'var(--shadow-glow-positive)',
+        'glow-negative': 'var(--shadow-glow-negative)',
+        'glow-warning': 'var(--shadow-glow-warning)',
       },
       fontFamily: {
         sans: [

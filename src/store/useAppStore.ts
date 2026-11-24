@@ -290,7 +290,7 @@ export function makeInitialAccount(uid: string, name: string, email?: string): U
     pinCode: null,
     pinEnabled: false,
     tourCompleted: false,
-    avatarColor: '#2383e2',
+    avatarColor: 'bg-info',
     avatarIcon: '👤',
     initialBalance: null,
     initialBalanceLockedAt: null,
@@ -2136,7 +2136,7 @@ export const useAppStore = create<AppState>()(
         },
 
         // ── Program Tracks & Dynamic Sub-Tasks ──────────────────────
-        addProgramTrack: (title: string, icon = '🎯', color = '#3b82f6') => {
+        addProgramTrack: (title: string, icon = '🎯', color = 'bg-info') => {
           updateActive((a) => {
             const newTrack: ProgramTrack = {
               id: 'prog_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
@@ -2261,7 +2261,7 @@ export const useAppStore = create<AppState>()(
           const newList: FocusListMenu = {
             id: 'fl_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
             name: trimmed,
-            color: color || '#3b82f6',
+            color: color || 'bg-info',
             createdAt: new Date().toISOString(),
           };
           updateActive((a) => ({
@@ -2497,7 +2497,7 @@ export const useAppStore = create<AppState>()(
             ...makeInitialAccount(id, name, email),
             pinCode: pin || null,
             pinEnabled: !!pin,
-            avatarColor: color || '#2383e2',
+            avatarColor: color || 'bg-info',
           };
           const s = get();
           const updatedAccounts = [...s.accounts, newAcc];

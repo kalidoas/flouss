@@ -87,11 +87,11 @@ export const DashboardRecentTransactions: React.FC<Props> = ({
               : getCategoryIcon(category?.icon || 'Wallet');
             const Icon = icon;
             const color = isAdjustment
-              ? '#818cf8'
+              ? 'var(--info)'
               : isIncome
-              ? '#34d399'
+              ? 'var(--positive)'
               : transaction.type === 'contribution'
-              ? '#60a5fa'
+              ? 'var(--info)'
               : getCategoryVisualColor(category?.id);
             const prefix = isAdjustment
               ? transaction.amount >= 0

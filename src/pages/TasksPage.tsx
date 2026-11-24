@@ -366,7 +366,7 @@ export const TasksPage: React.FC = () => {
   const [isAddTrackModalOpen, setIsAddTrackModalOpen] = useState(false);
   const [newTrackTitle, setNewTrackTitle] = useState('');
   const [newTrackIcon, setNewTrackIcon] = useState('🎯');
-  const [newTrackColor, setNewTrackColor] = useState('#3b82f6');
+  const [newTrackColor, setNewTrackColor] = useState('bg-info');
   const [newSubTaskInput, setNewSubTaskInput] = useState('');
 
   // Routine Task Modal State
@@ -1353,7 +1353,7 @@ export const TasksPage: React.FC = () => {
         </div>
 
         {/* Right Column: 7-Day Week Selector with Glowing Indigo Active Day Pill */}
-        <div className="zawa-bento zawa-spotlight sticky top-2 z-30 p-4 flex flex-col justify-between bg-[#0D0E14]/95 backdrop-blur-2xl shadow-xl">
+        <div className="zawa-bento zawa-spotlight sticky top-2 z-30 p-4 flex flex-col justify-between bg-surface/95 backdrop-blur-2xl shadow-xl">
           <div className="flex items-center justify-between pb-2 border-b border-border/[0.06]">
             <span className="text-xs font-semibold uppercase tracking-wider text-muted">
               {language === 'ar' ? 'أسبوع المهمة' : 'Week Schedule'}
@@ -1528,7 +1528,7 @@ export const TasksPage: React.FC = () => {
             triggerRef={taskCategoryDropdownTriggerRef}
             align="end"
             minWidth={210}
-            className="min-w-[210px] overflow-y-auto no-scrollbar rounded-2xl bg-[#12131C]/95 backdrop-blur-2xl border border-border/[0.12] p-1.5 shadow-[0_16px_36px_-8px_rgba(0,0,0,0.8)]"
+            className="min-w-[210px] overflow-y-auto no-scrollbar rounded-2xl bg-bg/95 backdrop-blur-2xl border border-border/[0.12] p-1.5 shadow-[0_16px_36px_-8px_rgba(0,0,0,0.8)]"
           >
             <div className="space-y-0.5">
               <button
@@ -1671,7 +1671,7 @@ export const TasksPage: React.FC = () => {
                                   cy="18"
                                   r="14"
                                   fill="none"
-                                  stroke={isCompleted ? '#10b981' : '#6366f1'}
+                                  stroke={isCompleted ? 'bg-positive' : 'bg-accent'}
                                   strokeWidth="3"
                                   strokeDasharray="88"
                                   strokeDashoffset={88 - (88 * percent) / 100}
@@ -2996,7 +2996,7 @@ export const TasksPage: React.FC = () => {
                 {language === 'ar' ? 'لون' : language === 'en' ? 'Color' : 'Couleur'}
               </label>
               <div className="flex gap-2 flex-wrap items-center pt-1">
-                {['#3b82f6', '#10b981', '#8b5cf6', '#f43f5e', '#f59e0b', '#06b6d4'].map((color) => (
+                {['bg-info', 'bg-positive', '#8b5cf6', '#f43f5e', '#f59e0b', '#06b6d4'].map((color) => (
                   <button
                     key={color}
                     type="button"

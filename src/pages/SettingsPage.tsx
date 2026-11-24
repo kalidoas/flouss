@@ -124,7 +124,7 @@ export const SettingsPage: React.FC = () => {
           id: firebaseUser.uid,
           name: firebaseUser.displayName || 'Utilisateur',
           email: firebaseUser.email || '',
-          avatarColor: '#10b981',
+          avatarColor: 'bg-positive',
         }
       : null);
 
@@ -735,22 +735,22 @@ export const SettingsPage: React.FC = () => {
       {/* 1. Locked Initial Balance Status */}
       <Card padding="md">
         <div className="flex items-start gap-3.5">
-          <div className="w-9 h-9 rounded-md bg-[#f1f0ee] dark:bg-[#282828] text-[#37352f] dark:text-[#ecebed] flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-md bg-surface-3 dark:bg-surface-3 text-content flex items-center justify-center shrink-0">
             <Lock className="w-4 h-4" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-xs font-semibold text-[#37352f] dark:text-[#ecebed] uppercase tracking-wider">
+              <h2 className="text-xs font-semibold text-content uppercase tracking-wider">
                 {t.lockedBalanceTitle}
               </h2>
-              <span className="text-[10px] font-medium bg-[#f1f0ee] dark:bg-[#282828] text-[#787774] dark:text-[#9b9a97] px-1.5 py-0.2 rounded border border-[#e3e2de] dark:border-[#2f2f2f]">
+              <span className="text-[10px] font-medium bg-surface-3 dark:bg-surface-3 text-muted px-1.5 py-0.2 rounded border border-border">
                 {('locked')}
               </span>
             </div>
             <div className={`text-xl sm:text-2xl font-semibold text-positive dark:text-positive tabular-nums mt-1 transition-[filter] duration-200 ${hideBalance ? 'privacy-blur' : ''}`}>
               {formatMAD(initialBalance, false, language)}
             </div>
-            <p className="text-xs text-[#787774] dark:text-[#9b9a97] mt-0.5">
+            <p className="text-xs text-muted mt-0.5">
               {t.lockedBalanceDesc}{' '}
               {initialBalanceLockedAt && `(Fixé le ${formatDate(initialBalanceLockedAt, language)})`}
             </p>
@@ -1413,7 +1413,7 @@ export const SettingsPage: React.FC = () => {
             <div className="flex items-center gap-3 min-w-0">
               <div
                 className="w-10 h-10 rounded-xl flex items-center justify-center text-accent-contrast font-bold text-sm shrink-0 shadow-xs"
-                style={{ backgroundColor: activeAccount?.avatarColor || '#10b981' }}
+                style={{ backgroundColor: activeAccount?.avatarColor || 'bg-positive' }}
               >
                 {activeAccount?.name?.charAt(0).toUpperCase() || 'U'}
               </div>

@@ -68,7 +68,7 @@ export const DashboardTodayCard: React.FC = () => {
           role="img"
           aria-label={`${t.todayProgress} · ${progress}%`}
           style={{
-            background: `conic-gradient(#6366F1 ${progress}%, rgba(120,120,128,0.15) 0)`,
+            background: `conic-gradient(var(--indigo) ${progress}%, rgba(120,120,128,0.15) 0)`,
           }}
         >
           <span className="grid h-8 w-8 place-items-center rounded-full bg-surface dark:bg-zinc-900 text-xs font-bold tabular-nums text-content dark:text-white shadow-xs">

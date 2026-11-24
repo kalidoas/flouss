@@ -57,7 +57,7 @@ export const DashboardSpendingCard: React.FC<Props> = ({
   const otherTotal = Math.max(0, totalExpense - topCategoryTotal);
   const sections = [
     ...top.map((item) => ({ ...item, color: getCategoryVisualColor(item.category.id) })),
-    ...(otherTotal > 0 ? [{ category: null, spent: otherTotal, budget: 0, color: '#888A91' }] : []),
+    ...(otherTotal > 0 ? [{ category: null, spent: otherTotal, budget: 0, color: 'var(--text-muted)' }] : []),
   ];
 
   return (

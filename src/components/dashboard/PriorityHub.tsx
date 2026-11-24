@@ -118,7 +118,7 @@ export const PriorityHub: React.FC = () => {
       title: quickNoteTitle.trim() || 'Rappel urgent',
       content: quickNoteContent.trim(),
       isPinned: true,
-      color: '#f59e0b',
+      color: 'var(--warning)',
       createdAt: now,
       updatedAt: now,
     });

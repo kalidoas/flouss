@@ -382,7 +382,7 @@ export const CategoriesPage: React.FC = () => {
                 triggerRef={groupDropdownTriggerRef}
                 align="end"
                 minWidth={210}
-                className="min-w-[210px] overflow-y-auto no-scrollbar rounded-2xl bg-[#12131C]/95 backdrop-blur-2xl border border-border/[0.12] p-1.5 shadow-[0_16px_36px_-8px_rgba(0,0,0,0.8)]"
+                className="min-w-[210px] overflow-y-auto no-scrollbar rounded-2xl bg-bg/95 backdrop-blur-2xl border border-border/[0.12] p-1.5 shadow-[0_16px_36px_-8px_rgba(0,0,0,0.8)]"
               >
                 <div className="space-y-0.5">
                   <button

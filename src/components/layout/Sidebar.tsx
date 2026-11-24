@@ -47,7 +47,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
           id: firebaseUser.uid,
           name: firebaseUser.displayName || 'Utilisateur',
           email: firebaseUser.email || '',
-          avatarColor: '#37352f',
+          avatarColor: 'text-content',
         }
       : null);
 
@@ -256,7 +256,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
               <div className="flex items-center gap-2 min-w-0">
                 <div
                     className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold text-content shadow-xs"
-                  style={{ backgroundColor: activeAccount.avatarColor || '#37352f' }}
+                  style={{ backgroundColor: activeAccount.avatarColor || 'text-content' }}
                 >
                   {activeAccount.name.charAt(0).toUpperCase()}
                 </div>

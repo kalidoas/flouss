@@ -72,17 +72,17 @@ export const ICON_OPTIONS: IconOption[] = [
 ];
 
 export const COLOR_OPTIONS: { hex: string; label: string }[] = [
-  { hex: '#10b981', label: 'Émeraude' },
-  { hex: '#059669', label: 'Vert foncé' },
+  { hex: 'bg-positive', label: 'Émeraude' },
+  { hex: 'bg-positive', label: 'Vert foncé' },
   { hex: '#14b8a6', label: 'Teal' },
   { hex: '#06b6d4', label: 'Cyan' },
-  { hex: '#3b82f6', label: 'Bleu' },
-  { hex: '#6366f1', label: 'Indigo' },
+  { hex: 'bg-info', label: 'Bleu' },
+  { hex: 'bg-accent', label: 'Indigo' },
   { hex: '#8b5cf6', label: 'Violet' },
   { hex: '#a855f7', label: 'Pourpre' },
   { hex: '#ec4899', label: 'Rose' },
   { hex: '#f43f5e', label: 'Rose vif' },
-  { hex: '#ef4444', label: 'Rouge' },
+  { hex: 'bg-negative', label: 'Rouge' },
   { hex: '#f97316', label: 'Orange' },
   { hex: '#f59e0b', label: 'Ambre' },
   { hex: '#84cc16', label: 'Lime' },

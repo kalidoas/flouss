@@ -21,7 +21,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
     group: 'food_dining',
     name: 'Nourriture & Courses',
     icon: 'Utensils',
-    color: '#10b981', // pastel emerald
+    color: 'bg-positive', // pastel emerald
     isGoal: false,
     targetAmount: null,
     targetMonths: null,
@@ -129,7 +129,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
     group: 'essentials_housing',
     name: 'Éducation & Formation',
     icon: 'GraduationCap',
-    color: '#3b82f6', // blue
+    color: 'bg-info', // blue
     isGoal: false,
     targetAmount: null,
     targetMonths: null,
@@ -214,7 +214,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
     group: 'subscriptions_utilities',
     name: 'Télécom & Abonnements',
     icon: 'Smartphone',
-    color: '#6366f1', // indigo
+    color: 'bg-accent', // indigo
     isGoal: false,
     targetAmount: null,
     targetMonths: null,
@@ -275,7 +275,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
     group: 'income_investments',
     name: 'Sadaqa & Charité',
     icon: 'HeartHandshake',
-    color: '#059669', // emerald dark
+    color: 'bg-positive', // emerald dark
     isGoal: false,
     targetAmount: null,
     targetMonths: null,
@@ -295,7 +295,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
     group: 'income_investments',
     name: 'Investissement & Avenir',
     icon: 'TrendingUp',
-    color: '#10b981', // emerald
+    color: 'bg-positive', // emerald
     isGoal: false,
     targetAmount: null,
     targetMonths: null,
@@ -316,7 +316,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
     group: 'savings',
     name: 'Fonds d’urgence',
     icon: 'PiggyBank',
-    color: '#3b82f6', // blue
+    color: 'bg-info', // blue
     isGoal: true,
     targetAmount: 10000,
     targetMonths: 6,
@@ -409,7 +409,7 @@ export const DEFAULT_INCOME_SOURCES: IncomeSource[] = [
     key: 'salary',
     name: 'Salaire',
     icon: 'Briefcase',
-    color: '#059669',
+    color: 'bg-positive',
     isDefault: true,
     createdAt: new Date().toISOString(),
     subcategories: [
@@ -474,7 +474,7 @@ export const DEFAULT_INCOME_SOURCES: IncomeSource[] = [
     key: 'sale',
     name: 'Vente d’objets',
     icon: 'ShoppingBag',
-    color: '#10b981',
+    color: 'bg-positive',
     isDefault: true,
     createdAt: new Date().toISOString(),
     subcategories: [
@@ -500,7 +500,7 @@ export const DEFAULT_INCOME_SOURCES: IncomeSource[] = [
     key: 'otherWork',
     name: 'أعمال أخرى',
     icon: 'Briefcase',
-    color: '#6366f1',
+    color: 'bg-accent',
     isDefault: true,
     createdAt: new Date().toISOString(),
     subcategories: [
@@ -533,7 +533,7 @@ export const DEFAULT_FOCUS_LISTS: FocusListMenu[] = [
   {
     id: 'default',
     name: 'myList',
-    color: '#3b82f6',
+    color: 'bg-info',
     createdAt: new Date().toISOString(),
   },
 ];

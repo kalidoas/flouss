@@ -35,7 +35,7 @@ const TOUR_STEPS: TourStepConfig[] = [
       'Retrouvez ici votre solde disponible en MAD, votre patrimoine total et la vue d’ensemble de vos revenus et dépenses du mois.',
     descAr:
       'تجد هنا رصيدك المالي المتاح بالدرهم المغربي، إجمالي ثروتك وملخص مداخيلك ومصاريفك الشهرية.',
-    icon: <LayoutDashboard className="w-4 h-4 text-[#2383e2]" />,
+    icon: <LayoutDashboard className="w-4 h-4 text-info" />,
   },
   {
     screen: 'dashboard',
@@ -156,14 +156,14 @@ export const GuidedTour: React.FC = () => {
 
   return (
     <div className="fixed inset-0 z-50 pointer-events-none flex items-end sm:items-center justify-center p-4 bg-canvas/35 backdrop-blur-[1px] animate-in fade-in duration-200">
-      <div className="pointer-events-auto w-full max-w-sm bg-surface dark:bg-[#202020] rounded-lg p-4 sm:p-5 shadow-2xl border border-[#e3e2de] dark:border-[#2f2f2f] space-y-3.5 mb-16 sm:mb-0 animate-in zoom-in-95 duration-200">
+      <div className="pointer-events-auto w-full max-w-sm bg-surface bg-surface rounded-lg p-4 sm:p-5 shadow-2xl border border-border space-y-3.5 mb-16 sm:mb-0 animate-in zoom-in-95 duration-200">
         {/* Header with Step and Close */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-md bg-[#f1f0ee] dark:bg-[#282828] flex items-center justify-center">
+            <div className="w-7 h-7 rounded-md bg-surface-3 dark:bg-surface-3 flex items-center justify-center">
               {currentConfig.icon}
             </div>
-            <span className="text-[11px] font-semibold text-[#787774] dark:text-[#9b9a97] uppercase tracking-wider">
+            <span className="text-[11px] font-semibold text-muted uppercase tracking-wider">
               {isAr ? 'جولة توضيحية' : 'Visite Guidée'} ({tourStep + 1}/{TOUR_STEPS.length})
             </span>
           </div>
@@ -173,7 +173,7 @@ export const GuidedTour: React.FC = () => {
               endTour();
               setActiveScreen('dashboard');
             }}
-            className="p-1 rounded text-[#787774] hover:text-[#37352f] hover:bg-[#f1f0ee] dark:hover:bg-[#282828] transition-colors"
+            className="p-1 rounded text-muted hover:text-content hover:bg-surface-3 hover:bg-surface-3 transition-colors"
             title="Fermer"
           >
             <X className="w-3.5 h-3.5" />
@@ -182,18 +182,18 @@ export const GuidedTour: React.FC = () => {
 
         {/* Content */}
         <div className="space-y-1">
-          <h3 className="font-semibold text-sm text-[#37352f] dark:text-[#ecebed]">
+          <h3 className="font-semibold text-sm text-content">
             {isAr ? currentConfig.titleAr : currentConfig.titleFr}
           </h3>
-          <p className="text-xs text-[#5f5e5b] dark:text-[#9b9a97] leading-relaxed">
+          <p className="text-xs text-muted text-muted leading-relaxed">
             {isAr ? currentConfig.descAr : currentConfig.descFr}
           </p>
         </div>
 
         {/* Progress Bar Indicator */}
-        <div className="w-full bg-[#f1f0ee] dark:bg-[#282828] h-1 rounded-full overflow-hidden">
+        <div className="w-full bg-surface-3 dark:bg-surface-3 h-1 rounded-full overflow-hidden">
           <div
-            className="h-full bg-[#2383e2] transition-all duration-300"
+            className="h-full bg-info transition-all duration-300"
             style={{ width: `${((tourStep + 1) / TOUR_STEPS.length) * 100}%` }}
           />
         </div>
@@ -205,7 +205,7 @@ export const GuidedTour: React.FC = () => {
               endTour();
               setActiveScreen('dashboard');
             }}
-            className="text-xs text-[#787774] hover:underline"
+            className="text-xs text-muted hover:underline"
           >
             {isAr ? 'تخطي الجولة' : 'Passer'}
           </button>
@@ -214,7 +214,7 @@ export const GuidedTour: React.FC = () => {
             {tourStep > 0 && (
               <button
                 onClick={handlePrev}
-                className="px-2.5 py-1 rounded text-xs font-medium border border-[#e3e2de] dark:border-[#2f2f2f] text-[#37352f] dark:text-[#ecebed] hover:bg-[#f1f0ee] dark:hover:bg-[#282828] transition-colors flex items-center gap-1"
+                className="px-2.5 py-1 rounded text-xs font-medium border border-border text-content hover:bg-surface-3 hover:bg-surface-3 transition-colors flex items-center gap-1"
               >
                 <ChevronLeft className="w-3 h-3" />
                 <span>{isAr ? 'السابق' : 'Précédent'}</span>
@@ -223,7 +223,7 @@ export const GuidedTour: React.FC = () => {
 
             <button
               onClick={handleNext}
-              className="px-3 py-1 rounded text-xs font-medium bg-[#2383e2] hover:bg-[#1a73cb] text-accent-contrast transition-colors flex items-center gap-1 shadow-xs"
+              className="px-3 py-1 rounded text-xs font-medium bg-info hover:bg-info text-accent-contrast transition-colors flex items-center gap-1 shadow-xs"
             >
               <span>{isLast ? (isAr ? 'إنهاء واستخدام التطبيق' : 'Terminer') : isAr ? 'التالي' : 'Suivant'}</span>
               <ChevronRight className="w-3 h-3" />

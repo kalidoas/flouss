@@ -222,7 +222,7 @@ export const IncomePage: React.FC = () => {
                 <div className="flex items-center gap-3 min-w-0">
                   <div
                     className="w-10 h-10 rounded-2xl flex items-center justify-center text-accent-contrast shrink-0 shadow-xs group-hover:scale-105 transition-transform"
-                    style={{ backgroundColor: source.color || '#10b981' }}
+                    style={{ backgroundColor: source.color || 'bg-positive' }}
                   >
                     <IconComp className="w-5 h-5 stroke-[2]" />
                   </div>

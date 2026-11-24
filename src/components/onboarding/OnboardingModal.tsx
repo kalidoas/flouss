@@ -165,12 +165,12 @@ export const OnboardingModal: React.FC = () => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-canvas/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="w-full max-w-md bg-surface dark:bg-[#202020] rounded-2xl p-6 sm:p-7 shadow-2xl border border-[#e3e2de] dark:border-[#2f2f2f] text-center relative overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="w-full max-w-md bg-surface bg-surface rounded-2xl p-6 sm:p-7 shadow-2xl border border-border text-center relative overflow-hidden animate-in zoom-in-95 duration-200">
 
         {/* Header & Step Tracker */}
-        <div className="flex items-center justify-between mb-5 pb-3 border-b border-[#e3e2de] dark:border-[#2f2f2f]">
+        <div className="flex items-center justify-between mb-5 pb-3 border-b border-border">
           <Logo size="md" showWordmark={true} />
-          <div className="flex items-center gap-1.5 text-xs text-[#787774] dark:text-[#9b9a97]">
+          <div className="flex items-center gap-1.5 text-xs text-muted">
             <span className="font-semibold text-positive dark:text-positive">
               {step === 'pin' ? '1' : '2'}
             </span>
@@ -186,7 +186,7 @@ export const OnboardingModal: React.FC = () => {
               <div className="w-11 h-11 mx-auto rounded-xl bg-positive dark:bg-positive/40 text-positive dark:text-positive border border-positive/50 dark:border-positive/40 flex items-center justify-center mb-2.5">
                 <KeyRound className="w-5 h-5" />
               </div>
-              <h2 className="text-base font-bold text-[#37352f] dark:text-[#ecebed]">
+              <h2 className="text-base font-bold text-content">
                 {pinStep === 'create'
                   ? isAr
                     ? '🎉 مرحباً بك في مساحة عملك — قم بإنشاء رمز PIN'
@@ -195,7 +195,7 @@ export const OnboardingModal: React.FC = () => {
                   ? 'أكد رمز PIN السري'
                   : 'Confirmez votre code PIN'}
               </h2>
-              <p className="text-xs text-[#787774] dark:text-[#9b9a97] mt-1 leading-relaxed">
+              <p className="text-xs text-muted mt-1 leading-relaxed">
                 {isAr
                   ? 'سيُطلب هذا الرمز عند تسجيل الدخول لحماية خصوصية بياناتك المالية.'
                   : 'Ce code protège l’accès à vos finances lors de vos prochaines connexions.'}
@@ -212,7 +212,7 @@ export const OnboardingModal: React.FC = () => {
                     className={`w-3.5 h-3.5 rounded-full border transition-all duration-150 ${
                       isFilled
                         ? 'bg-positive border-positive scale-110 shadow-xs'
-                        : 'border-[#e3e2de] dark:border-[#3f3f3f] bg-transparent'
+                        : 'border-border bg-transparent'
                     }`}
                   />
                 );
@@ -228,7 +228,7 @@ export const OnboardingModal: React.FC = () => {
                   key={digit}
                   type="button"
                   onClick={() => handlePinDigit(digit)}
-                  className="h-11 rounded-xl bg-[#fbfbfa] dark:bg-[#1a1a1a] hover:bg-[#f1f0ee] dark:hover:bg-[#282828] border border-[#e3e2de] dark:border-[#2f2f2f] text-sm font-semibold text-[#37352f] dark:text-[#ecebed] transition-all cursor-pointer active:scale-95"
+                  className="h-11 rounded-xl bg-surface-2 hover:bg-surface-3 hover:bg-surface-3 border border-border text-sm font-semibold text-content transition-all cursor-pointer active:scale-95"
                 >
                   {digit}
                 </button>
@@ -241,21 +241,21 @@ export const OnboardingModal: React.FC = () => {
                     setPinConfirm('');
                   }
                 }}
-                className="h-11 rounded-xl text-xs text-[#787774] hover:bg-[#f1f0ee] dark:hover:bg-[#282828] flex items-center justify-center transition-colors cursor-pointer"
+                className="h-11 rounded-xl text-xs text-muted hover:bg-surface-3 hover:bg-surface-3 flex items-center justify-center transition-colors cursor-pointer"
               >
                 {pinStep === 'confirm' ? <ArrowLeft className="w-4 h-4 rtl:rotate-180" /> : null}
               </button>
               <button
                 type="button"
                 onClick={() => handlePinDigit('0')}
-                className="h-11 rounded-xl bg-[#fbfbfa] dark:bg-[#1a1a1a] hover:bg-[#f1f0ee] dark:hover:bg-[#282828] border border-[#e3e2de] dark:border-[#2f2f2f] text-sm font-semibold text-[#37352f] dark:text-[#ecebed] transition-all cursor-pointer active:scale-95"
+                className="h-11 rounded-xl bg-surface-2 hover:bg-surface-3 hover:bg-surface-3 border border-border text-sm font-semibold text-content transition-all cursor-pointer active:scale-95"
               >
                 0
               </button>
               <button
                 type="button"
                 onClick={handlePinDelete}
-                className="h-11 rounded-xl text-xs text-[#787774] hover:bg-[#f1f0ee] dark:hover:bg-[#282828] flex items-center justify-center transition-colors cursor-pointer"
+                className="h-11 rounded-xl text-xs text-muted hover:bg-surface-3 hover:bg-surface-3 flex items-center justify-center transition-colors cursor-pointer"
               >
                 ⌫
               </button>
@@ -266,7 +266,7 @@ export const OnboardingModal: React.FC = () => {
               <button
                 type="button"
                 onClick={handleSkipPin}
-                className="text-xs text-[#787774] hover:text-[#37352f] dark:hover:text-[#ecebed] underline transition-colors cursor-pointer"
+                className="text-xs text-muted hover:text-content hover:text-content underline transition-colors cursor-pointer"
               >
                 {isAr ? 'تخطي إعداد PIN في الوقت الحالي' : 'Passer cette étape (configurer plus tard)'}
               </button>
@@ -281,10 +281,10 @@ export const OnboardingModal: React.FC = () => {
               <div className="w-14 h-14 mx-auto rounded-2xl bg-accent/10 text-accent border border-accent/20 flex items-center justify-center mb-3">
                 <ScanFace className="w-7 h-7" />
               </div>
-              <h2 className="text-base font-bold text-[#37352f] dark:text-[#ecebed]">
+              <h2 className="text-base font-bold text-content">
                 {translations[language].auth.enableBiometricsTitle}
               </h2>
-              <p className="text-xs text-[#787774] dark:text-[#9b9a97] mt-1 leading-relaxed">
+              <p className="text-xs text-muted mt-1 leading-relaxed">
                 {translations[language].auth.enableBiometricsDesc}
               </p>
             </div>
@@ -298,7 +298,7 @@ export const OnboardingModal: React.FC = () => {
                   }
                   setStep('balance');
                 }}
-                className="w-full py-2.5 px-4 rounded-full bg-[#37352f] dark:bg-surface text-accent-contrast dark:text-text font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-md active:scale-[0.98] transition-all"
+                className="w-full py-2.5 px-4 rounded-full bg-[text-content] dark:bg-surface text-accent-contrast dark:text-text font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-md active:scale-[0.98] transition-all"
               >
                 <ScanFace className="w-4 h-4" />
                 <span>{translations[language].auth.enableBiometricsBtn}</span>
@@ -307,7 +307,7 @@ export const OnboardingModal: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setStep('balance')}
-                className="w-full py-2 px-4 rounded-full text-xs font-semibold text-[#787774] dark:text-[#9b9a97] hover:text-[#37352f] dark:hover:text-[#ecebed] cursor-pointer transition-colors"
+                className="w-full py-2 px-4 rounded-full text-xs font-semibold text-muted hover:text-content hover:text-content cursor-pointer transition-colors"
               >
                 {translations[language].auth.skipBiometricsBtn}
               </button>
@@ -429,15 +429,15 @@ export const OnboardingModal: React.FC = () => {
           </div>
 
           <div>
-            <p className="text-xs text-[#787774] dark:text-[#9b9a97]">
+            <p className="text-xs text-muted">
               {t.confirmModalDesc}
             </p>
-            <div className="text-2xl font-bold text-[#37352f] dark:text-[#ecebed] mt-1 tabular-nums">
+            <div className="text-2xl font-bold text-content mt-1 tabular-nums">
               {formatMAD(numericAmount, false, language)}
             </div>
           </div>
 
-          <p className="text-xs text-[#5f5e5b] dark:text-[#9b9a97] bg-[#fbfbfa] dark:bg-[#1a1a1a] p-3 rounded-xl border border-[#e3e2de] dark:border-[#2f2f2f] leading-relaxed">
+          <p className="text-xs text-muted text-muted bg-surface-2 p-3 rounded-xl border border-border leading-relaxed">
             {t.confirmWarning}
           </p>
 

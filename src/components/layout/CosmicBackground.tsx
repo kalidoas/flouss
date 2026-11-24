@@ -86,9 +86,9 @@ export const CosmicBackground: React.FC = () => {
     // Particle pool setup: 75 to 130 stars depending on screen real estate
     const particleCount = Math.min(130, Math.max(65, Math.floor((width * height) / 13000)));
     const colorPalette = [
-      '#ffffff', // Pure white star (predominant)
-      '#ffffff',
-      '#ffffff',
+      'text-content', // Pure white star (predominant)
+      'text-content',
+      'text-content',
       '#a5b4fc', // Soft Indigo
       '#c084fc', // Electric Violet
       '#93c5fd', // Ice Blue
