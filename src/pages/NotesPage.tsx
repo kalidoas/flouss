@@ -240,7 +240,7 @@ export const NotesPage: React.FC = () => {
             </span>
           </div>
           <p className="text-xs sm:text-sm text-muted dark:text-muted mt-1">
-            {tNote.badge} • {(notes || []).length} {language === 'ar' ? 'ملاحظة مسجلة' : 'notes enregistrées'}
+            {tNote.badge} • {(notes || []).length} {tNote.registeredNotes}
           </p>
         </div>
 
@@ -266,7 +266,7 @@ export const NotesPage: React.FC = () => {
                 : 'text-muted dark:text-muted hover:text-text dark:hover:text-accent-contrast hover:bg-canvas/[0.04] dark:hover:bg-surface/[0.04]'
             }`}
           >
-            {language === 'ar' ? 'الكل' : 'All'} ({(notes || []).length})
+            {tNote.all} ({(notes || []).length})
           </button>
           <button
             type="button"
@@ -277,7 +277,7 @@ export const NotesPage: React.FC = () => {
                 : 'text-muted dark:text-muted hover:text-text dark:hover:text-accent-contrast hover:bg-canvas/[0.04] dark:hover:bg-surface/[0.04]'
             }`}
           >
-            📌 {language === 'ar' ? 'المثبتة' : 'Pinned'}
+            📌 {tNote.pinnedChip}
           </button>
           <button
             type="button"
@@ -288,7 +288,7 @@ export const NotesPage: React.FC = () => {
                 : 'text-muted dark:text-muted hover:text-text dark:hover:text-accent-contrast hover:bg-canvas/[0.04] dark:hover:bg-surface/[0.04]'
             }`}
           >
-            ☑️ {language === 'ar' ? 'قوائم المهام' : 'Checklists'}
+            ☑️ {tNote.checklists}
           </button>
           <button
             type="button"
@@ -299,7 +299,7 @@ export const NotesPage: React.FC = () => {
                 : 'text-muted dark:text-muted hover:text-text dark:hover:text-accent-contrast hover:bg-canvas/[0.04] dark:hover:bg-surface/[0.04]'
             }`}
           >
-            🔥 {language === 'ar' ? 'تحفيز' : 'Motivation'}
+            🔥 {tNote.motivation}
           </button>
           <button
             type="button"
@@ -310,7 +310,7 @@ export const NotesPage: React.FC = () => {
                 : 'text-muted dark:text-muted hover:text-text dark:hover:text-accent-contrast hover:bg-canvas/[0.04] dark:hover:bg-surface/[0.04]'
             }`}
           >
-            💡 {language === 'ar' ? 'أفكار' : 'Ideas'}
+            💡 {tNote.ideas}
           </button>
         </div>
 
@@ -381,6 +381,7 @@ export const NotesPage: React.FC = () => {
                     }
                     generalLabel={tNote.general}
                     language={language}
+                    tNote={tNote}
                   />
                 ))}
               </div>
@@ -413,6 +414,7 @@ export const NotesPage: React.FC = () => {
                     }
                     generalLabel={tNote.general}
                     language={language}
+                    tNote={tNote}
                   />
                 ))}
               </div>
@@ -458,7 +460,7 @@ export const NotesPage: React.FC = () => {
           {/* Interactive Checklist Editor inside Modal */}
           <div className="space-y-2 pt-1 border-t border-border/[0.06] dark:border-border/[0.06]">
             <label className="block text-xs font-bold text-text dark:text-muted">
-              ☑️ {language === 'ar' ? 'عناصر قائمة المهام (Checklist)' : 'Checklist Items'}
+              ☑️ {tNote.checklistItems}
             </label>
             <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
               {modalChecklist.map((item) => (
@@ -519,7 +521,7 @@ export const NotesPage: React.FC = () => {
                     }
                   }
                 }}
-                placeholder={language === 'ar' ? '+ إضافة بند للقائمة (Enter)...' : '+ Add checklist item (Enter)...'}
+                placeholder={tNote.addChecklistItem}
                 className="flex-1 px-3 py-1.5 rounded-xl bg-surface-3 dark:bg-surface/[0.04] border border-border dark:border-border/[0.08] text-xs text-text dark:text-text placeholder:text-muted outline-none focus:border-accent"
               />
               <button
@@ -553,7 +555,7 @@ export const NotesPage: React.FC = () => {
                 type="text"
                 value={noteCategory}
                 onChange={(e) => setNoteCategory(e.target.value)}
-                placeholder="Ex: Motivation, Ideas, Books..."
+                placeholder={tNote.categoryPlaceholder}
                 className="w-full px-3.5 py-2 rounded-xl bg-surface-3 dark:bg-surface/[0.04] border border-border dark:border-border/[0.09] text-text dark:text-text text-xs focus:outline-none focus:border-accent"
               />
               {/* Quick Category Chips */}
@@ -648,6 +650,7 @@ interface NoteBentoCardProps {
   onChecklistInputChange: (val: string) => void;
   generalLabel: string;
   language: string;
+  tNote: any;
 }
 
 const NoteBentoCard: React.FC<NoteBentoCardProps> = ({
@@ -663,6 +666,7 @@ const NoteBentoCard: React.FC<NoteBentoCardProps> = ({
   onChecklistInputChange,
   generalLabel,
   language,
+  tNote,
 }) => {
   const accentColor = note.color || 'bg-accent';
   const checklist = note.checklist || [];
@@ -713,7 +717,7 @@ const NoteBentoCard: React.FC<NoteBentoCardProps> = ({
                 ? 'bg-warning/15 text-warning dark:text-warning border border-warning/35 shadow-xs'
                 : 'text-muted dark:text-muted hover:text-text dark:hover:text-text hover:bg-canvas/[0.04] dark:hover:bg-surface/[0.06] border border-border'
             }`}
-            title={note.isPinned ? 'Détacher' : 'Épingler'}
+            title={note.isPinned ? tNote.unpinNote : tNote.pinNote}
           >
             <Pin className={`w-3.5 h-3.5 ${note.isPinned ? 'fill-current' : ''}`} />
           </button>
@@ -736,7 +740,7 @@ const NoteBentoCard: React.FC<NoteBentoCardProps> = ({
             <div className="flex items-center justify-between text-[11px] text-muted dark:text-muted">
               <span className="font-semibold flex items-center gap-1">
                 <CheckSquare className="w-3 h-3 text-info dark:text-info" />
-                {completedChecklist}/{totalChecklist} {language === 'ar' ? 'مكتمل' : 'terminés'}
+                {completedChecklist}/{totalChecklist} {tNote.completed}
               </span>
               <span className="tabular-nums font-bold text-text dark:text-text">{checklistProgress}%</span>
             </div>
@@ -782,7 +786,7 @@ const NoteBentoCard: React.FC<NoteBentoCardProps> = ({
                 onClick={onEdit}
                 className="w-full py-1.5 px-2 rounded-lg bg-canvas/[0.03] dark:bg-surface/[0.04] hover:bg-canvas/[0.06] dark:hover:bg-surface/[0.08] border border-border/[0.06] dark:border-border/[0.08] text-[11px] font-semibold text-muted dark:text-muted hover:text-text dark:hover:text-accent-contrast transition-all text-center"
               >
-                {language === 'ar' ? '+ تعديل البنود في النافذة...' : language === 'fr' ? '+ Gérer les cases...' : '+ Edit checklist...'}
+                {tNote.manageChecklistItems}
               </button>
             </div>
           </div>
@@ -804,7 +808,7 @@ const NoteBentoCard: React.FC<NoteBentoCardProps> = ({
               onSendToTasks();
             }}
             className="p-1.5 rounded-lg text-warning dark:text-warning hover:text-warning dark:hover:text-warning hover:bg-warning/10 transition-colors"
-            title={language === 'ar' ? "⚡ إرسال إلى مهام اليوم" : "⚡ Envoyer aux tâches d'aujourd'hui"}
+            title={tNote.sendToTodayTasks}
           >
             <Zap className="w-3.5 h-3.5 fill-amber-400/20" />
           </button>
@@ -830,7 +834,7 @@ const NoteBentoCard: React.FC<NoteBentoCardProps> = ({
               onEdit();
             }}
             className="p-1.5 rounded-lg text-muted hover:text-text dark:hover:text-accent-contrast hover:bg-canvas/[0.04] dark:hover:bg-surface/[0.06] transition-colors"
-            title="Modifier"
+            title={tNote.editNote}
           >
             <Edit2 className="w-3.5 h-3.5" />
           </button>
@@ -843,7 +847,7 @@ const NoteBentoCard: React.FC<NoteBentoCardProps> = ({
               onDelete();
             }}
             className="p-1.5 rounded-lg text-muted hover:text-negative dark:hover:text-negative hover:bg-negative/10 transition-colors"
-            title="Supprimer"
+            title={tNote.deleteNote}
           >
             <Trash2 className="w-3.5 h-3.5" />
           </button>
