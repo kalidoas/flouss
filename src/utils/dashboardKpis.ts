@@ -34,7 +34,8 @@ export function selectMonthlyFinancialKpis(
   month: string = getCurrentMonthStr()
 ): MonthlyFinancialKpis {
   const balance = calculateAvailableBalance(initialBalance, transactions);
-  const summary = selectFinancialSummary(transactions, { month });
+  // Net and Savings rate exclude balance adjustments (they only reconcile balance with bank)
+  const summary = selectFinancialSummary(transactions, { month, includeAdjustments: false });
 
   const savingsRate =
     summary.income > 0

@@ -52,6 +52,41 @@ describe('Dashboard KPIs - selectMonthlyFinancialKpis', () => {
     expect(kpis.net).toBe(7000);
     expect(kpis.savingsRate).toBe(70);
   });
+
+  it('excludes adjustment transactions from Net and Savings rate, but includes them in Available balance', () => {
+    const baseTransactions: Transaction[] = [
+      createTx({ id: '1', amount: 10000, type: 'income', categoryId: 'salary', date: '2026-11-01' }),
+      createTx({ id: '2', amount: 4000, type: 'expense', categoryId: 'rent', date: '2026-11-02' }),
+    ];
+    const baseKpis = selectMonthlyFinancialKpis(1000, baseTransactions, '2026-11');
+    expect(baseKpis.balance).toBe(7000); // 1000 + 10000 - 4000
+    expect(baseKpis.net).toBe(6000);
+    expect(baseKpis.savingsRate).toBe(60);
+
+    // Adding positive adjustment (+500)
+    const withAdjustment: Transaction[] = [
+      ...baseTransactions,
+      createTx({ id: '3', amount: 500, type: 'adjustment', date: '2026-11-10' }),
+    ];
+    const adjustedKpis = selectMonthlyFinancialKpis(1000, withAdjustment, '2026-11');
+    // Balance increases by 500
+    expect(adjustedKpis.balance).toBe(7500);
+    // Net and Savings rate remain completely unaffected by adjustment
+    expect(adjustedKpis.net).toBe(6000);
+    expect(adjustedKpis.savingsRate).toBe(60);
+
+    // Adding negative adjustment (-800)
+    const withNegAdjustment: Transaction[] = [
+      ...baseTransactions,
+      createTx({ id: '4', amount: -800, type: 'adjustment', date: '2026-11-12' }),
+    ];
+    const negAdjustedKpis = selectMonthlyFinancialKpis(1000, withNegAdjustment, '2026-11');
+    // Balance decreases by 800
+    expect(negAdjustedKpis.balance).toBe(6200);
+    // Net and Savings rate remain unchanged
+    expect(negAdjustedKpis.net).toBe(6000);
+    expect(negAdjustedKpis.savingsRate).toBe(60);
+  });
 });
 
 describe('Dashboard KPIs - selectDailyBudgetKpi', () => {
