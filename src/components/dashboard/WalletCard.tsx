@@ -176,7 +176,7 @@ export const WalletCard: React.FC<WalletCardProps> = ({
               onClick={handlePrevMonth}
               title={tWallet.prevMonth}
               aria-label={tWallet.prevMonth}
-              className="p-1 rounded-full text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+              className="p-1 rounded-full text-muted hover:text-content dark:text-muted dark:hover:text-content hover:bg-surface-raised/60 dark:hover:bg-surface-raised transition-colors"
             >
               <ChevronLeft className="w-3.5 h-3.5 stroke-[2.5]" />
             </button>
@@ -193,7 +193,7 @@ export const WalletCard: React.FC<WalletCardProps> = ({
               className={`p-1 rounded-full transition-colors ${
                 isNextDisabled
                   ? 'text-zinc-300 dark:text-zinc-600 cursor-not-allowed opacity-40'
-                  : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10'
+                  : 'text-muted hover:text-content dark:text-muted dark:hover:text-content hover:bg-surface-raised/60 dark:hover:bg-surface-raised'
               }`}
             >
               <ChevronRight className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -233,7 +233,7 @@ export const WalletCard: React.FC<WalletCardProps> = ({
         <div className="flex items-center gap-2 flex-wrap">
           <div
             onClick={toggleHideBalance}
-            className={`inline-flex items-center gap-2 cursor-pointer group text-3xl sm:text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-white tabular-nums transition-all ${
+            className={`inline-flex items-center gap-2 cursor-pointer group text-3xl sm:text-4xl font-extrabold tracking-tight text-content dark:text-content tabular-nums transition-all ${
               hideBalance ? 'balance-heavy-blur' : ''
             }`}
             title={
