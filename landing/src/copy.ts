@@ -5,6 +5,7 @@ type Copy = {
   hero: { eyebrow: string; title: string; accent: string; description: string; primary: string; secondary: string; scroll: string; mockupLabel: string; balance: string; balanceLabel: string; activity: string; groceries: string; today: string; goal: string; goalValue: string; goalCaption: string; online: string };
   kinetic: { lead: string; emphasis: string; };
   intro: { eyebrow: string; title: string; body: string };
+  how: { eyebrow: string; title: string; body: string; steps: { title: string; body: string; screen: string }[] };
   steps: { number: string; title: string; body: string }[];
   install: { eyebrow: string; title: string; body: string; steps: { icon: string; title: string; body: string }[]; note: string };
   features: { eyebrow: string; title: string; body: string; items: { icon: string; title: string; body: string; demo?: string }[] };
@@ -37,6 +38,16 @@ export const copy: Record<Locale, Copy> = {
     },
     kinetic: { lead: 'صرف أقل.', emphasis: 'اعرف أكثر.' },
     intro: { eyebrow: 'بسيطة، من البداية', title: 'من أول حركة، للصورة كاملة.', body: 'فلوس كتعاونك تتابع مصاريفك ومدخولك وادخارك، بلا ما تعقّد عليك الأمور.' },
+    how: {
+      eyebrow: 'خطوات بسيطة',
+      title: 'كيفاش خدام',
+      body: 'فلوس كتعاونك تتابع مصاريفك ومدخولك وادخارك، بلا ما تعقّد عليك الأمور.',
+      steps: [
+        { title: 'رصيدك', screen: 'مهمة الفلوس', body: 'تظهر رصيدك المتاح في الوقت الحقيقي' },
+        { title: 'ادخارك', screen: 'ادخار', body: 'تتبع ادخارك وتحدد هدفك' },
+        { title: 'فاتورة', screen: 'فاتورة', body: 'تذكير بالفواتير المستحقة مع تنبيهات' }
+      ]
+    },
     steps: [
       { number: '01', title: 'بدا برصيدك', body: 'حدد نقطة البداية ديالك بالدرهم. ومن بعد، كل حركة كتزيدها كتكمّل الصورة.' },
       { number: '02', title: 'سجّل حركاتك', body: 'زيد المصروف ولا المدخول ديالك، وصنّفهم باش يبقا كلشي واضح.' },
@@ -59,7 +70,7 @@ export const copy: Record<Locale, Copy> = {
       body: 'أدوات عملية للفلوس اليومية، من المصروف الصغير حتى الهدف الكبير.',
       items: [
         { icon: 'spark', title: 'إضافة سريعة', body: 'سجّل المصروف ولا المدخول ديالك بخطوات قليلة.', demo: '30 طاكسي' },
-        { icon: 'gauge', title: 'ميزانية مفهومة', body: 'تبع مصروف كل فئة مقارنة بالميزانية الشهرية.' },
+        { icon: 'gauge', title: 'ميزانية مفهومة', body: 'تابع مصروف كل فئة مقارنة بالميزانية الشهرية.' },
         { icon: 'target', title: 'أهداف الادخار', body: 'حدّد هدفك وشوف التقدم ديالك مع كل مساهمة.' },
         { icon: 'calendar', title: 'الفواتير الدورية', body: 'نظّم المواعيد والمبالغ اللي كتعاود كل شهر.' },
         { icon: 'shield', title: 'قفل اختياري', body: 'زيد طبقة حماية برمز PIN من اختيارك.' },
@@ -75,7 +86,7 @@ export const copy: Record<Locale, Copy> = {
       ],
       note: 'التطبيق كيعتمد على Firebase للمصادقة ومزامنة البيانات. ما كنقدموش تشفير من طرف لطرف.',
     },
-    closing: { eyebrow: 'خطوة صغيرة، وضوح أكثر', title: 'خلي فلوسك', accent: 'تمشي معاك.', body: 'جمع الصورة ديال مصروفك وادخارك فبلاصة وحدة.', cta: 'جرّب فلوس دابا', footnote: 'بالدرهم المغربي. وبالطريقة اللي تناسبك.' },
+    closing: { eyebrow: 'خطوة صغيرة، وضوح أكثر', title: 'خلي فلوسك', accent: 'تمشي معاك.', body: 'جمع الصورة ديال مصروفك وادخارك فبلاصة وحدة.', cta: 'جرّب فلوس دابا', footnote: 'بالدرهم المغربي. وبطريقة اللي تناسبك.' },
     footer: { note: 'نظرة أوضح على فلوسك، كل نهار.', themeLight: 'المظهر الفاتح', themeDark: 'المظهر الداكن' },
   },
   fr: {
@@ -101,6 +112,16 @@ export const copy: Record<Locale, Copy> = {
     },
     kinetic: { lead: 'Dépensez moins.', emphasis: 'Sachez plus.' },
     intro: { eyebrow: 'Simple dès le départ', title: 'Du premier geste à une vue d’ensemble.', body: 'Flouss vous aide à suivre vos dépenses, revenus et économies, sans compliquer les choses.' },
+    how: {
+      eyebrow: 'Étapes simples',
+      title: 'Comment ça marche',
+      body: 'Flouss vous aide à suivre vos dépenses, revenus et économies, sans compliquer les choses.',
+      steps: [
+        { title: 'Solde', screen: 'Maquette', body: 'Affiche votre solde en temps réel' },
+        { title: 'Épargne', screen: 'Épargne', body: 'Suivez votre épargne et vos objectifs' },
+        { title: 'Facture', screen: 'Facture', body: 'Rappels pour vos factures avec notifications' }
+      ]
+    },
     steps: [
       { number: '01', title: 'Définissez votre solde', body: 'Choisissez votre point de départ en dirhams. Chaque mouvement complète ensuite le tableau.' },
       { number: '02', title: 'Ajoutez vos opérations', body: 'Enregistrez une dépense ou un revenu et classez-le pour garder vos comptes lisibles.' },
@@ -165,6 +186,16 @@ export const copy: Record<Locale, Copy> = {
     },
     kinetic: { lead: 'Spend less.', emphasis: 'Know more.' },
     intro: { eyebrow: 'Simple from the start', title: 'From the first entry to the full picture.', body: 'Flouss helps you keep track of spending, income, and savings—without making money management feel like work.' },
+    how: {
+      eyebrow: 'Simple steps',
+      title: 'How it works',
+      body: 'Flouss helps you keep track of spending, income, and savings—without making money management feel like work.',
+      steps: [
+        { title: 'Balance', screen: 'Mockup', body: 'Shows your balance in real-time' },
+        { title: 'Savings', screen: 'Savings', body: 'Track your savings and set goals' },
+        { title: 'Bills', screen: 'Bill', body: 'Bill reminders with notifications' }
+      ]
+    },
     steps: [
       { number: '01', title: 'Set your starting balance', body: 'Choose your starting point in dirhams. Each entry you add builds a clearer picture.' },
       { number: '02', title: 'Record your activity', body: 'Add an expense or income and give it a category to keep things easy to follow.' },

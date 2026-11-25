@@ -36,4 +36,18 @@ describe('localized landing copy', () => {
       expect(copy[locale].features.items[5].body).toMatch(/locally|localement|محلياً/i);
     }
   });
+
+  it('provides complete how-it-works content for each locale', () => {
+    for (const locale of Object.keys(copy) as Array<keyof typeof copy>) {
+      expect(copy[locale].how.eyebrow).not.toBe('');
+      expect(copy[locale].how.title).not.toBe('');
+      expect(copy[locale].how.body).not.toBe('');
+      expect(copy[locale].how.steps).toHaveLength(3);
+      copy[locale].how.steps.forEach((step) => {
+        expect(step.title).not.toBe('');
+        expect(step.body).not.toBe('');
+        expect(step.screen).not.toBe('');
+      });
+    }
+  });
 });

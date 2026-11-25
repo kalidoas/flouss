@@ -769,6 +769,110 @@ button:focus-visible, a:focus-visible, select:focus-visible {
 .kinetic-section[lang='ar'] .kinetic-lead { font-weight: 600; color: var(--text); opacity: 1; }
 .kinetic-section[lang='ar'] .kinetic-emphasis { font-weight: 700; color: var(--text); font-style: normal; }
 
+.how-section {
+  position: relative;
+  padding-block: clamp(60px, 15vw, 160px);
+  overflow: hidden;
+  min-height: 300svh;
+}
+
+.how-stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(24px, 6vw, 64px);
+  align-items: center;
+}
+
+.how-stage__phone {
+  position: relative;
+  width: min(320px, 92vw);
+  height: min(600px, 90svh);
+  margin-inline: auto;
+  border-radius: 36px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  box-shadow: 0 24px 60px -20px rgba(0,0,0,0.12);
+  overflow: hidden;
+}
+
+.how-stage__screen {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  background: #0b0b0c;
+}
+
+.phone-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(12px);
+  color: #fff;
+}
+
+.phone-screen__title {
+  font-family: 'Readex Pro', sans-serif;
+  font-weight: 600;
+  font-size: clamp(20px, 5vw, 28px);
+  letter-spacing: 0;
+  margin: 0;
+}
+
+.how-stage__screen[lang='ar'] .phone-screen__title {
+  font-family: 'Amiri', serif;
+  font-weight: 700;
+  font-style: normal;
+}
+
+.how-stage__progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 4px;
+  width: 100%;
+  transform: scaleX(0);
+  transform-origin: left;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+.how-steps {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(20px, 4vw, 40px);
+  padding-inline: clamp(16px, 4vw, 48px);
+}
+
+.how-step h3 {
+  font-family: 'Readex Pro', sans-serif;
+  font-weight: 600;
+  font-size: clamp(16px, 4vw, 22px);
+  letter-spacing: 0;
+  margin: 0 0 6px 0;
+}
+
+.how-steps[lang='ar'] h3 {
+  font-family: 'Amiri', serif;
+  font-weight: 700;
+  font-style: normal;
+}
+
+.how-step p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: clamp(14px, 3.5vw, 17px);
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto !important; }
 
@@ -781,7 +885,11 @@ button:focus-visible, a:focus-visible, select:focus-visible {
   .hero__word,
   .hero-stage__phone,
   .hero-stage__goal-chip,
-  .hero-stage__bill-chip {
+  .hero-stage__bill-chip,
+  .how-stage__phone,
+  .how-stage__screen,
+  .phone-content,
+  .how-stage__progress {
     animation: none !important;
     filter: none !important;
     transform: none !important;
@@ -1528,10 +1636,10 @@ button:focus-visible, a:focus-visible, select:focus-visible {
   font-family: 'Amiri', serif;
   font-style: normal;
   font-weight: 400;
-  font-size: 0.9em;
+  font-size: 0.88em;
   letter-spacing: 0;
   line-height: 1.15;
-  word-spacing: 0;
+  word-spacing: 0 !important;
 }
 
 .hero__headline-line--tail[lang='ar'] .hero__word {

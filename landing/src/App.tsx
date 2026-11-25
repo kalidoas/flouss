@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState, type ReactNode } from 'react';
+import { Fragment, useEffect, useState, type ReactNode, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { copy, localeLabels, type Locale } from './copy';
@@ -70,6 +70,8 @@ export function App() {
   const t = copy[locale];
   const dir = locale === 'ar' ? 'rtl' : 'ltr';
   const appUrl = import.meta.env.VITE_APP_URL || 'https://staging.flouss.live';
+  const phoneRef = useRef<HTMLDivElement>(null);
+  const progressBarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const localeFromPath = () => setLocale(getInitialLocale());
@@ -135,6 +137,20 @@ export function App() {
         if (emphasis) {
           gsap.fromTo(emphasis, { opacity: 0, x: 80, scale: 0.8 }, { opacity: 1, x: 0, scale: 1, duration: 1, ease: 'cubic-bezier(.22,1,.36,1)', scrollTrigger: { trigger: kinetic, start: 'top 75%', end: 'top 30%', scrub: 0.5 } });
         }
+      }
+
+      // SCENE 3: How it works — sticky phone mockup with content swap + progress line
+      const howSection = document.querySelector<HTMLElement>('.how-section');
+      if (howSection) {
+        const phoneSteps = [...howSection.querySelectorAll<HTMLElement>('.phone-content')];
+        const progressBar = progressBarRef.current;
+        phoneSteps.forEach((step, i) => gsap.set(step, { opacity: i === 0 ? 1 : 0, y: i === 0 ? 0 : 20 }));
+        const tl = gsap.timeline({ scrollTrigger: { trigger: howSection, start: 'top top', end: 'bottom bottom', scrub: 1 } });
+        if (progressBar) tl.fromTo(progressBar, { scaleX: 0 }, { scaleX: 1, ease: 'none', duration: Math.max(phoneSteps.length, 1) }, 0);
+        phoneSteps.forEach((step, i) => {
+          if (i === 0) return;
+          tl.to(phoneSteps[i - 1], { opacity: 0, y: -20, duration: 0.3 }, i).to(step, { opacity: 1, y: 0, duration: 0.3 }, i);
+        });
       }
     });
     return () => ctx.revert();
@@ -237,6 +253,35 @@ export function App() {
             ))}
           </div>
           <p className="install-note"><Icon name="check" size={16} />{t.install.note}</p>
+        </section>
+
+        <section className="how-section section-wrap" id="how-it-works">
+          <div className="section-heading">
+            <p className="eyebrow"><span className="eyebrow__dot" />{t.how.eyebrow}</p>
+            <h2>{t.how.title}</h2>
+            <p>{t.how.body}</p>
+          </div>
+          <div className="how-stage">
+            <div className="how-stage__phone" ref={phoneRef}>
+              <div className="how-stage__screen">
+                {t.how.steps.map((step, i) => (
+                  <div className="phone-content" key={step.title} data-step={i + 1}>
+                    <span className="phone-screen__title">{step.title}</span>
+                    <p>{step.body}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="how-stage__progress" ref={progressBarRef} />
+            </div>
+            <div className="how-steps">
+              {t.how.steps.map((step, index) => (
+                <div className="how-step" key={step.title} data-step={index + 1}>
+                  <h3>{step.title}</h3>
+                  <p>{step.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
         </section>
 
         <section className="features-section" id="features">
