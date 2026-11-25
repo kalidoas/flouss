@@ -663,13 +663,71 @@ button:focus-visible, a:focus-visible, select:focus-visible {
   .feature p { font-size: 11px; }
 }
 
+.kinetic-section {
+  position: relative;
+  padding-block: clamp(60px, 15vw, 200px);
+  overflow: hidden;
+  text-align: center;
+}
+
+.kinetic-type {
+  font-size: clamp(12vw, 14vw, 16vw);
+  font-weight: 700;
+  line-height: 1.1;
+  margin: 0;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.kinetic-section[dir='rtl'] .kinetic-type { letter-spacing: 0; }
+
+.kinetic-lead,
+.kinetic-emphasis {
+  display: inline-block;
+}
+
+.kinetic-lead { color: var(--text-muted); opacity: 0.7; margin-right: 0.4em; }
+
+.kinetic-emphasis { color: var(--text); font-style: normal; }
+
+.kinetic-section[dir='rtl'] .kinetic-lead { margin-left: 0.4em; margin-right: 0; }
+
+/* Arabic: no italic, contrast by weight and muted color */
+.kinetic-section[lang='ar'] .kinetic-lead { font-weight: 600; color: var(--text); opacity: 1; }
+.kinetic-section[lang='ar'] .kinetic-emphasis { font-weight: 700; color: var(--text); font-style: normal; }
+
 @media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-  *, *::before, *::after {
-    scroll-behavior: auto !important;
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+  html { scroll-behavior: auto !important; }
+
+  .kinetic-lead,
+  .kinetic-emphasis {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+
+  .hero__word,
+  .hero-stage__phone,
+  .hero-stage__goal-chip,
+  .hero-stage__bill-chip {
+    animation: none !important;
+    filter: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+
+  .intro-section .section-heading,
+  .step,
+  .install-section .section-heading,
+  .install-step,
+  .install-note,
+  .features-section .section-heading,
+  .feature,
+  .privacy-panel,
+  .closing-panel {
+    animation: none !important;
+    filter: none !important;
+    transform: none !important;
+    opacity: 1 !important;
   }
 }
 
@@ -1811,21 +1869,6 @@ select:focus-visible {
 .site[data-theme='dark'] .hero-stage__transaction-icon {
   color: var(--text-soft);
   background: var(--surface);
-}
-
-.hero-stage {
-  perspective: none;
-}
-
-.hero-stage::before {
-  display: none;
-}
-
-.hero-stage__phone,
-.hero-stage__goal-chip,
-.hero-stage__bill-chip {
-  transform: none;
-  transform-style: flat;
 }
 
 .feature__icon {

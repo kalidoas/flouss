@@ -1,7 +1,11 @@
 import { Fragment, useEffect, useState, type ReactNode } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { copy, localeLabels, type Locale } from './copy';
 import { Logo } from './components/Logo';
 import { HeroStage } from './components/HeroStage';
+
+gsap.registerPlugin(ScrollTrigger);
 
 type Theme = 'light' | 'dark';
 
@@ -103,6 +107,39 @@ export function App() {
     }
   }, [dir, locale, t, theme]);
 
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const ctx = gsap.context(() => {
+      // SCENE 1: Hero headline per-word reveal on scroll (words glued fix: letter-spacing -0.02em max, proper spaces)
+      gsap.utils.toArray<HTMLElement>('.hero__word').forEach((word, i) => {
+        gsap.fromTo(word, 
+          { opacity: 0, y: '1.5em', filter: 'blur(8px)' },
+          { 
+            opacity: 1, y: 0, filter: 'blur(0px)', 
+            duration: 0.8, ease: 'cubic-bezier(.22,1,.36,1)', 
+            scrollTrigger: { trigger: '.hero', start: 'top 80%', end: 'top 30%', scrub: 0.3, toggleActions: 'play none none reverse' },
+            delay: i * 0.06
+          }
+        );
+      });
+
+      // SCENE 2: Kinetic type — words slide/scale/mask on scroll
+      const kinetic = document.querySelector<HTMLElement>('.kinetic-type');
+      if (kinetic) {
+        const lead = kinetic.querySelector('.kinetic-lead');
+        const emphasis = kinetic.querySelector('.kinetic-emphasis');
+        if (lead) {
+          gsap.fromTo(lead, { opacity: 0, x: -80, scale: 0.8 }, { opacity: 1, x: 0, scale: 1, duration: 1, ease: 'cubic-bezier(.22,1,.36,1)', scrollTrigger: { trigger: kinetic, start: 'top 85%', end: 'top 40%', scrub: 0.5 } });
+        }
+        if (emphasis) {
+          gsap.fromTo(emphasis, { opacity: 0, x: 80, scale: 0.8 }, { opacity: 1, x: 0, scale: 1, duration: 1, ease: 'cubic-bezier(.22,1,.36,1)', scrollTrigger: { trigger: kinetic, start: 'top 75%', end: 'top 30%', scrub: 0.5 } });
+        }
+      }
+    });
+    return () => ctx.revert();
+  }, [locale]);
+
   const chooseLocale = (next: Locale) => {
     setLocale(next);
     const path = next === 'ar' ? '/' : `/${next}/`;
@@ -157,6 +194,13 @@ export function App() {
           <a className="scroll-cue" href="#how"><span className="scroll-cue__line" />{t.hero.scroll}</a>
           <span className="hero__corner hero__corner--one" aria-hidden="true">✳</span>
           <span className="hero__corner hero__corner--two" aria-hidden="true">✳</span>
+        </section>
+
+        <section className="kinetic-section section-wrap" id="kinetic">
+          <h2 className="kinetic-type" lang={locale} dir={dir}>
+            <span className="kinetic-lead">{t.kinetic.lead}</span>
+            <span className="kinetic-emphasis">{t.kinetic.emphasis}</span>
+          </h2>
         </section>
 
         <section className="intro-section section-wrap" id="how">

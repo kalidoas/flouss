@@ -3,6 +3,7 @@ export type Locale = 'ar' | 'fr' | 'en';
 type Copy = {
   nav: { how: string; features: string; privacy: string; open: string; language: string; theme: string };
   hero: { eyebrow: string; title: string; accent: string; description: string; primary: string; secondary: string; scroll: string; mockupLabel: string; balance: string; balanceLabel: string; activity: string; groceries: string; today: string; goal: string; goalValue: string; goalCaption: string; online: string };
+  kinetic: { lead: string; emphasis: string; };
   intro: { eyebrow: string; title: string; body: string };
   steps: { number: string; title: string; body: string }[];
   install: { eyebrow: string; title: string; body: string; steps: { icon: string; title: string; body: string }[]; note: string };
@@ -34,6 +35,7 @@ export const copy: Record<Locale, Copy> = {
       goalCaption: 'هدف الادخار',
       online: 'متزامن',
     },
+    kinetic: { lead: 'صرف أقل.', emphasis: 'اعرف أكثر.' },
     intro: { eyebrow: 'بسيطة، من البداية', title: 'من أول حركة، للصورة كاملة.', body: 'فلوس كتعاونك تتابع مصاريفك ومدخولك وادخارك، بلا ما تعقّد عليك الأمور.' },
     steps: [
       { number: '01', title: 'بدا برصيدك', body: 'حدد نقطة البداية ديالك بالدرهم. ومن بعد، كل حركة كتزيدها كتكمّل الصورة.' },
@@ -97,6 +99,7 @@ export const copy: Record<Locale, Copy> = {
       goalCaption: 'Objectif d’épargne',
       online: 'Synchronisé',
     },
+    kinetic: { lead: 'Dépensez moins.', emphasis: 'Sachez plus.' },
     intro: { eyebrow: 'Simple dès le départ', title: 'Du premier geste à une vue d’ensemble.', body: 'Flouss vous aide à suivre vos dépenses, revenus et économies, sans compliquer les choses.' },
     steps: [
       { number: '01', title: 'Définissez votre solde', body: 'Choisissez votre point de départ en dirhams. Chaque mouvement complète ensuite le tableau.' },
@@ -144,7 +147,7 @@ export const copy: Record<Locale, Copy> = {
     hero: {
       eyebrow: 'Flouss • Spending & saving',
       title: 'Your money,',
-      accent: 'your way.',
+      accent: 'your way',
       description: 'Keep up with spending, plan what’s next, and see the bigger picture in Moroccan dirhams.',
       primary: 'Get started with Flouss',
       secondary: 'See how it works',
@@ -160,6 +163,7 @@ export const copy: Record<Locale, Copy> = {
       goalCaption: 'Savings goal',
       online: 'Synced',
     },
+    kinetic: { lead: 'Spend less.', emphasis: 'Know more.' },
     intro: { eyebrow: 'Simple from the start', title: 'From the first entry to the full picture.', body: 'Flouss helps you keep track of spending, income, and savings—without making money management feel like work.' },
     steps: [
       { number: '01', title: 'Set your starting balance', body: 'Choose your starting point in dirhams. Each entry you add builds a clearer picture.' },
