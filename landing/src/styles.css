@@ -143,7 +143,7 @@ button:focus-visible, a:focus-visible, select:focus-visible {
 .topnav {
   display: flex;
   align-items: center;
-  gap: clamp(24px, 3.2vw, 48px);
+  gap: clamp(32px, 3.8vw, 56px);
   margin-inline: auto;
   color: var(--text-soft);
   font-size: 14px;
