@@ -14,9 +14,10 @@ import { Coin3D } from '../../motion/Coin3D';
 
 interface Props {
   selectedMonth: string;
+  emptyState?: boolean;
 }
 
-export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
+export const DashboardHero: React.FC<Props> = ({ selectedMonth, emptyState = false }) => {
   const { initialBalance = null, transactions = [], language } = useAppStore();
   const txList = transactions || [];
   const [adjustOpen, setAdjustOpen] = useState(false);
@@ -105,7 +106,7 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
             <h1 className="text-[13px] sm:text-xs font-semibold text-muted dark:text-muted truncate leading-tight">
               {t.totalBalance}
             </h1>
-            {isCurrentMonth && (
+            {!emptyState && isCurrentMonth && (
               <button
                 type="button"
                 onClick={() => setAdjustOpen(true)}
@@ -142,6 +143,7 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
         </div>
       </div>
 
+      {!emptyState && <>
       {/* Quick Actions (compact) */}
       <div className="grid grid-cols-3 gap-2 sm:gap-2.5 pt-3 w-full min-w-0">
         <button
@@ -234,6 +236,7 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
           </p>
         </div>
       </div>
+      </>}
 
       {/* Modals */}
       <AdjustBalanceModal

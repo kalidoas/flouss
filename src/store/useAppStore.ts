@@ -354,7 +354,7 @@ export function getInitialLanguage(): Language {
       }
     }
   } catch (e) {}
-  return detectSystemLanguage();
+  return 'en';
 }
 
 export function getInitialTheme(): { theme: ThemeMode; isDarkMode: boolean } {
@@ -2580,7 +2580,7 @@ export const useAppStore = create<AppState>()(
                 accounts: migratedAccounts,
                 activeAccountId: active?.id || currentUid,
                 theme: data.theme ?? 'system',
-                language: data.language ?? 'ar',
+                language: data.language ?? 'en',
                 ...extractAccountState(active),
               });
               await get().forceSyncToCloud();

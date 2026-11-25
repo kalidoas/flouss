@@ -26,6 +26,8 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { Language } from '../../types';
+import { KineticHeadline } from '../../motion/KineticHeadline';
+import { Coin3D } from '../../motion/Coin3D';
 
 const POPUP_BLOCKED_CODES = new Set([
   'auth/popup-blocked',
@@ -288,7 +290,7 @@ export const Login: React.FC = () => {
             <div className="flouss-auth-rule mt-5 h-px w-20" />
           </div>
           <div aria-hidden="true" className="flouss-auth-orbit absolute inset-x-0 bottom-0 h-[360px] overflow-hidden">
-            <div ref={coinRef} className="flouss-auth-coin"><span>د.م.</span></div>
+            <div ref={coinRef} className="flouss-auth-coin-shell"><Coin3D className="flouss-auth-coin-scene" /></div>
             <div className="flouss-auth-orbit-ring flouss-auth-orbit-ring-one" />
             <div className="flouss-auth-orbit-ring flouss-auth-orbit-ring-two" />
             <div className="flouss-auth-orbit-floor" />
@@ -343,6 +345,7 @@ export const Login: React.FC = () => {
         )}
 
         {/* ── Segmented Tab: Sign In vs Sign Up ───────────────────────── */}
+        <KineticHeadline language={language} accent={activeTab === 'login' ? tAuth.signInTab : tAuth.signUpTab} className="text-2xl font-semibold tracking-tight text-content" />
         <div className="w-full grid grid-cols-2 p-1 rounded-full bg-surface-3 border border-border-strong">
           <button
             type="button"

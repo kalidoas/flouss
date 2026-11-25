@@ -1,18 +1,27 @@
 import React, { useState } from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import { translations } from '../../i18n/translations';
-import { Wallet, ArrowRight, Sparkles, Check, DollarSign } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, LockKeyhole, Tags } from 'lucide-react';
 import { Money } from '../common/Money';
+import { KineticHeadline } from '../../motion/KineticHeadline';
+import { Coin3D } from '../../motion/Coin3D';
+
+type SetupStep = 'balance' | 'budget' | 'pin';
 
 export const InitialBalanceScreen: React.FC = () => {
-  const { language, completeInitialBalance, skipInitialBalance } = useAppStore();
+  const { language, completeInitialBalance, categories, updateCategory, setProfilePin } = useAppStore();
   const isAr = language === 'ar';
-
+  const [step, setStep] = useState<SetupStep>('balance');
   const [amountStr, setAmountStr] = useState<string>('');
+  const [budgetStr, setBudgetStr] = useState('');
+  const [budgetCategoryId, setBudgetCategoryId] = useState('');
+  const [pin, setPin] = useState('');
+  const [pinConfirmation, setPinConfirmation] = useState('');
   const [error, setError] = useState<string>('');
   const [submitting, setSubmitting] = useState<boolean>(false);
 
   const quickPills = [2000, 5000, 10000, 20000, 35000];
+  const copy = translations[language].onboarding;
 
   const handleAmountChange = (val: string) => {
     setError('');
@@ -35,87 +44,75 @@ export const InitialBalanceScreen: React.FC = () => {
     if (e) e.preventDefault();
     const amount = parseNumericAmount();
     if (amount < 0) {
-      setError(
-        isAr
-          ? 'يرجى إدخال مبلغ صحيح (≥ 0 د.م.)'
-          : language === 'fr'
-          ? 'Veuillez saisir un montant valide (≥ 0 MAD)'
-          : 'Please enter a valid amount (≥ 0 MAD)'
-      );
+      setError(copy.invalidAmount);
       return;
     }
 
+    setStep('budget');
+  };
+
+  const finishSetup = async () => {
     setSubmitting(true);
+    setError('');
+    const budget = Number.parseFloat(budgetStr.replace(/\s/g, '').replace(',', '.')) || 0;
+    if (pin && (pin.length !== 4 || pin !== pinConfirmation)) {
+      setError(pin.length !== 4 ? copy.pinHint : copy.pinMismatch);
+      setSubmitting(false);
+      return;
+    }
     try {
-      await completeInitialBalance(amount);
-    } catch (err: any) {
-      setError(err?.message || 'Erreur lors de l’enregistrement');
+      if (budget > 0 && budgetCategoryId) updateCategory(budgetCategoryId, { monthlyBudget: budget });
+      if (pin.length === 4) await setProfilePin(pin);
+      await completeInitialBalance(parseNumericAmount());
+    } catch {
+      setError(copy.setupError);
       setSubmitting(false);
     }
   };
 
-  const handleSkip = async () => {
-    setSubmitting(true);
-    try {
-      await skipInitialBalance();
-    } catch (err: any) {
-      setError(err?.message || 'Erreur lors du passage');
-      setSubmitting(false);
-    }
-  };
+  const titles: Record<SetupStep, string> = { balance: copy.balanceStep, budget: copy.budgetStep, pin: copy.pinStep };
+  const stepIndex = ['balance', 'budget', 'pin'].indexOf(step);
 
   return (
     <div
       dir={isAr ? 'rtl' : 'ltr'}
-      className="min-h-screen bg-bg text-accent-contrast flex items-center justify-center p-4 sm:p-6 font-sans select-none relative overflow-hidden"
+      className="min-h-screen bg-bg text-content flex items-center justify-center p-4 sm:p-6 font-sans select-none relative overflow-hidden"
     >
-      {/* Background ambient lighting */}
-      <div
-        className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 pointer-events-none rounded-full opacity-20 blur-3xl"
-        style={{ background: 'radial-gradient(circle, bg-accent, bg-positive)' }}
-      />
-
-      <div className="w-full max-w-md rounded-3xl bg-surface/95 border border-border/10 p-6 sm:p-8 text-center shadow-[0_24px_60px_rgba(0,0,0,0.8),inset_0_1px_0_0_rgba(255,255,255,0.1)] relative z-10 animate-in fade-in zoom-in-95 duration-300">
+      <div className="w-full max-w-lg rounded-[30px] bg-surface border border-border-subtle p-6 sm:p-9 text-center shadow-xl relative z-10">
 
         {/* Wallet Icon with subtle glow */}
-        <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-tr from-accent/20 to-positive/20 border border-border/10 flex items-center justify-center text-positive mb-5 shadow-lg shadow-md">
-          <Wallet className="w-8 h-8" />
+        <div className="relative mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-border-subtle bg-surface-raised text-accent-600">
+          {step === 'balance' ? <Coin3D className="flouss-onboarding-coin" /> : step === 'budget' ? <Tags className="w-7 h-7" /> : <LockKeyhole className="w-7 h-7" />}
         </div>
 
-        {/* Title & Subtitle */}
-        <h1 className="text-xl sm:text-2xl font-extrabold text-accent-contrast tracking-tight mb-2">
-          {isAr
-            ? 'ما هو رصيدك المالي الحالي؟'
-            : language === 'fr'
-            ? 'Quel est votre solde actuel ?'
-            : 'What is your current balance?'}
-        </h1>
-        <p className="text-xs sm:text-sm text-muted leading-relaxed max-w-xs mx-auto mb-6">
-          {isAr
-            ? 'أدخل المبلغ المتوفر لديك حالياً لبدء تتبع دقيق لأموالك، أو تخطَّ هذه الخطوة للبدء برصيد 0.'
-            : language === 'fr'
-            ? 'Indiquez l’argent dont vous disposez aujourd’hui pour démarrer un suivi précis de vos finances.'
-            : 'Enter the funds you currently have available to start tracking your finances accurately.'}
+        <KineticHeadline language={language} accent={titles[step]} className="mb-2 text-2xl sm:text-3xl font-semibold tracking-tight text-content" />
+        <p className="mx-auto mb-6 max-w-sm text-sm leading-relaxed text-muted">
+          {step === 'balance' ? copy.question : step === 'budget' ? copy.budgetHint : copy.pinHint}
         </p>
+        <div className="mb-6 flex justify-center gap-2" aria-label={`${stepIndex + 1}/3`}>
+          {(['balance', 'budget', 'pin'] as SetupStep[]).map((item, index) => <span key={item} className={`h-1.5 rounded-full transition-all ${item === step ? 'w-8 bg-accent-600' : index < stepIndex ? 'w-5 bg-positive' : 'w-5 bg-border-strong'}`} />)}
+        </div>
 
+        {step === 'balance' && <>
+        <p className="text-xs sm:text-sm text-muted leading-relaxed max-w-xs mx-auto mb-6">{copy.hint}</p>
         <form onSubmit={handleContinue} className="space-y-5">
           {/* Amount input card */}
           <div className="p-4 rounded-2xl bg-surface/[0.03] border border-border/10 focus-within:border-accent/50 focus-within:ring-2 focus-within:ring-ring/20 transition-all">
             <label className="text-[11px] font-bold text-muted uppercase tracking-wider block mb-2">
-              {isAr ? 'الرصيد المتاح' : language === 'fr' ? 'Solde disponible' : 'Available balance'}
+              {copy.availableBalance}
             </label>
             <div className="flex items-center justify-center gap-2">
               <input
                 type="text"
                 inputMode="decimal"
                 autoFocus
-                placeholder="0.00"
+                placeholder={copy.enterAmountPlaceholder}
                 value={amountStr}
                 onChange={(e) => handleAmountChange(e.target.value)}
                 className="w-full text-center text-3xl sm:text-4xl font-extrabold tracking-tight bg-transparent text-accent-contrast placeholder:text-muted outline-none tabular-nums"
               />
               <span className="text-sm sm:text-base font-bold text-positive shrink-0">
-                {isAr ? 'د.م.' : 'MAD'}
+                MAD
               </span>
             </div>
           </div>
@@ -147,24 +144,57 @@ export const InitialBalanceScreen: React.FC = () => {
               disabled={submitting}
               className="w-full py-3.5 px-4 rounded-full bg-surface text-text font-bold text-xs sm:text-sm flex items-center justify-center gap-2 hover:bg-surface-2 transition-all shadow-[0_0_25px_rgba(255,255,255,0.25)] active:scale-95 duration-200 cursor-pointer disabled:opacity-50"
             >
-              <span>{isAr ? 'متابعة' : language === 'fr' ? 'Continuer' : 'Continue'}</span>
+              <span>{copy.continue}</span>
               <ArrowRight className="w-4 h-4 rtl:rotate-180" />
             </button>
 
             <button
               type="button"
               disabled={submitting}
-              onClick={handleSkip}
+              onClick={() => { setAmountStr('0'); setError(''); setStep('budget'); }}
               className="w-full py-2 px-4 rounded-full text-xs font-medium text-muted hover:text-muted transition-colors cursor-pointer"
             >
-              {isAr
-                ? 'تخطي الآن (بدء برصيد 0)'
-                : language === 'fr'
-                ? 'Passer pour l’instant (démarrer à 0)'
-                : 'Skip for now (start at 0)'}
+              {copy.skipBalance}
             </button>
           </div>
         </form>
+        </>}
+
+        {step === 'budget' && <div className="space-y-4 text-start">
+          <label className="block text-xs font-semibold text-muted">{copy.budgetLabel}
+            <select value={budgetCategoryId} onChange={(event) => setBudgetCategoryId(event.target.value)} className="mt-2 min-h-12 w-full rounded-xl border border-border-subtle bg-surface-raised px-3 text-sm text-content">
+              <option value="">{copy.skip}</option>
+              {categories.filter((category) => !category.isGoal && !category.isArchived).map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
+            </select>
+          </label>
+          <label className="block text-xs font-semibold text-muted">{copy.budgetAmount}
+            <div className="mt-2 flex items-center rounded-xl border border-border-subtle bg-surface-raised px-4 focus-within:ring-2 focus-within:ring-accent-500/30">
+              <input value={budgetStr} onChange={(event) => setBudgetStr(event.target.value.replace(/[^\d.,]/g, ''))} inputMode="decimal" placeholder="0" className="min-h-12 w-full bg-transparent text-base text-content outline-none" />
+              <span className="text-xs text-muted">MAD</span>
+            </div>
+          </label>
+          {error && <p role="alert" className="text-sm text-negative">{error}</p>}
+          <div className="flex gap-3 pt-2">
+            <button type="button" onClick={() => setStep('balance')} className="min-h-12 flex-1 rounded-full border border-border-subtle text-sm font-semibold text-content"><ArrowLeft className="me-2 inline h-4 w-4 rtl:rotate-180" />{copy.back}</button>
+            <button type="button" onClick={() => { setError(''); setStep('pin'); }} className="min-h-12 flex-1 rounded-full bg-accent-600 text-sm font-semibold text-white">{copy.next}<ArrowRight className="ms-2 inline h-4 w-4 rtl:rotate-180" /></button>
+          </div>
+          <button type="button" onClick={() => { setBudgetStr(''); setBudgetCategoryId(''); setStep('pin'); }} className="min-h-10 w-full text-sm text-muted">{copy.skip}</button>
+        </div>}
+
+        {step === 'pin' && <div className="space-y-4 text-start">
+          <label className="block text-xs font-semibold text-muted">{copy.pinLabel}
+            <input type="password" inputMode="numeric" maxLength={4} value={pin} onChange={(event) => setPin(event.target.value.replace(/\D/g, '').slice(0, 4))} autoComplete="new-password" placeholder="••••" className="mt-2 min-h-12 w-full rounded-xl border border-border-subtle bg-surface-raised px-4 text-center text-lg tracking-[.5em] text-content" />
+          </label>
+          {pin.length > 0 && <label className="block text-xs font-semibold text-muted">{copy.confirmPin}
+            <input type="password" inputMode="numeric" maxLength={4} value={pinConfirmation} onChange={(event) => setPinConfirmation(event.target.value.replace(/\D/g, '').slice(0, 4))} autoComplete="new-password" placeholder="••••" className="mt-2 min-h-12 w-full rounded-xl border border-border-subtle bg-surface-raised px-4 text-center text-lg tracking-[.5em] text-content" />
+          </label>}
+          {error && <p role="alert" className="text-sm text-negative">{error}</p>}
+          <div className="flex gap-3 pt-2">
+            <button type="button" disabled={submitting} onClick={() => setStep('budget')} className="min-h-12 flex-1 rounded-full border border-border-subtle text-sm font-semibold text-content"><ArrowLeft className="me-2 inline h-4 w-4 rtl:rotate-180" />{copy.back}</button>
+            <button type="button" disabled={submitting} onClick={() => void finishSetup()} className="min-h-12 flex-1 rounded-full bg-accent-600 text-sm font-semibold text-white disabled:opacity-50">{submitting ? <Check className="mx-auto h-5 w-5" /> : copy.finish}</button>
+          </div>
+          {!pin && <button type="button" disabled={submitting} onClick={() => void finishSetup()} className="min-h-10 w-full text-sm text-muted">{copy.skip}</button>}
+        </div>}
       </div>
     </div>
   );

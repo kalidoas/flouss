@@ -4,6 +4,7 @@ import { translations } from '../../i18n/translations';
 import { auth } from '../../lib/firebase';
 import { sendEmailVerification } from 'firebase/auth';
 import { Logo } from '../common/Logo';
+import { KineticHeadline } from '../../motion/KineticHeadline';
 import {
   Mail,
   RefreshCw,
@@ -297,13 +298,11 @@ export const EmailVerificationScreen: React.FC = () => {
 
         {/* Text */}
         <div className="space-y-2">
-          <h2 className="text-xl font-extrabold text-content tracking-tight">
-            {isAr
+          <KineticHeadline language={language} accent={isAr
               ? 'تأكيد البريد الإلكتروني'
               : language === 'fr'
               ? 'Confirmez votre adresse email'
-              : 'Verify your email'}
-          </h2>
+              : 'Verify your email'} className="text-xl font-extrabold tracking-tight text-content" />
           <p className="text-xs text-text-subtle leading-relaxed max-w-xs mx-auto">
             {isAr
               ? 'أدخل رمز التحقق المكون من 6 أرقام المرسل إلى :'

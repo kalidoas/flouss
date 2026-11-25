@@ -13,6 +13,7 @@ import {
   Eye,
   EyeOff,
 } from 'lucide-react';
+import { KineticHeadline } from '../../motion/KineticHeadline';
 import { auth, googleProvider } from '../../lib/firebase';
 import {
   reauthenticateWithPopup,
@@ -393,7 +394,7 @@ export const PinAuthScreen: React.FC<PinAuthScreenProps> = ({
           </div>
 
           <div className="space-y-1">
-            <h2 className="text-base font-bold text-content tracking-tight">{getTitle()}</h2>
+            <KineticHeadline language={language} accent={getTitle()} className="text-base font-bold tracking-tight text-content" />
             <p className="text-xs text-text-subtle leading-relaxed">{getSubtitle()}</p>
           </div>
 

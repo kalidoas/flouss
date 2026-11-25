@@ -1,8 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useAppStore } from '../store/useAppStore';
-import { EmptyState } from '../components/common/EmptyState';
-import { Plus } from 'lucide-react';
-import { Button } from '../components/common/Button';
+import { Plus, ChevronDown, ListChecks, ShieldCheck, Tags, ReceiptText } from 'lucide-react';
 import { DashboardHero } from '../components/dashboard/DashboardHero';
 import { DashboardFocusNow } from '../components/dashboard/DashboardFocusNow';
 import { DashboardTodayCard } from '../components/dashboard/DashboardTodayCard';
@@ -33,7 +31,7 @@ export const DashboardPage: React.FC = () => {
   const { selectedMonth } = useDashboardHeader();
   const safeMonth = selectedMonth || getCurrentMonthStr();
 
-  const hasData = initialBalance !== null || txList.length > 0;
+  const hasData = (initialBalance !== null && initialBalance !== 0) || txList.length > 0;
 
   const summary = useMemo(
     () => selectDashboardFinancials(initialBalance, txList, selectedMonth),
@@ -43,22 +41,37 @@ export const DashboardPage: React.FC = () => {
   return (
     <div className="mx-auto max-w-[1280px] w-full pb-28 sm:pb-32 animate-page select-text min-w-0">
       {/* 1. Optional Dismissible PIN Protection Card */}
-      <ProtectWorkspacePinCard onConfigurePin={() => setActiveScreen('settings')} />
+      {hasData && <ProtectWorkspacePinCard onConfigurePin={() => setActiveScreen('settings')} />}
 
       {/* 2. Empty state when no data yet */}
       {!hasData && (
-        <div className="min-h-screen flex flex-col items-center justify-center pt-8">
-          <EmptyState
-            icon={<Plus className="w-12 h-12 text-negative" />}
-            title={translations[language].dashboard.emptyTitle}
-            description={translations[language].dashboard.emptyDescription}
-            action={
-              <Button variant="primary" size="md" onClick={() => setActiveScreen('settings')}>
-                {translations[language].dashboard.addInitialBalance}
-              </Button>
-            }
-            className="max-w-sm"
-          />
+        <div className="mx-auto flex max-w-3xl flex-col gap-5 pt-4" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+          <DashboardHero selectedMonth={safeMonth} emptyState />
+          <section className="rounded-[24px] border border-border-subtle bg-surface p-5 sm:p-7" aria-labelledby="first-expense-heading">
+            <div className="flex items-start gap-4">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-accent-500/10 text-accent-600"><ReceiptText className="h-5 w-5" /></span>
+              <div className="min-w-0 flex-1">
+                <h2 id="first-expense-heading" className="text-lg font-semibold tracking-tight text-content">{translations[language].dashboard.emptyTitle}</h2>
+                <p className="mt-1 text-sm leading-relaxed text-muted">{translations[language].dashboard.emptyDescription}</p>
+                <button type="button" onClick={() => window.dispatchEvent(new CustomEvent('flouss:quick-add', { detail: { type: 'expense' } }))} className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-full bg-accent-500 px-5 text-sm font-semibold text-white shadow-sm transition-transform active:scale-[.98]">
+                  <Plus className="h-4 w-4" />{translations[language].dashboard.emptyFirstExpense}
+                </button>
+              </div>
+            </div>
+          </section>
+          <details className="group rounded-2xl border border-border-subtle bg-surface px-4 py-3">
+            <summary className="flex cursor-pointer list-none items-center gap-3 py-1 text-sm font-semibold text-content [&::-webkit-details-marker]:hidden">
+              <ListChecks className="h-4 w-4 text-accent-600" />
+              <span className="flex-1">{translations[language].dashboard.emptyChecklist}</span>
+              <span className="rounded-full bg-surface-raised px-2 py-0.5 text-xs tabular-nums text-muted">0/3</span>
+              <ChevronDown className="h-4 w-4 text-muted transition-transform group-open:rotate-180" />
+            </summary>
+            <ul className="mt-3 grid gap-2 border-t border-border-subtle pt-3 text-sm text-muted sm:grid-cols-3">
+              <li className="flex items-center gap-2"><ReceiptText className="h-4 w-4 shrink-0 text-accent-600" />{translations[language].dashboard.emptyStepExpense}</li>
+              <li className="flex items-center gap-2"><Tags className="h-4 w-4 shrink-0 text-accent-600" />{translations[language].dashboard.emptyStepBudget}</li>
+              <li className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 shrink-0 text-accent-600" />{translations[language].dashboard.emptyStepPin}</li>
+            </ul>
+          </details>
         </div>
       )}
 

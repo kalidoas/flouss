@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import { translations } from '../../i18n/translations';
 import { Sparkles, TrendingUp, ArrowRight, X } from 'lucide-react';
+import { KineticHeadline } from '../../motion/KineticHeadline';
 
 export const WelcomeModal: React.FC = () => {
   const { firebaseUser, language, markWelcomeSeen, authGate } = useAppStore();
@@ -12,11 +13,8 @@ export const WelcomeModal: React.FC = () => {
     await markWelcomeSeen();
   };
 
-  const handleAddFirstIncome = async () => {
+  const handleContinueSetup = async () => {
     await markWelcomeSeen();
-    setTimeout(() => {
-      window.dispatchEvent(new CustomEvent('flouss:quick-add', { detail: { type: 'income' } }));
-    }, 100);
   };
 
   // Only render when in welcome authGate state or explicitly active
@@ -51,9 +49,7 @@ export const WelcomeModal: React.FC = () => {
         </div>
 
         {/* Title & Description */}
-        <h2 className="text-lg font-bold text-content tracking-tight mb-1.5">
-          {t.title}
-        </h2>
+        <KineticHeadline language={language} accent={t.title} className="text-lg font-bold tracking-tight text-content mb-1.5" />
         <p className="text-xs text-text-subtle leading-relaxed mb-6">
           {t.subtitle}
         </p>
@@ -62,7 +58,7 @@ export const WelcomeModal: React.FC = () => {
         <div className="space-y-2.5">
           <button
             type="button"
-            onClick={handleAddFirstIncome}
+            onClick={handleContinueSetup}
             className="w-full py-3 px-4 rounded-full bg-surface text-text-subtle font-bold text-xs flex items-center justify-center gap-2 hover:bg-border-border transition-all shadow-[0_0_20px_rgba(255,255,255,0.25)] active:scale-95 duration-200 cursor-pointer"
           >
             <TrendingUp className="w-4 h-4 text-positive" />
