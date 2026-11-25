@@ -151,7 +151,7 @@ export function App() {
               </div>
             </div>
             <div className="hero__visual" role="img" aria-label={locale === 'ar' ? 'عرض توضيحي لتطبيق فلوس' : locale === 'fr' ? 'Aperçu de l’application Flouss' : 'Flouss app preview'}>
-              <HeroStage locale={locale} mockupLabel={t.hero.mockupLabel} />
+              <HeroStage locale={locale} mockupLabel={t.hero.mockupLabel} balanceLabel={t.hero.balanceLabel} />
             </div>
           </div>
           <a className="scroll-cue" href="#how"><span className="scroll-cue__line" />{t.hero.scroll}</a>
