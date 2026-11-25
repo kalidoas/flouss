@@ -792,7 +792,6 @@ button:focus-visible, a:focus-visible, select:focus-visible {
   border-color: var(--line);
 }
 
-.topnav,
 .topbar__actions,
 .footer__tools {
   gap: 12px;
