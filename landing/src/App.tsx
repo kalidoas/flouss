@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { Fragment, useEffect, useState, type ReactNode } from 'react';
 import { copy, localeLabels, type Locale } from './copy';
 import { Logo } from './components/Logo';
 import { HeroStage } from './components/HeroStage';
@@ -51,9 +51,10 @@ function AnimatedWords({ text, locale, tail = false }: { text: string; locale: L
       dir={locale === 'ar' ? 'rtl' : 'ltr'}
     >
       {words.map((word, index) => (
-        <span className="hero__word" key={`${word}-${index}`} style={{ animationDelay: `${index * 90}ms` }}>
-          {word}{index < words.length - 1 ? ' ' : ''}
-        </span>
+        <Fragment key={`${word}-${index}`}>
+          <span className="hero__word" style={{ animationDelay: `${index * 90}ms` }}>{word}</span>
+          {index < words.length - 1 ? ' ' : null}
+        </Fragment>
       ))}
     </span>
   );

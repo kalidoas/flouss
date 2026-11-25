@@ -285,7 +285,7 @@ button:focus-visible, a:focus-visible, select:focus-visible {
   margin: 27px 0 20px;
   font-size: clamp(54px, 6.8vw, 90px);
   font-weight: 600;
-  letter-spacing: -0.065em;
+  letter-spacing: -0.02em;
   line-height: 1.06;
 }
 
@@ -883,7 +883,7 @@ button:focus-visible, a:focus-visible, select:focus-visible {
   color: var(--text);
   font-size: clamp(54px, 6.4vw, 84px);
   font-weight: 600;
-  letter-spacing: -0.07em;
+  letter-spacing: -0.02em;
   line-height: 1.02;
 }
 
@@ -1366,6 +1366,7 @@ button:focus-visible, a:focus-visible, select:focus-visible {
 
 .hero__headline-line {
   display: block;
+  word-spacing: 0.12em;
 }
 
 .hero__word {
