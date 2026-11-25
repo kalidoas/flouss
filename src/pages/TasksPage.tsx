@@ -330,6 +330,7 @@ export const TasksPage: React.FC = () => {
     showToast,
   } = useAppStore();
   const tTask = translations[language].tasks;
+  const tTaskPage = translations[language].tasksPage;
   const tCommon = translations[language].common;
 
   const [todayStr, setTodayStr] = useState(() => formatISODate(new Date()));
@@ -407,10 +408,10 @@ export const TasksPage: React.FC = () => {
     const tomorrow = formatISODate(tomorrowDate);
 
     if (dateStr === today) {
-      return language === 'ar' ? 'اليوم' : language === 'en' ? 'Today' : "Aujourd'hui";
+      return tTaskPage.today;
     }
     if (dateStr === tomorrow) {
-      return language === 'ar' ? 'غداً' : language === 'en' ? 'Tomorrow' : 'Demain';
+      return tTaskPage.tomorrow;
     }
 
     const [year, month, day] = dateStr.split('-').map(Number);
@@ -641,7 +642,7 @@ export const TasksPage: React.FC = () => {
         .map(([date]) => date);
       habits.push({
         id: 'salat',
-        label: language === 'ar' ? 'الصلوات الخمس' : language === 'fr' ? 'Salat (5 prières)' : 'Salat (5 Prayers)',
+        label: tTaskPage.salatFivePrayers,
         icon: '🕌',
         completedDates: salatCompletedDates,
       });
@@ -653,7 +654,7 @@ export const TasksPage: React.FC = () => {
       const gymCompletedDates = (gymLogs || []).map((g) => g.date).filter(Boolean) as string[];
       habits.push({
         id: 'gym',
-        label: language === 'ar' ? 'الرياضة' : language === 'fr' ? 'Sport / Gym' : 'Gym / Workout',
+        label: tTaskPage.sportLabel,
         icon: '🏋️',
         completedDates: gymCompletedDates,
       });
@@ -728,8 +729,8 @@ export const TasksPage: React.FC = () => {
         const completed = (prayers || []).length === 5;
         byDate[dateStr].salat = [{
           id: 'salat',
-          title: language === 'ar' ? 'الصلوات الخمس' : language === 'fr' ? 'Salat (5 prières)' : 'Salat (5 Prayers)',
-          categoryLabel: language === 'ar' ? 'صلاة' : 'Salat',
+          title: tTaskPage.salatFivePrayers,
+          categoryLabel: tTaskPage.salatCategory,
           completed,
         }];
       }
@@ -740,8 +741,8 @@ export const TasksPage: React.FC = () => {
         if (!byDate[g.date]) byDate[g.date] = {};
         byDate[g.date].gym = [{
           id: 'gym',
-          title: language === 'ar' ? 'الرياضة' : language === 'fr' ? 'Sport / Gym' : 'Gym / Workout',
-          categoryLabel: language === 'ar' ? 'رياضة' : 'Sport',
+          title: tTaskPage.sportLabel,
+          categoryLabel: tTaskPage.sportCategory,
           completed: true,
         }];
       }
@@ -772,7 +773,7 @@ export const TasksPage: React.FC = () => {
         byDate[dateStr][`study_${mod.id}`] = [{
           id: mod.id,
           title: mod.title,
-          categoryLabel: language === 'ar' ? 'دراسة' : 'Study',
+          categoryLabel: tTaskPage.studyCategory,
           completed: true,
         }];
       }
@@ -926,17 +927,13 @@ export const TasksPage: React.FC = () => {
     );
     if (exists) {
       showToast({
-        message: language === 'ar'
-          ? `الوحدة "${moduleName}" موجودة بالفعل في قائمتك.`
-          : `Le module "${moduleName}" est déjà dans votre liste.`,
+        message: tTaskPage.moduleAdded.replace('{moduleName}', moduleName),
       });
       return;
     }
     addStudyModule(moduleName, 'Économie & Gestion (S3)');
     showToast({
-      message: language === 'ar'
-        ? `✓ تمت إضافة وحدة "${moduleName}" بنجاح!`
-        : `✓ Module "${moduleName}" ajouté avec succès !`,
+      message: tTaskPage.moduleAdded.replace('{moduleName}', moduleName),
     });
   };
 
@@ -953,9 +950,7 @@ export const TasksPage: React.FC = () => {
       : gymMuscles.trim();
     if (!muscleText) {
       showToast({
-        message: language === 'ar'
-          ? 'يرجى اختيار مجموعة عضلية واحدة على الأقل'
-          : 'Veuillez sélectionner au moins un groupe musculaire',
+        message: tTaskPage.workoutLogged,
       });
       return;
     }
@@ -994,28 +989,18 @@ export const TasksPage: React.FC = () => {
   const getQuickChips = (task: TaskItem): string[] => {
     const title = (task.title || '').toLowerCase();
     if (title.includes('salat') || title.includes('prayer') || title.includes('صلاة')) {
-      return language === 'ar'
-        ? ['الوضوء', 'أذكار ما بعد الصلاة', 'سنة راتبة', 'قراءة وجه قرآن']
-        : ['Ablution (Wudu)', 'Dhikr & Dua', 'Sunnah Prayer', 'Read 1 Page Quran'];
+      return [tTaskPage.salatFivePrayers];
     }
     if (title.includes('gym') || title.includes('workout') || title.includes('تدريب') || title.includes('رياضة')) {
-      return language === 'ar'
-        ? ['إحماء 10 د', 'تمرين أولي', 'تمرين ثانوي', 'إطالة بعد التمرين']
-        : ['10m Warmup', 'Primary Compound', 'Accessory Superset', 'Post-stretch'];
+      return [tTaskPage.sportLabel];
     }
     if (title.includes('english') || title.includes('study') || title.includes('دراسة') || title.includes('لغة')) {
-      return language === 'ar'
-        ? ['حفظ 5 كلمات', 'استماع بودكاست 15 د', 'قراءة مقال', 'مراجعة التكرار المتباعد']
-        : ['5 New Vocabulary', '15m Podcast Listening', '1 Article Read', 'Anki SRS Review'];
+      return [tTaskPage.quickSuggestions];
     }
     if (title.includes('code') || title.includes('program') || title.includes('تطوير') || title.includes('برمجة')) {
-      return language === 'ar'
-        ? ['كتابة اختبار الوحدة', 'إصلاح الخلل', 'مراجعة الكود', 'توثيق الميزة']
-        : ['Write Unit Test', 'Fix Edge Case', 'PR Review', 'Docs / Changelog'];
+      return [tTaskPage.moduleDetails];
     }
-    return language === 'ar'
-      ? ['تحضير المتطلبات', 'التركيز 25 دقيقة (بومودورو)', 'مراجعة وتأكيد الإنجاز']
-      : ['Prepare Materials', '25m Deep Pomodoro', 'Final Review & Wrap-up'];
+    return [tTaskPage.planTomorrow];
   };
 
   const handleAddInlineSubTask = (taskId: string, title: string) => {
@@ -1057,9 +1042,7 @@ export const TasksPage: React.FC = () => {
         origin: { y: 0.6 },
       });
       showToast({
-        message: language === 'ar'
-          ? `🎉 اكتملت جميع المهام الفرعية لـ "${task.title}" (+15 XP)!`
-          : `🎉 All sub-tasks completed for "${task.title}" (+15 XP)!`,
+        message: tTaskPage.completed,
       });
     } else if (anyUndone && isCompletedToday) {
       nextDates = completedDates.filter((d) => d !== selectedDate);
@@ -1313,8 +1296,8 @@ export const TasksPage: React.FC = () => {
               </span>
               <span className="text-xs text-muted">
                 {dailyStats.percentage === 100
-                  ? (language === 'ar' ? '🎉 اكتملت جميع المهام!' : '🎉 All tasks done!')
-                  : `${dailyStats.total - dailyStats.completed} ${language === 'ar' ? 'مهام متبقية' : 'tasks remaining'}`}
+                  ? (tTaskPage.allTasksDone)
+                  : `${dailyStats.total - dailyStats.completed} ${tTaskPage.tasksRemaining}`}
               </span>
             </div>
 
@@ -1356,7 +1339,7 @@ export const TasksPage: React.FC = () => {
         <div className="zawa-bento zawa-spotlight sticky top-2 z-30 p-4 flex flex-col justify-between bg-surface/95 backdrop-blur-2xl shadow-xl">
           <div className="flex items-center justify-between pb-2 border-b border-border/[0.06]">
             <span className="text-xs font-semibold uppercase tracking-wider text-muted">
-              {language === 'ar' ? 'أسبوع المهمة' : 'Week Schedule'}
+              {tTaskPage.weekSchedule}
             </span>
 
             <div className="flex items-center gap-1.5">
@@ -1369,7 +1352,7 @@ export const TasksPage: React.FC = () => {
                   setSelectedDate(formatISODate(dt));
                 }}
                 className="p-1 rounded-lg text-muted hover:text-accent-contrast hover:bg-surface/[0.06] transition-colors cursor-pointer"
-                title={language === 'ar' ? 'اليوم السابق' : 'Previous day'}
+                title={tTaskPage.previousDay}
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -1377,7 +1360,7 @@ export const TasksPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setSelectedDate(todayStr)}
-                title={selectedDate !== todayStr ? (language === 'ar' ? 'الرجوع إلى اليوم' : 'Jump to Today') : undefined}
+                title={selectedDate !== todayStr ? (tTaskPage.jumpToToday) : undefined}
                 className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full capitalize transition-colors ${
                   selectedDate === todayStr
                     ? 'text-accent bg-accent/10'
@@ -1396,7 +1379,7 @@ export const TasksPage: React.FC = () => {
                   setSelectedDate(formatISODate(dt));
                 }}
                 className="p-1 rounded-lg text-muted hover:text-accent-contrast hover:bg-surface/[0.06] transition-colors cursor-pointer"
-                title={language === 'ar' ? 'اليوم التالي' : 'Next day'}
+                title={tTaskPage.nextDay}
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -1429,7 +1412,7 @@ export const TasksPage: React.FC = () => {
                   <span className={`mt-1 text-[8px] font-semibold tabular-nums ${isSelected ? 'text-accent-contrast/85' : 'text-muted'}`}>
                     {item.taskCount > 0
                       ? `${item.completedCount}/${item.taskCount}`
-                      : language === 'ar' ? 'راحة' : language === 'fr' ? 'Repos' : 'Off'}
+                      : tTaskPage.rest}
                   </span>
                   {item.isToday && (
                     <span
@@ -1444,7 +1427,7 @@ export const TasksPage: React.FC = () => {
           </div>
 
           <div className="text-[11px] text-muted text-center pt-1 border-t border-border/[0.06]">
-            {language === 'ar' ? 'حدد أي يوم لعرض وتحديث المهام' : 'Select any day to inspect & check off tasks'}
+            {tTaskPage.selectDayTasks}
           </div>
         </div>
       </div>
@@ -1596,7 +1579,7 @@ export const TasksPage: React.FC = () => {
               <span>{tTask.todayList} ({filteredTasks.length})</span>
             </h3>
             <span className="text-xs text-muted">
-              {language === 'ar' ? 'اضغط لتوسيع المهام الفرعية' : language === 'en' ? 'Click card to expand sub-tasks' : 'Cliquez pour ouvrir les sous-tâches'}
+              {tTaskPage.expandSubtasks}
             </span>
           </div>
 
@@ -1807,7 +1790,7 @@ export const TasksPage: React.FC = () => {
                             <div className="space-y-1.5">
                               <div className="flex items-center justify-between text-xs">
                                 <span className="font-semibold text-muted">
-                                  {language === 'ar' ? 'تقدم المهام الفرعية' : 'Sub-tasks Progress'}
+                                  {tTaskPage.subTasksProgress}
                                 </span>
                                 <span className="font-mono text-accent font-bold tabular-nums">
                                   {completedCount} / {subtasksCount} ({percent}%)
@@ -1877,7 +1860,7 @@ export const TasksPage: React.FC = () => {
                           {/* 1-Tap Smart Contextual Quick-Chips */}
                           <div className="pt-1 space-y-1.5">
                             <span className="text-[11px] font-semibold text-muted uppercase tracking-wider block">
-                              {language === 'ar' ? '⚡ اقتراحات سريعة بنقرة واحدة' : '⚡ 1-Tap Quick Suggestions'}
+                              {tTaskPage.quickSuggestions}
                             </span>
                             <div className="flex flex-wrap gap-1.5">
                               {chips.map((chip) => (
@@ -1910,11 +1893,7 @@ export const TasksPage: React.FC = () => {
                                   handleAddInlineSubTask(task.id, inlineSubTaskInput[task.id] || '');
                                 }
                               }}
-                              placeholder={
-                                language === 'ar'
-                                  ? '+ أضف مهمة فرعية (Enter)...'
-                                  : '+ Add sub-task (press Enter)...'
-                              }
+                              placeholder={tTaskPage.addSubTask}
                               className="flex-1 bg-surface/[0.04] border border-border/[0.08] focus:border-accent/60 text-xs px-3.5 py-2 rounded-xl text-accent-contrast placeholder:text-muted outline-none transition-all"
                             />
                             <button
@@ -1924,7 +1903,7 @@ export const TasksPage: React.FC = () => {
                               }
                               className="rounded-xl bg-surface text-text font-semibold px-3 py-2 text-xs hover:bg-surface-2 active:scale-95 transition-all shrink-0"
                             >
-                              {language === 'ar' ? 'إضافة' : language === 'en' ? 'Add' : 'Ajouter'}
+                              {tTaskPage.add}
                             </button>
                           </div>
                         </motion.div>
@@ -1952,17 +1931,11 @@ export const TasksPage: React.FC = () => {
               <h3 className="font-bold text-base text-accent-contrast flex items-center gap-2.5 tracking-tight">
                 <LayoutGrid className="w-5 h-5 text-positive" />
                 <span>
-                  {language === 'ar'
-                    ? 'مصفوفة تتبع العادات الشهرية'
-                    : language === 'fr'
-                    ? 'Matrice de Suivi des Habitudes (Mensuel)'
-                    : 'Monthly Habit Tracking Matrix'}
+                  {tTaskPage.habitMatrix}
                 </span>
               </h3>
               <p className="text-xs text-muted mt-0.5">
-                {language === 'ar'
-                  ? 'صفوف = عادات، أعمدة = أيام الشهر — اضغط على يوم لتفاصيل الإنجاز'
-                  : 'Rows = habits, columns = days — tap a day for completion details'}
+                {tTaskPage.weekdayLegend}
               </p>
             </div>
 
@@ -1970,7 +1943,7 @@ export const TasksPage: React.FC = () => {
               value={selectedMatrixMonth}
               onChange={setSelectedMatrixMonth}
               options={matrixMonthOptions}
-              ariaLabel={language === 'ar' ? 'اختر الشهر للمصفوفة' : language === 'fr' ? 'Choisir le mois' : 'Choose month'}
+              ariaLabel={tTaskPage.chooseMonth}
             />
           </div>
 
@@ -1979,19 +1952,19 @@ export const TasksPage: React.FC = () => {
             <div className="flex items-center gap-3 text-xs text-muted">
               <span className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded bg-positive" />
-                <span>{language === 'ar' ? 'مكتملة' : language === 'fr' ? 'Terminé' : 'Done'}</span>
+                <span>{tTaskPage.completed}</span>
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded bg-warning/80 border border-warning" />
-                <span>{language === 'ar' ? 'جزئية' : language === 'fr' ? 'Partielle' : 'Partial'}</span>
+                <span>{tTaskPage.partial}</span>
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded bg-surface/[0.04] border border-border/[0.05]" />
-                <span>{language === 'ar' ? 'غير مكتملة' : language === 'fr' ? 'Non fait' : 'Not done'}</span>
+                <span>{tTaskPage.notDone}</span>
               </span>
             </div>
             <div className="flex items-center gap-3 text-xs text-muted font-mono tabular-nums">
-              <span>{matrixStats.completedTotal}/{matrixStats.taskDaysTotal} {language === 'ar' ? 'مهمة' : 'tasks'}</span>
+              <span>{matrixStats.completedTotal}/{matrixStats.taskDaysTotal} {tTaskPage.task}</span>
             </div>
           </div>
 
@@ -2001,7 +1974,7 @@ export const TasksPage: React.FC = () => {
               <thead>
                 <tr className="sticky top-0 bg-canvas/40 backdrop-blur-sm border-b border-border/[0.08]">
                   <th className="sticky left-0 z-10 w-44 sm:w-52 min-w-[160px] sm:min-w-[190px] px-2.5 py-1.5 text-left font-medium text-muted bg-canvas/40 border-r border-border/[0.06]">
-                    {language === 'ar' ? 'العادة / المهمة' : language === 'fr' ? 'Habitude / Tâche' : 'Habit / Task'}
+                    {tTaskPage.habitTask}
                   </th>
                   {Array.from({ length: matrixDaysInMonth }, (_, i) => i + 1).map((day) => {
                     const dateStr = `${selectedMatrixMonth}-${String(day).padStart(2, '0')}`;
@@ -2053,8 +2026,8 @@ export const TasksPage: React.FC = () => {
                               ? 'bg-warning/80 border border-warning text-accent-contrast'
                               : 'bg-surface/[0.04] border border-border/[0.05] text-muted'} ${isToday ? 'ring-2 ring-ring ring-offset-1 ring-offset-canvas' : ''}`}
                             title={totalCount > 0
-                              ? `${formatDate(dateStr, language)}: ${dayTasks.map((t: any) => t.title).join(', ')} (${completedCount}/${totalCount} ${language === 'ar' ? 'مكتملة' : 'done'})`
-                              : `${formatDate(dateStr, language)}: ${language === 'ar' ? 'لا توجد مهام' : language === 'fr' ? 'Aucune tâche' : 'No tasks'}`}
+                              ? `${formatDate(dateStr, language)}: ${dayTasks.map((t: any) => t.title).join(', ')} (${completedCount}/${totalCount} ${tTaskPage.completed})`
+                              : `${formatDate(dateStr, language)}: ${tTaskPage.noTasks}`}
                           >
                             {dayCompleted ? (
                               <Check className="w-3.5 h-3.5 mx-auto stroke-[2.5]" />
@@ -2085,7 +2058,7 @@ export const TasksPage: React.FC = () => {
                   type="button"
                   onClick={() => setMatrixDayDetail(null)}
                   className="p-1 text-muted hover:text-accent-contrast transition-colors"
-                  aria-label={language === 'ar' ? 'إغلاق' : language === 'fr' ? 'Fermer' : 'Close'}
+                  aria-label={tTaskPage.close}
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -2105,15 +2078,15 @@ export const TasksPage: React.FC = () => {
                       </div>
                       <span className="text-[11px] font-mono tabular-nums text-muted">
                         {task.completed
-                          ? (language === 'ar' ? '✓ مكتملة' : language === 'fr' ? '✓ Terminé' : '✓ Done')
-                          : (language === 'ar' ? '○ معلقة' : language === 'fr' ? '○ En attente' : '○ Pending')}
+                          ? (tTaskPage.completed)
+                          : (tTaskPage.pending)}
                       </span>
                     </div>
                   ))}
                 </div>
               ) : (
                 <p className="text-muted text-center py-2">
-                  {language === 'ar' ? 'لا توجد مهام مجدولة لهذا اليوم' : language === 'fr' ? 'Aucune tâche programmée pour ce jour' : 'No tasks scheduled for this day'}
+                  {tTaskPage.noTasksScheduled}
                 </p>
               )}
             </div>
@@ -2122,13 +2095,8 @@ export const TasksPage: React.FC = () => {
           {/* Bottom Legend (weekday names) */}
           <div className="pt-2 border-t border-border/[0.06] text-xs">
             <div className="flex items-center gap-2 text-muted flex-wrap">
-              <span className="font-medium">{language === 'ar' ? 'أيام الأسبوع:' : language === 'fr' ? 'Jours:' : 'Weekdays:'}</span>
-              {(language === 'ar'
-                ? ['الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت', 'الأحد']
-                : language === 'fr'
-                ? ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche']
-                : ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-              ).map((d, i) => (
+              <span className="font-medium">{tTaskPage.weekdays}</span>
+              {tTaskPage.weekdayNames.map((d, i) => (
                 <span key={d} className={`px-2 py-0.5 rounded text-[10px] font-mono ${i >= 5 ? 'text-warning' : 'text-muted'} bg-surface/[0.03] border border-border/[0.05]`}>
                   {d}
                 </span>
@@ -2261,7 +2229,7 @@ export const TasksPage: React.FC = () => {
           {taskFrequency === 'custom_days' && (
             <fieldset className="rounded-card border border-border-subtle bg-surface p-3">
               <legend className="px-1 text-xs font-semibold text-content">
-                {language === 'ar' ? 'اختار أيام التكرار' : language === 'fr' ? 'Choisissez les jours' : 'Choose repeat days'}
+                {tTaskPage.chooseRepeatDays}
               </legend>
               <div className="grid grid-cols-7 gap-1.5">
                 {WEEKDAY_OPTIONS.map((day) => {
@@ -2516,9 +2484,9 @@ export const TasksPage: React.FC = () => {
                     onChange={(e) => setNewSubTaskInput(e.target.value)}
                     placeholder={
                       activeTrack.type === 'coding'
-                        ? (language === 'ar' ? 'مثال: Vue.js, Node.js, Python...' : language === 'en' ? 'e.g. Vue.js, Node.js, Docker...' : 'ex. : Vue.js, Node.js, Docker...')
+                        ? tTaskPage.subTaskPlaceholderCoding
                         : activeTrack.type === 'english'
-                        ? (language === 'ar' ? 'مثال: Listening, Grammar, Vocabulary...' : language === 'en' ? 'e.g. Listening, Grammar, Speaking...' : 'ex. : Listening, grammaire, expression orale...')
+                        ? tTaskPage.subTaskPlaceholderEnglish
                         : (tTask.subTaskPlaceholder || 'ex : Nouvelle sous-tâche...')
                     }
                     className="flex-1 px-3.5 py-2.5 rounded-control bg-surface-3 dark:bg-surface border border-border dark:border-border text-content text-xs font-medium focus:outline-none focus:ring-2 focus:ring-ring"
@@ -2632,7 +2600,7 @@ export const TasksPage: React.FC = () => {
                       className="text-xs text-negative hover:text-negative font-semibold flex items-center gap-1.5 p-1 rounded-control hover:bg-negative/10 transition-colors"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
-                      <span>{language === 'ar' ? 'حذف هذا البرنامج' : language === 'en' ? 'Delete this program' : 'Supprimer ce programme'}</span>
+                      <span>{tTaskPage.deleteProgram}</span>
                     </button>
                   </div>
                 )}
@@ -2645,7 +2613,7 @@ export const TasksPage: React.FC = () => {
                 <div className="p-3.5 rounded-card bg-negative/10 border border-negative/20 flex items-center justify-between gap-3 text-xs">
                   <div className="flex items-center gap-2 text-negative dark:text-negative font-semibold">
                     <Dumbbell className="w-4 h-4 text-negative shrink-0" />
-                    <span>+40 XP / {language === 'ar' ? 'حصة تدريبية' : language === 'en' ? 'workout logged' : 'séance validée'}</span>
+                    <span>+40 XP / {tTaskPage.workoutLogged}</span>
                   </div>
                   <span className="font-bold text-muted tabular-nums">
                     {(gymLogs ?? []).length} {tTask.workoutHistory || 'séances'}
@@ -2660,7 +2628,7 @@ export const TasksPage: React.FC = () => {
                       <span>{tTask.muscleGroups} *</span>
                       {selectedGymMuscles.length > 0 && (
                         <span className="text-caption text-negative dark:text-negative font-semibold tabular-nums">
-                          {selectedGymMuscles.length} {language === 'ar' ? 'محددة' : language === 'en' ? 'selected' : 'sélectionné(s)'}
+                          {selectedGymMuscles.length} {tTaskPage.selected}
                         </span>
                       )}
                     </label>
@@ -2693,13 +2661,13 @@ export const TasksPage: React.FC = () => {
                     {/* Optional Exercise Details Textarea */}
                     <div>
                       <label className="block text-caption font-bold text-muted dark:text-muted mb-1">
-                        {tTask.exercisesLabel} ({language === 'ar' ? 'اختياري' : language === 'en' ? 'optional' : 'optionnel'})
+                        {tTask.exercisesLabel} ({tTaskPage.optional})
                       </label>
                       <textarea
                         rows={2}
                         value={gymExercises}
                         onChange={(e) => setGymExercises(e.target.value)}
-                        placeholder={tTask.exercisesPlaceholder || (language === 'ar' ? 'تفاصيل التمارين والأوزان...' : language === 'en' ? 'Workout details, sets and weights...' : 'Détails des exercices, séries et charges...')}
+                        placeholder={tTask.exercisesPlaceholder || (tTaskPage.exerciseDetails)}
                         className="w-full px-3 py-2 rounded-control bg-surface border border-border dark:border-border text-content text-xs font-medium focus:outline-none focus:ring-2 focus:ring-negative"
                       />
                     </div>
@@ -2707,13 +2675,13 @@ export const TasksPage: React.FC = () => {
                     {/* Tomorrow's Plan */}
                     <div>
                       <label className="block text-caption font-bold text-muted dark:text-muted mb-1">
-                        {tTask.tomorrowPlan} ({language === 'ar' ? 'اختياري' : language === 'en' ? 'optional' : 'optionnel'})
+                        {tTask.tomorrowPlan} ({tTaskPage.optional})
                       </label>
                       <textarea
                         rows={2}
                         value={gymTomorrowPlan}
                         onChange={(e) => setGymTomorrowPlan(e.target.value)}
-                        placeholder={tTask.tomorrowPlaceholder || (language === 'ar' ? 'خطة تمرين الغد...' : language === 'en' ? 'Plan for tomorrow...' : 'Programme pour demain...')}
+                        placeholder={tTask.tomorrowPlaceholder || (tTaskPage.planTomorrow)}
                         className="w-full px-3 py-2 rounded-control bg-surface border border-border dark:border-border text-content text-xs font-medium focus:outline-none focus:ring-2 focus:ring-negative"
                       />
                     </div>
@@ -2767,7 +2735,7 @@ export const TasksPage: React.FC = () => {
                               setAlarmModalDescription(log.tomorrowPlan ? `Plan: ${log.tomorrowPlan}` : 'Séance de musculation');
                             }}
                             className="p-1 rounded-control text-negative hover:text-negative hover:bg-negative/10 transition-colors"
-                            title={language === 'ar' ? 'تذكير عبر تقويم جوجل' : language === 'en' ? 'Add Google Calendar reminder' : 'Ajouter un rappel Google Calendar'}
+                            title={tTaskPage.googleCalendarReminder}
                           >
                             <Bell className="w-3.5 h-3.5" />
                           </button>
@@ -2796,7 +2764,7 @@ export const TasksPage: React.FC = () => {
                 <div className="p-3.5 rounded-card bg-accent/10 border border-accent/20 flex items-center justify-between gap-3 text-xs">
                   <div className="flex items-center gap-2 text-accent dark:text-accent font-semibold">
                     <BookOpen className="w-4 h-4 text-accent shrink-0" />
-                    <span>+30 XP / {language === 'ar' ? 'وحدة دراسية' : language === 'en' ? 'module completed' : 'module terminé'}</span>
+                    <span>+30 XP / {tTaskPage.moduleCompleted}</span>
                   </div>
                   <span className="font-bold text-muted tabular-nums">
                     {(studyModules ?? []).filter((m) => m.completed).length} / {(studyModules ?? []).length}
@@ -2806,8 +2774,8 @@ export const TasksPage: React.FC = () => {
                 {/* 1-Click Apple-style Economics & Management S3 Modules Chips */}
                 <div>
                   <label className="block text-caption font-bold text-muted dark:text-muted mb-1.5 flex items-center justify-between">
-                    <span>{language === 'ar' ? 'وحدات الاقتصاد والتدبير (S3)' : language === 'en' ? 'Economics & Management (S3) Modules' : 'Modules Économie & Gestion (S3)'}</span>
-                    <span className="text-caption text-accent dark:text-accent font-semibold">{language === 'ar' ? 'إضافة سريعة بنقرة واحدة' : language === 'en' ? 'Quick add in one click' : 'Ajout rapide en un clic'}</span>
+                    <span>{tTaskPage.modulesEconomicsS3}</span>
+                    <span className="text-caption text-accent dark:text-accent font-semibold">{tTaskPage.quickAdd}</span>
                   </label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 mb-3">
                     {ECONOMICS_S3_MODULES.map((modName) => {
@@ -2858,7 +2826,7 @@ export const TasksPage: React.FC = () => {
                 <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
                   {(studyModules ?? []).length === 0 ? (
                     <p className="text-xs text-muted italic py-2 text-center">
-                      {language === 'ar' ? 'لا توجد وحدات دراسية مسجلة حالياً.' : language === 'en' ? 'No modules yet.' : 'Aucun module pour le moment.'}
+                      {tTaskPage.noModules}
                     </p>
                   ) : (
                     (studyModules ?? []).map((mod) => (
@@ -2947,11 +2915,7 @@ export const TasksPage: React.FC = () => {
         isOpen={isAddTrackModalOpen}
         onClose={() => setIsAddTrackModalOpen(false)}
         title={tTask.addProgram}
-        subtitle={
-          language === 'ar'
-            ? 'إنشاء مسار جديد وتتبع مهاراتك اليومية'
-            : 'Créez un nouveau track de compétences ou habitudes'
-        }
+        subtitle={tTaskPage.createProgramTrack}
       >
         <form onSubmit={handleCreateProgramTrack} className="space-y-4 pt-2">
           <div>
@@ -2971,7 +2935,7 @@ export const TasksPage: React.FC = () => {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-bold text-content mb-1.5">
-                {language === 'ar' ? 'أيقونة' : language === 'en' ? 'Icon / Emoji' : 'Icône / Emoji'}
+                {tTaskPage.icon}
               </label>
               <div className="flex gap-2 flex-wrap">
                 {['🎯', '🚀', '🧠', '💼', '🎨', '📖'].map((emoji) => (
@@ -2993,7 +2957,7 @@ export const TasksPage: React.FC = () => {
 
             <div>
               <label className="block text-xs font-bold text-content mb-1.5">
-                {language === 'ar' ? 'لون' : language === 'en' ? 'Color' : 'Couleur'}
+                {tTaskPage.color}
               </label>
               <div className="flex gap-2 flex-wrap items-center pt-1">
                 {['bg-info', 'bg-positive', '#8b5cf6', '#f43f5e', '#f59e0b', '#06b6d4'].map((color) => (
@@ -3028,7 +2992,7 @@ export const TasksPage: React.FC = () => {
       <Modal
         isOpen={Boolean(editingSubTask)}
         onClose={() => setEditingSubTask(null)}
-        title={language === 'ar' ? 'تفاصيل المهمة الفرعية' : language === 'en' ? 'Sub-task Details' : 'Détails de la sous-tâche'}
+        title={tTaskPage.subTaskDetails}
         subtitle={activeTrack ? getProgramTrackTitle(activeTrack, language) : undefined}
       >
         {editingSubTask && (
@@ -3046,7 +3010,7 @@ export const TasksPage: React.FC = () => {
           >
             <div>
               <label className="block text-xs font-bold text-content mb-1.5">
-                {language === 'ar' ? 'عنوان المهمة الفرعية' : language === 'en' ? 'Sub-task Title' : 'Titre de la sous-tâche'} *
+                {tTaskPage.subTaskTitle} *
               </label>
               <input
                 type="text"
@@ -3059,7 +3023,7 @@ export const TasksPage: React.FC = () => {
 
             <div>
               <label className="block text-xs font-bold text-content mb-1.5">
-                {language === 'ar' ? 'نقاط الخبرة (XP)' : language === 'en' ? 'Experience points (XP)' : 'Points XP'}
+                {tTaskPage.xpPoints}
               </label>
               <input
                 type="number"
@@ -3103,7 +3067,7 @@ export const TasksPage: React.FC = () => {
       <Modal
         isOpen={Boolean(editingStudyModule)}
         onClose={() => setEditingStudyModule(null)}
-        title={language === 'ar' ? 'تفاصيل الوحدة الدراسية' : language === 'en' ? 'Study Module Details' : 'Détails du module d’étude'}
+        title={tTaskPage.moduleDetails}
         subtitle="Économie & Gestion (S3)"
       >
         {editingStudyModule && (
