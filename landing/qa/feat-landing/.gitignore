@@ -1,0 +1,4 @@
+output/*
+!output/screenshots/
+output/screenshots/*
+!output/screenshots/*.png

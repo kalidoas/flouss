@@ -25,6 +25,6 @@ The static build includes Arabic (default), French, and English entry paths. Loc
 
 ## Visual QA
 
-From `landing`, run `npm run capture`. The script starts a local preview, checks Arabic, French, and English in light and dark themes at 390px and 1280px, and writes full-page screenshots under `landing/qa/feat-landing/output/`.
+From `landing`, run `npm run capture`. The script starts a local preview, checks Arabic, French, and English in light and dark themes at 390px, and writes six full-page mobile screenshots under `qa/feat-landing/output/screenshots/`. It also renders the three localized Open Graph images.
 
-The hero product stage is static and CSS-built. Section reveals are linked to scroll progress and resolve to their final state when reduced motion is requested.
+The hero product stage is static and CSS-built; its visual is not an app screenshot. Only the hero headline animates, word by word, and reduced-motion mode disables that animation.

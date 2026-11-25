@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { copy, localeLabels, type Locale } from './copy';
-import { HeroFlight } from './HeroFlight';
+import { Logo } from './components/Logo';
+import { HeroStage } from './components/HeroStage';
 
 type Theme = 'light' | 'dark';
 
@@ -33,8 +34,29 @@ function Icon({ name, size = 22 }: { name: string; size?: number }) {
     moon: <path d="M20.5 14.3A8.5 8.5 0 0 1 9.7 3.5 8.5 8.5 0 1 0 20.5 14.3Z" />,
     sun: <><circle cx="12" cy="12" r="4" /><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42" /></>,
     menu: <><path d="M4 7h16M4 12h16M4 17h16" /></>,
+    share: <><path d="M12 16V4" /><path d="m7 9 5-5 5 5" /><path d="M5 13v6h14v-6" /></>,
+    home: <><path d="m3 10 9-7 9 7" /><path d="M5 9v12h14V9M9 21v-7h6v7" /></>,
+    open: <><path d="M14 4h6v6" /><path d="m20 4-9 9" /><path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6" /></>,
   };
   return <svg {...shared}>{paths[name] ?? paths.spark}</svg>;
+}
+
+function AnimatedWords({ text, locale, tail = false }: { text: string; locale: Locale; tail?: boolean }) {
+  const words = text.trim().split(/\s+/);
+
+  return (
+    <span
+      className={`hero__headline-line${tail ? ' hero__headline-line--tail' : ''}`}
+      lang={locale}
+      dir={locale === 'ar' ? 'rtl' : 'ltr'}
+    >
+      {words.map((word, index) => (
+        <span className="hero__word" key={`${word}-${index}`} style={{ animationDelay: `${index * 90}ms` }}>
+          {word}{index < words.length - 1 ? ' ' : ''}
+        </span>
+      ))}
+    </span>
+  );
 }
 
 export function App() {
@@ -58,10 +80,15 @@ export function App() {
     document.documentElement.lang = locale;
     document.documentElement.dir = dir;
     document.documentElement.dataset.theme = theme;
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#101a15' : '#f6f7f4');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#0b0b0c' : '#fafaf9');
     document.querySelector('meta[name="description"]')?.setAttribute('content', t.hero.description);
-    document.querySelector('meta[property="og:title"]')?.setAttribute('content', `Flouss — ${t.hero.title} ${t.hero.accent}`);
-    document.title = `Flouss — ${t.hero.title} ${t.hero.accent}`;
+    const wordmark = locale === 'ar' ? 'فلوس' : 'Flouss';
+    document.querySelector('meta[property="og:site_name"]')?.setAttribute('content', wordmark);
+    document.querySelector('meta[property="og:title"]')?.setAttribute('content', `${wordmark} — ${t.hero.title} ${t.hero.accent}`);
+    document.querySelector('meta[property="og:description"]')?.setAttribute('content', t.hero.description);
+    document.querySelector('meta[property="og:image"]')?.setAttribute('content', `https://flouss.live/images/og${locale === 'ar' ? '' : `-${locale}`}.png`);
+    document.querySelector('meta[property="og:locale"]')?.setAttribute('content', `${locale}_${locale === 'ar' ? 'MA' : locale === 'fr' ? 'FR' : 'US'}`);
+    document.title = `${wordmark} — ${t.hero.title} ${t.hero.accent}`;
     document.querySelector('link[rel="canonical"]')?.setAttribute('href', `https://flouss.live${localePath}`);
     document.querySelectorAll<HTMLLinkElement>('link[rel="alternate"][hreflang]').forEach((link) => {
       const alternate = link.hreflang === 'x-default' ? '/' : `/${link.hreflang}/`;
@@ -86,10 +113,7 @@ export function App() {
   return (
     <div className="site" data-theme={theme} lang={locale} dir={dir}>
       <header className="topbar">
-        <a className="brand" href="#home" aria-label="Flouss home">
-          <span className="brand__mark" aria-hidden="true">ف</span>
-          <span className="brand__name">Flouss</span>
-        </a>
+        <Logo locale={locale} />
         <nav className="topnav" aria-label={locale === 'ar' ? 'التنقل الرئيسي' : locale === 'fr' ? 'Navigation principale' : 'Main navigation'}>
           <a href="#how">{t.nav.how}</a>
           <a href="#features">{t.nav.features}</a>
@@ -115,26 +139,18 @@ export function App() {
           <div className="hero__grid">
             <div className="hero__copy">
               <p className="eyebrow"><span className="eyebrow__dot" />{t.hero.eyebrow}</p>
-              <h1>{t.hero.title}<br /><span>{t.hero.accent}</span></h1>
+              <h1>
+                <AnimatedWords text={t.hero.title} locale={locale} />
+                <AnimatedWords text={t.hero.accent} locale={locale} tail />
+              </h1>
               <p className="hero__description">{t.hero.description}</p>
               <div className="hero__actions">
                 <a className="button button--primary" href={appUrl} target="_blank" rel="noreferrer">{t.hero.primary}<Icon name="arrow" size={18} /></a>
                 <a className="text-link" href="#how">{t.hero.secondary}<span aria-hidden="true">↓</span></a>
               </div>
-              <p className="hero__proof"><span className="proof-mark"><Icon name="check" size={15} /></span>{t.hero.proof}</p>
             </div>
             <div className="hero__visual" role="img" aria-label={locale === 'ar' ? 'عرض توضيحي لتطبيق فلوس' : locale === 'fr' ? 'Aperçu de l’application Flouss' : 'Flouss app preview'}>
-              <HeroFlight locale={locale} dir={dir} />
-              <div className="float-card float-card--balance" aria-hidden="true">
-                <span className="float-card__label">{t.hero.balanceLabel}</span>
-                <strong>{t.hero.balance} <small>{locale === 'ar' ? 'د.م.' : 'MAD'}</small></strong>
-                <span className="float-card__trend"><span>↗</span> {t.hero.online}</span>
-              </div>
-              <div className="float-card float-card--goal" aria-hidden="true">
-                <span className="mini-ring"><span>64%</span></span>
-                <span><small>{t.hero.goalCaption}</small><strong>{t.hero.goal}</strong><em>{t.hero.goalValue}</em></span>
-              </div>
-              <div className="hero__seal" aria-hidden="true"><span>د.م.</span><small>MADE FOR MOROCCO</small></div>
+              <HeroStage locale={locale} mockupLabel={t.hero.mockupLabel} />
             </div>
           </div>
           <a className="scroll-cue" href="#how"><span className="scroll-cue__line" />{t.hero.scroll}</a>
@@ -157,6 +173,25 @@ export function App() {
               </article>
             ))}
           </div>
+        </section>
+
+        <section className="install-section section-wrap" id="install">
+          <div className="section-heading">
+            <p className="eyebrow"><span className="eyebrow__dot" />{t.install.eyebrow}</p>
+            <h2>{t.install.title}</h2>
+            <p>{t.install.body}</p>
+          </div>
+          <div className="install-steps">
+            {t.install.steps.map((step, index) => (
+              <article className="install-step" key={step.title}>
+                <span className="install-step__number">0{index + 1}</span>
+                <span className="install-step__icon"><Icon name={step.icon} size={21} /></span>
+                <h3>{step.title}</h3>
+                <p>{step.body}</p>
+              </article>
+            ))}
+          </div>
+          <p className="install-note"><Icon name="check" size={16} />{t.install.note}</p>
         </section>
 
         <section className="features-section" id="features">
@@ -207,10 +242,7 @@ export function App() {
       </main>
 
       <footer className="footer section-wrap">
-        <a className="brand" href="#home">
-          <span className="brand__mark" aria-hidden="true">ف</span>
-          <span className="brand__name">Flouss</span>
-        </a>
+        <Logo locale={locale} />
         <p>{t.footer.note}</p>
         <div className="footer__tools">
           <label className="locale-control locale-control--footer">
@@ -221,7 +253,7 @@ export function App() {
           </label>
           <button className="icon-button" type="button" onClick={toggleTheme} aria-label={theme === 'light' ? t.footer.themeDark : t.footer.themeLight}><Icon name={theme === 'light' ? 'moon' : 'sun'} size={18} /></button>
         </div>
-        <span className="footer__copyright">© {new Date().getFullYear()} Flouss</span>
+        <span className="footer__copyright">© {new Date().getFullYear()} {locale === 'ar' ? 'فلوس' : 'Flouss'}</span>
       </footer>
     </div>
   );

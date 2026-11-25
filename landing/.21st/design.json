@@ -14,7 +14,10 @@
     "tokens": [],
     "components": [],
     "assets": [
-      "public/favicon.svg"
+      "public/favicon.svg",
+      "public/images/og.svg",
+      "public/images/og-fr.svg",
+      "public/images/og-en.svg"
     ],
     "instructions": [
       "../docs/DESIGN_SKILL.md",
@@ -53,8 +56,8 @@
       "surface": "none"
     },
     "motion": {
-      "hero": "Two-part word-animated headline and CSS iPhone mockup with scroll-linked blur-to-sharp reveal",
-      "fallback": "Reduced-motion mode shows final content without reveal animation"
+      "hero": "Two-part word-animated headline and static CSS iPhone mockup",
+      "fallback": "Reduced-motion mode shows final content without headline animation"
     },
     "density": "comfortable"
   },
@@ -84,7 +87,7 @@
   },
   "decisions": [
     "Use the language-neutral coin-ring symbol and localize the wordmark by locale.",
-    "Use flat neutral surfaces, a soft gray hero stage, black pill calls to action, and scroll-linked blur-to-sharp reveals.",
+    "Use flat neutral surfaces, a soft gray hero stage, black pill calls to action, and a word-by-word headline reveal.",
     "Use an Instrument Serif italic headline tail in French and English; Arabic uses a muted heavier-weight tail with normal tracking."
   ],
   "evidence": [

@@ -16,7 +16,7 @@
 - Green is reserved for monetary/positive states
 - Latin type: Inter; Arabic type: Noto Sans Arabic; Arabic tracking stays normal
 - Language-neutral ring/coin SVG mark; wordmark localized by language
-- Scroll-linked blur-to-sharp reveals; reduced motion shows content without animation
+- Word-by-word headline reveal; reduced motion shows content without animation
 
 ## Constraints
 
@@ -28,4 +28,4 @@
 ## Decisions
 
 - Use the language-neutral coin-ring symbol and localize the wordmark by language.
-- Use flat neutral surfaces, a soft gray hero stage, and scroll-linked blur-to-sharp reveals.
+- Use flat neutral surfaces and a soft gray hero stage; keep animation limited to the requested word-by-word headline.

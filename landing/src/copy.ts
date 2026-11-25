@@ -2,9 +2,10 @@ export type Locale = 'ar' | 'fr' | 'en';
 
 type Copy = {
   nav: { how: string; features: string; privacy: string; open: string; language: string; theme: string };
-  hero: { eyebrow: string; title: string; accent: string; description: string; primary: string; secondary: string; proof: string; scroll: string; balance: string; balanceLabel: string; activity: string; groceries: string; today: string; goal: string; goalValue: string; goalCaption: string; online: string };
+  hero: { eyebrow: string; title: string; accent: string; description: string; primary: string; secondary: string; scroll: string; mockupLabel: string; balance: string; balanceLabel: string; activity: string; groceries: string; today: string; goal: string; goalValue: string; goalCaption: string; online: string };
   intro: { eyebrow: string; title: string; body: string };
   steps: { number: string; title: string; body: string }[];
+  install: { eyebrow: string; title: string; body: string; steps: { icon: string; title: string; body: string }[]; note: string };
   features: { eyebrow: string; title: string; body: string; items: { icon: string; title: string; body: string; demo?: string }[] };
   privacy: { eyebrow: string; title: string; body: string; points: { title: string; body: string }[]; note: string };
   closing: { eyebrow: string; title: string; accent: string; body: string; cta: string; footnote: string };
@@ -21,8 +22,8 @@ export const copy: Record<Locale, Copy> = {
       description: 'نظّم مصاريفك، خطّط للي جاي، وشوف الصورة كاملة بالدرهم المغربي.',
       primary: 'ابدأ مع فلوس',
       secondary: 'تعرّف على التطبيق',
-      proof: 'مصمّم للحياة اليومية فالمغرب',
       scroll: 'اكتشف فلوس',
+      mockupLabel: 'نموذج توضيحي للواجهة',
       balance: '8 450',
       balanceLabel: 'الرصيد المتاح',
       activity: 'آخر الحركات',
@@ -39,6 +40,17 @@ export const copy: Record<Locale, Copy> = {
       { number: '02', title: 'سجّل حركاتك', body: 'زيد المصروف ولا المدخول ديالك، وصنّفهم باش يبقا كلشي واضح.' },
       { number: '03', title: 'تابع اللي مهم', body: 'شوف الرصيد، الميزانيات وأهداف الادخار ديالك فمكان واحد.' },
     ],
+    install: {
+      eyebrow: 'على iPhone',
+      title: 'ثبّت فلوس فالشاشة الرئيسية.',
+      body: 'ثلاث خطوات باش توصل للتطبيق بسرعة من iPhone ديالك.',
+      steps: [
+        { icon: 'share', title: 'شارك الصفحة', body: 'حلّ قائمة المشاركة فـ Safari.' },
+        { icon: 'home', title: 'أضف للشاشة الرئيسية', body: 'اختار “أضف إلى الشاشة الرئيسية”.' },
+        { icon: 'open', title: 'حلّ فلوس', body: 'رجع للشاشة الرئيسية وحلّ فلوس.' },
+      ],
+      note: 'الإشعارات كتخدم من بعد تثبيت التطبيق على الشاشة الرئيسية.',
+    },
     features: {
       eyebrow: 'كلشي فبلاصتو',
       title: 'تفاصيل يومك، بلا ضجيج.',
@@ -54,11 +66,10 @@ export const copy: Record<Locale, Copy> = {
     },
     privacy: {
       eyebrow: 'الثقة قبل كلشي',
-      title: 'فلوسك كتخصّك.',
-      body: 'خلي الصورة المالية ديالك واضحة، مع إعدادات وبيانات كتخص حسابك.',
+      title: 'صورة أوضح لفلوسك.',
+      body: 'تابع مصاريفك ومدخولك وادخارك فبلاصة وحدة.',
       points: [
-        { title: 'مساحة منفصلة لكل حساب', body: 'قواعد الوصول كتربط بيانات الحساب بالمستخدم المسجّل.' },
-        { title: 'بلا إعلانات موجهة', body: 'سياسة الخصوصية كتقول إن بياناتك المالية ما كتتباعش للمعلنين.' },
+        { title: 'بلا إعلانات موجهة', body: 'ما كنستعملوش معلوماتك المالية باش نوجّهو ليك الإعلانات.' },
       ],
       note: 'التطبيق كيعتمد على Firebase للمصادقة ومزامنة البيانات. ما كنقدموش تشفير من طرف لطرف.',
     },
@@ -74,8 +85,8 @@ export const copy: Record<Locale, Copy> = {
       description: 'Suivez vos dépenses, préparez vos projets et gardez une vue claire en dirhams marocains.',
       primary: 'Découvrir Flouss',
       secondary: 'Voir comment ça marche',
-      proof: 'Pensé pour le quotidien au Maroc',
       scroll: 'Découvrir Flouss',
+      mockupLabel: 'Maquette d’interface',
       balance: '8 450',
       balanceLabel: 'Solde disponible',
       activity: 'Activité récente',
@@ -92,6 +103,17 @@ export const copy: Record<Locale, Copy> = {
       { number: '02', title: 'Ajoutez vos opérations', body: 'Enregistrez une dépense ou un revenu et classez-le pour garder vos comptes lisibles.' },
       { number: '03', title: 'Suivez l’essentiel', body: 'Retrouvez solde, budgets et objectifs d’épargne au même endroit.' },
     ],
+    install: {
+      eyebrow: 'Sur iPhone',
+      title: 'Ajoutez Flouss à l’écran d’accueil.',
+      body: 'Trois étapes pour ouvrir Flouss rapidement depuis votre iPhone.',
+      steps: [
+        { icon: 'share', title: 'Partager la page', body: 'Ouvrez le menu de partage dans Safari.' },
+        { icon: 'home', title: 'Ajouter à l’écran d’accueil', body: 'Choisissez « Ajouter à l’écran d’accueil ».' },
+        { icon: 'open', title: 'Ouvrir Flouss', body: 'Revenez à l’écran d’accueil et ouvrez Flouss.' },
+      ],
+      note: 'Les notifications fonctionnent après l’installation sur l’écran d’accueil.',
+    },
     features: {
       eyebrow: 'Tout à sa place',
       title: 'Les détails du quotidien, sans bruit.',
@@ -107,11 +129,10 @@ export const copy: Record<Locale, Copy> = {
     },
     privacy: {
       eyebrow: 'La confiance d’abord',
-      title: 'Vos finances restent les vôtres.',
-      body: 'Gardez une vue claire de vos finances avec des données et réglages liés à votre compte.',
+      title: 'Vos finances, en un coup d’œil.',
+      body: 'Suivez vos dépenses, revenus et économies au même endroit.',
       points: [
-        { title: 'Un espace par compte', body: 'Les règles d’accès relient les données au compte authentifié.' },
-        { title: 'Pas de publicité ciblée', body: 'La politique de confidentialité indique que vos données financières ne sont pas vendues aux annonceurs.' },
+        { title: 'Pas de publicité ciblée', body: 'Vos informations financières ne servent pas à cibler les publicités.' },
       ],
       note: 'L’application utilise Firebase pour l’authentification et la synchronisation. Nous ne prétendons pas offrir un chiffrement de bout en bout.',
     },
@@ -127,8 +148,8 @@ export const copy: Record<Locale, Copy> = {
       description: 'Keep up with spending, plan what’s next, and see the bigger picture in Moroccan dirhams.',
       primary: 'Get started with Flouss',
       secondary: 'See how it works',
-      proof: 'Made for everyday life in Morocco',
       scroll: 'Meet Flouss',
+      mockupLabel: 'Illustrative app mockup',
       balance: '8,450',
       balanceLabel: 'Available balance',
       activity: 'Recent activity',
@@ -145,6 +166,17 @@ export const copy: Record<Locale, Copy> = {
       { number: '02', title: 'Record your activity', body: 'Add an expense or income and give it a category to keep things easy to follow.' },
       { number: '03', title: 'Keep an eye on what matters', body: 'See your balance, budgets, and savings goals in one place.' },
     ],
+    install: {
+      eyebrow: 'On iPhone',
+      title: 'Add Flouss to your Home Screen.',
+      body: 'Three steps to open Flouss quickly from your iPhone.',
+      steps: [
+        { icon: 'share', title: 'Share the page', body: 'Open the Share menu in Safari.' },
+        { icon: 'home', title: 'Add to Home Screen', body: 'Choose “Add to Home Screen”.' },
+        { icon: 'open', title: 'Open Flouss', body: 'Return to your Home Screen and open Flouss.' },
+      ],
+      note: 'Notifications work after installing the app on your Home Screen.',
+    },
     features: {
       eyebrow: 'Everything in its place',
       title: 'Everyday details, minus the noise.',
@@ -160,11 +192,10 @@ export const copy: Record<Locale, Copy> = {
     },
     privacy: {
       eyebrow: 'Trust comes first',
-      title: 'Your finances are yours.',
-      body: 'Keep a clear view of your finances with data and settings connected to your account.',
+      title: 'Your finances, in clear view.',
+      body: 'Keep track of spending, income, and savings in one place.',
       points: [
-        { title: 'A separate space for each account', body: 'Access rules keep account data tied to the authenticated user.' },
-        { title: 'No targeted advertising', body: 'Our privacy policy says financial data isn’t sold to advertisers.' },
+        { title: 'No targeted advertising', body: 'Financial information isn’t used to target ads.' },
       ],
       note: 'The app uses Firebase for authentication and data sync. We do not claim end-to-end encryption.',
     },
