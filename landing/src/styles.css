@@ -507,9 +507,8 @@ button:focus-visible, a:focus-visible, select:focus-visible {
 
 .feature {
   position: relative;
-  min-height: 220px;
+  min-height: 240px;
   padding: 26px;
-  overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 18px;
   background: var(--surface);

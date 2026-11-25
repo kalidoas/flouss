@@ -209,21 +209,13 @@ export function App() {
       if (installSection) {
         const installSteps = [...installSection.querySelectorAll('.install-step')];
         
-        // Initial state: all steps hidden except first
-        installSteps.forEach((step, i) => {
-          if (i > 0) {
-            gsap.set(step, { 
-              opacity: 0, 
-              y: 16,
-              duration: 0.1
-            });
-          }
-        });
+        // Initial state: all steps hidden
+        gsap.set(installSteps, { opacity: 0, y: 16 });
         
         const tl = gsap.timeline({ 
           scrollTrigger: { 
             trigger: installSection, 
-            start: 'top top', 
+            start: 'top 80%', 
             end: 'bottom bottom', 
             scrub: 1 
           } 
@@ -237,7 +229,7 @@ export function App() {
             duration: 0.5,
             ease: 'cubic-bezier(.22,1,.36,1)',
             delay: i * 0.15,
-          }, i);
+          }, i * 0.2);
         });
       }
 
