@@ -120,26 +120,6 @@ export function roundCurrency(val: number): number {
  * @param currencyCode - Optional currency code (defaults to MAD)
  * @returns Formatted string like "300.00 MAD" or "300.00 DH"
  */
-export function formatAmount(amount: string | number, currencyCode: string = 'MAD'): string {
-  const cents = toCents(amount);
-  const sign = cents < 0 ? '-' : '';
-  const absCents = Math.abs(cents);
-  const numericPart = new Intl.NumberFormat(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(Math.abs(absCents) / 100);
-
-  // Never duplicate currency labels
-  const currencyMap: Record<string, string> = {
-    MAD: ' MAD',
-    DH: ' DH',
-    // AR: ' DZD' would be wrong for MAD app, keep consistent
-  };
-
-  const currencySuffix = currencyMap[currencyCode] || ' MAD';
-  return `${sign}${numericPart}${currencySuffix}`;
-}
-
 // Export a singleton instance for easy importing
 export const money = {
   toCents,
@@ -150,6 +130,5 @@ export const money = {
   percentage: percentageCents,
   safeDivide: safeDivideCents,
   round: roundCurrency,
-  format: formatAmount,
   currency: CURRENCY,
 };
