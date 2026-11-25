@@ -4,3 +4,6 @@ dist/
 .env.local
 playwright-report/
 test-results/
+lighthouse-*.json
+lighthouse-*.html
+qa/**/output/
