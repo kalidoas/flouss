@@ -68,3 +68,4 @@ export const PrivacyCurrency: React.FC<PrivacyCurrencyProps> = ({
 // Canonical money primitive name for new UI; keep the existing export so
 // current screens can migrate without changing behavior.
 export const MoneyText = PrivacyCurrency;
+export const Money = PrivacyCurrency;

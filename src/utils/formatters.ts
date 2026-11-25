@@ -22,7 +22,7 @@ export function formatMAD(
   const decimalPart = parts[1];
 
   const prefix = normalizedAmount < 0 ? '-' : '';
-  return `${prefix}${integerPart},${decimalPart} ${currencySymbol}`;
+  return `${prefix}${integerPart},${decimalPart} ${currencySymbol}`;
 }
 
 /**
