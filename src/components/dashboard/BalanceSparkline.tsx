@@ -86,7 +86,7 @@ export const BalanceSparkline: React.FC<Props> = ({
   return (
     <div className="relative mt-2 pt-2 w-full overflow-hidden">
       {emptyState ? (
-        <div className="h-24 flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border-subtle dark:border-border-subtle/30 bg-surface-3/40 dark:bg-surface-3/10 text-muted">
+        <div className="h-24 flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border-subtle dark:border-border-subtle/30 bg-surface text-muted">
           <Sparkles className="w-8 h-8 opacity-20 shrink-0" />
           <p className="text-[11px] font-medium text-muted dark:text-muted">
             {language === 'ar' ? 'لا بيانات حالياً' : language === 'fr' ? 'Aucune donnée' : 'No data yet'}
@@ -95,7 +95,7 @@ export const BalanceSparkline: React.FC<Props> = ({
       ) : (
         <>
           <div
-            className="pointer-events-none absolute top-0 z-10 rounded-xl border border-border-subtle bg-surface-3/95 dark:bg-zinc-900/95 dark:border-white/10 px-3 py-1.5 text-xs shadow-xl backdrop-blur-md text-content dark:text-white transition-[left] duration-75"
+            className="pointer-events-none absolute top-0 z-10 rounded-xl border border-border-subtle bg-surface dark:bg-zinc-900/95 dark:border-white/10 px-3 py-1.5 text-xs shadow-sm backdrop-blur-md text-content dark:text-white transition-[left] duration-75"
             style={{
               left: `${clampedPercent}%`,
               transform: 'translateX(-50%)',
