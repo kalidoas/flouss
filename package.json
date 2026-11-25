@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "check:i18n": "node scripts/check-i18n.mjs",
+    "qa:lang": "playwright test --config e2e/playwright.config.ts --grep \"empty dashboard\"",
     "qa:shots": "playwright test --config e2e/playwright.config.ts"
   },
   "dependencies": {

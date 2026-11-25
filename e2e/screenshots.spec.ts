@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 const LOCALES = ['ar', 'fr', 'en'] as const;
 const THEMES = ['light', 'dark'] as const;
-const WIDTHS = [390, 1280] as const;
+type Fixture = 'empty' | 'seeded';
 
 const SCREENS: { screen: string; name: string }[] = [
   { screen: 'dashboard', name: 'dashboard' },
@@ -63,7 +63,7 @@ const prepareDemoStorage = ({ locale, theme }: { locale: string; theme: string }
 };
 
 // Populate realistic demo data and select the screen to capture.
-const applyDemoState = ({ locale, theme, screen }: { locale: string; theme: string; screen: string }) => {
+const applyDemoState = ({ locale, theme, screen, fixture = 'seeded' }: { locale: string; theme: string; screen: string; fixture?: Fixture }) => {
   const appStore = (window as any).useAppStore;
   appStore?.setState?.({
     authGate: 'app',
@@ -86,12 +86,12 @@ const applyDemoState = ({ locale, theme, screen }: { locale: string; theme: stri
     activeScreen: screen,
     hideBalance: false,
     isBalanceHidden: false,
-    initialBalance: 6200,
+    initialBalance: fixture === 'empty' ? 0 : 6200,
     categories: [
       { id: 'food', name: locale === 'ar' ? 'الطعام' : locale === 'fr' ? 'Alimentation' : 'Food', type: 'expense', color: '#16a34a', icon: 'ShoppingBasket' },
       { id: 'transport', name: locale === 'ar' ? 'النقل' : locale === 'fr' ? 'Transport' : 'Transport', type: 'expense', color: '#0284c7', icon: 'Bus' },
     ],
-    transactions: [
+    transactions: fixture === 'empty' ? [] : [
       { id: 'demo-income', type: 'income', amount: 9400, categoryId: null, date: '2026-11-03', description: locale === 'ar' ? 'الراتب' : locale === 'fr' ? 'Salaire' : 'Salary', createdAt: '2026-11-03T12:00:00.000Z' },
       { id: 'demo-food', type: 'expense', amount: 285.5, categoryId: 'food', category: locale === 'ar' ? 'الطعام' : locale === 'fr' ? 'Alimentation' : 'Food', date: '2026-11-21', description: locale === 'ar' ? 'مشتريات الأسبوع' : locale === 'fr' ? 'Courses de la semaine' : 'Weekly groceries', createdAt: '2026-11-21T12:00:00.000Z' },
       { id: 'demo-transport', type: 'expense', amount: 40, categoryId: 'transport', category: locale === 'ar' ? 'النقل' : locale === 'fr' ? 'Transport' : 'Transport', date: '2026-11-23', description: locale === 'ar' ? 'تنقلات' : locale === 'fr' ? 'Déplacement' : 'Transport', createdAt: '2026-11-23T12:00:00.000Z' },
@@ -107,26 +107,39 @@ const openDemoPage = async (
   locale: string,
   theme: string,
   screen: string,
+  fixture: Fixture = 'seeded',
 ) => {
   await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 20000 });
   await page
     .waitForFunction(() => Boolean((window as any).useAppStore), undefined, { timeout: 15000 })
     .catch(() => {});
+  // App subscribes to Firebase after mount; in the local screenshot server that
+  // callback reports signed-out and overrides the fixture. Keep auth initialization
+  // inert so the deterministic in-memory demo state remains mounted.
+  await page.evaluate(() => {
+    const store = (window as any).useAppStore;
+    if (store) {
+      store.getState().initAuthSession = async () => undefined;
+    }
+  }).catch(() => {});
   // Apply repeatedly until the authenticated shell is actually mounted.
   // Firebase's onAuthStateChanged fires late and flips authGate to 'signedOut',
   // so we keep re-applying and re-checking for the sidebar/nav rather than
   // racing it with a fixed timeout.
   const deadline = Date.now() + 12000;
   while (Date.now() < deadline) {
-    await page.evaluate(applyDemoState, { locale, theme, screen }).catch(() => {});
+    await page.evaluate(applyDemoState, { locale, theme, screen, fixture }).catch(() => {});
     await page.waitForTimeout(120);
     const mounted = await page
       .evaluate(
-        (s) =>
-          Boolean(
-            (window as any).useAppStore?.getState?.().authGate === 'app' &&
-              document.querySelector('nav, aside, header'),
-          ) && !document.querySelector('[role="status"]'),
+        (target) => {
+          const state = (window as any).useAppStore?.getState?.();
+          const appShell = Boolean(document.querySelector('nav, aside'));
+          const targetReady = target === 'dashboard'
+            ? Boolean(document.querySelector('main'))
+            : state?.activeScreen === target;
+          return state?.authGate === 'app' && appShell && targetReady;
+        },
         screen,
       )
       .catch(() => false);
@@ -138,17 +151,25 @@ const openDemoPage = async (
 test.describe('QA screenshots', () => {
   for (const locale of LOCALES) {
     for (const theme of THEMES) {
-      for (const width of WIDTHS) {
-        test(`screenshots ${locale}/${theme} ${width}px`, async ({ page }) => {
+      test(`seeded screenshots ${locale}/${theme}`, async ({ page }) => {
           await page.addInitScript(prepareDemoStorage, { locale, theme });
-          await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
+          const width = test.info().project.name === 'webkit-iphone' ? 390 : 1280;
+          await page.setViewportSize({ width, height: width === 390 ? 844 : 800 });
           for (const s of SCREENS) {
-            await openDemoPage(page, locale, theme, s.screen);
-            const filename = `${test.info().project.name}-${s.name}-${locale}-${theme}-${width}.png`;
+            await openDemoPage(page, locale, theme, s.screen, 'seeded');
+            const filename = `${test.info().project.name}-${s.name}-${locale}-${theme}.png`;
             await page.screenshot({ path: `qa/integration/${filename}`, fullPage: true });
           }
-        });
-      }
+      });
+      test(`empty dashboard ${locale}/${theme}`, async ({ page }) => {
+        await page.addInitScript(prepareDemoStorage, { locale, theme });
+        const width = test.info().project.name === 'webkit-iphone' ? 390 : 1280;
+        await page.setViewportSize({ width, height: width === 390 ? 844 : 800 });
+        await openDemoPage(page, locale, theme, 'dashboard', 'empty');
+        const heading = locale === 'en' ? /first expense/i : locale === 'fr' ? /dépense/i : /مصروف/i;
+        await expect(page.getByRole('heading', { name: heading })).toBeVisible();
+        await page.screenshot({ path: `qa/integration/${test.info().project.name}-dashboard-empty-${locale}-${theme}.png`, fullPage: true });
+      });
     }
   }
 
@@ -159,7 +180,7 @@ test.describe('QA screenshots', () => {
     await expect(fab).toBeVisible({ timeout: 10000 });
     await fab.click({ force: true });
     await page.waitForTimeout(500);
-    const addExpense = page.locator('div.fixed.bottom-24').getByRole('button').first();
+    const addExpense = page.getByRole('button', { name: /expense|مصروف|dépense/i }).last();
     await expect(addExpense).toBeVisible({ timeout: 5000 });
     await addExpense.click({ force: true });
     await page.waitForTimeout(800);

@@ -809,6 +809,8 @@ html[data-animations='off'] *::after {
   pointer-events: none;
   opacity: .92;
 }
+/* Keep the decorative coin out of the balance text in right-to-left layouts. */
+[dir="rtl"] .flouss-balance-scene { right: auto; left: 4%; }
 .flouss-balance-coin {
   position: absolute;
   inset: 10%;

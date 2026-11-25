@@ -53,7 +53,7 @@ export const DashboardPage: React.FC = () => {
               <div className="min-w-0 flex-1">
                 <h2 id="first-expense-heading" className="text-lg font-semibold tracking-tight text-content">{translations[language].dashboard.emptyTitle}</h2>
                 <p className="mt-1 text-sm leading-relaxed text-muted">{translations[language].dashboard.emptyDescription}</p>
-                <button type="button" onClick={() => window.dispatchEvent(new CustomEvent('flouss:quick-add', { detail: { type: 'expense' } }))} className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-full bg-accent-500 px-5 text-sm font-semibold text-white shadow-sm transition-transform active:scale-[.98]">
+                <button type="button" onClick={() => window.dispatchEvent(new CustomEvent('flouss:quick-add', { detail: { type: 'expense' } }))} className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-full bg-accent px-5 text-sm font-semibold text-accent-contrast shadow-sm transition-transform active:scale-[.98]">
                   <Plus className="h-4 w-4" />{translations[language].dashboard.emptyFirstExpense}
                 </button>
               </div>
