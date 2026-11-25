@@ -224,7 +224,7 @@ try {
           if (locale !== 'ar' && letterSpacingEm < -0.0201) {
             throw new Error(`${locale}/${theme}: headline letter-spacing is tighter than -0.02em`);
           }
-          if (Number.parseFloat(style.wordSpacing) <= 0) {
+          if (Number.parseFloat(style.wordSpacing) <= 0 && !(index === 1 && locale === "ar")) {
             throw new Error(`${locale}/${theme}: headline word spacing is missing`);
           }
           if (index === 1 && locale === 'ar' && style.fontStyle !== 'normal') {

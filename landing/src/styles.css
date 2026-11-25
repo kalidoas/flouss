@@ -326,6 +326,7 @@ button:focus-visible, a:focus-visible, select:focus-visible {
   font-family: var(--font-ar-headline);
   font-weight: 800;
   color: var(--text);
+  word-spacing: 0.06em;
 }
 
 .hero__description {
