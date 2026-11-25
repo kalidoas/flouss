@@ -29,6 +29,7 @@ body,
     /* Warm-orange brand accent: CTA hover, focus ring, selected state, accent word */
     --accent-warm: #B45309;
     --accent-warm-soft: rgba(180, 83, 9, 0.10);
+    --accent-submit: #FFFFFF;
     --positive: #2D8A5A;
     --negative: #C0392B;
     --warning: #B7791F;
@@ -87,6 +88,7 @@ body,
     /* Warm-orange brand accent (dark theme) */
     --accent-warm: #D97706;
     --accent-warm-soft: rgba(217, 119, 6, 0.12);
+    --accent-submit: #21150B;
     --positive: #4ADE80;
     --negative: #F87171;
     --warning: #FBBF24;
@@ -447,6 +449,109 @@ body,
 
 .animate-hero-focus {
   animation: heroFocus 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Flouss sign-in: one warm, static grain atmosphere with a locally rendered dirham medallion. */
+.flouss-auth-atmosphere {
+  background:
+    radial-gradient(ellipse at 18% 50%, color-mix(in srgb, var(--accent-warm) 19%, transparent), transparent 50%),
+    radial-gradient(ellipse at 83% 16%, color-mix(in srgb, var(--positive) 8%, transparent), transparent 42%);
+}
+
+.flouss-auth-story {
+  isolation: isolate;
+  border: 1px solid color-mix(in srgb, var(--accent-warm) 24%, var(--border));
+  background:
+    radial-gradient(ellipse at 75% 75%, color-mix(in srgb, var(--accent-warm) 17%, transparent), transparent 54%),
+    linear-gradient(145deg, color-mix(in srgb, var(--surface) 94%, var(--accent-warm)), var(--bg) 76%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 28px 80px -52px color-mix(in srgb, var(--accent-warm) 70%, transparent);
+}
+
+.flouss-auth-story::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: .075;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+}
+
+.flouss-auth-rule { background: color-mix(in srgb, var(--accent-warm) 75%, transparent); }
+
+.flouss-auth-coin {
+  position: absolute;
+  width: clamp(190px, 24vw, 310px);
+  aspect-ratio: 1;
+  inset-inline-end: 13%;
+  bottom: 12px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff8ec;
+  font-size: clamp(34px, 5vw, 58px);
+  font-weight: 600;
+  letter-spacing: -.06em;
+  background: radial-gradient(circle at 34% 28%, #f7c996 0 3%, #d5955e 16%, #aa653d 56%, #633d32 100%);
+  border: 1px solid rgba(255,239,208,.62);
+  box-shadow: inset 0 0 0 8px rgba(255,244,224,.12), inset 0 0 0 10px rgba(76,37,26,.25), 0 28px 65px rgba(0,0,0,.32);
+}
+
+.flouss-auth-coin::before,
+.flouss-auth-coin::after {
+  content: "";
+  position: absolute;
+  inset: 14px;
+  border: 1px solid rgba(255,245,223,.42);
+  border-radius: inherit;
+}
+
+.flouss-auth-coin::after { inset: 22px; border-color: rgba(74,38,27,.28); }
+.flouss-auth-orbit-ring { position:absolute; border:1px solid color-mix(in srgb, var(--accent-warm) 26%, transparent); border-radius:50%; transform:rotate(-18deg) scaleY(.33); }
+.flouss-auth-orbit-ring-one { width:520px; height:520px; inset-inline-end:-12%; bottom:-58px; }
+.flouss-auth-orbit-ring-two { width:690px; height:690px; inset-inline-end:-26%; bottom:-110px; opacity:.65; }
+.flouss-auth-orbit-floor { position:absolute; height:75px; left:12%; right:12%; bottom:6px; background:radial-gradient(ellipse, color-mix(in srgb, var(--accent-warm) 22%, transparent), transparent 68%); filter:blur(14px); }
+
+@keyframes floussCoinFloat {
+  0%, 100% { transform: translate3d(0, 0, 0) rotateX(0deg) rotateY(-4deg); }
+  50% { transform: translate3d(0, -9px, 0) rotateX(2deg) rotateY(4deg); }
+}
+
+.flouss-auth-coin.is-visible { animation: floussCoinFloat 8s ease-in-out infinite; }
+
+.flouss-auth-card { animation: fadeInPage .42s cubic-bezier(.22,1,.36,1) both; }
+
+.dark .flouss-auth-card .bg-surface-3 {
+  background-color: var(--surface-2);
+  border-color: var(--border-strong);
+}
+
+.dark .flouss-auth-card input {
+  color: var(--text);
+  background-color: var(--surface-2);
+  border-color: var(--border-strong);
+}
+
+.dark .flouss-auth-card input::placeholder { color: var(--text-subtle); }
+.dark .flouss-auth-card button { color: var(--text); }
+.dark .flouss-auth-card button.bg-surface { color: var(--text); }
+.dark .flouss-auth-card button.text-accent { color: var(--accent-warm); }
+.dark .flouss-auth-card .text-text-subtle { color: var(--text-muted); }
+
+.flouss-balance-hero {
+  border-color: color-mix(in srgb, var(--accent-warm) 23%, var(--border));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.16), 0 18px 55px -42px color-mix(in srgb, var(--accent-warm) 75%, transparent);
+}
+
+.flouss-balance-medallion {
+  border: 1px solid color-mix(in srgb, var(--accent-warm) 20%, transparent);
+  box-shadow: inset 0 0 0 14px color-mix(in srgb, var(--accent-warm) 5%, transparent), 0 0 70px color-mix(in srgb, var(--accent-warm) 10%, transparent);
+}
+
+.flouss-balance-medallion-secondary { border: 1px solid color-mix(in srgb, var(--accent-warm) 15%, transparent); }
+
+@media (prefers-reduced-motion: reduce) {
+  .flouss-auth-card, .flouss-auth-coin { animation: none; }
 }
 
 /* Calm bento panel (flat, 1px border, no heavy shadow) */

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { auth, googleProvider, isFirebaseConfigured } from '../../lib/firebase';
 import {
   signInWithPopup,
@@ -55,6 +55,17 @@ export const Login: React.FC = () => {
   const [sendingReset, setSendingReset] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const coinRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const coin = coinRef.current;
+    if (!coin || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      coin.classList.toggle('is-visible', entry.isIntersecting);
+    }, { threshold: 0.15 });
+    observer.observe(coin);
+    return () => observer.disconnect();
+  }, []);
 
   // Clear any stale account hint on mount (no prefilling from localStorage)
   useEffect(() => {
@@ -259,22 +270,40 @@ export const Login: React.FC = () => {
   return (
     <div
       dir={isAr ? 'rtl' : 'ltr'}
-      className="flex flex-col items-center justify-center min-h-screen bg-bg text-content px-4 py-8 relative overflow-hidden select-none"
+      className="flouss-auth-screen flex flex-col items-center justify-center min-h-screen bg-bg text-content px-4 py-7 sm:py-10 relative overflow-hidden select-none"
     >
-      {/* Background ambient lighting */}
+      {/* Single static brand atmosphere: warm grain, with no remote assets or animation. */}
       <div
-        className="fixed inset-0 pointer-events-none opacity-40"
-        style={{
-          backgroundImage:
-            'radial-gradient(circle at 50% 20%, rgba(99, 102, 241, 0.15), transparent 50%), radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.1), transparent 50%)',
-        }}
+        aria-hidden="true"
+        className="flouss-auth-atmosphere fixed inset-0 pointer-events-none"
       />
 
-      <div className="w-full max-w-md flex flex-col items-center gap-5 p-6 sm:p-8 rounded-[28px] bg-surface/90 backdrop-blur-2xl border border-border-strong shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_24px_50px_-12px_rgba(0,0,0,0.8)] relative z-10">
+      <div className="flouss-auth-layout relative z-10 w-full max-w-[1100px] grid grid-cols-1 lg:grid-cols-12 items-center gap-7 lg:gap-12">
+        <section className="flouss-auth-story hidden lg:flex lg:col-span-7 flex-col justify-between self-stretch min-h-[620px] rounded-[32px] p-10 xl:p-14 overflow-hidden relative">
+          <div className="relative z-10">
+            <Logo size="lg" showWordmark />
+            <p className="mt-8 max-w-lg text-3xl xl:text-[42px] leading-[1.14] font-semibold tracking-[-0.04em] text-content">
+              {translations[language].tagline}
+            </p>
+            <div className="flouss-auth-rule mt-5 h-px w-20" />
+          </div>
+          <div aria-hidden="true" className="flouss-auth-orbit absolute inset-x-0 bottom-0 h-[360px] overflow-hidden">
+            <div ref={coinRef} className="flouss-auth-coin"><span>د.م.</span></div>
+            <div className="flouss-auth-orbit-ring flouss-auth-orbit-ring-one" />
+            <div className="flouss-auth-orbit-ring flouss-auth-orbit-ring-two" />
+            <div className="flouss-auth-orbit-floor" />
+          </div>
+          <div className="relative z-10 flex max-w-[185px] items-start gap-3 text-[12px] leading-5 text-muted">
+            <ShieldCheck className="w-4 h-4 text-positive" />
+            <span>{tAuth.trustBadge}</span>
+          </div>
+        </section>
+
+      <div className="w-full max-w-md lg:max-w-none lg:col-span-5 mx-auto flex flex-col items-center gap-5 p-6 sm:p-8 rounded-[28px] bg-surface/95 backdrop-blur-2xl border border-border-strong shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_24px_50px_-12px_rgba(0,0,0,0.35)] relative z-10 flouss-auth-card">
         
         {/* Header with Language Switcher */}
         <div className="w-full flex items-center justify-between">
-          <Logo size="md" showWordmark={true} />
+          <Logo size="md" showWordmark={true} className="lg:hidden" />
           <div className="flex items-center gap-1 rounded-full p-1 bg-surface-3 border border-border-strong">
             {(['fr', 'ar', 'en'] as Language[]).map((lang) => (
               <button
@@ -293,7 +322,7 @@ export const Login: React.FC = () => {
           </div>
         </div>
 
-        <p className="text-xs text-text-subtle text-center leading-relaxed font-normal">
+        <p className="text-xs text-text-subtle text-center leading-relaxed font-normal lg:hidden">
           {translations[language].tagline}
         </p>
 
@@ -352,7 +381,7 @@ export const Login: React.FC = () => {
           type="button"
           onClick={handleGoogleSignIn}
           disabled={loadingGoogle || !isFirebaseConfigured}
-          className="w-full flex items-center justify-center gap-3 py-2.5 px-4 rounded-full border border-border-strong bg-surface-3 hover:bg-surface-2 hover:border-border/[0.2] text-xs font-semibold text-accent-contrast transition-all cursor-pointer shadow-xs active:scale-[0.98] disabled:opacity-50"
+          className="w-full flex items-center justify-center gap-3 py-2.5 px-4 rounded-full border border-border-strong bg-surface-3 hover:bg-surface-2 hover:border-border/[0.2] text-xs font-semibold text-content transition-all cursor-pointer shadow-xs active:scale-[0.98] disabled:opacity-50"
         >
           {loadingGoogle ? (
             <div className="w-4 h-4 border-2 border-border border-t-transparent rounded-full animate-spin" />
@@ -360,19 +389,19 @@ export const Login: React.FC = () => {
             <>
               <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                 <path
-                  fill="bg-info"
+                  fill="#4285F4"
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                 />
                 <path
-                  fill="bg-positive"
+                  fill="#34A853"
                   d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
                 />
                 <path
-                  fill="bg-warning"
+                  fill="#FBBC05"
                   d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
                 />
                 <path
-                  fill="bg-negative"
+                  fill="#EA4335"
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
                 />
               </svg>
@@ -474,7 +503,8 @@ export const Login: React.FC = () => {
           <button
             type="submit"
             disabled={loadingAuth}
-            className="w-full py-3 px-4 rounded-full bg-surface text-text-subtle font-bold text-xs flex items-center justify-center gap-2 hover:bg-border-border transition-all shadow-[0_0_20px_rgba(255,255,255,0.25)] active:scale-95 duration-200 cursor-pointer disabled:opacity-50"
+            className="w-full py-3 px-4 rounded-full font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-amber-900/20 active:scale-95 duration-200 cursor-pointer disabled:opacity-50"
+            style={{ backgroundColor: 'var(--accent-warm)', color: 'var(--accent-submit)' }}
           >
             {loadingAuth ? (
               <div className="w-4 h-4 border-2 border-bg-bg border-t-transparent rounded-full animate-spin" />
@@ -490,10 +520,11 @@ export const Login: React.FC = () => {
         </form>
 
         {/* Security / Privacy Trust Badge */}
-        <div className="flex items-center gap-2 text-[11px] text-text-subtle">
+        <div className="flex items-center gap-2 text-[11px] text-text-subtle lg:hidden">
           <ShieldCheck className="w-3.5 h-3.5 text-positive shrink-0" />
           <span>{tAuth.trustBadge}</span>
         </div>
+      </div>
       </div>
     </div>
   );

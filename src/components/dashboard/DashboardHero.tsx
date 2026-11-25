@@ -58,7 +58,7 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
       {/* Hero Balance Card */}
       <div
         data-spotlight="true"
-        className="spotlight-card group relative isolate overflow-hidden rounded-2xl bg-surface dark:bg-surface-3/5 p-4 sm:p-5 border border-border-subtle dark:border-white/10 shadow-xs min-w-0 min-h-[148px] sm:min-h-[168px]"
+        className="spotlight-card flouss-balance-hero group relative isolate overflow-hidden rounded-[24px] bg-surface dark:bg-surface-3/5 p-5 sm:p-6 border border-border-subtle dark:border-white/10 shadow-xs min-w-0 min-h-[190px] sm:min-h-[218px]"
       >
         <GrainyHeroBackdrop />
         <div className="relative z-10 flex flex-col gap-2 min-w-0">
@@ -81,10 +81,10 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
           </div>
 
           {/* Balance Amount (compact) */}
-          <div className="flex items-baseline flex-wrap gap-x-2 gap-y-1 min-w-0 mt-2 sm:mt-3">
+          <div className="flex items-baseline flex-wrap gap-x-2 gap-y-1 min-w-0 mt-4 sm:mt-5">
             <MoneyText
               amount={summary.balance}
-              className="text-[40px] sm:text-[44px] lg:text-[48px] font-bold leading-none tracking-tight tabular-nums text-content dark:text-content min-w-0"
+              className="text-[44px] sm:text-[52px] lg:text-[58px] font-bold leading-none tracking-[-0.055em] tabular-nums text-content dark:text-content min-w-0"
             />
           </div>
 
@@ -105,11 +105,11 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
       </div>
 
       {/* Quick Actions (compact) */}
-      <div className="grid grid-cols-3 gap-1.5 sm:gap-2 pt-2 w-full min-w-0">
+      <div className="grid grid-cols-3 gap-2 sm:gap-2.5 pt-3 w-full min-w-0">
         <button
           type="button"
           onClick={() => quickAdd('income')}
-          className="inline-flex min-h-[36px] items-center justify-center gap-1 rounded-lg border px-2 py-1.5 text-[11px] sm:text-xs font-semibold transition-all active:scale-[0.98] cursor-pointer min-w-0"
+          className="inline-flex min-h-[42px] items-center justify-center gap-1 rounded-xl border border-border-strong bg-surface/70 hover:bg-surface-raised px-2 py-2 text-[11px] sm:text-xs font-semibold transition-all active:scale-[0.98] cursor-pointer min-w-0"
         >
           <ArrowUpRight className="h-3.5 w-3.5 shrink-0 text-positive" />
           <span className="truncate text-muted">{tCommon.addIncome}</span>
@@ -117,7 +117,7 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
         <button
           type="button"
           onClick={() => quickAdd('expense')}
-          className="inline-flex min-h-[36px] items-center justify-center gap-1 rounded-lg border px-2 py-1.5 text-[11px] sm:text-xs font-semibold transition-all active:scale-[0.98] cursor-pointer min-w-0"
+          className="inline-flex min-h-[42px] items-center justify-center gap-1 rounded-xl border border-border-strong bg-surface/70 hover:bg-surface-raised px-2 py-2 text-[11px] sm:text-xs font-semibold transition-all active:scale-[0.98] cursor-pointer min-w-0"
         >
           <ArrowDownRight className="h-3.5 w-3.5 shrink-0" />
           <span className="truncate">{tCommon.addExpense}</span>
@@ -125,7 +125,7 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
         <button
           type="button"
           onClick={() => setContributionOpen(true)}
-          className="inline-flex min-h-[36px] items-center justify-center gap-1 rounded-lg bg-accent-500/10 hover:bg-accent-500/15 border border-accent-500/20 text-accent-600 dark:text-accent-400 px-2 py-1.5 text-[11px] sm:text-xs font-semibold transition-all active:scale-[0.98] cursor-pointer min-w-0"
+          className="inline-flex min-h-[42px] items-center justify-center gap-1 rounded-xl bg-accent-500/10 hover:bg-accent-500/15 border border-accent-500/20 text-accent-600 dark:text-accent-400 px-2 py-2 text-[11px] sm:text-xs font-semibold transition-all active:scale-[0.98] cursor-pointer min-w-0"
         >
           <PiggyBank className="h-3.5 w-3.5 shrink-0" />
           <span className="truncate">{tWallet.saveGoal}</span>
