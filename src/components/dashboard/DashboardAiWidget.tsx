@@ -116,8 +116,8 @@ export const DashboardAiWidget: React.FC<DashboardAiWidgetProps> = (props) => {
       aria-label={locale === 'ar' ? 'ملخص نشاطك' : locale === 'fr' ? 'Résumé de votre activité' : 'Activity summary'}
       className="spotlight-card relative flex h-fit flex-col justify-between overflow-hidden rounded-2xl border border-border-subtle dark:border-white/10 bg-surface dark:bg-white/5 p-4 shadow-xs dark:shadow-[0_0_24px_rgba(99,102,241,0.12),inset_0_1px_0_0_rgba(255,255,255,0.08)] backdrop-blur-xl group min-w-0"
     >
-      <div className="pointer-events-none absolute -right-12 -top-12 h-28 w-28 rounded-full bg-indigo-500/15 blur-2xl transition-all duration-500 group-hover:bg-indigo-500/25" />
-      <div className="pointer-events-none absolute -bottom-10 -left-10 h-24 w-24 rounded-full bg-purple-500/10 blur-2xl" />
+      <div className="pointer-events-none absolute -right-12 -top-12 h-28 w-28 rounded-full bg-muted/15 blur-2xl transition-all duration-500 group-hover:bg-muted/20" />
+      <div className="pointer-events-none absolute -bottom-10 -left-10 h-24 w-24 rounded-full bg-surface-raised/[0.04] blur-2xl" />
 
       <div className="relative z-10 mb-2.5 flex items-center justify-between gap-2 min-w-0">
         <div className="flex items-center gap-2 min-w-0">

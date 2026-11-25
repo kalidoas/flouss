@@ -60,7 +60,6 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
       <div
         data-spotlight="true"
         className="spotlight-card group relative overflow-hidden rounded-2xl bg-surface dark:bg-surface-3/5 p-3 sm:p-4 backdrop-blur-xl border border-border-subtle dark:border-white/10 shadow-xs dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] min-w-0 h-48 sm:h-64"
-        style={{ backgroundImage: 'radial-gradient(ellipse 65% 55% at 0% 0%, rgba(99,102,241,0.10), transparent 60%)' }}
       >
         <div className="relative z-10 flex flex-col gap-2 min-w-0 h-full">
           {/* Title & Edit Button (sentence case, 15-17px, font-semibold) */}
