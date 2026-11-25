@@ -6,10 +6,10 @@ import { AddContributionModal } from '../transactions/AddContributionModal';
 import { BalanceSparkline, buildBalanceSeries } from './BalanceSparkline';
 import { selectDashboardFinancials } from '../../utils/calculations';
 import { getCurrentMonthStr, isTransactionInMonth } from '../../utils/formatters';
-import { getDailyRateInsight, getNetPresentation } from '../../utils/dashboard';
+import { getNetPresentation } from '../../utils/dashboard';
 import { translations } from '../../i18n/translations';
 import { ArrowDownRight, ArrowUpRight, Pencil, PiggyBank, TrendingDown, TrendingUp } from 'lucide-react';
-import { Reveal } from '../../motion';
+import { GrainyHeroBackdrop } from '../backgrounds/GrainyHeroBackdrop';
 
 interface Props {
   selectedMonth: string;
@@ -36,7 +36,6 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
     () => buildBalanceSeries(initialBalance, txList, safeMonth, currentMonth, today),
     [initialBalance, txList, safeMonth, currentMonth]
   );
-  const dailyInsight = getDailyRateInsight(summary.balance, safeMonth, today);
   const openingBalance = series.length ? series[0].balance - series[0].change : 0;
   const delta = summary.balance - openingBalance;
   const deltaPercent = openingBalance !== 0 ? Math.round((delta / Math.abs(openingBalance)) * 100) : 0;
@@ -59,9 +58,10 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
       {/* Hero Balance Card */}
       <div
         data-spotlight="true"
-        className="spotlight-card group relative overflow-hidden rounded-2xl bg-surface dark:bg-surface-3/5 p-3 sm:p-4 border border-border-subtle dark:border-white/10 shadow-xs min-w-0 h-48 sm:h-64"
+        className="spotlight-card group relative isolate overflow-hidden rounded-2xl bg-surface dark:bg-surface-3/5 p-4 sm:p-5 border border-border-subtle dark:border-white/10 shadow-xs min-w-0 min-h-[148px] sm:min-h-[168px]"
       >
-        <div className="relative z-10 flex flex-col gap-2 min-w-0 h-full">
+        <GrainyHeroBackdrop />
+        <div className="relative z-10 flex flex-col gap-2 min-w-0">
           {/* Title & Edit Button (sentence case, 15-17px, font-semibold) */}
           <div className="flex items-center justify-between gap-2 min-w-0">
             <h1 className="text-[13px] sm:text-xs font-semibold text-muted dark:text-muted truncate leading-tight">
@@ -81,7 +81,7 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
           </div>
 
           {/* Balance Amount (compact) */}
-          <div className="flex items-baseline flex-wrap gap-x-2 gap-y-1 min-w-0 mt-0.5">
+          <div className="flex items-baseline flex-wrap gap-x-2 gap-y-1 min-w-0 mt-2 sm:mt-3">
             <MoneyText
               amount={summary.balance}
               className="text-[40px] sm:text-[44px] lg:text-[48px] font-bold leading-none tracking-tight tabular-nums text-content dark:text-content min-w-0"
@@ -89,7 +89,7 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
           </div>
 
           {/* Delta Chip */}
-          <div className="flex items-center gap-2 min-w-0 mt-0.5">
+          <div className="flex items-center gap-2 min-w-0 mt-1">
             <span
               className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold shrink-0 ${
                 deltaPositive
