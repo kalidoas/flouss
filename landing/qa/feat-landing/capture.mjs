@@ -127,6 +127,29 @@ try {
           ctaText: getComputedStyle(document.querySelector('.hero__actions .button')).color,
           ctaSurface: getComputedStyle(document.querySelector('.hero__actions .button')).backgroundColor,
           cta: document.querySelector('.hero__actions .button')?.getAttribute('href'),
+          subtitle: (() => {
+            const element = document.querySelector('.hero__description');
+            const words = [];
+            const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+            let node;
+            while ((node = walker.nextNode())) {
+              for (const match of node.textContent.matchAll(/\S+/g)) {
+                const range = document.createRange();
+                range.setStart(node, match.index);
+                range.setEnd(node, match.index + match[0].length);
+                words.push({ text: match[0], top: Math.round(range.getBoundingClientRect().top) });
+              }
+            }
+            const lastLineTop = Math.max(...words.map((word) => word.top));
+            const style = getComputedStyle(element);
+            return {
+              text: element.textContent.trim(),
+              lastLineWords: words.filter((word) => word.top === lastLineTop).map((word) => word.text),
+              letterSpacing: style.letterSpacing,
+              maxWidth: style.maxWidth,
+              textWrap: style.textWrap,
+            };
+          })(),
           headlineLines: document.querySelectorAll('.hero h1 .hero__headline-line').length,
           animatedWords: document.querySelectorAll('.hero h1 .hero__word').length,
           headlineText: [...document.querySelectorAll('.hero__headline-line')].map((line) => line.textContent.trim()),
@@ -142,6 +165,14 @@ try {
           }),
           mockupLabel: document.querySelector('.hero-stage__mockup-label')?.textContent?.trim(),
           balanceLabel: document.querySelector('.hero-stage__balance-label')?.textContent?.trim(),
+          currency: {
+            text: document.querySelector('.hero-stage__currency bdi')?.textContent?.trim(),
+            direction: document.querySelector('.hero-stage__currency bdi')?.getAttribute('dir'),
+            negativeAmounts: [...document.querySelectorAll('.hero-stage__transaction strong bdi')].map((amount) => ({
+              text: amount.textContent?.trim(),
+              direction: amount.getAttribute('dir'),
+            })),
+          },
           moneyColors: [
             '.hero-stage__balance',
             '.hero-stage__goal strong',
@@ -162,6 +193,15 @@ try {
         if (state.dir !== (locale === 'ar' ? 'rtl' : 'ltr')) throw new Error(`${locale}/${theme}: incorrect text direction`);
         if (state.theme !== theme) throw new Error(`${locale}/${theme}: expected ${theme} theme, got ${state.theme}`);
         if (state.width > state.viewport) throw new Error(`${locale}/${theme}/${viewport.width}: horizontal overflow ${state.width}px`);
+        if (state.subtitle.lastLineWords.length < 2) {
+          throw new Error(`${locale}/${theme}/${viewport.width}: subtitle ends with a single word`);
+        }
+        if (state.subtitle.textWrap !== 'balance' || (locale === 'ar' && !['0px', 'normal'].includes(state.subtitle.letterSpacing))) {
+          throw new Error(`${locale}/${theme}/${viewport.width}: subtitle balancing or tracking is incorrect (${state.subtitle.textWrap}, ${state.subtitle.letterSpacing})`);
+        }
+        if (locale === 'ar' && state.subtitle.text !== 'نظّم مصاريفك، وخطّط للقادم، وشوف الصورة كاملة.') {
+          throw new Error(`${locale}/${theme}/${viewport.width}: Arabic subtitle copy does not match the requested text`);
+        }
         if (state.headerWordmark !== expectedWordmark || state.footerWordmark !== expectedWordmark) {
           throw new Error(`${locale}/${theme}: logo wordmark is not localized`);
         }
@@ -194,6 +234,14 @@ try {
         if (!state.mockupLabel || state.billCard !== 1) throw new Error(`${locale}/${theme}: illustrative mockup or upcoming bill card is missing`);
         const expectedBalanceLabel = { ar: 'الرصيد المتاح', fr: 'Solde disponible', en: 'Available balance' }[locale];
         if (state.balanceLabel !== expectedBalanceLabel) throw new Error(`${locale}/${theme}: balance label is not localized`);
+        if (state.currency.text !== (locale === 'ar' ? 'د.م.' : 'MAD') || state.currency.direction !== 'ltr') {
+          throw new Error(`${locale}/${theme}: currency label is not localized or direction-isolated`);
+        }
+        if (state.currency.negativeAmounts.length !== 2 || state.currency.negativeAmounts.some((amount, index) => {
+          return amount.text !== ['−120', '−28'][index] || amount.direction !== 'ltr';
+        })) {
+          throw new Error(`${locale}/${theme}: negative amounts must be direction-isolated`);
+        }
         const expectedMoneyColor = theme === 'dark' ? 'rgb(245, 245, 244)' : 'rgb(23, 23, 24)';
         if (state.moneyColors.some((color) => color !== expectedMoneyColor)) {
           throw new Error(`${locale}/${theme}: mockup money should use a neutral theme color`);

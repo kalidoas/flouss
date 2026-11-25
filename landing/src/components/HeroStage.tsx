@@ -3,9 +3,9 @@ import type { Locale } from '../copy';
 type Props = { locale: Locale; mockupLabel: string; balanceLabel: string };
 
 const labels = {
-  ar: { spend: 'المصاريف', today: 'اليوم', groceries: 'مشتريات', coffee: 'قهوة', saved: 'هدف الادخار', bill: 'فاتورة جاية', billName: 'الإنترنت', due: '28 نونبر' },
-  fr: { spend: 'Dépenses', today: 'Aujourd’hui', groceries: 'Courses', coffee: 'Café', saved: 'Objectif d’épargne', bill: 'Facture à venir', billName: 'Internet', due: '28 nov.' },
-  en: { spend: 'Spending', today: 'Today', groceries: 'Groceries', coffee: 'Coffee', saved: 'Savings goal', bill: 'Upcoming bill', billName: 'Internet', due: 'Nov 28' },
+  ar: { spend: 'المصاريف', today: 'اليوم', groceries: 'مشتريات', coffee: 'قهوة', saved: 'هدف الادخار', bill: 'فاتورة جاية', billName: 'الإنترنت', due: '28 نونبر', currency: 'د.م.' },
+  fr: { spend: 'Dépenses', today: 'Aujourd’hui', groceries: 'Courses', coffee: 'Café', saved: 'Objectif d’épargne', bill: 'Facture à venir', billName: 'Internet', due: '28 nov.', currency: 'MAD' },
+  en: { spend: 'Spending', today: 'Today', groceries: 'Groceries', coffee: 'Coffee', saved: 'Savings goal', bill: 'Upcoming bill', billName: 'Internet', due: 'Nov 28', currency: 'MAD' },
 } satisfies Record<Locale, Record<string, string>>;
 
 export function HeroStage({ locale, mockupLabel, balanceLabel }: Props) {
@@ -24,7 +24,7 @@ export function HeroStage({ locale, mockupLabel, balanceLabel }: Props) {
             </svg>
           </span>
           <span className="hero-stage__balance-label">{balanceLabel}</span>
-          <span className="hero-stage__currency">MAD</span>
+          <span className="hero-stage__currency"><bdi dir="ltr">{copy.currency}</bdi></span>
         </div>
         <div className="hero-stage__balance" dir="ltr">8 450</div>
         <div className="hero-stage__divider" />
@@ -38,7 +38,7 @@ export function HeroStage({ locale, mockupLabel, balanceLabel }: Props) {
             </svg>
           </span>
           <span>{copy.groceries}<small>{copy.today}</small></span>
-          <strong>−120</strong>
+          <strong><bdi dir="ltr">−120</bdi></strong>
         </div>
         <div className="hero-stage__transaction">
           <span className="hero-stage__transaction-icon">
@@ -49,17 +49,17 @@ export function HeroStage({ locale, mockupLabel, balanceLabel }: Props) {
             </svg>
           </span>
           <span>{copy.coffee}<small>{copy.today}</small></span>
-          <strong>−28</strong>
+          <strong><bdi dir="ltr">−28</bdi></strong>
         </div>
         <div className="hero-stage__goal">
           <div className="hero-stage__progress"><span>64%</span></div>
-          <div><small>{copy.saved}</small><strong dir="ltr">3 200 MAD</strong></div>
+          <div><small>{copy.saved}</small><strong dir="ltr">3 200 <bdi dir="ltr">{copy.currency}</bdi></strong></div>
         </div>
         </div>
       </div>
       <div className="hero-stage__goal-chip">
         <span className="hero-stage__mini-progress">64%</span>
-        <span>{copy.saved}<strong dir="ltr">3 200 MAD</strong></span>
+        <span>{copy.saved}<strong dir="ltr">3 200 <bdi dir="ltr">{copy.currency}</bdi></strong></span>
       </div>
       <div className="hero-stage__bill-chip">
         <span className="hero-stage__bill-icon" aria-hidden="true">
@@ -69,7 +69,7 @@ export function HeroStage({ locale, mockupLabel, balanceLabel }: Props) {
           </svg>
         </span>
         <span>{copy.bill}<strong>{copy.billName} · {copy.due}</strong></span>
-        <b dir="ltr">340 MAD</b>
+        <b dir="ltr">340 <bdi dir="ltr">{copy.currency}</bdi></b>
       </div>
     </div>
   );

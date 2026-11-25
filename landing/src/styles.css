@@ -1837,3 +1837,12 @@ select:focus-visible {
   color: var(--text-soft);
   background: var(--surface);
 }
+
+.hero__description {
+  max-width: 34ch;
+  text-wrap: balance;
+}
+
+[dir='rtl'] .hero__description {
+  letter-spacing: 0;
+}
