@@ -37,9 +37,12 @@ export const PrivacyCurrency: React.FC<PrivacyCurrencyProps> = ({
       : parseFloat(String(amount || 0)) || 0;
 
   const formattedAmount = formatMAD(numVal, false, language);
-  const currencyIndex = formattedAmount.lastIndexOf(' ');
-  const numericPart = currencyIndex > -1 ? formattedAmount.slice(0, currencyIndex) : formattedAmount;
-  const currencyPart = currencyIndex > -1 ? formattedAmount.slice(currencyIndex + 1) : '';
+  // formatMAD intentionally uses a non-breaking space before the currency.
+  // Split on both regular and non-breaking whitespace so the amount and symbol
+  // remain separate bidi-isolated runs in Arabic and never render as "15MAD".
+  const moneyParts = formattedAmount.match(/^(.*?)[\s\u00a0]+([^\s\u00a0]+)$/u);
+  const numericPart = moneyParts?.[1] ?? formattedAmount;
+  const currencyPart = moneyParts?.[2] ?? '';
 
   return (
     <span
@@ -54,7 +57,8 @@ export const PrivacyCurrency: React.FC<PrivacyCurrencyProps> = ({
       {numericPart}
       {currencyPart && (
         <span
-          style={{ unicodeBidi: 'isolate', direction: 'rtl' }}
+          dir="auto"
+          style={{ unicodeBidi: 'isolate' }}
           className={`ms-1 ${currencyClassName || ''}`}
         >
           {currencyPart}
