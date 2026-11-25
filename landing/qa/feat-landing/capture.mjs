@@ -8,12 +8,12 @@ import { chromium } from '../../node_modules/playwright/index.mjs';
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const landingDir = path.resolve(scriptDir, '../..');
-const outputDir = path.join(scriptDir, 'output');
+const outputDir = path.join(scriptDir, 'output', 'follow-up');
 const screenshotDir = path.join(outputDir, 'screenshots');
 let baseUrl = process.env.LANDING_URL;
 const locales = ['ar', 'fr', 'en'];
 const themes = ['light', 'dark'];
-const widths = [{ width: 390, height: 844 }];
+const widths = [{ width: 390, height: 844 }, { width: 1280, height: 900 }];
 const reports = [];
 
 function colorChannels(color) {
@@ -129,8 +129,33 @@ try {
           cta: document.querySelector('.hero__actions .button')?.getAttribute('href'),
           headlineLines: document.querySelectorAll('.hero h1 .hero__headline-line').length,
           animatedWords: document.querySelectorAll('.hero h1 .hero__word').length,
+          headlineText: [...document.querySelectorAll('.hero__headline-line')].map((line) => line.textContent.trim()),
+          headlineWordCounts: [...document.querySelectorAll('.hero__headline-line')].map((line) => line.querySelectorAll('.hero__word').length),
+          headlineStyles: [...document.querySelectorAll('.hero__headline-line')].map((line) => {
+            const style = getComputedStyle(line);
+            return {
+              letterSpacing: style.letterSpacing,
+              fontSize: style.fontSize,
+              wordSpacing: style.wordSpacing,
+              fontStyle: style.fontStyle,
+            };
+          }),
           mockupLabel: document.querySelector('.hero-stage__mockup-label')?.textContent?.trim(),
+          balanceLabel: document.querySelector('.hero-stage__balance-label')?.textContent?.trim(),
+          moneyColors: [
+            '.hero-stage__balance',
+            '.hero-stage__goal strong',
+            '.hero-stage__goal-chip strong',
+            '.hero-stage__bill-chip b',
+          ].map((selector) => getComputedStyle(document.querySelector(selector)).color),
+          categoryIcons: document.querySelectorAll('.hero-stage__transaction-icon svg').length,
           billCard: document.querySelectorAll('.hero-stage__bill-chip').length,
+          billOverlapsGroceriesAmount: (() => {
+            const bill = document.querySelector('.hero-stage__bill-chip').getBoundingClientRect();
+            const amount = document.querySelector('.hero-stage__transaction strong').getBoundingClientRect();
+            return bill.left < amount.right && bill.right > amount.left && bill.top < amount.bottom && bill.bottom > amount.top;
+          })(),
+          navGap: getComputedStyle(document.querySelector('.topnav')).gap,
           installSteps: document.querySelectorAll('.install-step').length,
         }));
         if (state.lang !== locale) throw new Error(`${locale}/${theme}: expected lang=${locale}, got ${state.lang}`);
@@ -148,7 +173,36 @@ try {
         }
         if (await page.locator('.hero__seal').count() !== 0) throw new Error(`${locale}/${theme}: Morocco badge remains in the hero`);
         if (state.headlineLines !== 2 || state.animatedWords < 2) throw new Error(`${locale}/${theme}: expected two word-animated headline parts`);
+        if (state.headlineWordCounts.some((count, index) => count > 1 && !/\s/.test(state.headlineText[index]))) {
+          throw new Error(`${locale}/${theme}: headline words are not separated`);
+        }
+        for (const [index, style] of state.headlineStyles.entries()) {
+          const letterSpacingEm = style.letterSpacing === 'normal' ? 0 : Number.parseFloat(style.letterSpacing) / Number.parseFloat(style.fontSize);
+          if (locale === 'ar' && (letterSpacingEm !== 0 || style.fontStyle === 'italic')) {
+            throw new Error(`${locale}/${theme}: Arabic headline tracking or italic style is incorrect`);
+          }
+          if (locale !== 'ar' && letterSpacingEm < -0.0201) {
+            throw new Error(`${locale}/${theme}: headline letter-spacing is tighter than -0.02em`);
+          }
+          if (Number.parseFloat(style.wordSpacing) <= 0) {
+            throw new Error(`${locale}/${theme}: headline word spacing is missing`);
+          }
+          if (index === 1 && locale === 'ar' && style.fontStyle !== 'normal') {
+            throw new Error(`${locale}/${theme}: Arabic headline tail must not be italic`);
+          }
+        }
         if (!state.mockupLabel || state.billCard !== 1) throw new Error(`${locale}/${theme}: illustrative mockup or upcoming bill card is missing`);
+        const expectedBalanceLabel = { ar: 'الرصيد المتاح', fr: 'Solde disponible', en: 'Available balance' }[locale];
+        if (state.balanceLabel !== expectedBalanceLabel) throw new Error(`${locale}/${theme}: balance label is not localized`);
+        const expectedMoneyColor = theme === 'dark' ? 'rgb(245, 245, 244)' : 'rgb(23, 23, 24)';
+        if (state.moneyColors.some((color) => color !== expectedMoneyColor)) {
+          throw new Error(`${locale}/${theme}: mockup money should use a neutral theme color`);
+        }
+        if (state.categoryIcons !== 2) throw new Error(`${locale}/${theme}: category icons are missing`);
+        if (state.billOverlapsGroceriesAmount) throw new Error(`${locale}/${theme}: upcoming bill overlaps the Groceries amount`);
+        if (viewport.width > 720 && Number.parseFloat(state.navGap) < 32) {
+          throw new Error(`${locale}/${theme}: desktop navigation gap is too small (${state.navGap} at ${state.viewport}px)`);
+        }
         if (state.installSteps !== 3) throw new Error(`${locale}/${theme}: expected three iPhone installation steps`);
         if (!state.cta?.startsWith('https://')) throw new Error(`${locale}/${theme}: CTA must use HTTPS`);
         if (contrast(state.textColor, state.pageColor) < 4.5) throw new Error(`${locale}/${theme}: text contrast is below AA`);
@@ -197,7 +251,9 @@ try {
     }
   }
 
-  if (reports.length !== locales.length * themes.length) throw new Error(`Expected six mobile screenshots, captured ${reports.length}`);
+  if (reports.length !== locales.length * themes.length * widths.length) {
+    throw new Error(`Expected ${locales.length * themes.length * widths.length} responsive screenshots, captured ${reports.length}`);
+  }
   await writeFile(path.join(outputDir, 'report.json'), JSON.stringify({ screenshots: reports }, null, 2));
   console.log(`Captured ${reports.length} screenshots.`);
   console.log(`Outputs: ${outputDir}`);

@@ -2,3 +2,8 @@ output/*
 !output/screenshots/
 output/screenshots/*
 !output/screenshots/*.png
+!output/follow-up/
+output/follow-up/*
+!output/follow-up/screenshots/
+output/follow-up/screenshots/*
+!output/follow-up/screenshots/*.png
