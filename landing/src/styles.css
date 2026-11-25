@@ -1,5 +1,10 @@
 :root {
-  font-family: 'Inter', 'Noto Sans Arabic', sans-serif;
+  --font-inter: 'Inter', sans-serif;
+  --font-ar-headline: 'Readex Pro', sans-serif;
+  --font-ar-serif: 'Amiri', serif;
+  --font-ar-body: 'IBM Plex Sans Arabic', sans-serif;
+  
+  font-family: var(--font-inter);
   color: #171718;
   background: #fafaf9;
   font-synthesis: none;
@@ -38,6 +43,11 @@ body {
   min-width: 320px;
   background: var(--page);
   color: var(--text);
+  font-family: var(--font-inter);
+}
+
+[lang='ar'] body {
+  font-family: var(--font-ar-body);
 }
 
 button, select, a { font: inherit; }
@@ -289,8 +299,34 @@ button:focus-visible, a:focus-visible, select:focus-visible {
   line-height: 1.06;
 }
 
+[lang='ar'] .hero h1 {
+  font-family: var(--font-ar-headline);
+  font-weight: 800;
+  font-size: clamp(3.2rem, 9vw, 7.5rem);
+  line-height: 1.15;
+  letter-spacing: 0;
+}
+
 .hero h1 span { color: var(--accent); }
 [dir='rtl'] .hero h1 { letter-spacing: normal; line-height: 1.28; }
+
+/* Arabic headline: Readex Pro 800, larger size, proper line-height, no negative letter-spacing */
+[lang='ar'] .hero h1 {
+  font-family: var(--font-ar-headline);
+  font-size: clamp(3.2rem, 9vw, 7.5rem);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: 0;
+  word-spacing: 0.06em;
+  max-width: none;
+}
+
+/* First line (sans) - solid text color */
+[lang='ar'] .hero__headline-line:not(.hero__headline-line--tail) {
+  font-family: var(--font-ar-headline);
+  font-weight: 800;
+  color: var(--text);
+}
 
 .hero__description {
   max-width: 465px;
@@ -298,6 +334,16 @@ button:focus-visible, a:focus-visible, select:focus-visible {
   color: var(--text-soft);
   font-size: clamp(17px, 1.7vw, 20px);
   line-height: 1.75;
+}
+
+[lang='ar'] .hero__description {
+  font-family: var(--font-ar-body);
+  font-weight: 500;
+  font-size: clamp(1.1rem, 2.2vw, 1.4rem);
+  line-height: 1.8;
+  color: var(--text-soft);
+  text-wrap: balance;
+  max-width: 34ch;
 }
 
 .hero__actions {
@@ -377,6 +423,33 @@ button:focus-visible, a:focus-visible, select:focus-visible {
 [dir='rtl'] .section-heading h2,
 [dir='rtl'] .privacy-panel h2,
 [dir='rtl'] .closing-panel h2 { letter-spacing: normal; line-height: 1.4; }
+
+[lang='ar'] .section-heading h2 {
+  font-family: var(--font-ar-headline);
+  font-weight: 800;
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 1.15;
+  letter-spacing: 0;
+  color: var(--text);
+}
+
+/* Second phrase contrast: Amiri serif for Arabic section titles */
+[lang='ar'] .section-heading .hero__headline-line--tail,
+[lang='ar'] .section-heading .naskh-accent {
+  font-family: 'Amiri', serif;
+  font-weight: 400;
+  font-style: normal;
+  color: var(--text-soft);
+  font-size: 1.05em;
+  letter-spacing: 0;
+}
+
+/* Arabic features/steps cards text */
+[lang='ar'] .feature__body,
+[lang='ar'] .step__body {
+  font-family: var(--font-ar-body);
+  font-weight: 500;
+}
 
 .section-heading > p:last-child {
   max-width: 580px;
@@ -1451,15 +1524,20 @@ button:focus-visible, a:focus-visible, select:focus-visible {
 }
 
 .hero__headline-line--tail[lang='ar'] {
-  color: var(--text-muted);
-  font-family: 'Noto Sans Arabic', sans-serif;
+  color: var(--text-soft);
+  font-family: 'Amiri', serif;
   font-style: normal;
-  font-weight: 700;
-  letter-spacing: normal;
+  font-weight: 400;
+  font-size: 0.9em;
+  letter-spacing: 0;
+  line-height: 1.15;
+  word-spacing: 0;
 }
 
 .hero__headline-line--tail[lang='ar'] .hero__word {
-  color: var(--text-muted);
+  color: var(--text-soft);
+  word-spacing: 0;
+  letter-spacing: 0;
 }
 
 @keyframes headline-word-in {
