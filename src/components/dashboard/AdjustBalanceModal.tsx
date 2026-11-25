@@ -109,10 +109,10 @@ export const AdjustBalanceModal: React.FC<AdjustBalanceModalProps> = ({
           <div
             className={`p-3 rounded-2xl border transition-colors ${
               diff > 0
-                ? 'bg-emerald-500/10 dark:bg-emerald-950/30 border-emerald-500/20 text-emerald-700 dark:text-emerald-300'
+                ? 'bg-positive/10 dark:bg-positive/20 border-positive/20 text-positive'
                 : diff < 0
-                ? 'bg-rose-500/10 dark:bg-rose-950/30 border-rose-500/20 text-rose-700 dark:text-rose-300'
-                : 'bg-zinc-100/80 dark:bg-zinc-800/60 border-black/[0.04] dark:border-white/[0.06] text-zinc-500 dark:text-zinc-400'
+                ? 'bg-negative/10 dark:bg-negative/20 border-negative/20 text-negative'
+                : 'bg-surface-raised border-border-subtle text-muted'
             }`}
           >
             <span className="text-[10px] font-semibold opacity-75 uppercase tracking-wider block">

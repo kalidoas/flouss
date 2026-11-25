@@ -134,7 +134,7 @@ export const DashboardRecentTransactions: React.FC<Props> = ({
                     {isAdjustment && (
                       <span
                         title={t.adjustmentTooltip}
-                        className="shrink-0 whitespace-nowrap rounded-full border border-indigo-400/25 bg-indigo-500/10 px-1.5 py-0.2 text-[9px] font-semibold text-indigo-500 dark:text-indigo-300"
+                        className="shrink-0 whitespace-nowrap rounded-full border border-border-subtle/20 bg-surface-raised px-1.5 py-0.2 text-[9px] font-semibold text-muted dark:text-muted"
                       >
                         {t.adjustmentLabel}
                       </span>
