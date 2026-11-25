@@ -7,14 +7,13 @@
       "React 18",
       "TypeScript",
       "Vite",
-      "Three.js (lazy-loaded WebGL2 hero)"
+      "CSS product stage and view-timeline reveals"
     ]
   },
   "sources": {
     "tokens": [],
     "components": [],
     "assets": [
-      "public/images/hero-poster.svg",
       "public/favicon.svg"
     ],
     "instructions": [
@@ -25,19 +24,19 @@
   "design": {
     "colorMode": "light and dark",
     "colors": {
-      "page": "#f6f7f4",
+      "page": "#fafaf9",
       "surface": "#ffffff",
-      "text": "#18372d",
+      "text": "#171718",
       "accent": "#087f5b",
-      "darkPage": "#101a15",
-      "darkSurface": "#17241d",
-      "darkText": "#f1f5ef",
+      "darkPage": "#0b0b0c",
+      "darkSurface": "#111113",
+      "darkText": "#f5f5f4",
       "darkAccent": "#75cba0",
-      "warmAccent": "#d5a35b"
+      "neutralMarker": "#737376"
     },
     "typography": {
-      "latin": "system UI",
-      "arabic": "Geeza Pro, Noto Sans Arabic, Tahoma, Segoe UI",
+      "latin": "Inter",
+      "arabic": "Noto Sans Arabic",
       "arabicLetterSpacing": "normal"
     },
     "spacing": {
@@ -51,22 +50,22 @@
       "featurePanels": "28px–30px"
     },
     "shadows": {
-      "surface": "0 24px 70px rgba(27,59,43,.1)"
+      "surface": "none"
     },
     "motion": {
-      "hero": "Scroll-linked Three.js camera; render only on scroll, resize, or visibility changes",
-      "fallback": "Bundled static SVG poster; WebGL skipped on mobile and for reduced motion"
+      "hero": "Two-part word-animated headline and CSS iPhone mockup with scroll-linked blur-to-sharp reveal",
+      "fallback": "Reduced-motion mode shows final content without reveal animation"
     },
     "density": "comfortable"
   },
   "components": {
     "installed": [],
-    "preferredPrimitives": [],
+    "preferredPrimitives": ["src/components/Logo.tsx"],
     "patterns": [
       "Single-page responsive marketing story",
       "Arabic-default locale selector with RTL",
       "Light/dark theme toggle",
-      "Product-mockup hero with static fallback"
+      "Static product stage with localized mockup labels"
     ]
   },
   "constraints": {
@@ -74,16 +73,20 @@
       "Arabic is the default locale and uses RTL layout",
       "Support Arabic, French, and English",
       "Meet WCAG AA text contrast in both themes",
-      "Respect reduced motion, keep the hero static on mobile, and pause WebGL outside the viewport",
+      "Respect reduced motion and keep the hero visual static",
       "Keep all landing implementation files inside /landing and /qa/feat-landing"
     ],
     "avoid": [
       "Unverified product, security, or privacy promises",
-      "Remote images and unnecessary remote font dependencies",
+      "Remote imagery and unnecessary external dependencies",
       "Heavy animation outside the hero"
     ]
   },
-  "decisions": [],
+  "decisions": [
+    "Use the language-neutral coin-ring symbol and localize the wordmark by locale.",
+    "Use flat neutral surfaces, a soft gray hero stage, black pill calls to action, and scroll-linked blur-to-sharp reveals.",
+    "Use an Instrument Serif italic headline tail in French and English; Arabic uses a muted heavier-weight tail with normal tracking."
+  ],
   "evidence": [
     "docs/DESIGN_SKILL.md",
     "src/i18n/translations.ts",

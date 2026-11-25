@@ -25,6 +25,6 @@ The static build includes Arabic (default), French, and English entry paths. Loc
 
 ## Visual QA
 
-From `landing`, run `npm run capture`. The script starts a local preview, checks all locale/theme combinations at 390px and 1280px, writes full-page screenshots and scroll videos under `qa/feat-landing/output/`, then stops the preview server.
+From `landing`, run `npm run capture`. The script starts a local preview, checks Arabic, French, and English in light and dark themes at 390px and 1280px, and writes full-page screenshots under `landing/qa/feat-landing/output/`.
 
-The WebGL product scene is lazy-loaded on desktop, capped to a reduced pixel ratio, paused outside its visible section, and replaced by a bundled SVG poster on mobile, when WebGL2 is unavailable, or when reduced motion is requested.
+The hero product stage is static and CSS-built. Section reveals are linked to scroll progress and resolve to their final state when reduced motion is requested.
