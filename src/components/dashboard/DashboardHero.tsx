@@ -59,7 +59,7 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
       {/* Hero Balance Card */}
       <div
         data-spotlight="true"
-        className="spotlight-card group relative overflow-hidden rounded-2xl bg-surface dark:bg-surface-3/5 p-3 sm:p-4 backdrop-blur-xl border border-border-subtle dark:border-white/10 shadow-xs dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] min-w-0 h-48 sm:h-64"
+        className="spotlight-card group relative overflow-hidden rounded-2xl bg-surface dark:bg-surface-3/5 p-3 sm:p-4 border border-border-subtle dark:border-white/10 shadow-xs min-w-0 h-48 sm:h-64"
       >
         <div className="relative z-10 flex flex-col gap-2 min-w-0 h-full">
           {/* Title & Edit Button (sentence case, 15-17px, font-semibold) */}
@@ -109,15 +109,15 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
         <button
           type="button"
           onClick={() => quickAdd('income')}
-          className="inline-flex min-h-[36px] items-center justify-center gap-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/20 text-positive dark:text-positive px-2 py-1.5 text-[11px] sm:text-xs font-semibold transition-all active:scale-[0.98] cursor-pointer min-w-0"
+          className="inline-flex min-h-[36px] items-center justify-center gap-1 rounded-lg border px-2 py-1.5 text-[11px] sm:text-xs font-semibold transition-all active:scale-[0.98] cursor-pointer min-w-0"
         >
-          <ArrowUpRight className="h-3.5 w-3.5 shrink-0" />
-          <span className="truncate">{tCommon.addIncome}</span>
+          <ArrowUpRight className="h-3.5 w-3.5 shrink-0 text-positive" />
+          <span className="truncate text-muted">{tCommon.addIncome}</span>
         </button>
         <button
           type="button"
           onClick={() => quickAdd('expense')}
-          className="inline-flex min-h-[36px] items-center justify-center gap-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/15 border border-negative-500/20 text-negative dark:text-negative px-2 py-1.5 text-[11px] sm:text-xs font-semibold transition-all active:scale-[0.98] cursor-pointer min-w-0"
+          className="inline-flex min-h-[36px] items-center justify-center gap-1 rounded-lg border px-2 py-1.5 text-[11px] sm:text-xs font-semibold transition-all active:scale-[0.98] cursor-pointer min-w-0"
         >
           <ArrowDownRight className="h-3.5 w-3.5 shrink-0" />
           <span className="truncate">{tCommon.addExpense}</span>

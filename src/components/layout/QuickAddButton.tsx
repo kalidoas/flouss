@@ -74,8 +74,8 @@ export const QuickAddButton: React.FC<QuickAddButtonProps> = ({
         title={tCommon.quickAdd}
         className={`fixed bottom-6 end-6 z-[9999] h-14 w-14 items-center justify-center rounded-full flex outline-none transition-all duration-300 cursor-pointer pointer-events-auto select-none ${
           isOpen
-            ? 'bg-gradient-to-tr from-indigo-500 to-purple-600 text-white shadow-[0_0_28px_rgba(99,102,241,0.65)] rotate-45 scale-105'
-            : 'bg-white text-zinc-950 shadow-[0_8px_24px_rgba(0,0,0,0.4),0_0_20px_rgba(255,255,255,0.25)] hover:shadow-[0_8px_28px_rgba(0,0,0,0.5),0_0_25px_rgba(255,255,255,0.5)] hover:scale-105 active:scale-95'
+            ? 'bg-accent rotate-45 scale-105 shadow-md'
+            : 'bg-surface text-content shadow-md dark:bg-surface-3 dark:text-text-subtle hover:shadow-lg active:scale-95'
         }`}
       >
         <Plus className="h-6 w-6 stroke-[2.5] transition-transform duration-300" />
@@ -123,13 +123,13 @@ export const QuickAddButton: React.FC<QuickAddButtonProps> = ({
                       }
                     })
                   }
-                  className="w-full flex items-center gap-3 p-2.5 rounded-2xl hover:bg-rose-500/15 border border-transparent hover:border-rose-500/30 text-start transition-all active:scale-98 duration-150 group cursor-pointer"
+                  className="w-full flex items-center gap-3 p-2.5 rounded-2xl hover:bg-surface-raised border border-transparent hover:border-border/30 text-start transition-all active:scale-98 duration-150 group cursor-pointer"
                 >
-                  <div className="w-9 h-9 rounded-xl bg-rose-500/15 text-rose-400 border border-rose-500/25 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                  <div className="w-9 h-9 rounded-xl bg-negative/15 text-negative border border-negative/25 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                     <TrendingDown className="w-4.5 h-4.5" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="block text-xs font-bold text-zinc-100 group-hover:text-rose-300 truncate">
+                    <span className="block text-xs font-bold text-zinc-100 group-hover:text-content truncate">
                       {tCommon.addExpense}
                     </span>
                     <span className="block text-[10px] text-zinc-400 truncate">
@@ -152,13 +152,13 @@ export const QuickAddButton: React.FC<QuickAddButtonProps> = ({
                       }
                     })
                   }
-                  className="w-full flex items-center gap-3 p-2.5 rounded-2xl hover:bg-emerald-500/15 border border-transparent hover:border-emerald-500/30 text-start transition-all active:scale-98 duration-150 group cursor-pointer"
+                  className="w-full flex items-center gap-3 p-2.5 rounded-2xl hover:bg-surface-raised border border-transparent hover:border-border/30 text-start transition-all active:scale-98 duration-150 group cursor-pointer"
                 >
-                  <div className="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                  <div className="w-9 h-9 rounded-xl bg-positive/15 text-positive border border-positive/25 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                     <TrendingUp className="w-4.5 h-4.5" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="block text-xs font-bold text-zinc-100 group-hover:text-emerald-300 truncate">
+                    <span className="block text-xs font-bold text-zinc-100 group-hover:text-content truncate">
                       {tCommon.addIncome}
                     </span>
                     <span className="block text-[10px] text-zinc-400 truncate">
@@ -179,13 +179,13 @@ export const QuickAddButton: React.FC<QuickAddButtonProps> = ({
                       }
                     })
                   }
-                  className="w-full flex items-center gap-3 p-2.5 rounded-2xl hover:bg-blue-500/15 border border-transparent hover:border-blue-500/30 text-start transition-all active:scale-98 duration-150 group cursor-pointer"
+                  className="w-full flex items-center gap-3 p-2.5 rounded-2xl hover:bg-surface-raised border border-transparent hover:border-border/30 text-start transition-all active:scale-98 duration-150 group cursor-pointer"
                 >
-                  <div className="w-9 h-9 rounded-xl bg-blue-500/15 text-blue-400 border border-blue-500/25 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                  <div className="w-9 h-9 rounded-xl bg-accent/15 text-accent border border-accent/25 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                     <PiggyBank className="w-4.5 h-4.5" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="block text-xs font-bold text-zinc-100 group-hover:text-blue-300 truncate">
+                    <span className="block text-xs font-bold text-zinc-100 group-hover:text-content truncate">
                       {tCommon.addContribution}
                     </span>
                     <span className="block text-[10px] text-zinc-400 truncate">
