@@ -56,7 +56,13 @@ export const Header: React.FC = () => {
       : now.getHours() < 18
       ? tDashboard.greetingAfternoon
       : tDashboard.greetingEvening;
-  const greeting = greetingTemplate.replace('{firstName}', firstName);
+  const greeting = (
+    <>
+      {greetingTemplate.split('{firstName}')[0]}
+      <bdi>{firstName}</bdi>
+      {greetingTemplate.split('{firstName}')[1] ?? ''}
+    </>
+  );
   const dateLine = new Intl.DateTimeFormat(getIntlLocale(language), {
     weekday: 'long',
     day: 'numeric',
