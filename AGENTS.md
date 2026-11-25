@@ -1,7 +1,3 @@
-Flouss design system scope:
-- Zones: login, sign-up, OTP, PIN, onboarding, empty states, Dashboard hero (subtle/static).
-- Excluded: tables, lists, forms, modals/sheets, charts, secondary pages.
-- Styles: Grainy gradients, noise, fluted glass, dot matrix. Others restricted.
-- Constraints: AA contrast, RTL-safe, max 1 effect/screen, performance optimized, static fallback, isolated components.
+# Flouss project instructions
 
-Read docs/DESIGN_SKILL.md before any visual or background work.
+The current, authoritative design and motion requirements are in [docs/REDESIGN_SPEC.md](docs/REDESIGN_SPEC.md). Read and follow that specification for all design, UI, animation, and feature work. It supersedes older scope and style restrictions in `docs/DESIGN_SKILL.md`; do not reapply those superseded limits. Preserve all non-conflicting repository safety and quality requirements.
