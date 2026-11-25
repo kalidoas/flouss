@@ -74,7 +74,7 @@ export const ProtectWorkspacePinCard: React.FC<Props> = ({ onConfigurePin }) => 
                 <button
                   type="button"
                   onClick={handleEnable}
-                  className="inline-flex items-center gap-1.5 py-1.5 px-3.5 rounded-full bg-accent-600 hover:bg-accent-500 text-accent-contrast text-xs font-bold transition-all shadow-md shadow-accent/30 active:scale-95 cursor-pointer"
+                  className="inline-flex items-center gap-1.5 py-1.5 px-3.5 rounded-full bg-content hover:bg-surface text-accent-contrast text-xs font-bold transition-all shadow-md shadow-accent/30 active:scale-95 cursor-pointer"
                 >
                   <KeyRound className="w-3.5 h-3.5" />
                   <span>
