@@ -158,7 +158,7 @@ export const ExpensesPage: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-[1280px] max-w-full overflow-x-hidden min-w-0 mx-auto space-y-5 animate-page select-text pb-8">
+    <div className="w-full max-w-[1280px] overflow-x-hidden min-w-0 mx-auto space-y-5 animate-page select-text pb-8">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
