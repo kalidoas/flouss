@@ -26,12 +26,15 @@ body,
     --text-subtle: #8A8A85;
     --accent: #111111;
     --accent-contrast: #FAFAF9;
+    /* Warm-orange brand accent: CTA hover, focus ring, selected state, accent word */
+    --accent-warm: #B45309;
+    --accent-warm-soft: rgba(180, 83, 9, 0.10);
     --positive: #2D8A5A;
     --negative: #C0392B;
     --warning: #B7791F;
     --info: #2563EB;
     --info-contrast: #FFFFFF;
-    --ring: #2563EB;
+    --ring: #B45309;
     --shadow-sm: 0 0 0 0 rgba(0, 0, 0, 0);
     --shadow-md: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
     --radius-sm: 6px;
@@ -81,12 +84,15 @@ body,
     --text-subtle: #787874;
     --accent: #F5F5F4;
     --accent-contrast: #0B0B0C;
+    /* Warm-orange brand accent (dark theme) */
+    --accent-warm: #D97706;
+    --accent-warm-soft: rgba(217, 119, 6, 0.12);
     --positive: #4ADE80;
     --negative: #F87171;
     --warning: #FBBF24;
     --info: #60A5FA;
     --info-contrast: #FFFFFF;
-    --ring: #60A5FA;
+    --ring: #D97706;
     --shadow-sm: 0 0 0 0 rgba(0, 0, 0, 0);
     --shadow-md: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
     --radius-sm: 6px;
