@@ -244,17 +244,30 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
           />
         </label>
 
-        {/* 5. Sticky Full-Width Save Button */}
+        {/* 4. Optional Note Input */}
+        <label className="block rounded-2xl border border-border-subtle bg-surface px-3.5 py-2">
+          <span className="mb-1 flex items-center gap-1.5 text-[10px] font-semibold text-muted">
+            <Clock3 className="h-3 w-3" />
+            {t.note}
+          </span>
+          <input
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder={t.notePlaceholderExpense}
+            className="min-h-9 w-full bg-transparent text-base text-content placeholder:text-muted focus:outline-none"
+            inputMode="text"
+          />
+        </label>
+
+        {/* 5. Sticky Full-Width Save Button (black pill) */}
         <div className="sticky bottom-0 bg-surface/95 dark:bg-[bg-bg]/95 pt-2 border-t border-border-subtle dark:border-border/10 backdrop-blur-md">
-          <Button
+          <button
             type="submit"
-            variant="danger"
-            fullWidth
-            icon={<Check className="w-4 h-4 stroke-[2.5]" />}
-            className="min-h-[48px] text-sm font-bold"
+            className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-content text-canvas text-sm font-bold transition-all active:scale-[0.98]"
           >
+            <Check className="w-4 h-4 stroke-[2.5]" />
             {t.save}
-          </Button>
+          </button>
         </div>
       </form>
     </Modal>
