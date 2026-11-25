@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState, type ReactNode, useRef } from 'react';
+import { Fragment, useEffect, useState, type ReactNode, useRef, type RefObject } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { copy, localeLabels, type Locale } from './copy';
@@ -74,6 +74,8 @@ export function App() {
   const progressBarRef = useRef<HTMLDivElement>(null);
   const darkPhoneRef = useRef<HTMLDivElement>(null);
   const balanceNumberRef = useRef<HTMLSpanElement>(null);
+  const installSectionRef = useRef<HTMLDivElement>(null);
+  const installStepRefs = useRef<Array<React.RefObject<HTMLSpanElement>>>([]);
 
   useEffect(() => {
     const localeFromPath = () => setLocale(getInitialLocale());
@@ -201,6 +203,43 @@ export function App() {
           tl.fromTo(darkPhone, { transform: 'perspective(900px) rotateX(24deg) rotateY(-16deg)' }, { transform: 'perspective(900px) rotateX(0deg) rotateY(0deg)', duration: 2, ease: 'cubic-bezier(.22,1,.36,1)' }, 0);
         }
       }
+      
+      // SCENE 6: Install on iPhone — 3-step animation
+      const installSection = document.querySelector<HTMLElement>('.install-section');
+      if (installSection) {
+        const installSteps = [...installSection.querySelectorAll('.install-step')];
+        
+        // Initial state: all steps hidden except first
+        installSteps.forEach((step, i) => {
+          if (i > 0) {
+            gsap.set(step, { 
+              opacity: 0, 
+              y: 16,
+              duration: 0.1
+            });
+          }
+        });
+        
+        const tl = gsap.timeline({ 
+          scrollTrigger: { 
+            trigger: installSection, 
+            start: 'top top', 
+            end: 'bottom bottom', 
+            scrub: 1 
+          } 
+        });
+        
+        // Animate each step with delay
+        installSteps.forEach((step, i) => {
+          tl.to(step, {
+            opacity: 1,
+            y: 0,
+            duration: 0.5,
+            ease: 'cubic-bezier(.22,1,.36,1)',
+            delay: i * 0.15,
+          }, i);
+        });
+      }
     });
     return () => ctx.revert();
   }, [locale]);
@@ -291,15 +330,18 @@ export function App() {
             <h2>{t.install.title}</h2>
             <p>{t.install.body}</p>
           </div>
-          <div className="install-steps">
-            {t.install.steps.map((step, index) => (
-              <article className="install-step" key={step.title}>
-                <span className="install-step__number">0{index + 1}</span>
-                <span className="install-step__icon"><Icon name={step.icon} size={21} /></span>
-                <h3>{step.title}</h3>
-                <p>{step.body}</p>
-              </article>
-            ))}
+          <div className="install-steps" ref={installSectionRef}>
+            {t.install.steps.map((step, index) => {
+              if (!installStepRefs.current[index]) installStepRefs.current[index] = { current: null } as RefObject<HTMLSpanElement>;
+              return (
+                <article className="install-step" key={step.title}>
+                  <span className="install-step__number" ref={installStepRefs.current[index]}>0{index + 1}</span>
+                  <span className="install-step__icon"><Icon name={step.icon} size={21} /></span>
+                  <h3>{step.title}</h3>
+                  <p>{step.body}</p>
+                </article>
+              );
+            })}
           </div>
           <p className="install-note"><Icon name="check" size={16} />{t.install.note}</p>
         </section>
