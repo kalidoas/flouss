@@ -37,9 +37,6 @@ export const PrivacyCurrency: React.FC<PrivacyCurrencyProps> = ({
       : parseFloat(String(amount || 0)) || 0;
 
   const formattedAmount = formatMAD(numVal, false, language);
-  const currencyIndex = formattedAmount.lastIndexOf(' ');
-  const numericPart = currencyIndex > -1 ? formattedAmount.slice(0, currencyIndex) : formattedAmount;
-  const currencyPart = currencyIndex > -1 ? formattedAmount.slice(currencyIndex + 1) : '';
 
   return (
     <span
@@ -51,15 +48,7 @@ export const PrivacyCurrency: React.FC<PrivacyCurrencyProps> = ({
     >
       {prefix}
       {showSign && numVal > 0 && '+'}
-      {numericPart}
-      {currencyPart && (
-        <span
-          style={{ unicodeBidi: 'isolate', direction: 'rtl' }}
-          className={`ms-1 ${currencyClassName || ''}`}
-        >
-          {currencyPart}
-        </span>
-      )}
+      {formattedAmount}
       {suffix}
     </span>
   );
@@ -68,3 +57,4 @@ export const PrivacyCurrency: React.FC<PrivacyCurrencyProps> = ({
 // Canonical money primitive name for new UI; keep the existing export so
 // current screens can migrate without changing behavior.
 export const MoneyText = PrivacyCurrency;
+export const Money = PrivacyCurrency;

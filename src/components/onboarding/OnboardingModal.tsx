@@ -7,6 +7,7 @@ import { formatMAD } from '../../utils/formatters';
 import { Button } from '../common/Button';
 import { Modal } from '../common/Modal';
 import { Logo } from '../common/Logo';
+import { Money } from '../common/PrivacyCurrency';
 import {
   Lock,
   ShieldCheck,
@@ -374,7 +375,7 @@ export const OnboardingModal: React.FC = () => {
                           : 'border-border bg-surface/20 text-muted hover:text-content hover:bg-surface/10'
                       }`}
                     >
-                      +{pill.toLocaleString('fr-FR')} {translations[language].currency}
+                      <Money amount={pill} className="tabular-nums" />
                     </button>
                   );
                 })}

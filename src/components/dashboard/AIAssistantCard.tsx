@@ -29,18 +29,18 @@ export const AIAssistantCard: React.FC<AIAssistantCardProps> = ({ onQuickAction 
   return (
     <AppleGlassCard
       className="p-5 sm:p-6 relative overflow-hidden flex flex-col justify-between space-y-4"
-      spotlightColor="rgba(99, 102, 241, 0.2)"
+      spotlightColor="rgba(15, 23, 42, 0.1)"
       enableTilt={false}
     >
-      {/* Ambient AI Neon Glow */}
-      <div className="absolute -top-12 -left-12 w-48 h-48 bg-gradient-to-br from-indigo-500/20 via-purple-500/15 to-transparent rounded-full blur-2xl pointer-events-none" />
-      <div className="absolute -bottom-12 -right-12 w-48 h-48 bg-blue-500/15 rounded-full blur-2xl pointer-events-none" />
+      {/* Ambient AI Subtle Glow */}
+      <div className="absolute -top-12 -left-12 w-48 h-48 bg-muted/10 rounded-full blur-2xl pointer-events-none" />
+      <div className="absolute -bottom-12 -right-12 w-48 h-48 bg-muted/10 rounded-full blur-2xl pointer-events-none" />
 
       {/* Header */}
       <div className="flex items-center justify-between gap-3 relative z-10">
         <div className="flex items-center gap-2.5">
           <div className="relative">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 text-white flex items-center justify-center shadow-[0_0_18px_rgba(99,102,241,0.5)] border border-accent-contrast/40 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-accent/15 text-accent dark:bg-accent/20 flex items-center justify-center shadow-[0_0_18px_rgba(15,23,42,0.15)] border border-accent/20 flex items-center justify-center">
               <Sparkles className="w-4 h-4" />
             </div>
             {/* Pulsing online badge */}

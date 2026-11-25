@@ -61,6 +61,7 @@ export const CategoriesPage: React.FC = () => {
   const catList = categories || [];
   const txList = transactions || [];
   const tCat = translations[language].categories;
+  const tCatPage = translations[language].categoriesPage;
   const currentMonth = getCurrentMonthStr();
 
   const [activeTab, setActiveTab] = useState<'all' | 'goals' | 'expenses' | 'archived'>('all');
@@ -204,14 +205,14 @@ export const CategoriesPage: React.FC = () => {
           style={{ backgroundImage: 'radial-gradient(circle at 100% 0%, rgba(99,102,241,0.12), transparent 70%)' }}
         >
           <div className="flex items-center justify-between text-[11px] font-medium uppercase tracking-[0.14em] text-muted mb-1.5">
-            <span className="truncate">{language === 'ar' ? 'مجموع الأصناف' : 'Total Catégories'}</span>
+            <span className="truncate">{tCatPage.totalCategories}</span>
             <Layers className="w-3.5 h-3.5 text-accent-400 shrink-0" />
           </div>
           <div className="text-2xl font-bold tracking-tight text-content tabular-nums">
             {categoryStats.activeCategoriesCount}
           </div>
           <span className="text-[11px] text-muted block mt-1 truncate">
-            {categoryStats.activeGoalsCount} {language === 'ar' ? 'أهداف ادخار' : 'objectifs actifs'}
+            {categoryStats.activeGoalsCount} {tCatPage.activeGoals}
           </span>
         </div>
 
@@ -228,7 +229,7 @@ export const CategoriesPage: React.FC = () => {
             <MoneyText amount={categoryStats.totalSpent} />
           </div>
           <span className="text-[11px] text-muted block mt-1 truncate">
-            {language === 'ar' ? 'خلال هذا الشهر' : 'Total dépenses du mois'}
+            {tCatPage.totalMonthlyExpenses}
           </span>
         </div>
 
@@ -238,7 +239,7 @@ export const CategoriesPage: React.FC = () => {
           style={{ backgroundImage: 'radial-gradient(circle at 100% 0%, rgba(245,158,11,0.12), transparent 70%)' }}
         >
           <div className="flex items-center justify-between text-[11px] font-medium uppercase tracking-[0.14em] text-muted mb-1.5">
-            <span className="truncate">{language === 'ar' ? 'الأكثر استهلاكاً' : 'Plus forte dépense'}</span>
+            <span className="truncate">{tCatPage.highestSpending}</span>
             <Sparkles className="w-3.5 h-3.5 text-warning shrink-0" />
           </div>
           <div className="text-base font-bold text-accent-contrast truncate">
@@ -255,14 +256,14 @@ export const CategoriesPage: React.FC = () => {
           style={{ backgroundImage: 'radial-gradient(circle at 100% 0%, rgba(52,211,153,0.14), transparent 70%)' }}
         >
           <div className="flex items-center justify-between text-[11px] font-medium uppercase tracking-[0.14em] text-muted mb-1.5">
-            <span className="truncate">{language === 'ar' ? 'أهداف الادخار' : 'Objectifs Actifs'}</span>
+            <span className="truncate">{tCatPage.activeGoalsTitle}</span>
             <PiggyBank className="w-3.5 h-3.5 text-positive shrink-0" />
           </div>
           <div className="text-2xl font-bold tracking-tight text-positive tabular-nums">
             {categoryStats.activeGoalsCount}
           </div>
           <span className="text-[11px] text-muted block mt-1 truncate">
-            {language === 'ar' ? 'قيد الإنجاز' : 'En cours d’épargne'}
+            {tCatPage.inProgress}
           </span>
         </div>
       </div>
@@ -570,7 +571,7 @@ export const CategoriesPage: React.FC = () => {
                       <MoneyText amount={category.isGoal && goalCalc ? goalCalc.savedAmount : spentThisMonth} />
                     </div>
                     <span className="text-[10px] text-muted">
-                      {category.isGoal ? (language === 'ar' ? 'المدخر' : 'Épargné') : (language === 'ar' ? 'مصروف الشهر' : 'Dépensé')}
+                      {category.isGoal ? tCatPage.saved : tCatPage.spentThisMonth}
                     </span>
                   </div>
                 </div>
@@ -579,7 +580,7 @@ export const CategoriesPage: React.FC = () => {
                 {!category.isGoal ? (
                   <div className="space-y-1">
                     <div className="flex items-center justify-between text-[11px] text-muted">
-                      <span>{language === 'ar' ? 'استهلاك الميزانية' : 'Budget consommé'}</span>
+                      <span>{tCatPage.budgetConsumed}</span>
                       <span className="font-semibold tabular-nums text-muted">
                         {monthlyBudget > 0 ? `${budgetProgress}%` : '—'}
                       </span>
@@ -591,7 +592,7 @@ export const CategoriesPage: React.FC = () => {
                 ) : (
                   <div className="space-y-1">
                     <div className="flex items-center justify-between text-[11px] text-muted">
-                      <span>{language === 'ar' ? 'الهدف' : 'Objectif'}: <MoneyText amount={category.targetAmount || 0} /></span>
+                      <span>{tCatPage.goalLabel}: <MoneyText amount={category.targetAmount || 0} /></span>
                       <span className="font-semibold tabular-nums text-accent">{goalCalc ? `${goalCalc.progressPercent}%` : '0%'}</span>
                     </div>
                     <div className="h-1.5 overflow-hidden rounded-full bg-surface/[0.06]">
@@ -604,7 +605,7 @@ export const CategoriesPage: React.FC = () => {
                 <div className="flex items-center justify-between pt-2 border-t border-border/[0.05] gap-2" onClick={(e) => e.stopPropagation()}>
                   {!category.isGoal ? (
                     <div className="flex items-center gap-1.5">
-                      <span className="text-[11px] text-muted">{language === 'ar' ? 'الميزانية:' : 'Budget:'}</span>
+                      <span className="text-[11px] text-muted">{tCatPage.budgetLabel}</span>
                       <div className="flex items-center rounded-lg bg-canvas/40 border border-border/[0.08] p-0.5">
                         <button
                           type="button"
@@ -642,7 +643,7 @@ export const CategoriesPage: React.FC = () => {
                     </div>
                   ) : (
                     <div className="text-[11px] text-muted">
-                      {category.targetDate ? `${language === 'ar' ? 'التاريخ المستهدف:' : 'Cible:'} ${category.targetDate}` : ''}
+                      {category.targetDate ? `${tCatPage.targetDateLabel} ${category.targetDate}` : ''}
                     </div>
                   )}
 
@@ -654,7 +655,7 @@ export const CategoriesPage: React.FC = () => {
                         className="inline-flex items-center gap-1 rounded-full bg-accent/15 hover:bg-accent/25 border border-accent/30 text-accent text-xs font-medium px-3 py-1 transition-all"
                       >
                         <Plus className="w-3 h-3" />
-                        <span>{language === 'ar' ? 'ادخار' : 'Épargner'}</span>
+                        <span>{tCatPage.saveButton}</span>
                       </button>
                     ) : (
                       <button
@@ -664,7 +665,7 @@ export const CategoriesPage: React.FC = () => {
                         title={tCat.quickExpense}
                       >
                         <Plus className="w-3 h-3" />
-                        <span>{language === 'ar' ? 'دفع' : 'Dépense'}</span>
+                        <span>{tCatPage.spendButton}</span>
                       </button>
                     )}
                   </div>
@@ -676,7 +677,7 @@ export const CategoriesPage: React.FC = () => {
       )}
       {unusedCount > 0 && activeTab !== 'archived' && (
         <button type="button" onClick={() => setShowUnused((value) => !value)} className="min-h-10 rounded-full px-4 text-xs font-medium text-accent hover:bg-surface/[0.04] border border-border/[0.06] transition-all">
-          {language === 'ar' ? `${showUnused ? 'إخفاء' : 'عرض'} ${unusedCount} فئات غير مستخدمة` : language === 'fr' ? `${showUnused ? 'Masquer' : 'Afficher'} ${unusedCount} catégories inutilisées` : `${showUnused ? 'Hide' : 'Show'} ${unusedCount} unused`}
+          {showUnused ? tCatPage.hideUnusedCategories.replace('{count}', String(unusedCount)) : tCatPage.showUnusedCategories.replace('{count}', String(unusedCount))}
         </button>
       )}
 

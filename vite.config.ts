@@ -4,6 +4,9 @@ import { execSync } from 'child_process';
 import path from 'path';
 
 const getBuildSha = () => {
+  if (process.env.SOURCE_COMMIT) {
+    return process.env.SOURCE_COMMIT.slice(0, 7);
+  }
   if (process.env.VERCEL_GIT_COMMIT_SHA) {
     return process.env.VERCEL_GIT_COMMIT_SHA.slice(0, 7);
   }

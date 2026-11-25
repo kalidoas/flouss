@@ -46,7 +46,7 @@ export const ProtectWorkspacePinCard: React.FC<Props> = ({ onConfigurePin }) => 
       <div
         data-testid="pin-onboarding-checklist"
         dir={isAr ? 'rtl' : 'ltr'}
-        className="spotlight-card rounded-2xl bg-surface dark:bg-gradient-to-r dark:from-accent-500/30 dark:via-accent-500/20 dark:to-surface-3/40 p-4 sm:p-5 backdrop-blur-xl border border-accent-500/30 dark:border-accent-500/20 shadow-xs shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] relative overflow-hidden min-w-0"
+        className="spotlight-card rounded-2xl bg-surface dark:bg-surface-3/5 p-4 sm:p-5 backdrop-blur-xl border border-border-subtle dark:border-border-subtle/10 shadow-xs shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] relative overflow-hidden min-w-0"
       >
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3.5 min-w-0">
@@ -74,7 +74,7 @@ export const ProtectWorkspacePinCard: React.FC<Props> = ({ onConfigurePin }) => 
                 <button
                   type="button"
                   onClick={handleEnable}
-                  className="inline-flex items-center gap-1.5 py-1.5 px-3.5 rounded-full bg-accent-600 hover:bg-accent-500 text-accent-contrast text-xs font-bold transition-all shadow-md shadow-accent/30 active:scale-95 cursor-pointer"
+                  className="inline-flex items-center gap-1.5 py-1.5 px-3.5 rounded-full bg-content hover:bg-surface text-accent-contrast text-xs font-bold transition-all shadow-md shadow-accent/30 active:scale-95 cursor-pointer"
                 >
                   <KeyRound className="w-3.5 h-3.5" />
                   <span>

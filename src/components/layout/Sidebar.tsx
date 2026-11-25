@@ -130,7 +130,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
                     {isActive && (
                       <motion.div
                         layoutId="sidebar-active-pill"
-                        className="absolute inset-0 bg-surface/10 border border-border shadow-sm rounded-xl -z-10"
+                        className="absolute inset-x-0 left-0 top-0 bottom-0 w-0.5 bg-accent rounded-r-lg -z-10"
                         transition={{
                           type: 'spring',
                           stiffness: 420,
@@ -181,7 +181,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
                     {isActive && (
                       <motion.div
                         layoutId="sidebar-active-pill"
-                        className="absolute inset-0 bg-surface/10 border border-border shadow-sm rounded-xl -z-10"
+                        className="absolute inset-x-0 left-0 top-0 bottom-0 w-0.5 bg-accent rounded-r-lg -z-10"
                         transition={{
                           type: 'spring',
                           stiffness: 420,
@@ -221,7 +221,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
               {activeScreen === 'settings' && (
                 <motion.div
                   layoutId="sidebar-active-pill"
-                  className="absolute inset-0 bg-surface/10 border border-border shadow-sm rounded-xl -z-10"
+                  className="absolute inset-x-0 left-0 top-0 bottom-0 w-0.5 bg-accent rounded-r-lg -z-10"
                   transition={{
                     type: 'spring',
                     stiffness: 420,

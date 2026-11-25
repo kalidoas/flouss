@@ -81,8 +81,7 @@ export const DashboardFocusNow: React.FC = () => {
         data-spotlight="true"
         className="spotlight-card rounded-2xl bg-surface text-content dark:bg-surface-3/5 text-content p-4 sm:p-5 backdrop-blur-xl border border-border-subtle dark:border-border-subtle/10 shadow-xs dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] relative overflow-hidden h-fit min-w-0"
         style={{
-          backgroundImage:
-            'radial-gradient(ellipse 70% 60% at 100% 0%, rgba(244,63,94,0.12), transparent 70%)',
+          backgroundImage: 'radial-gradient(ellipse 70% 60% at 100% 0%, rgba(244,63,94,0.12), transparent 70%)',
         }}
       >
         <div className="flex items-center justify-between gap-2 mb-3 min-w-0">

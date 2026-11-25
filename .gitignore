@@ -37,6 +37,10 @@ security-audit-report.html
 Flouss_Dashboard_Design.md
 screenshots/
 
+# Playwright output (screenshots, reports)
+qa/
+qa-report/
+
 # Temporary recovery & restore files - NEVER commit these
 *recovered*.json
 *restore*.js

@@ -54,17 +54,17 @@ export const DashboardBillsCard: React.FC<Props> = ({
   return (
     <div
       data-spotlight="true"
-      className="spotlight-card flex flex-col justify-between gap-3.5 rounded-2xl bg-surface dark:bg-white/5 p-4 sm:p-5 backdrop-blur-xl border border-border-subtle dark:border-white/10 shadow-xs dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] h-fit min-w-0"
+      className="spotlight-card flex flex-col justify-between gap-3.5 rounded-2xl bg-surface dark:bg-white/5 p-4 sm:p-5 backdrop-blur-xl border border-border-subtle dark:border-white/10 h-fit min-w-0"
     >
       <div className="flex items-center justify-between gap-2 min-w-0">
         <h2 className="flex items-center gap-1.5 text-[15px] sm:text-base font-semibold text-content dark:text-white truncate">
-          <CalendarClock aria-hidden="true" className="h-4 w-4 text-indigo-500 dark:text-indigo-400 shrink-0" />
+          <CalendarClock aria-hidden="true" className="h-4 w-4 text-muted dark:text-muted shrink-0" />
           <span>{t.nextBills}</span>
         </h2>
         <button
           type="button"
           onClick={onOpen}
-          className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors shrink-0 cursor-pointer"
+          className="inline-flex items-center gap-1 text-xs font-semibold text-muted dark:text-muted hover:text-content dark:hover:text-white transition-colors shrink-0 cursor-pointer"
         >
           <span>{translations[language].nav.subscriptions}</span>
           <ArrowRight aria-hidden="true" className="h-3 w-3 rtl:rotate-180" />
@@ -101,9 +101,9 @@ export const DashboardBillsCard: React.FC<Props> = ({
                   <span
                     className={`rounded-full px-2 py-0.5 text-[10px] font-semibold tabular-nums shrink-0 whitespace-nowrap ${
                       isOverdue
-                        ? 'bg-rose-500/15 text-rose-600 dark:text-rose-300 border border-rose-500/20'
+                        ? 'bg-negative/15 text-negative dark:text-negative border border-negative/20'
                         : isToday
-                        ? 'bg-amber-500/15 text-amber-600 dark:text-amber-300 border border-amber-500/20'
+                        ? 'bg-positive/15 text-positive dark:text-positive border border-positive/20'
                         : 'bg-surface-raised dark:bg-white/[0.05] text-muted dark:text-zinc-300 border border-border-subtle dark:border-white/[0.06]'
                     }`}
                   >
