@@ -240,6 +240,44 @@ export function App() {
           }, i);
         });
       }
+
+      // SCENE 7: Closing — bold statement + tail, CTA, glow
+      const closingSection = document.querySelector<HTMLElement>('.closing-section');
+      if (closingSection) {
+        const panel = closingSection.querySelector<HTMLElement>('.closing-panel');
+        const glow = panel?.querySelector<HTMLElement>('.closing-panel__glow');
+        const ornament = panel?.querySelector<HTMLElement>('.closing-panel__ornament');
+        const title = panel?.querySelector<HTMLElement>('h2');
+        const accent = panel?.querySelector<HTMLElement>('h2 em');
+        const body = panel?.querySelector<HTMLElement>('p:not(.eyebrow)');
+        const cta = panel?.querySelector<HTMLElement>('.button');
+        const footnote = panel?.querySelector<HTMLElement>('.closing-panel__footnote');
+
+        const tl = gsap.timeline({ scrollTrigger: { trigger: closingSection, start: 'top top', end: 'bottom bottom', scrub: 1 } });
+
+        if (glow) {
+          tl.fromTo(glow, { opacity: 0, scale: 0.6 }, { opacity: 0.5, scale: 1, duration: 1.6, ease: 'cubic-bezier(.22,1,.36,1)' }, 0);
+        }
+        if (title) {
+          tl.fromTo(title, { opacity: 0, y: 40, filter: 'blur(8px)' }, { opacity: 1, y: 0, filter: 'blur(0px)', duration: 1, ease: 'cubic-bezier(.22,1,.36,1)' }, 0);
+        }
+        if (accent) {
+          tl.fromTo(accent, { opacity: 0, scale: 0.88, y: 16 }, { opacity: 1, scale: 1, y: 0, duration: 1, ease: 'cubic-bezier(.22,1,.36,1)' }, 0.2);
+        }
+        if (body) {
+          tl.fromTo(body, { opacity: 0, y: 22 }, { opacity: 1, y: 0, duration: 0.9, ease: 'cubic-bezier(.22,1,.36,1)' }, 0.3);
+        }
+        if (cta) {
+          tl.fromTo(cta, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.9, ease: 'cubic-bezier(.22,1,.36,1)' }, 0.4);
+        }
+        if (footnote) {
+          tl.fromTo(footnote, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.8, ease: 'cubic-bezier(.22,1,.36,1)' }, 0.5);
+        }
+        if (ornament) {
+          const driftX = dir === 'rtl' ? -12 : 12;
+          tl.fromTo(ornament, { x: -driftX, opacity: 0.4 }, { x: 0, opacity: 0.6, duration: 1.2, ease: 'cubic-bezier(.22,1,.36,1)' }, 0);
+        }
+      }
     });
     return () => ctx.revert();
   }, [locale]);
@@ -418,6 +456,7 @@ export function App() {
 
         <section className="closing-section section-wrap">
           <div className="closing-panel">
+            <div className="closing-panel__glow" aria-hidden="true" />
             <span className="closing-panel__ornament" aria-hidden="true">✳</span>
             <p className="eyebrow"><span className="eyebrow__dot" />{t.closing.eyebrow}</p>
             <h2>{t.closing.title}<br /><em>{t.closing.accent}</em></h2>

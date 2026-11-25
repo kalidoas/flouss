@@ -613,7 +613,9 @@ button:focus-visible, a:focus-visible, select:focus-visible {
 .closing-panel .button { margin-top: 26px; }
 .closing-panel__footnote { margin-top: 15px; color: var(--text-muted); font-size: 11px; }
 .closing-panel__ornament { position: absolute; inset-block-start: -42px; inset-inline-end: -20px; color: rgba(8, 127, 91, 0.08); font-size: 270px; line-height: 1; }
+.closing-panel__glow { position: absolute; inset-block-start: 45%; inset-inline-start: 50%; width: min(680px, 130%); aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 50% 50%, rgba(8, 127, 91, 0.14), rgba(8, 127, 91, 0) 68%); transform: translate(-50%, -50%); pointer-events: none; opacity: 0; }
 .site[data-theme='dark'] .closing-panel { border-color: var(--line); }
+.site[data-theme='dark'] .closing-panel__glow { background: radial-gradient(circle at 50% 50%, rgba(8, 200, 140, 0.12), rgba(8, 200, 140, 0) 68%); }
 
 .footer {
   display: grid;
