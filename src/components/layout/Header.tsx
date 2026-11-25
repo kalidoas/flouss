@@ -81,7 +81,7 @@ export const Header: React.FC = () => {
     <div
       role="group"
       aria-label={language === 'ar' ? 'اللغة' : language === 'fr' ? 'Langue' : 'Language'}
-      className="hidden md:flex relative items-center rounded-full border border-border bg-surface/50 p-0.5 text-xs"
+      className="hidden md:flex relative items-center rounded-full border border-border bg-surface/50 text-xs"
     >
       {languages.map((item) => {
         const isSelected = language === item.code;
@@ -103,16 +103,16 @@ export const Header: React.FC = () => {
                 subtitle: item.label,
               });
             }}
-            className={`relative flex min-h-8 items-center px-2.5 rounded-full text-[11px] font-semibold transition-all duration-150 z-10 cursor-pointer ${
+            className={`relative flex min-h-8 items-center px-3 rounded-full text-[11px] font-semibold transition-all duration-150 z-10 cursor-pointer ${
               isSelected
-                ? 'text-content font-bold bg-surface/10'
+                ? 'text-content font-bold bg-surface-raised shadow-sm'
                 : 'text-muted hover:text-content transition-colors'
             }`}
           >
             {isSelected && (
               <motion.span
                 layoutId="header-lang-pill"
-                className="absolute inset-0 rounded-full bg-accent shadow-xs -z-10"
+                className="absolute inset-0 rounded-full bg-surface-raised shadow-xs -z-10"
                 transition={{ type: 'spring', stiffness: 420, damping: 32, mass: 0.8 }}
               />
             )}
