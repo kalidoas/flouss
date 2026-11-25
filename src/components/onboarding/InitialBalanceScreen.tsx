@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import { translations } from '../../i18n/translations';
 import { Wallet, ArrowRight, Sparkles, Check, DollarSign } from 'lucide-react';
+import { Money } from '../common/PrivacyCurrency';
 
 export const InitialBalanceScreen: React.FC = () => {
   const { language, completeInitialBalance, skipInitialBalance } = useAppStore();
@@ -128,7 +129,7 @@ export const InitialBalanceScreen: React.FC = () => {
                 onClick={() => setAmountStr(String(pill))}
                 className="py-1 px-3 rounded-full bg-surface/[0.04] hover:bg-surface/[0.08] border border-border/10 hover:border-border/20 text-xs font-semibold text-muted hover:text-accent-contrast transition-all active:scale-95 cursor-pointer tabular-nums"
               >
-                +{pill.toLocaleString('fr-FR')} {isAr ? 'د.م.' : 'MAD'}
+                <Money amount={pill} className="tabular-nums" />
               </button>
             ))}
           </div>

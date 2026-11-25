@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
-  testDir: './tests',
+  testDir: './e2e',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
@@ -23,5 +23,11 @@ export default defineConfig({
       use: { ...devices['iPhone 12'], viewport: { width: 390, height: 844 } },
     },
   ],
+  webServer: {
+    command: 'npm run preview',
+    url: 'http://localhost:5174',
+    reuseExistingServer: true,
+    timeout: 180000,
+  },
   outputDir: 'qa',
 });
