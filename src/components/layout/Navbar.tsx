@@ -19,14 +19,13 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ onQuickAdd }) => {
-  const { activeScreen, setActiveScreen, language, setLanguage, logout, accounts, activeAccountId, firebaseUser, isDarkMode, toggleTheme } = useAppStore();
+  const { activeScreen, setActiveScreen, language, setLanguage, accounts, activeAccountId, firebaseUser, isDarkMode, toggleTheme } = useAppStore();
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isOmniFabOpen, setIsOmniFabOpen] = useState(false);
   const t = translations[language].nav;
   const tCommon = translations[language].common;
-  const isAr = language === 'ar';
 
   useEffect(() => {
     const openMore = () => setIsMoreMenuOpen(true);
@@ -40,14 +39,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onQuickAdd }) => {
 
   const items: { id: ScreenId; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
     { id: 'dashboard', label: language === 'ar' ? 'الرئيسية' : language === 'fr' ? 'Accueil' : 'Home', icon: LayoutDashboard },
-    { id: 'expenses', label: t.expenses, icon: TrendingDown },
-    { id: 'stats', label: t.stats, icon: BarChart3 },
-    { id: 'tasks', label: t.tasks, icon: CheckSquare },
+    { id: 'history', label: t.history, icon: History },
   ];
+
   const moreScreens: { id: ScreenId; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+    { id: 'stats', label: t.stats, icon: BarChart3 },
     { id: 'categories', label: t.categories, icon: Layers },
     { id: 'income', label: t.income, icon: TrendingUp },
-    { id: 'history', label: t.history, icon: History },
+    { id: 'expenses', label: t.expenses, icon: TrendingDown },
+    { id: 'tasks', label: t.tasks, icon: CheckSquare },
     { id: 'notes', label: t.notes, icon: FileText },
     { id: 'debts', label: t.debts, icon: HandCoins },
     { id: 'subscriptions', label: t.subscriptions, icon: CreditCard },
@@ -56,199 +56,46 @@ export const Navbar: React.FC<NavbarProps> = ({ onQuickAdd }) => {
 
   return (
     <>
-      <nav aria-label={language === 'ar' ? 'التنقل الرئيسي' : language === 'fr' ? 'Navigation principale' : 'Main navigation'} className="md:hidden fixed bottom-0 inset-x-0 z-[100] px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pointer-events-none">
-        <div className="grid grid-cols-5 items-center rounded-full bg-surface/95 backdrop-blur-2xl border border-border shadow-2xl px-2 py-1.5 max-w-md mx-auto w-full pointer-events-auto">
-        {items.slice(0, 2).map((item) => {
-          const Icon = item.icon;
-          const selected = activeScreen === item.id;
-          return (
-            <button key={item.id} type="button" aria-current={selected ? 'page' : undefined} onClick={() => { playHapticFeedback('light'); setActiveScreen(item.id); }} className={`flex min-h-11 min-w-0 flex-col items-center justify-center gap-0.5 rounded-full px-1 transition-colors ${selected ? 'text-content' : 'text-muted hover:text-content'}`}>
-              <Icon className={`h-5 w-5 transition-transform ${selected ? 'text-accent scale-110' : ''}`} />
-              <span className="max-w-full truncate text-[10px] font-medium leading-tight">{item.label}</span>
-            </button>
-          );
-        })}
-        {/* Glowing Omni-Action Center FAB */}
-        <button
-          type="button"
-          onClick={() => {
-            triggerHaptic(50);
-            setIsOmniFabOpen((prev) => !prev);
-          }}
-          aria-expanded={isOmniFabOpen}
-          aria-label={translations[language].common.quickAdd}
-          className={`mx-auto flex h-11 w-11 items-center justify-center rounded-full font-semibold transition-all duration-300 active:scale-95 ${
-            isOmniFabOpen
-              ? 'bg-gradient-to-tr from-accent to-accent text-content shadow-[0_0_25px_rgba(139,92,246,0.6)] rotate-45'
-              : 'bg-surface text-content shadow-[0_0_20px_rgba(255,255,255,0.4)] hover:shadow-[0_0_25px_rgba(255,255,255,0.6)]'
-          }`}
-        >
-          <Plus className="h-5 w-5 stroke-[2.5]" />
-        </button>
-        {items.slice(2).map((item) => {
-          const Icon = item.icon;
-          const selected = activeScreen === item.id;
-          return (
-            <button key={item.id} type="button" aria-current={selected ? 'page' : undefined} onClick={() => { playHapticFeedback('light'); setActiveScreen(item.id); }} className={`flex min-h-11 min-w-0 flex-col items-center justify-center gap-0.5 rounded-full px-1 transition-colors ${selected ? 'text-content' : 'text-muted hover:text-content'}`}>
-              <Icon className={`h-5 w-5 transition-transform ${selected ? 'text-accent scale-110' : ''}`} />
-              <span className="max-w-full truncate text-[10px] font-medium leading-tight">{item.label}</span>
-            </button>
-          );
-        })}
+      <nav aria-label={language === 'ar' ? 'التنقل الرئيسي' : language === 'fr' ? 'Navigation principale' : 'Main navigation'} className="md:hidden fixed bottom-0 inset-x-0 z-[100] pb-[env(safe-area-inset-bottom)] bg-surface border-t border-border">
+        <div className="flex items-center justify-around h-16">
+          {items.map((item) => {
+            const Icon = item.icon;
+            const selected = activeScreen === item.id;
+            return (
+              <button key={item.id} type="button" aria-current={selected ? 'page' : undefined} onClick={() => { playHapticFeedback('light'); setActiveScreen(item.id); }} className={`flex flex-col items-center justify-center gap-1 ${selected ? 'text-accent' : 'text-muted'}`}>
+                <Icon className="h-6 w-6" />
+                <span className="text-[10px] font-medium">{item.label}</span>
+              </button>
+            );
+          })}
+
+          {/* Centered Add Button */}
+          <button
+            type="button"
+            onClick={onQuickAdd}
+            className="flex h-12 w-12 items-center justify-center rounded-full bg-content text-canvas shadow-lg"
+          >
+            <Plus className="h-6 w-6 stroke-[2.5]" />
+          </button>
+
+          <button onClick={() => setIsMoreMenuOpen(true)} className="flex flex-col items-center justify-center gap-1 text-muted">
+            <Settings className="h-6 w-6" />
+            <span className="text-[10px] font-medium">{t.settings}</span>
+          </button>
         </div>
       </nav>
 
-      {/* Omni-Action FAB Expanded Overlay Menu */}
-      <AnimatePresence>
-        {isOmniFabOpen && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsOmniFabOpen(false)}
-              className="fixed inset-0 bg-canvas/60 backdrop-blur-sm z-[95]"
-            />
-
-            {/* Omni Action Menu Panel */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="fixed bottom-[96px] inset-x-4 mx-auto z-[105] w-[calc(100vw-2rem)] max-w-sm rounded-[28px] bg-surface/95 backdrop-blur-2xl border border-border/10 p-3.5 shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_0_0_rgba(255,255,255,0.1)]"
-            >
-              <div className="grid grid-cols-2 gap-2.5">
-                {/* Action 1: Add Expense */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    triggerHaptic(50);
-                    setIsOmniFabOpen(false);
-                    window.dispatchEvent(new CustomEvent('flouss:quick-add', { detail: { type: 'expense' } }));
-                  }}
-                  className="flex items-center gap-2.5 p-3 rounded-2xl bg-surface/[0.04] hover:bg-negative/15 border border-border/[0.06] hover:border-negative/30 text-start transition-all active:scale-95 duration-200 group"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-negative/15 text-negative border border-negative/25 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                    <TrendingDown className="w-5 h-5" />
-                  </div>
-                  <div className="min-w-0">
-                    <span className="block text-xs font-bold text-text group-hover:text-negative truncate">
-                      {tCommon.addExpense}
-                    </span>
-                    <span className="block text-[10px] text-muted truncate">
-                      {language === 'ar' ? 'مصروف جديد' : 'Nouvelle dépense'}
-                    </span>
-                  </div>
-                </button>
-
-                {/* Action 2: Add Income */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    triggerHaptic(50);
-                    setIsOmniFabOpen(false);
-                    window.dispatchEvent(new CustomEvent('flouss:quick-add', { detail: { type: 'income' } }));
-                  }}
-                  className="flex items-center gap-2.5 p-3 rounded-2xl bg-surface/[0.04] hover:bg-positive/15 border border-border/[0.06] hover:border-positive/30 text-start transition-all active:scale-95 duration-200 group"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-positive/15 text-positive border border-positive/25 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                    <TrendingUp className="w-5 h-5" />
-                  </div>
-                  <div className="min-w-0">
-                    <span className="block text-xs font-bold text-text group-hover:text-positive truncate">
-                      {tCommon.addIncome}
-                    </span>
-                    <span className="block text-[10px] text-muted truncate">
-                      {language === 'ar' ? 'دخل أو إيداع' : 'Entrée de fonds'}
-                    </span>
-                  </div>
-                </button>
-
-                {/* Action 3: New Task */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    triggerHaptic(50);
-                    setIsOmniFabOpen(false);
-                    setActiveScreen('tasks');
-                    setTimeout(() => {
-                      window.dispatchEvent(new CustomEvent('flouss:open-add-task'));
-                    }, 60);
-                  }}
-                  className="flex items-center gap-2.5 p-3 rounded-2xl bg-surface/[0.04] hover:bg-accent/15 border border-border/[0.06] hover:border-accent/30 text-start transition-all active:scale-95 duration-200 group"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-accent/15 text-accent border border-accent/25 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                    <CheckSquare className="w-5 h-5" />
-                  </div>
-                  <div className="min-w-0">
-                    <span className="block text-xs font-bold text-text group-hover:text-accent truncate">
-                      {translations[language].tasks.addTask}
-                    </span>
-                    <span className="block text-[10px] text-muted truncate">
-                      {language === 'ar' ? 'مهمة أو عادة' : 'Tâche ou habitude'}
-                    </span>
-                  </div>
-                </button>
-
-                {/* Action 4: New Note */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    triggerHaptic(50);
-                    setIsOmniFabOpen(false);
-                    setActiveScreen('notes');
-                    setTimeout(() => {
-                      window.dispatchEvent(new CustomEvent('flouss:open-add-note'));
-                    }, 60);
-                  }}
-                  className="flex items-center gap-2.5 p-3 rounded-2xl bg-surface/[0.04] hover:bg-warning/15 border border-border/[0.06] hover:border-warning/30 text-start transition-all active:scale-95 duration-200 group"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-warning/15 text-warning border border-warning/25 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                    <FileText className="w-5 h-5" />
-                  </div>
-                  <div className="min-w-0">
-                    <span className="block text-xs font-bold text-text group-hover:text-warning truncate">
-                      {translations[language].notes.newNote}
-                    </span>
-                    <span className="block text-[10px] text-muted truncate">
-                      {language === 'ar' ? 'فكرة أو قائمة' : 'Idée ou mémo'}
-                    </span>
-                  </div>
-                </button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-
       <BottomSheet isOpen={isMoreMenuOpen} onClose={() => setIsMoreMenuOpen(false)} title={t.morePages}>
         <div className="space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-border-subtle bg-surface p-3">
-            <div className="flex items-center gap-1 rounded-control border border-border-subtle bg-surface-raised p-0.5" role="group" aria-label={language === 'ar' ? 'اللغة' : language === 'fr' ? 'Langue' : 'Language'}>
-              {([{ code: 'fr', label: 'FR' }, { code: 'ar', label: 'AR' }, { code: 'en', label: 'EN' }] as { code: Language; label: string }[]).map((item) => <button type="button" key={item.code} aria-pressed={language === item.code} onClick={() => setLanguage(item.code)} className={`min-h-11 rounded-control px-3 text-xs font-semibold ${language === item.code ? 'bg-surface text-content shadow-sm' : 'text-muted hover:text-content'}`}>{item.label}</button>)}
-            </div>
-            <button type="button" onClick={toggleTheme} aria-label={isDarkMode ? tCommon.switchToLight : tCommon.switchToDark} title={isDarkMode ? tCommon.switchToLight : tCommon.switchToDark} className="flex min-h-11 min-w-11 items-center justify-center rounded-control border border-border-subtle text-content hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{isDarkMode ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}</button>
-            <DynamicIsland />
-          </div>
           <div className="grid grid-cols-2 gap-2">
             {moreScreens.map((item) => {
               const Icon = item.icon;
               return (
-                <button key={item.id} type="button" onClick={() => { setActiveScreen(item.id); setIsMoreMenuOpen(false); }} className="flex min-h-11 items-center gap-2 rounded-control border border-border-subtle bg-surface px-3 text-start text-sm text-content hover:bg-surface-raised">
+                <button key={item.id} type="button" onClick={() => { setActiveScreen(item.id); setIsMoreMenuOpen(false); }} className="flex min-h-11 items-center gap-2 rounded-xl border border-border bg-surface px-3 text-start text-sm text-content hover:bg-surface-2">
                   <Icon className="h-4 w-4 shrink-0" /> <span className="min-w-0 break-words">{item.label}</span>
                 </button>
               );
             })}
-          </div>
-          <div className="space-y-2 border-t border-border-subtle pt-3">
-            <button type="button" onClick={() => { setIsMoreMenuOpen(false); setIsProfileModalOpen(true); }} className="flex min-h-11 w-full items-center justify-between rounded-control border border-border-subtle bg-surface px-3 text-sm font-medium text-content">
-              <span className="flex items-center gap-2"><span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-xs font-bold text-accent-contrast">{activeAccount?.name?.charAt(0).toUpperCase() || 'U'}</span>{activeAccount?.name || 'Profile'}</span><User className="h-4 w-4 text-muted" />
-            </button>
-            <button type="button" onClick={() => { playHapticFeedback('medium'); setIsMoreMenuOpen(false); setIsLogoutModalOpen(true); }} className="flex min-h-11 w-full items-center justify-center gap-2 rounded-control border border-negative/30 bg-negative/10 px-3 text-sm font-semibold text-negative cursor-pointer">
-              <LogOut className="h-4 w-4" />{isAr ? 'تسجيل الخروج' : language === 'fr' ? 'Se déconnecter' : 'Log out'}
-            </button>
           </div>
         </div>
       </BottomSheet>
