@@ -539,19 +539,170 @@ body,
 .dark .flouss-auth-card .text-text-subtle { color: var(--text-muted); }
 
 .flouss-balance-hero {
+  --shine-x: 82%;
+  --shine-y: 24%;
   border-color: color-mix(in srgb, var(--accent-warm) 23%, var(--border));
   box-shadow: inset 0 1px 0 rgba(255,255,255,.16), 0 18px 55px -42px color-mix(in srgb, var(--accent-warm) 75%, transparent);
+  transform: perspective(1200px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+  transform-style: preserve-3d;
+  transition: transform 520ms cubic-bezier(.2,.8,.2,1), box-shadow 420ms ease;
+  will-change: transform;
 }
 
-.flouss-balance-medallion {
-  border: 1px solid color-mix(in srgb, var(--accent-warm) 20%, transparent);
-  box-shadow: inset 0 0 0 14px color-mix(in srgb, var(--accent-warm) 5%, transparent), 0 0 70px color-mix(in srgb, var(--accent-warm) 10%, transparent);
+.flouss-balance-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(ellipse 52% 75% at var(--shine-x) var(--shine-y), rgba(255,255,255,.42), transparent 70%);
+  opacity: .72;
 }
 
-.flouss-balance-medallion-secondary { border: 1px solid color-mix(in srgb, var(--accent-warm) 15%, transparent); }
+.dark .flouss-balance-hero::before { background: radial-gradient(ellipse 52% 75% at var(--shine-x) var(--shine-y), rgba(255,232,204,.16), transparent 70%); }
+
+.flouss-balance-scene {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  inset-inline-end: 0;
+  width: 53%;
+  height: 100%;
+  perspective: 900px;
+  perspective-origin: 50% 50%;
+  pointer-events: none;
+  transform-style: preserve-3d;
+}
+
+.flouss-balance-orbit {
+  position: absolute;
+  top: 50%;
+  inset-inline-end: 30%;
+  width: clamp(168px, 18vw, 242px);
+  aspect-ratio: 1;
+  border: 1px solid color-mix(in srgb, var(--accent-warm) 42%, transparent);
+  border-radius: 50%;
+  transform-style: preserve-3d;
+}
+
+.flouss-balance-orbit-back {
+  transform: translate3d(50%, -50%, -38px) rotateX(68deg) rotateZ(-20deg) scaleY(.64);
+  opacity: .48;
+}
+
+.flouss-balance-orbit-front {
+  transform: translate3d(50%, -50%, 18px) rotateX(68deg) rotateZ(24deg) scaleY(.7);
+  border-color: color-mix(in srgb, var(--accent-warm) 64%, transparent);
+}
+
+.flouss-balance-coin {
+  position: absolute;
+  top: 50%;
+  inset-inline-end: 30%;
+  width: clamp(116px, 13vw, 166px);
+  aspect-ratio: 1;
+  transform: translate3d(50%, -50%, 36px) rotateX(12deg) rotateY(-20deg);
+  transform-style: preserve-3d;
+  filter: drop-shadow(0 24px 24px rgba(58,34,18,.22));
+}
+
+.flouss-balance-coin::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: repeating-linear-gradient(0deg, #8c4a28 0 2px, #d89a5c 2px 4px, #b87443 4px 6px);
+  transform: translateZ(-12px) scale(.985);
+  box-shadow: 0 12px 0 -2px #734329, 0 20px 24px rgba(39,22,12,.2);
+}
+
+.flouss-balance-coin-face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 50%;
+  color: #fff7e9;
+  background: radial-gradient(circle at 33% 25%, #f7d5a2 0 4%, #d6975b 23%, #ad6940 65%, #79452d 100%);
+  border: 1px solid rgba(255,239,209,.85);
+  box-shadow: inset 0 0 0 5px rgba(255,245,226,.16), inset 0 0 0 8px rgba(89,48,29,.24), inset 0 -14px 24px rgba(74,37,23,.24);
+  transform: translateZ(4px);
+}
+
+.flouss-balance-coin-face::before,
+.flouss-balance-coin-face::after {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  border: 1px solid rgba(255,244,220,.42);
+  border-radius: 50%;
+  transform: translateZ(2px);
+}
+
+.flouss-balance-coin-face::after {
+  inset: 20px;
+  border-style: dashed;
+  opacity: .55;
+}
+
+.flouss-balance-coin-mark {
+  position: relative;
+  z-index: 1;
+  margin-top: -3px;
+  font-size: clamp(28px, 3.2vw, 40px);
+  font-weight: 700;
+  text-shadow: 0 2px 2px rgba(76,39,25,.45);
+}
+
+.flouss-balance-coin-stars {
+  position: absolute;
+  z-index: 1;
+  bottom: 22%;
+  font-size: 8px;
+  letter-spacing: .16em;
+  opacity: .8;
+}
+
+.flouss-balance-scene-shadow {
+  position: absolute;
+  top: 68%;
+  inset-inline-end: 30%;
+  width: clamp(120px, 15vw, 180px);
+  height: 24px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent-warm) 30%, transparent);
+  filter: blur(18px);
+  transform: translateX(50%) rotateX(68deg);
+}
+
+@keyframes floussBalanceFloat {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -10px; }
+}
+
+@keyframes floussOrbitTurn {
+  from { transform: translate3d(50%, -50%, 18px) rotateX(68deg) rotateZ(24deg) rotateY(0deg) scaleY(.7); }
+  to { transform: translate3d(50%, -50%, 18px) rotateX(68deg) rotateZ(24deg) rotateY(360deg) scaleY(.7); }
+}
+
+@media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
+  .flouss-balance-hero.is-visible .flouss-balance-coin { animation: floussBalanceFloat 5.4s ease-in-out infinite; }
+  .flouss-balance-hero.is-visible .flouss-balance-orbit-front { animation: floussOrbitTurn 18s linear infinite; }
+}
+
+@media (max-width: 767px) {
+  .flouss-balance-hero { transform: none !important; transition: none; }
+  .flouss-balance-scene { width: 45%; opacity: .74; }
+  .flouss-balance-orbit { width: 142px; inset-inline-end: 35%; }
+  .flouss-balance-coin { width: 104px; inset-inline-end: 35%; }
+  .flouss-balance-coin-mark { font-size: 25px; }
+  .flouss-balance-scene-shadow { inset-inline-end: 35%; width: 108px; }
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .flouss-auth-card, .flouss-auth-coin { animation: none; }
+  .flouss-auth-card, .flouss-auth-coin, .flouss-balance-coin, .flouss-balance-orbit-front { animation: none !important; }
+  .flouss-balance-hero { transform: none !important; transition: none; }
 }
 
 /* Calm bento panel (flat, 1px border, no heavy shadow) */

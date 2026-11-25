@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import { MoneyText } from '../common/PrivacyCurrency';
 import { AdjustBalanceModal } from './AdjustBalanceModal';
@@ -20,6 +20,7 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
   const txList = transactions || [];
   const [adjustOpen, setAdjustOpen] = useState(false);
   const [contributionOpen, setContributionOpen] = useState(false);
+  const balanceCardRef = useRef<HTMLDivElement>(null);
   const t = translations[language].dashboard;
   const tCommon = translations[language].common;
   const tWallet = translations[language].walletCard;
@@ -53,14 +54,60 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
   const quickAdd = (type: 'income' | 'expense') =>
     window.dispatchEvent(new CustomEvent('flouss:quick-add', { detail: { type } }));
 
+  useEffect(() => {
+    const card = balanceCardRef.current;
+    if (!card || typeof IntersectionObserver === 'undefined') return;
+    const observer = new IntersectionObserver(([entry]) => {
+      card.classList.toggle('is-visible', entry.isIntersecting);
+    }, { threshold: 0.2 });
+    observer.observe(card);
+    return () => observer.disconnect();
+  }, []);
+
+  const handleBalancePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType === 'touch') return;
+    const card = balanceCardRef.current;
+    if (!card) return;
+    const bounds = card.getBoundingClientRect();
+    const x = (event.clientX - bounds.left) / bounds.width;
+    const y = (event.clientY - bounds.top) / bounds.height;
+    card.style.setProperty('--tilt-x', `${(0.5 - y) * 5}deg`);
+    card.style.setProperty('--tilt-y', `${(x - 0.5) * 7}deg`);
+    card.style.setProperty('--shine-x', `${x * 100}%`);
+    card.style.setProperty('--shine-y', `${y * 100}%`);
+  };
+
+  const resetBalancePointer = () => {
+    const card = balanceCardRef.current;
+    if (!card) return;
+    card.style.setProperty('--tilt-x', '0deg');
+    card.style.setProperty('--tilt-y', '0deg');
+    card.style.setProperty('--shine-x', '82%');
+    card.style.setProperty('--shine-y', '24%');
+  };
+
   return (
     <div className="relative z-0 min-w-0">
       {/* Hero Balance Card */}
       <div
+        ref={balanceCardRef}
         data-spotlight="true"
-        className="spotlight-card flouss-balance-hero group relative isolate overflow-hidden rounded-[24px] bg-surface dark:bg-surface-3/5 p-5 sm:p-6 border border-border-subtle dark:border-white/10 shadow-xs min-w-0 min-h-[190px] sm:min-h-[218px]"
+        onPointerMove={handleBalancePointerMove}
+        onPointerLeave={resetBalancePointer}
+        className="spotlight-card flouss-balance-hero group relative isolate overflow-hidden rounded-[24px] bg-surface dark:bg-surface-3/5 p-5 sm:p-6 border border-border-subtle dark:border-white/10 shadow-xs min-w-0 min-h-[220px] sm:min-h-[250px]"
       >
         <GrainyHeroBackdrop />
+        <div className="flouss-balance-scene" aria-hidden="true">
+          <div className="flouss-balance-orbit flouss-balance-orbit-back" />
+          <div className="flouss-balance-orbit flouss-balance-orbit-front" />
+          <div className="flouss-balance-coin">
+            <div className="flouss-balance-coin-face">
+              <span className="flouss-balance-coin-mark">د.م.</span>
+              <span className="flouss-balance-coin-stars">✦　✦　✦</span>
+            </div>
+          </div>
+          <div className="flouss-balance-scene-shadow" />
+        </div>
         <div className="relative z-10 flex flex-col gap-2 min-w-0">
           {/* Title & Edit Button (sentence case, 15-17px, font-semibold) */}
           <div className="flex items-center justify-between gap-2 min-w-0">
