@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useAppStore } from '../store/useAppStore';
-import { MoneyText } from '../components/common/PrivacyCurrency';
+import { Money } from '../components/common/Money';
 import {
   getMonthlyStats,
   getCategorySpendingBreakdown,
@@ -329,7 +329,7 @@ export const StatsPage: React.FC = () => {
           icon={TrendingDown}
           color="rose"
           unit="MAD"
-          extraLine={<>{t.kpiDailyAvg}: <MoneyText amount={kpiData.expense.avgDaily} /></>}
+          extraLine={<>{t.kpiDailyAvg}: <Money amount={kpiData.expense.avgDaily} /></>}
           isPositiveGood={false}
         />
 
@@ -378,7 +378,7 @@ export const StatsPage: React.FC = () => {
           <div className="pt-2.5 mt-auto border-t border-border/[0.06] text-[11px] text-muted truncate">
             {currentSavings > 0 ? (
               <span className="flex items-center gap-1">
-                <MoneyText amount={currentSavings} /> {t.savedForGoals}
+                <Money amount={currentSavings} /> {t.savedForGoals}
               </span>
             ) : (
               <span>{t.noSavingsThisMonth}</span>
@@ -418,7 +418,7 @@ export const StatsPage: React.FC = () => {
                 </div>
                 <div className="text-xs text-muted mt-2 flex items-center gap-2 flex-wrap">
                   <span className="font-bold text-negative text-sm tabular-nums">
-                    <MoneyText amount={topCategory.amount} />
+                    <Money amount={topCategory.amount} />
                   </span>
                   <span className="px-2.5 py-0.5 rounded-full bg-negative/15 border border-negative/20 text-[11px] font-bold text-negative tabular-nums">
                     {topCategory.percentage}% {t.ofSpending}
@@ -540,7 +540,7 @@ export const StatsPage: React.FC = () => {
                 <Tooltip
                   cursor={{ fill: 'rgba(255, 255, 255, 0.04)', radius: 8 }}
                   formatter={(value: number, name: string) => [
-                    formatMAD(value, false, language),
+                    <Money key="amount" amount={value} />,
                     name === 'income'
                       ? t.incomeLabel
                       : name === 'expense'
@@ -604,7 +604,7 @@ export const StatsPage: React.FC = () => {
                     <PieChart>
                       <Tooltip
                         formatter={(val: number) => [
-                          formatMAD(val, false, language),
+                          <Money key="amount" amount={val} />,
                           t.donutCenterTotal,
                         ]}
                         contentStyle={{
@@ -646,7 +646,7 @@ export const StatsPage: React.FC = () => {
                       {t.donutCenterTotal}
                     </span>
                     <div className="text-base sm:text-lg font-bold text-text dark:text-text tabular-nums mt-0.5">
-                      <MoneyText
+                      <Money
                         amount={totalCategorySpent}
                         className="font-bold text-text dark:text-text"
                       />
@@ -678,7 +678,7 @@ export const StatsPage: React.FC = () => {
                             {item.percentage}%
                           </span>
                           <span className="font-bold text-text dark:text-text tabular-nums">
-                            <MoneyText
+                            <Money
                               amount={item.amount}
                               className="font-bold text-text dark:text-text"
                             />
@@ -783,7 +783,7 @@ export const StatsPage: React.FC = () => {
 
                     <div className="text-end shrink-0">
                       <span className="text-sm font-bold text-negative dark:text-negative tabular-nums">
-                        <MoneyText
+                        <Money
                           amount={Number(item.amount)}
                           prefix="− "
                           className="font-bold text-negative dark:text-negative"
@@ -850,7 +850,7 @@ export const StatsPage: React.FC = () => {
 
                     <div className="text-end shrink-0">
                       <span className="text-sm font-bold text-positive dark:text-positive tabular-nums">
-                        <MoneyText
+                        <Money
                           amount={Number(tx.amount)}
                           prefix="+ "
                           className="font-bold text-positive dark:text-positive"

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import { calculateAvailableBalance, calculateTotalSavingsInGoals, selectFinancialSummary } from '../../utils/calculations';
 import { formatMAD, getCurrentMonthStr } from '../../utils/formatters';
-import { PrivacyCurrency } from '../common/PrivacyCurrency';
+import { Money } from '../common/Money';
 import { Coins, ChevronUp, ChevronDown, ArrowUpRight, ArrowDownRight, Target } from 'lucide-react';
 
 export const BalanceWidget: React.FC = () => {
@@ -42,7 +42,7 @@ export const BalanceWidget: React.FC = () => {
               <span className="text-[10px] text-muted block leading-tight">
                 {isAr ? 'الرصيد المتاح' : 'Solde disponible'}
               </span>
-              <PrivacyCurrency
+              <Money
                 amount={balance}
                 className="text-xs font-semibold text-content block truncate"
               />
@@ -63,7 +63,7 @@ export const BalanceWidget: React.FC = () => {
                 <ArrowUpRight className="w-3 h-3 text-positive dark:text-positive" />
                 <span>{isAr ? 'مداخيل الشهر' : 'Revenus'}</span>
               </span>
-              <PrivacyCurrency
+              <Money
                 amount={incomeThisMonth}
                 showSign={true}
                 className="font-medium text-positive dark:text-positive"
@@ -76,7 +76,7 @@ export const BalanceWidget: React.FC = () => {
                 <ArrowDownRight className="w-3 h-3 text-negative dark:text-negative" />
                 <span>{isAr ? 'مصاريف الشهر' : 'Dépenses'}</span>
               </span>
-              <PrivacyCurrency
+              <Money
                 amount={expenseThisMonth}
                 prefix="-"
                 className="font-medium text-negative dark:text-negative"
@@ -89,7 +89,7 @@ export const BalanceWidget: React.FC = () => {
                 <Target className="w-3 h-3 text-info dark:text-info" />
                 <span>{isAr ? 'في الأهداف' : 'En épargne'}</span>
               </span>
-              <PrivacyCurrency
+              <Money
                 amount={totalInGoals}
                 className="font-medium text-[text-content] dark:text-[#ecebed]"
               />

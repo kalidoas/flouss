@@ -782,3 +782,17 @@ body,
 @media (min-width: 768px) {
   .mobile-tab-bar { display: none !important; }
 }
+
+html[data-animations='calm'] * {
+  animation-duration: 180ms !important;
+  scroll-behavior: auto !important;
+}
+
+html[data-animations='off'] *,
+html[data-animations='off'] *::before,
+html[data-animations='off'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}

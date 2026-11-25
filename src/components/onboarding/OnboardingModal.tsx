@@ -3,11 +3,10 @@ import { motion } from 'framer-motion';
 import { useReducedMotion } from 'framer-motion';
 import { useAppStore } from '../../store/useAppStore';
 import { translations } from '../../i18n/translations';
-import { formatMAD } from '../../utils/formatters';
 import { Button } from '../common/Button';
 import { Modal } from '../common/Modal';
 import { Logo } from '../common/Logo';
-import { Money } from '../common/PrivacyCurrency';
+import { Money } from '../common/Money';
 import {
   Lock,
   ShieldCheck,
@@ -434,7 +433,7 @@ export const OnboardingModal: React.FC = () => {
               {t.confirmModalDesc}
             </p>
             <div className="text-2xl font-bold text-content mt-1 tabular-nums">
-              {formatMAD(numericAmount, false, language)}
+              <Money amount={numericAmount} />
             </div>
           </div>
 

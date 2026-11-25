@@ -9,7 +9,7 @@ import { CustomDatePicker } from '../components/common/CustomDatePicker';
 import { EmptyState } from '../components/common/EmptyState';
 import { formatMAD } from '../utils/formatters';
 import { translations } from '../i18n/translations';
-import { MoneyText } from '../components/common/PrivacyCurrency';
+import { Money } from '../components/common/Money';
 import { playHapticFeedback } from '../utils/haptics';
 import confetti from 'canvas-confetti';
 import {
@@ -297,7 +297,7 @@ export const DebtsPage: React.FC = () => {
               <ArrowDownLeft className="w-4 h-4 stroke-[2.5]" />
             </div>
           </div>
-          <MoneyText
+          <Money
             amount={summary.toCollect}
             className="text-2xl sm:text-3xl font-extrabold text-text dark:text-text tracking-tight tabular-nums block"
           />
@@ -321,7 +321,7 @@ export const DebtsPage: React.FC = () => {
               <ArrowUpRight className="w-4 h-4 stroke-[2.5]" />
             </div>
           </div>
-          <MoneyText
+          <Money
             amount={summary.toPay}
             className="text-2xl sm:text-3xl font-extrabold text-text dark:text-text tracking-tight tabular-nums block"
           />
@@ -345,7 +345,7 @@ export const DebtsPage: React.FC = () => {
               <Coins className="w-4 h-4 stroke-[2]" />
             </div>
           </div>
-          <MoneyText
+          <Money
             amount={summary.net}
             showSign={true}
             className={`text-2xl sm:text-3xl font-extrabold tracking-tight tabular-nums block ${
@@ -551,7 +551,7 @@ export const DebtsPage: React.FC = () => {
                     <span className="text-[11px] text-muted uppercase font-semibold tracking-wider block">
                       {tDebt.remainingLabel}
                     </span>
-                    <MoneyText
+                    <Money
                       amount={remaining}
                       className={`text-xl sm:text-2xl font-extrabold tracking-tight tabular-nums block ${
                         debt.isSettled
@@ -567,13 +567,13 @@ export const DebtsPage: React.FC = () => {
                     <span className="text-[11px] text-muted uppercase font-semibold tracking-wider block">
                       {tDebt.totalAmountLabel}
                     </span>
-                    <MoneyText
+                    <Money
                       amount={debt.totalAmount}
                       className="text-sm font-semibold text-text dark:text-muted tabular-nums block"
                     />
                     {debt.paidAmount > 0 && !debt.isSettled && (
                       <span className="text-[11px] text-muted dark:text-muted tabular-nums">
-                        <MoneyText amount={debt.paidAmount} /> {tDebt.alreadyPaid}
+                        <Money amount={debt.paidAmount} /> {tDebt.alreadyPaid}
                       </span>
                     )}
                   </div>
@@ -611,7 +611,7 @@ export const DebtsPage: React.FC = () => {
                           onClick={() => handleQuickPercentagePay(debt, 25)}
                           className="px-2.5 py-1 rounded-xl bg-canvas/[0.04] dark:bg-surface/[0.04] hover:bg-canvas/[0.08] dark:hover:bg-surface/[0.1] border border-border/[0.08] dark:border-border/[0.08] text-xs font-semibold text-text dark:text-text active:scale-95 transition-all"
                         >
-                          +25% ({formatMAD(quarter)})
+                          +25% (<Money amount={quarter} />)
                         </button>
                       )}
 
@@ -622,7 +622,7 @@ export const DebtsPage: React.FC = () => {
                           onClick={() => handleQuickPercentagePay(debt, 50)}
                           className="px-2.5 py-1 rounded-xl bg-canvas/[0.04] dark:bg-surface/[0.04] hover:bg-canvas/[0.08] dark:hover:bg-surface/[0.1] border border-border/[0.08] dark:border-border/[0.08] text-xs font-semibold text-text dark:text-text active:scale-95 transition-all"
                         >
-                          +50% ({formatMAD(half)})
+                          +50% (<Money amount={half} />)
                         </button>
                       )}
 
@@ -769,7 +769,7 @@ export const DebtsPage: React.FC = () => {
             <div className="p-3.5 rounded-2xl bg-surface-3/80 dark:bg-surface/60 border border-border/[0.04] dark:border-border/[0.06] flex items-center justify-between text-xs">
               <span className="text-muted dark:text-muted font-medium">{tDebt.remainingLabel}</span>
               <span className="font-bold text-text dark:text-text tabular-nums text-sm">
-                {formatMAD(Math.max(0, paymentDebt.totalAmount - (paymentDebt.paidAmount || 0)), false, language)}
+                <Money amount={Math.max(0, paymentDebt.totalAmount - (paymentDebt.paidAmount || 0))} />
               </span>
             </div>
           )}

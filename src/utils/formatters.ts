@@ -10,19 +10,17 @@ export function formatMAD(
   hide: boolean = false,
   language: Language = 'fr'
 ): string {
-  const currencySymbol = language === 'ar' ? 'د.م.' : 'MAD';
-  // Normalize -0 to 0 so we don't display "-0,00 د.م."
-  const normalizedAmount = Object.is(amount, -0) || amount === 0 ? 0 : amount;
-  if (normalizedAmount === null || normalizedAmount === undefined || isNaN(normalizedAmount)) {
-    return `0,00 ${currencySymbol}`;
-  }
+  const { number, currency } = formatMADParts(amount, language);
+  return `${number}\u00a0${currency}`;
+}
 
-  const parts = Math.abs(normalizedAmount).toFixed(2).split('.');
-  const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-  const decimalPart = parts[1];
-
-  const prefix = normalizedAmount < 0 ? '-' : '';
-  return `${prefix}${integerPart},${decimalPart} ${currencySymbol}`;
+export function formatMADParts(amount: number | null | undefined, language: Language = 'fr') {
+  const currency = language === 'ar' ? 'د.م.' : 'MAD';
+  const normalized = amount == null || !Number.isFinite(amount) || Object.is(amount, -0) ? 0 : amount;
+  const [integer, decimal] = Math.abs(normalized).toFixed(2).split('.');
+  const grouped = integer.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  const sign = normalized < 0 ? '−' : '';
+  return { number: `${sign}${grouped},${decimal}`, currency };
 }
 
 /**

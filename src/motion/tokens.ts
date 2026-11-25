@@ -5,12 +5,14 @@
  */
 
 export const motionDurations = {
-  fast: 0.15, // 150ms
-  base: 0.25, // 250ms
-  slow: 0.45, // 450ms
-  fastMs: 150,
-  baseMs: 250,
-  slowMs: 450,
+  fast: 0.12,
+  base: 0.2,
+  medium: 0.32,
+  slow: 0.6,
+  fastMs: 120,
+  baseMs: 200,
+  mediumMs: 320,
+  slowMs: 600,
 } as const;
 
 export const motionEasings = {
@@ -23,8 +25,8 @@ export const motionEasings = {
 export const motionSprings = {
   default: {
     type: 'spring',
-    stiffness: 260,
-    damping: 28,
+    stiffness: 380,
+    damping: 32,
   } as const,
   snappy: {
     type: 'spring',

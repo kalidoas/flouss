@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { MoneyText } from '../common/PrivacyCurrency';
+import { Money } from '../common/Money';
 import { translations } from '../../i18n/translations';
 import { selectMonthlyFinancialKpis, selectDailyBudgetKpi } from '../../utils/dashboardKpis';
 import { Transaction, Category, SubscriptionItem } from '../../types';
@@ -45,7 +45,7 @@ export const DashboardKpis: React.FC<Props> = ({
           <p className="text-xs font-medium text-muted dark:text-muted truncate">
             {t.netLabel}
           </p>
-          <MoneyText
+          <Money
             amount={net}
             showSign={true}
             className={`mt-1 block max-w-full truncate text-base sm:text-lg font-bold tracking-tight tabular-nums ${
@@ -71,7 +71,7 @@ export const DashboardKpis: React.FC<Props> = ({
           </p>
           <div className="mt-1 block max-w-full truncate text-base sm:text-lg font-bold tracking-tight tabular-nums text-content dark:text-content">
             {dailyBudget !== null ? (
-              <MoneyText amount={dailyBudget} showSign={true} className="inline" />
+              <Money amount={dailyBudget} showSign={true} className="inline" />
             ) : (
               '—'
             )}

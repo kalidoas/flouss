@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useAppStore } from '../../store/useAppStore';
 import { AppleGlassCard } from '../common/AppleGlassCard';
-import { PrivacyCurrency } from '../common/PrivacyCurrency';
+import { Money } from '../common/Money';
 import { calculateAvailableBalance, selectFinancialSummary } from '../../utils/calculations';
 import { getCurrentMonthStr } from '../../utils/formatters';
 import { Sparkles, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
@@ -82,19 +82,19 @@ export const AIAssistantCard: React.FC<AIAssistantCardProps> = ({ onQuickAction 
                 {isAr ? (
                   <>
                     أداء مالي رائع هذا الشهر! لديك{' '}
-                    <PrivacyCurrency amount={balance} className="font-bold text-emerald-600 dark:text-emerald-400" />{' '}
+                    <Money amount={balance} className="font-bold text-emerald-600 dark:text-emerald-400" />{' '}
                     متاحة كفائض للادخار أو تحويلها نحو أهدافك المالية.
                   </>
                 ) : isEn ? (
                   <>
                     Great job managing your budget! You have{' '}
-                    <PrivacyCurrency amount={balance} className="font-bold text-emerald-600 dark:text-emerald-400" />{' '}
+                    <Money amount={balance} className="font-bold text-emerald-600 dark:text-emerald-400" />{' '}
                     left to save or invest toward your goals.
                   </>
                 ) : (
                   <>
                     Excellent travail de gestion budgétaire ! Vous disposez de{' '}
-                    <PrivacyCurrency amount={balance} className="font-bold text-emerald-600 dark:text-emerald-400" />{' '}
+                    <Money amount={balance} className="font-bold text-emerald-600 dark:text-emerald-400" />{' '}
                     de marge disponible pour booster votre épargne.
                   </>
                 )}

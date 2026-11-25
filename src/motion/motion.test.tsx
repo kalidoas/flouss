@@ -32,20 +32,22 @@ if (typeof window !== 'undefined' && !window.IntersectionObserver) {
 }
 
 describe('Motion Tokens Contract', () => {
-  it('defines the required durations: fast 150ms, base 250ms, slow 450ms', () => {
-    expect(motionDurations.fast).toBe(0.15);
-    expect(motionDurations.base).toBe(0.25);
-    expect(motionDurations.slow).toBe(0.45);
-    expect(motionDurations.fastMs).toBe(150);
-    expect(motionDurations.baseMs).toBe(250);
-    expect(motionDurations.slowMs).toBe(450);
+  it('defines the required durations: 120, 200, 320, and 600ms', () => {
+    expect(motionDurations.fast).toBe(0.12);
+    expect(motionDurations.base).toBe(0.2);
+    expect(motionDurations.medium).toBe(0.32);
+    expect(motionDurations.slow).toBe(0.6);
+    expect(motionDurations.fastMs).toBe(120);
+    expect(motionDurations.baseMs).toBe(200);
+    expect(motionDurations.mediumMs).toBe(320);
+    expect(motionDurations.slowMs).toBe(600);
   });
 
   it('defines the required easings and springs', () => {
     expect(motionEasings.easeOut).toEqual([0.22, 1, 0.36, 1]);
     expect(motionEasings.easeInOut).toEqual([0.65, 0, 0.35, 1]);
-    expect(motionSprings.default.stiffness).toBe(260);
-    expect(motionSprings.default.damping).toBe(28);
+    expect(motionSprings.default.stiffness).toBe(380);
+    expect(motionSprings.default.damping).toBe(32);
   });
 });
 

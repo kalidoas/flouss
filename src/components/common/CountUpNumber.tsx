@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { formatMAD } from '../../utils/formatters';
+import { Money } from './Money';
 import { Language } from '../../types';
 
 interface CountUpNumberProps {
@@ -56,7 +56,7 @@ export const CountUpNumber: React.FC<CountUpNumberProps> = ({
 
   return (
     <span className={`tabular-nums transition-[filter] duration-200 ${hide ? 'privacy-blur' : ''} ${className}`}>
-      {formatMAD(displayValue, false, language)}
+      <Money amount={displayValue} language={language} hide={hide ? true : undefined} />
     </span>
   );
 };

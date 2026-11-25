@@ -12,7 +12,7 @@ import { translations } from '../i18n/translations';
 import { IncomeSource, Transaction } from '../types';
 import { getIncomeSourceName } from '../utils/i18nHelpers';
 import { EmptyState } from '../components/common/EmptyState';
-import { MoneyText } from '../components/common/PrivacyCurrency';
+import { Money } from '../components/common/Money';
 import { StyledSelect } from '../components/common/StyledSelect';
 import {
   Plus,
@@ -174,7 +174,7 @@ export const IncomePage: React.FC = () => {
             </span>
           </div>
           <div className={`text-3xl sm:text-4xl font-bold text-positive tracking-tight tabular-nums transition-[filter] duration-200 ${hideBalance ? 'privacy-blur' : ''}`}>
-            <MoneyText amount={totalFilteredIncome} />
+            <Money amount={totalFilteredIncome} />
           </div>
           <p className="text-xs text-muted mt-1.5 font-medium">
             {t.depositsLogged.replace('{count}', String(filteredIncomeTransactions.length))}
@@ -192,7 +192,7 @@ export const IncomePage: React.FC = () => {
             </span>
           </div>
           <div className={`text-3xl sm:text-4xl font-bold text-accent-contrast tracking-tight tabular-nums transition-[filter] duration-200 ${hideBalance ? 'privacy-blur' : ''}`}>
-            <MoneyText amount={totalAllTimeIncome} />
+            <Money amount={totalAllTimeIncome} />
           </div>
           <p className="text-xs text-muted mt-1.5 font-medium">
             {t.sinceStart}
@@ -238,7 +238,7 @@ export const IncomePage: React.FC = () => {
 
                 <div className="text-end shrink-0">
                   <div className={`text-xs sm:text-sm font-bold text-positive tabular-nums ${hideBalance ? 'privacy-blur' : ''}`}>
-                    <MoneyText amount={total} />
+                    <Money amount={total} />
                   </div>
                   <button
                     type="button"
@@ -339,7 +339,7 @@ export const IncomePage: React.FC = () => {
                   {group.label}
                 </span>
                 <span className="text-xs font-bold tabular-nums text-positive">
-                  + <MoneyText amount={group.total} />
+                  + <Money amount={group.total} />
                 </span>
               </div>
               <div className="rounded-2xl bg-surface/5 border border-border/10 overflow-hidden divide-y divide-border/[0.05] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">

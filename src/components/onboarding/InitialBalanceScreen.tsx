@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import { translations } from '../../i18n/translations';
 import { Wallet, ArrowRight, Sparkles, Check, DollarSign } from 'lucide-react';
-import { Money } from '../common/PrivacyCurrency';
+import { Money } from '../common/Money';
 
 export const InitialBalanceScreen: React.FC = () => {
   const { language, completeInitialBalance, skipInitialBalance } = useAppStore();

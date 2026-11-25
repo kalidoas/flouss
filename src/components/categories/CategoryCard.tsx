@@ -11,7 +11,7 @@ import { formatMAD, getCurrentMonthStr } from '../../utils/formatters';
 import { getCategoryIcon } from '../../utils/icons';
 import { translations } from '../../i18n/translations';
 import { getCategoryName } from '../../utils/i18nHelpers';
-import { MoneyText } from '../common/PrivacyCurrency';
+import { Money } from '../common/Money';
 import { getCategoryVisualColor } from '../../utils/categoryColor';
 
 interface CategoryCardProps {
@@ -80,7 +80,7 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({
         {category.isGoal && goalCalc ? (
           <>
             <div className="flex items-center justify-between text-xs">
-              <MoneyText
+              <Money
                 amount={goalCalc.savedAmount}
                 className="font-bold text-text-subtle dark:text-content"
               />
@@ -106,7 +106,7 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({
               <span className="text-caption text-muted font-medium">
                 {tCat.spentThisMonth}
               </span>
-              <MoneyText
+              <Money
                 amount={spentThisMonth}
                 className="font-bold text-text-subtle dark:text-content"
               />

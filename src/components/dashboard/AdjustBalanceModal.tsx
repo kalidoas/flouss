@@ -3,6 +3,7 @@ import { useAppStore } from '../../store/useAppStore';
 import { BottomSheet } from '../common/BottomSheet';
 import { Button } from '../common/Button';
 import { AmountKeypad } from '../common/AmountKeypad';
+import { Money } from '../common/Money';
 import { translations } from '../../i18n/translations';
 import { formatMAD } from '../../utils/formatters';
 import { playHapticFeedback } from '../../utils/haptics';
@@ -101,7 +102,7 @@ export const AdjustBalanceModal: React.FC<AdjustBalanceModalProps> = ({
               {tWallet.currentCalculated}
             </span>
             <span className="text-base font-bold text-zinc-800 dark:text-zinc-200 tabular-nums">
-              {formatMAD(currentBalance, false, language)}
+              <Money amount={currentBalance} />
             </span>
           </div>
 
@@ -122,12 +123,12 @@ export const AdjustBalanceModal: React.FC<AdjustBalanceModalProps> = ({
               {diff > 0 ? (
                 <>
                   <ArrowUpRight className="w-4 h-4 stroke-[2.5]" />
-                  <span>+{formatMAD(diff, false, language)}</span>
+                  <span>+<Money amount={diff} /></span>
                 </>
               ) : diff < 0 ? (
                 <>
                   <ArrowDownRight className="w-4 h-4 stroke-[2.5]" />
-                  <span>{formatMAD(diff, false, language)}</span>
+                  <span><Money amount={diff} /></span>
                 </>
               ) : (
                 <>

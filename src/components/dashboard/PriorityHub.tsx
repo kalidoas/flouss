@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '../../store/useAppStore';
 import { AppleGlassCard } from '../common/AppleGlassCard';
+import { Money } from '../common/Money';
 import { translations } from '../../i18n/translations';
 import { formatMAD, getCurrentMonthStr } from '../../utils/formatters';
 import { getNoteItemDisplay } from '../../utils/i18nHelpers';
@@ -357,7 +358,7 @@ export const PriorityHub: React.FC = () => {
                           hideBalance ? 'privacy-blur' : ''
                         }`}
                       >
-                        {formatMAD(sub.amount, false, language)}
+                        <Money amount={sub.amount} />
                       </div>
                     </div>
 

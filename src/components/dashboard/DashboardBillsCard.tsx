@@ -1,6 +1,6 @@
 import React from 'react';
 import { CalendarClock, CheckCircle2, ArrowRight } from 'lucide-react';
-import { MoneyText } from '../common/PrivacyCurrency';
+import { Money } from '../common/Money';
 import { SubscriptionItem, Language } from '../../types';
 import { calculateNextDueDate } from '../../utils/subscriptions';
 import { getIntlLocale } from '../../utils/formatters';
@@ -109,7 +109,7 @@ export const DashboardBillsCard: React.FC<Props> = ({
                   >
                     {dueLabel}
                   </span>
-                  <MoneyText
+                  <Money
                     amount={subscription.amount}
                     className="text-xs font-bold tabular-nums text-content dark:text-white shrink-0 whitespace-nowrap"
                   />

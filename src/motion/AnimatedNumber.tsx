@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Language } from '../types';
-import { formatMAD } from '../utils/formatters';
+import { Money } from '../components/common/Money';
 import { useMotionPrefs } from './useMotionPrefs';
 import { motionDurations } from './tokens';
 
@@ -64,11 +64,13 @@ export const AnimatedNumber: React.FC<AnimatedNumberProps> = ({
 
   const activeValue = prefersReducedMotion ? value : displayValue;
 
+  if (!formatter && format === 'currency') {
+    return <Money amount={activeValue} language={language} hide={hide ? true : undefined} prefix={prefix} suffix={unit ? ` ${unit}` : ''} className={className} />;
+  }
+
   let formatted = '';
   if (formatter) {
     formatted = formatter(activeValue);
-  } else if (format === 'currency') {
-    formatted = formatMAD(activeValue, false, language);
   } else if (format === 'percent') {
     formatted = `${Math.round(activeValue)}%`;
   } else if (format === 'integer') {

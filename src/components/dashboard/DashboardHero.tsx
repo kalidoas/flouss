@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useAppStore } from '../../store/useAppStore';
-import { MoneyText } from '../common/PrivacyCurrency';
+import { Money } from '../common/Money';
 import { AdjustBalanceModal } from './AdjustBalanceModal';
 import { AddContributionModal } from '../transactions/AddContributionModal';
 import { BalanceSparkline, buildBalanceSeries } from './BalanceSparkline';
@@ -10,6 +10,7 @@ import { getNetPresentation } from '../../utils/dashboard';
 import { translations } from '../../i18n/translations';
 import { ArrowDownRight, ArrowUpRight, Pencil, PiggyBank, TrendingDown, TrendingUp } from 'lucide-react';
 import { GrainyHeroBackdrop } from '../backgrounds/GrainyHeroBackdrop';
+import { Coin3D } from '../../motion/Coin3D';
 
 interface Props {
   selectedMonth: string;
@@ -97,17 +98,7 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
         className="spotlight-card flouss-balance-hero group relative isolate overflow-hidden rounded-[24px] bg-surface dark:bg-surface-3/5 p-5 sm:p-6 border border-border-subtle dark:border-white/10 shadow-xs min-w-0 min-h-[220px] sm:min-h-[250px]"
       >
         <GrainyHeroBackdrop />
-        <div className="flouss-balance-scene" aria-hidden="true">
-          <div className="flouss-balance-orbit flouss-balance-orbit-back" />
-          <div className="flouss-balance-orbit flouss-balance-orbit-front" />
-          <div className="flouss-balance-coin">
-            <div className="flouss-balance-coin-face">
-              <span className="flouss-balance-coin-mark">د.م.</span>
-              <span className="flouss-balance-coin-stars">✦　✦　✦</span>
-            </div>
-          </div>
-          <div className="flouss-balance-scene-shadow" />
-        </div>
+        <Coin3D />
         <div className="relative z-10 flex flex-col gap-2 min-w-0">
           {/* Title & Edit Button (sentence case, 15-17px, font-semibold) */}
           <div className="flex items-center justify-between gap-2 min-w-0">
@@ -129,7 +120,7 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
 
           {/* Balance Amount (compact) */}
           <div className="flex items-baseline flex-wrap gap-x-2 gap-y-1 min-w-0 mt-4 sm:mt-5">
-            <MoneyText
+            <Money
               amount={summary.balance}
               className="text-[44px] sm:text-[52px] lg:text-[58px] font-bold leading-none tracking-[-0.055em] tabular-nums text-content dark:text-content min-w-0"
             />
@@ -200,7 +191,7 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
           <p className="text-[10px] font-medium text-muted dark:text-muted truncate leading-tight">
             {t.incomeThisMonth}
           </p>
-          <MoneyText
+          <Money
             amount={summary.income}
             showSign={true}
             className="mt-0.5 block max-w-full truncate text-xs sm:text-sm font-bold tracking-tight tabular-nums text-positive leading-tight"
@@ -215,7 +206,7 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
           <p className="text-[10px] font-medium text-muted dark:text-muted truncate leading-tight">
             {t.expensesThisMonth}
           </p>
-          <MoneyText
+          <Money
             amount={summary.expenses}
             prefix="− "
             showSign={false}
@@ -231,7 +222,7 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth }) => {
           <p className="text-[10px] font-medium text-muted dark:text-muted truncate leading-tight">
             {t.netLabel}
           </p>
-          <MoneyText
+          <Money
             amount={summary.net}
             showSign={true}
             className={`mt-0.5 block max-w-full truncate text-xs sm:text-sm font-bold tracking-tight tabular-nums leading-tight ${

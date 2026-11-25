@@ -42,14 +42,8 @@ export function toCents(val: string | number): number {
  * @param cents - Integer cents (e.g., 3050)
  * @returns Decimal string (e.g., "30.50")
  */
-export function fromCents(cents: number): string {
-  const sign = cents < 0 ? '-' : '';
-  const absCents = Math.abs(cents);
-  const formatted = new Intl.NumberFormat(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(Math.abs(absCents) / 100);
-  return `${sign}${formatted}`;
+export function fromCents(cents: number): number {
+  return (Number.isFinite(cents) ? cents : 0) / 100;
 }
 
 /**

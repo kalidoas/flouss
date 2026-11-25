@@ -15,7 +15,7 @@ import {
 import { exportToExcel } from '../utils/excelExport';
 import { Search, RotateCcw, FileSpreadsheet, Receipt } from 'lucide-react';
 import { EmptyState } from '../components/common/EmptyState';
-import { MoneyText } from '../components/common/PrivacyCurrency';
+import { Money } from '../components/common/Money';
 import { selectFinancialSummary } from '../utils/calculations';
 import { StyledSelect } from '../components/common/StyledSelect';
 
@@ -139,7 +139,7 @@ export const HistoryPage: React.FC = () => {
             <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted block truncate">
               {t.totalIn}
             </span>
-            <MoneyText
+            <Money
               amount={totalIn}
               showSign={true}
               className="mt-2 block max-w-full truncate text-2xl font-bold tracking-tight tabular-nums text-positive"
@@ -151,7 +151,7 @@ export const HistoryPage: React.FC = () => {
             <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted block truncate">
               {t.totalOut}
             </span>
-            <MoneyText
+            <Money
               amount={totalOut}
               prefix="− "
               className="mt-2 block max-w-full truncate text-2xl font-bold tracking-tight tabular-nums text-negative"
@@ -163,7 +163,7 @@ export const HistoryPage: React.FC = () => {
             <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted block truncate">
               {t.netTotal}
             </span>
-            <MoneyText
+            <Money
               amount={netTotal}
               className={`mt-2 block max-w-full truncate text-2xl font-bold tracking-tight tabular-nums ${
                 netTotal >= 0

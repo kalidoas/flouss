@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { motion, useSpring, useTransform } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Language } from '../../types';
+import { Money } from './Money';
 
 export interface AnimatedCurrencyProps {
   value: number;
@@ -11,82 +12,20 @@ export interface AnimatedCurrencyProps {
   prefix?: string;
 }
 
-export const AnimatedCurrency: React.FC<AnimatedCurrencyProps> = ({
-  value,
-  language = 'ar',
-  hideBalance = false,
-  className = '',
-  showCurrency = true,
-  prefix = '',
-}) => {
-  const safeValue = typeof value === 'number' && !isNaN(value) ? value : 0;
-  const prevValueRef = useRef(safeValue);
-  const [pulseColor, setPulseColor] = useState<'green' | 'red' | null>(null);
-
-  // Smooth Apple spring for rolling numerical interpolation
-  const springValue = useSpring(safeValue, {
-    stiffness: 280,
-    damping: 30,
-    mass: 0.6,
-  });
-
+/** Motion wrapper; Money remains the single source of displayed currency formatting. */
+export const AnimatedCurrency: React.FC<AnimatedCurrencyProps> = ({ value, language, hideBalance = false, className = '', showCurrency = true, prefix = '' }) => {
+  const previous = useRef(value);
+  const [direction, setDirection] = useState<'up' | 'down' | null>(null);
   useEffect(() => {
-    springValue.set(safeValue);
-
-    if (safeValue !== prevValueRef.current) {
-      if (safeValue > prevValueRef.current) {
-        setPulseColor('green');
-      } else if (safeValue < prevValueRef.current) {
-        setPulseColor('red');
-      }
-      prevValueRef.current = safeValue;
-
-      const timer = setTimeout(() => {
-        setPulseColor(null);
-      }, 1200);
-      return () => clearTimeout(timer);
+    if (value !== previous.current) {
+      setDirection(value > previous.current ? 'up' : 'down');
+      previous.current = value;
+      const timer = window.setTimeout(() => setDirection(null), 320);
+      return () => window.clearTimeout(timer);
     }
-  }, [safeValue, springValue]);
+  }, [value]);
 
-  // Transform spring float into formatted currency string
-  const displayValue = useTransform(springValue, (current) => {
-    const safeCurrent = typeof current === 'number' && !isNaN(current) ? current : 0;
-    const rounded = Math.round(safeCurrent * 100) / 100;
-    const parts = rounded.toFixed(2).split('.');
-    const integerPart = parts[0];
-    const decimalPart = parts[1];
-
-    // Format with standard thousands separator
-    const formattedInt = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-    return `${formattedInt},${decimalPart}`;
-  });
-
-  const currencySymbol =
-    language === 'ar' ? 'د.م.' : 'MAD';
-
-  return (
-    <motion.span
-      animate={
-        pulseColor === 'green'
-          ? { scale: [1, 1.03, 1], color: ['bg-positive', 'bg-positive', 'inherit'] }
-          : pulseColor === 'red'
-          ? { scale: [1, 1.03, 1], color: ['bg-negative', 'bg-negative', 'inherit'] }
-          : { scale: 1 }
-      }
-      transition={{ duration: 0.8, ease: 'easeOut' }}
-      className={`inline-flex items-baseline gap-1 font-bold tabular-nums tracking-tight transition-[filter] duration-200 select-text ${
-        hideBalance ? 'privacy-blur' : ''
-      } ${className}`}
-    >
-      {prefix && <span>{prefix}</span>}
-
-      <motion.span>{displayValue}</motion.span>
-
-      {showCurrency && (
-        <span className="text-[0.6em] font-medium opacity-75 ml-0.5 uppercase tracking-normal">
-          {currencySymbol}
-        </span>
-      )}
-    </motion.span>
-  );
+  return <motion.span animate={direction ? { y: [0, -2, 0], opacity: [0.8, 1, 1] } : { y: 0, opacity: 1 }} transition={{ duration: 0.32 }} className={className}>
+    <Money amount={value} language={language} hide={hideBalance} prefix={prefix} currencyClassName={showCurrency ? undefined : 'sr-only'} />
+  </motion.span>;
 };

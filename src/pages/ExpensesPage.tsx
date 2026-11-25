@@ -4,7 +4,7 @@ import { useAppStore } from '../store/useAppStore';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { EmptyState } from '../components/common/EmptyState';
-import { MoneyText } from '../components/common/PrivacyCurrency';
+import { Money } from '../components/common/Money';
 import { AddExpenseModal } from '../components/transactions/AddExpenseModal';
 import { translations } from '../i18n/translations';
 import { formatMAD, formatDate, getCurrentMonthStr, formatMonthYear } from '../utils/formatters';
@@ -194,7 +194,7 @@ export const ExpensesPage: React.FC = () => {
               {t.totalExpenses}
             </span>
             <div className="text-3xl sm:text-4xl font-bold text-negative tracking-tight tabular-nums">
-              <MoneyText
+              <Money
                 amount={totalExpenseAmount}
                 prefix="-"
                 className="font-bold text-negative"
@@ -343,7 +343,7 @@ export const ExpensesPage: React.FC = () => {
                   </div>
 
                   <span className="text-xs font-bold text-negative tabular-nums">
-                    - <MoneyText amount={dayTotal} />
+                    - <Money amount={dayTotal} />
                   </span>
                 </div>
 
@@ -412,7 +412,7 @@ export const ExpensesPage: React.FC = () => {
                               <Clock className="w-3 h-3" />{exactTime}
                             </span>
                             <span className="text-sm sm:text-base font-bold text-negative tabular-nums shrink-0 flex-shrink-0 whitespace-nowrap">
-                              <MoneyText
+                              <Money
                                 amount={Number(tx.amount)}
                                 prefix="-"
                                 className="font-bold text-negative shrink-0 flex-shrink-0 whitespace-nowrap"

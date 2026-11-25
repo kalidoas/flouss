@@ -51,6 +51,14 @@ const RootEntry: React.FC = () => {
   return <App />;
 };
 
+const MotionPreferenceRoot: React.FC<React.PropsWithChildren> = ({ children }) => {
+  const mode = useAppStore((state) => state.animationMode ?? 'full');
+  useEffect(() => {
+    document.documentElement.dataset.animations = mode;
+  }, [mode]);
+  return <MotionConfig reducedMotion={mode === 'full' ? 'user' : 'always'}>{children}</MotionConfig>;
+};
+
 interface Props {
   children: ReactNode;
 }
@@ -140,9 +148,9 @@ class RootErrorBoundary extends Component<Props, State> {
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <RootErrorBoundary>
-      <MotionConfig reducedMotion="user">
+      <MotionPreferenceRoot>
         <RootEntry />
-      </MotionConfig>
+      </MotionPreferenceRoot>
     </RootErrorBoundary>
   </React.StrictMode>
 );

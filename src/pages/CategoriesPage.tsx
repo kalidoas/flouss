@@ -14,7 +14,7 @@ import { CATEGORY_GROUPS_META, resolveCategoryGroup } from '../utils/categoryThe
 import { getCategoryIcon } from '../utils/icons';
 import { formatMAD, getCurrentMonthStr, isTransactionInMonth } from '../utils/formatters';
 import { getCategoryVisualColor } from '../utils/categoryColor';
-import { MoneyText } from '../components/common/PrivacyCurrency';
+import { Money } from '../components/common/Money';
 import {
   calculateCategorySpentAmount,
   calculateGoalProgress,
@@ -226,7 +226,7 @@ export const CategoriesPage: React.FC = () => {
             <TrendingDown className="w-3.5 h-3.5 text-negative shrink-0" />
           </div>
           <div className="text-2xl font-bold tracking-tight text-negative tabular-nums">
-            <MoneyText amount={categoryStats.totalSpent} />
+            <Money amount={categoryStats.totalSpent} />
           </div>
           <span className="text-[11px] text-muted block mt-1 truncate">
             {tCatPage.totalMonthlyExpenses}
@@ -246,7 +246,7 @@ export const CategoriesPage: React.FC = () => {
             {categoryStats.topCategory ? getCategoryName(categoryStats.topCategory, language) : '—'}
           </div>
           <span className="text-xs text-warning font-semibold block mt-1 tabular-nums">
-            <MoneyText amount={categoryStats.topCatAmount} />
+            <Money amount={categoryStats.topCatAmount} />
           </span>
         </div>
 
@@ -568,7 +568,7 @@ export const CategoriesPage: React.FC = () => {
 
                   <div className="flex flex-col items-end shrink-0">
                     <div className="text-sm sm:text-base font-bold text-accent-contrast tabular-nums">
-                      <MoneyText amount={category.isGoal && goalCalc ? goalCalc.savedAmount : spentThisMonth} />
+                      <Money amount={category.isGoal && goalCalc ? goalCalc.savedAmount : spentThisMonth} />
                     </div>
                     <span className="text-[10px] text-muted">
                       {category.isGoal ? tCatPage.saved : tCatPage.spentThisMonth}
@@ -592,7 +592,7 @@ export const CategoriesPage: React.FC = () => {
                 ) : (
                   <div className="space-y-1">
                     <div className="flex items-center justify-between text-[11px] text-muted">
-                      <span>{tCatPage.goalLabel}: <MoneyText amount={category.targetAmount || 0} /></span>
+                      <span>{tCatPage.goalLabel}: <Money amount={category.targetAmount || 0} /></span>
                       <span className="font-semibold tabular-nums text-accent">{goalCalc ? `${goalCalc.progressPercent}%` : '0%'}</span>
                     </div>
                     <div className="h-1.5 overflow-hidden rounded-full bg-surface/[0.06]">

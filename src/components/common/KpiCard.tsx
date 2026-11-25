@@ -1,6 +1,6 @@
 import React from 'react';
 import { LucideIcon, TrendingUp, TrendingDown, Minus } from 'lucide-react';
-import { PrivacyCurrency } from './PrivacyCurrency';
+import { Money } from './Money';
 import { formatMAD } from '../../utils/formatters';
 import { useAppStore } from '../../store/useAppStore';
 
@@ -143,7 +143,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
         <div className="text-2xl sm:text-3xl font-bold tracking-tight text-content truncate tabular-nums">
           {isMAD ? (
             typeof value === 'number' ? (
-              <PrivacyCurrency amount={value} />
+              <Money amount={value} />
             ) : typeof value === 'string' && (value.includes('MAD') || value.includes('د.م.')) ? (
               <span>{value}</span>
             ) : (

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Category, GoalCalculation } from '../../types';
-import { formatMAD } from '../../utils/formatters';
+import { Money } from '../common/Money';
 import { getCategoryVisualColor } from '../../utils/categoryColor';
 import { Badge } from '../common/Badge';
 import { useAppStore } from '../../store/useAppStore';
@@ -82,15 +82,11 @@ export const GoalProgressBar: React.FC<GoalProgressBarProps> = ({
       <div className="flex items-center justify-between text-xs text-muted">
         <div>
           <span>{tCat.savedLabel} : </span>
-          <strong className={`text-content font-medium tabular-nums transition-[filter] duration-200 ${hideBalance ? 'privacy-blur' : ''}`}>
-            {formatMAD(savedAmount, false, language)}
-          </strong>
+          <Money amount={savedAmount} hide={hideBalance} className="text-content font-medium" />
         </div>
         <div>
           <span>{tCat.targetLabel} : </span>
-          <strong className={`text-content font-medium tabular-nums transition-[filter] duration-200 ${hideBalance ? 'privacy-blur' : ''}`}>
-            {formatMAD(category.targetAmount || 0, false, language)}
-          </strong>
+          <Money amount={category.targetAmount || 0} hide={hideBalance} className="text-content font-medium" />
         </div>
       </div>
 
@@ -100,13 +96,11 @@ export const GoalProgressBar: React.FC<GoalProgressBarProps> = ({
           <div className="flex-1">
             <span className="text-muted block text-[11px]">{tCat.monthlyAdvice} :</span>
             <span className="font-medium text-content">
-              <span className={`text-positive dark:text-positive tabular-nums transition-[filter] duration-200 ${hideBalance ? 'privacy-blur' : ''}`}>
-                {formatMAD(monthlyNeeded, false, language)}
-              </span>{' '}
+              <Money amount={monthlyNeeded} hide={hideBalance} className="text-positive dark:text-positive" />{' '}
               {tCat.perMonth}
             </span>
             <span className="text-[10px] text-muted block mt-0.5">
-              ({tCat.monthsRemaining.replace('{months}', String(remainingMonths))} • {tCat.remaining} <span className={hideBalance ? 'privacy-blur' : ''}>{formatMAD(remainingAmount, false, language)}</span>)
+              ({tCat.monthsRemaining.replace('{months}', String(remainingMonths))} • {tCat.remaining} <Money amount={remainingAmount} hide={hideBalance} />)
             </span>
           </div>
 

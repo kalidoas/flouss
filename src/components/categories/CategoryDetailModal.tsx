@@ -5,6 +5,7 @@ import { Modal } from '../common/Modal';
 import { Button } from '../common/Button';
 import { GoalProgressBar } from '../goals/GoalProgressBar';
 import { TransactionItem } from '../transactions/TransactionItem';
+import { Money } from '../common/Money';
 import {
   calculateCategorySavedAmount,
   calculateCategorySpentAmount,
@@ -237,7 +238,7 @@ export const CategoryDetailModal: React.FC<CategoryDetailModalProps> = ({
                       </span>
                       {subSpent > 0 && (
                         <span className="text-[11px] font-mono text-text-subtle tabular-nums">
-                          {formatMAD(subSpent, false, language)}
+                          <Money amount={subSpent} />
                         </span>
                       )}
                     </div>
@@ -253,12 +254,10 @@ export const CategoryDetailModal: React.FC<CategoryDetailModalProps> = ({
               <span className="text-[11px] text-text-subtle block font-medium">
                 {tCat.spentThisMonth}
               </span>
-              <span className="text-base font-bold text-content text-accent-contrast tabular-nums mt-0.5 block">
-                {formatMAD(spentThisMonth, hideBalance, language)}
-              </span>
+              <Money amount={spentThisMonth} hide={hideBalance} className="text-base font-bold text-content mt-0.5 block" />
               {budgetStatus.hasBudget && (
                 <span className="text-[11px] text-text-subtle block mt-1">
-                  Budget : {formatMAD(budgetStatus.budget, false, language)}
+                  Budget : <Money amount={budgetStatus.budget} />
                 </span>
               )}
             </div>
@@ -267,9 +266,7 @@ export const CategoryDetailModal: React.FC<CategoryDetailModalProps> = ({
               <span className="text-[11px] text-text-subtle block font-medium">
                 {tCat.totalSpent || 'Dépensé au total'}
               </span>
-              <span className="text-base font-bold text-content text-accent-contrast tabular-nums mt-0.5 block">
-                {formatMAD(spentAllTime, hideBalance, language)}
-              </span>
+              <Money amount={spentAllTime} hide={hideBalance} className="text-base font-bold text-content mt-0.5 block" />
             </div>
           </div>
 

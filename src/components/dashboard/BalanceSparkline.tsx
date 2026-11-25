@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { Transaction, Language } from '../../types';
-import { MoneyText } from '../common/PrivacyCurrency';
+import { Money } from '../common/Money';
 import { selectDashboardFinancials, selectFinancialSummary } from '../../utils/calculations';
-import { formatDate, getIntlLocale } from '../../utils/formatters';
+import { formatDate, formatMAD, getIntlLocale } from '../../utils/formatters';
 import { Sparkles } from 'lucide-react';
 
 export interface BalancePoint {
@@ -102,8 +102,8 @@ export const BalanceSparkline: React.FC<Props> = ({
             }}
           >
             <p className="mb-0.5 text-[10px] text-muted dark:text-zinc-400">{tooltipDate}</p>
-            <p className="font-semibold text-content dark:text-white leading-tight"><span className="sr-only">{balanceLabel}: </span><MoneyText amount={point?.balance || 0} /></p>
-            <p className="text-[10px] text-muted dark:text-zinc-400"><span>{changeLabel}: </span><MoneyText amount={point?.change || 0} showSign /></p>
+            <p className="font-semibold text-content dark:text-white leading-tight"><span className="sr-only">{balanceLabel}: </span><Money amount={point?.balance || 0} /></p>
+            <p className="text-[10px] text-muted dark:text-zinc-400"><span>{changeLabel}: </span><Money amount={point?.change || 0} showSign /></p>
           </div>
           <svg
             viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
@@ -142,5 +142,5 @@ export const BalanceSparkline: React.FC<Props> = ({
 };
 
 function formatMADForAria(amount: number, language: Language) {
-  return new Intl.NumberFormat(getIntlLocale(language), { style: 'currency', currency: 'MAD' }).format(amount);
+  return formatMAD(amount, false, language);
 }

@@ -15,7 +15,7 @@ import {
 import { Trash2, AlertTriangle } from 'lucide-react';
 import { Modal } from '../common/Modal';
 import { Button } from '../common/Button';
-import { MoneyText } from '../common/PrivacyCurrency';
+import { Money } from '../common/Money';
 import { SwipeRow } from '../common/SwipeRow';
 
 interface TransactionItemProps {
@@ -234,7 +234,7 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
 
           {/* Right: Amount & Delete action */}
           <div className="flex items-center gap-1.5 sm:gap-3 shrink-0 flex-shrink-0 whitespace-nowrap ms-2">
-            <MoneyText
+            <Money
               amount={transaction.type === 'adjustment' ? Math.abs(transaction.amount) : transaction.amount}
               prefix={details.amountPrefix}
               className={`shrink-0 flex-shrink-0 whitespace-nowrap text-xs sm:text-sm font-semibold tabular-nums ${details.amountClass}`}

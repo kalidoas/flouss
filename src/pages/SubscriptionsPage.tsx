@@ -6,7 +6,7 @@ import { Modal } from '../components/common/Modal';
 import { Button } from '../components/common/Button';
 import { AmountKeypad } from '../components/common/AmountKeypad';
 import { EmptyState } from '../components/common/EmptyState';
-import { MoneyText } from '../components/common/PrivacyCurrency';
+import { Money } from '../components/common/Money';
 import { formatMAD, getCurrentMonthStr } from '../utils/formatters';
 import { translations } from '../i18n/translations';
 import { playHapticFeedback } from '../utils/haptics';
@@ -339,7 +339,7 @@ export const SubscriptionsPage: React.FC = () => {
               <span className="text-xs font-semibold uppercase tracking-wider text-muted dark:text-muted block">
                 {tSub.monthlyLiability}
               </span>
-              <MoneyText
+              <Money
                 amount={stats.totalMonthly}
                 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-text dark:text-text tabular-nums block"
               />
@@ -370,7 +370,7 @@ export const SubscriptionsPage: React.FC = () => {
               <span className="text-xs font-semibold uppercase tracking-wider text-positive dark:text-positive block">
                 {tSub.paidThisMonth}
               </span>
-              <MoneyText
+              <Money
                 amount={stats.totalPaidThisMonth}
                 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-positive dark:text-positive tabular-nums block"
               />
@@ -407,7 +407,7 @@ export const SubscriptionsPage: React.FC = () => {
               <span className="text-xs font-semibold uppercase tracking-wider text-warning dark:text-warning block">
                 {tSub.remainingThisMonth}
               </span>
-              <MoneyText
+              <Money
                 amount={stats.remaining}
                 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-warning dark:text-warning tabular-nums block"
               />
@@ -510,7 +510,7 @@ export const SubscriptionsPage: React.FC = () => {
                     {/* Hover Floating Tooltip Card */}
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none absolute -bottom-16 left-1/2 -translate-x-1/2 bg-surface text-content border border-border-subtle dark:bg-bg dark:border-border/10 rounded-xl px-2.5 py-1.5 shadow-xl text-center whitespace-nowrap z-30">
                       <div className="text-[11px] font-bold text-text dark:text-text">
-                        {tSub.dayNumber.replace('{day}', String(day))} • {formatMAD(info.total)}
+                        {tSub.dayNumber.replace('{day}', String(day))} • <Money amount={info.total} />
                       </div>
                       <div className="text-[10px] text-muted dark:text-muted truncate max-w-[140px]">
                         {info.names.join(', ')}
@@ -676,7 +676,7 @@ export const SubscriptionsPage: React.FC = () => {
                     <span className="text-[11px] text-muted uppercase font-semibold tracking-wider block">
                       {isPaid ? tSub.paidBadge : tSub.pendingBadge}
                     </span>
-                    <MoneyText
+                    <Money
                       amount={sub.amount}
                       className={`text-xl sm:text-2xl font-extrabold tracking-tight tabular-nums block ${
                         isPaid ? 'text-positive dark:text-positive' : 'text-text dark:text-text'

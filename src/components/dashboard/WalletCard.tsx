@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '../../store/useAppStore';
 import { AppleGlassCard } from '../common/AppleGlassCard';
 import { AnimatedCurrency } from '../common/AnimatedCurrency';
-import { PrivacyCurrency } from '../common/PrivacyCurrency';
+import { Money } from '../common/Money';
 import { translations } from '../../i18n/translations';
 import { formatMAD, getCurrentMonthStr, formatMonthYear, getTransactionMonth } from '../../utils/formatters';
 import { calculateAvailableBalance, selectAvailableBalance, selectFinancialSummary } from '../../utils/calculations';
@@ -340,7 +340,7 @@ export const WalletCard: React.FC<WalletCardProps> = ({
           <span className="text-[10px] text-zinc-400 group-hover/inc:text-zinc-600 dark:group-hover/inc:text-zinc-300 uppercase tracking-wider block font-medium transition-colors">
             {tWallet.income}
           </span>
-          <PrivacyCurrency
+          <Money
             amount={displayIncome}
             showSign={true}
             className="font-bold text-emerald-600 dark:text-emerald-400 text-xs"
@@ -371,7 +371,7 @@ export const WalletCard: React.FC<WalletCardProps> = ({
           <span className="text-[10px] text-zinc-400 group-hover/exp:text-zinc-600 dark:group-hover/exp:text-zinc-300 uppercase tracking-wider block font-medium transition-colors">
             {tWallet.expenses}
           </span>
-          <PrivacyCurrency
+          <Money
             amount={displayExpense}
             prefix="-"
             className="font-bold text-rose-600 dark:text-rose-400 text-xs"

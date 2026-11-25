@@ -134,6 +134,7 @@ export interface AppState {
   theme: ThemeMode;
   isDarkMode: boolean;
   language: Language;
+  animationMode: 'full' | 'calm' | 'off';
   activeScreen: ScreenId;
   screenHistory: ScreenId[];
   navigationDirection: 'forward' | 'back';
@@ -172,6 +173,7 @@ export interface AppState {
   setTheme: (theme: ThemeMode) => void;
   toggleTheme: () => void;
   setLanguage: (language: Language) => void;
+  setAnimationMode: (mode: 'full' | 'calm' | 'off') => void;
   resetLanguageToSystem: () => Language;
   setHideBalance: (v: boolean) => void;
   toggleHideBalance: () => void;
@@ -891,6 +893,7 @@ export const useAppStore = create<AppState>()(
         // ── UI Preferences ──────────────────────────────────────────
         ...getInitialTheme(),
         language: getInitialLanguage() as Language,
+        animationMode: 'full' as const,
         activeScreen: 'dashboard' as ScreenId,
         screenHistory: [] as ScreenId[],
         navigationDirection: 'forward' as const,
@@ -1649,6 +1652,7 @@ export const useAppStore = create<AppState>()(
           } catch (e) {}
           set({ language });
         },
+        setAnimationMode: (animationMode: 'full' | 'calm' | 'off') => set({ animationMode }),
         resetLanguageToSystem: () => {
           try {
             localStorage.removeItem('flouss_manual_language_selected');
@@ -2626,6 +2630,7 @@ export const useAppStore = create<AppState>()(
         theme: state.theme,
         isDarkMode: state.isDarkMode,
         language: state.language,
+        animationMode: state.animationMode ?? 'full',
         hideBalance: state.hideBalance,
         isBalanceHidden: state.isBalanceHidden,
         activeScreen: state.activeScreen,

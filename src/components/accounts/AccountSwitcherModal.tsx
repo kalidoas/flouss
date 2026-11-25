@@ -3,6 +3,7 @@ import { useAppStore } from '../../store/useAppStore';
 import { translations } from '../../i18n/translations';
 import { Modal } from '../common/Modal';
 import { Button } from '../common/Button';
+import { Money } from '../common/Money';
 import { formatMAD } from '../../utils/formatters';
 import { calculateAvailableBalance } from '../../utils/calculations';
 import {
@@ -188,7 +189,7 @@ export const AccountSwitcherModal: React.FC<AccountSwitcherModalProps> = ({
                           </span>
                         )}
                         <span className="font-mono text-content">
-                          {formatMAD(balance, false, language)}
+                          <Money amount={balance} />
                         </span>
                       </div>
                     </div>

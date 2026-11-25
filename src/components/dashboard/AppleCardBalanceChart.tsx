@@ -9,7 +9,7 @@ import {
 } from 'recharts';
 import { useAppStore } from '../../store/useAppStore';
 import { AppleGlassCard } from '../common/AppleGlassCard';
-import { PrivacyCurrency } from '../common/PrivacyCurrency';
+import { Money } from '../common/Money';
 import { formatMAD, getCurrentMonthStr, isTransactionInMonth, getTransactionMonth } from '../../utils/formatters';
 import { calculateAvailableBalance, selectAvailableBalance } from '../../utils/calculations';
 import { TrendingUp, TrendingDown, Activity } from 'lucide-react';
@@ -137,7 +137,7 @@ export const AppleCardBalanceChart: React.FC<AppleCardBalanceChartProps> = ({
           </div>
 
           <div className="flex items-baseline gap-2">
-            <PrivacyCurrency
+            <Money
               amount={currentBalance}
               className="text-2xl sm:text-3xl font-extrabold tracking-tight text-content dark:text-content"
             />
@@ -188,7 +188,7 @@ export const AppleCardBalanceChart: React.FC<AppleCardBalanceChartProps> = ({
                     <div className="bg-surface dark:bg-bg/90 backdrop-blur-xl border border-border/10 dark:border-border/15 px-3 py-1.5 rounded-xl shadow-xl text-xs space-y-0.5">
                       <div className="text-[10px] text-text-subtle font-medium">{item.date}</div>
                       <div className="font-bold text-content dark:text-content tabular-nums">
-                        {isHidden ? '••••••' : formatMAD(val, false, language)}
+                        {isHidden ? '••••••' : <Money amount={val} forceVisible />}
                       </div>
                     </div>
                   );

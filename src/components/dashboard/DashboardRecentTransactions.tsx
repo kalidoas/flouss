@@ -1,6 +1,6 @@
 import React from 'react';
 import { ArrowRight, SlidersHorizontal, Wallet } from 'lucide-react';
-import { MoneyText } from '../common/PrivacyCurrency';
+import { Money } from '../common/Money';
 import { Transaction } from '../../types';
 import { useAppStore } from '../../store/useAppStore';
 import { getCategoryIcon } from '../../utils/icons';
@@ -147,7 +147,7 @@ export const DashboardRecentTransactions: React.FC<Props> = ({
 
                 {/* Amount (never clipped) */}
                 <span className="shrink-0 whitespace-nowrap text-end ps-2">
-                  <MoneyText
+                  <Money
                     amount={amount}
                     prefix={prefix}
                     className={`shrink-0 whitespace-nowrap text-xs sm:text-sm font-bold tabular-nums ${

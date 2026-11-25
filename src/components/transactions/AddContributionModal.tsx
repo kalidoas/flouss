@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import { Modal } from '../common/Modal';
+import { Money } from '../common/Money';
 import { Button } from '../common/Button';
 import { Input } from '../common/Input';
 import { CustomDatePicker } from '../common/CustomDatePicker';
@@ -200,8 +201,8 @@ export const AddContributionModal: React.FC<AddContributionModalProps> = ({
                 {getCategoryName(selectedCategory, language)}
               </p>
               <p className="text-[11px] text-positive dark:text-positive mt-0.5 tabular-nums">
-                {formatMAD(goalCalc.savedAmount, false, language)} /{' '}
-                {formatMAD(selectedCategory.targetAmount || 0, false, language)} ({goalCalc.progressPercent}%)
+                <Money amount={goalCalc.savedAmount} /> /{' '}
+                <Money amount={selectedCategory.targetAmount || 0} /> ({goalCalc.progressPercent}%)
               </p>
             </div>
 
@@ -214,7 +215,7 @@ export const AddContributionModal: React.FC<AddContributionModalProps> = ({
               >
                 <Sparkles className="w-3 h-3" />
                 <span className="tabular-nums">
-                  +{formatMAD(goalCalc.monthlyNeeded, false, language)}
+                  +<Money amount={goalCalc.monthlyNeeded} />
                 </span>
               </button>
             )}

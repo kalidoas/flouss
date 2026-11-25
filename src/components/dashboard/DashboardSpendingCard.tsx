@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { ArrowRight } from 'lucide-react';
-import { MoneyText } from '../common/PrivacyCurrency';
+import { Money } from '../common/Money';
 import { Category, Language, Transaction } from '../../types';
 import { getCategoryName } from '../../utils/i18nHelpers';
 import { getCategoryVisualColor } from '../../utils/categoryColor';
@@ -72,7 +72,7 @@ export const DashboardSpendingCard: React.FC<Props> = ({
             {t.spendingTitle}
           </h2>
           <span className="text-muted dark:text-zinc-500">·</span>
-          <MoneyText
+          <Money
             amount={totalExpense}
             className="text-sm sm:text-[15px] font-bold text-content dark:text-white tabular-nums shrink-0"
           />
@@ -124,7 +124,7 @@ export const DashboardSpendingCard: React.FC<Props> = ({
                     {category ? getCategoryName(category, language) : t.otherCategory}
                   </span>
                 </div>
-                <MoneyText
+                <Money
                   amount={spent}
                   className="font-medium text-content dark:text-zinc-100 tabular-nums shrink-0 text-end"
                 />

@@ -4,6 +4,7 @@ import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Input } from '../components/common/Input';
 import { Modal } from '../components/common/Modal';
+import { Money } from '../components/common/Money';
 import { formatMAD, formatDate } from '../utils/formatters';
 import { translations } from '../i18n/translations';
 import { Language } from '../types';
@@ -88,6 +89,8 @@ export const SettingsPage: React.FC = () => {
     incomeSources,
     theme,
     setTheme,
+    animationMode,
+    setAnimationMode,
     language,
     setLanguage,
     resetLanguageToSystem,
@@ -737,9 +740,7 @@ export const SettingsPage: React.FC = () => {
                 {('locked')}
               </span>
             </div>
-            <div className={`text-xl sm:text-2xl font-semibold text-positive dark:text-positive tabular-nums mt-1 transition-[filter] duration-200 ${hideBalance ? 'privacy-blur' : ''}`}>
-              {formatMAD(initialBalance, false, language)}
-            </div>
+            <Money amount={initialBalance} hide={hideBalance} className="text-xl sm:text-2xl font-semibold text-positive mt-1" />
             <p className="text-xs text-muted mt-0.5">
               {t.lockedBalanceDesc}{' '}
               {initialBalanceLockedAt && `(Fixé le ${formatDate(initialBalanceLockedAt, language)})`}
@@ -1184,6 +1185,22 @@ export const SettingsPage: React.FC = () => {
             </div>
           </div>
 
+          {/* Motion preference */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-border dark:border-border">
+            <div>
+              <p className="text-sm font-bold text-text dark:text-text">{t.animations}</p>
+              <p className="text-xs text-muted">{t.animationsDesc}</p>
+            </div>
+            <div role="group" aria-label={t.animations} className="flex items-center gap-1.5 p-1 bg-surface-3 dark:bg-surface rounded-2xl">
+              {(['full', 'calm', 'off'] as const).map((mode) => {
+                const labels = { full: t.animationsFull, calm: t.animationsCalm, off: t.animationsOff };
+                return <button key={mode} type="button" aria-pressed={animationMode === mode} onClick={() => setAnimationMode(mode)} className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${animationMode === mode ? 'bg-surface dark:bg-surface text-accent-600 dark:text-accent-400 shadow-sm' : 'text-muted hover:text-text'}`}>
+                  {labels[mode]}
+                </button>;
+              })}
+            </div>
+          </div>
+
           {/* Language selector (Système Auto / Français / العربية RTL / English) */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-border dark:border-border">
             <div>
@@ -1511,7 +1528,7 @@ export const SettingsPage: React.FC = () => {
                   <div>
                     <span className="font-semibold text-text dark:text-text">{snap.date}</span>
                     <span className="text-[11px] text-muted ml-2">
-                      ({snap.transactionCount} {tCommon.transactionsShort}, {formatMAD(snap.balance, false, language)})
+                      ({snap.transactionCount} {tCommon.transactionsShort}, <Money amount={snap.balance} />)
                     </span>
                   </div>
                   <Button
@@ -1906,7 +1923,7 @@ export const SettingsPage: React.FC = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-muted">{tCommon.balanceLabel}</span>
-                <span className="font-bold text-positive dark:text-positive">{formatMAD(importPreview.balance, false, language)}</span>
+                <Money amount={importPreview.balance} className="font-bold text-positive" />
               </div>
             </div>
 
