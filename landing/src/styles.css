@@ -1478,6 +1478,8 @@ button:focus-visible, a:focus-visible, select:focus-visible {
   z-index: 1;
   width: min(52%, 340px);
   min-width: 280px;
+  justify-self: start;
+  margin-inline-start: 3%;
   padding: 8px;
   border: 1px solid #343436;
   border-radius: 43px;
@@ -1663,8 +1665,8 @@ button:focus-visible, a:focus-visible, select:focus-visible {
   }
 
   .hero-stage__phone {
-    width: 72%;
-    min-width: 235px;
+    width: 60%;
+    min-width: 210px;
     padding: 6px;
     border-radius: 38px;
   }
@@ -1691,8 +1693,14 @@ button:focus-visible, a:focus-visible, select:focus-visible {
   .hero-stage__bill-chip {
     inset-block-start: 55%;
     inset-inline-end: 2%;
-    gap: 6px;
-    padding: 9px;
+    width: min(34%, 132px);
+    gap: 5px;
+    padding: 8px;
+  }
+
+  .hero-stage__bill-chip > span:nth-child(2),
+  .hero-stage__bill-chip > span:nth-child(2) strong {
+    white-space: normal;
   }
 
   .hero-stage__bill-chip b {
