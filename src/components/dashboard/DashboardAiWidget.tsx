@@ -121,12 +121,12 @@ export const DashboardAiWidget: React.FC<DashboardAiWidgetProps> = (props) => {
 
       <div className="relative z-10 mb-2.5 flex items-center justify-between gap-2 min-w-0">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 text-white shadow-[0_0_12px_rgba(99,102,241,0.5)] shrink-0">
+          <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-accent/15 text-accent dark:bg-accent/20 shrink-0">
             <Sparkles className="h-3.5 w-3.5" />
           </div>
           <div className="flex items-center gap-2 min-w-0">
-            <span className="text-xs font-bold tracking-tight text-content dark:text-white truncate">Flouss Insights</span>
-            <span className="rounded-full border border-indigo-500/30 bg-indigo-500/15 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-widest text-indigo-600 dark:text-indigo-300 shrink-0">
+            <span className="text-xs font-bold tracking-tight text-content dark:text-content truncate">Flouss Insights</span>
+            <span className="rounded-full border border-accent/30 bg-accent/15 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-widest text-accent dark:text-accent shrink-0">
               {currentInsight.tag[locale]}
             </span>
           </div>
