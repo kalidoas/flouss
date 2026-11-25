@@ -30,11 +30,11 @@ export const DashboardRecentTransactions: React.FC<Props> = ({
   return (
     <div
       data-spotlight="true"
-      className="spotlight-card rounded-2xl bg-surface dark:bg-white/5 p-4 sm:p-5 backdrop-blur-xl border border-border-subtle dark:border-white/10 shadow-xs dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] space-y-3.5 h-fit w-full min-w-0"
+      className="spotlight-card rounded-2xl bg-surface dark:bg-surface-3/5 p-4 sm:p-5 backdrop-blur-xl border border-border-subtle dark:border-border-subtle/10 shadow-xs shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] space-y-3.5 h-fit w-full min-w-0"
     >
       {/* Header: sentence case title + view all */}
       <div className="flex items-center justify-between gap-3 min-w-0">
-        <h2 className="text-[15px] sm:text-base font-semibold text-content dark:text-white truncate">
+        <h2 className="text-[15px] sm:text-base font-semibold text-content dark:text-content truncate">
           {t.recentTransactions}
         </h2>
         <button
@@ -111,7 +111,7 @@ export const DashboardRecentTransactions: React.FC<Props> = ({
                 key={transaction.id}
                 type="button"
                 onClick={() => setActiveScreen('history')}
-                className="flex w-full min-w-0 items-center justify-between gap-3 p-3 rounded-xl bg-surface-raised/60 dark:bg-white/[0.03] border border-border-subtle dark:border-white/[0.05] hover:bg-surface-raised dark:hover:bg-white/[0.06] text-start transition-all group active:scale-[0.98] duration-200 cursor-pointer"
+                className="flex w-full min-w-0 items-center justify-between gap-3 p-3 rounded-xl bg-surface-raised/60 dark:bg-surface-3/5 border border-border-subtle dark:border-border-subtle/10 hover:bg-surface-raised dark:hover:bg-surface-3/5 transition-all group active:scale-[0.98] duration-200 cursor-pointer"
               >
                 {/* Category Icon */}
                 <span
@@ -126,7 +126,7 @@ export const DashboardRecentTransactions: React.FC<Props> = ({
                 <span className="min-w-0 flex-1">
                   <span className="flex min-w-0 items-center gap-1.5">
                     <span
-                      className="line-clamp-2 text-xs sm:text-sm font-semibold text-content dark:text-zinc-100 leading-snug"
+                      className="line-clamp-2 text-xs sm:text-sm font-semibold text-content dark:text-content leading-snug"
                       title={title}
                     >
                       {title}

@@ -79,7 +79,7 @@ export const DashboardFocusNow: React.FC = () => {
       <section
         aria-labelledby="dashboard-focus-title"
         data-spotlight="true"
-        className="spotlight-card rounded-2xl bg-surface text-content dark:bg-white/5 dark:text-white p-4 sm:p-5 backdrop-blur-xl border border-border-subtle dark:border-white/10 shadow-xs dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] relative overflow-hidden h-fit min-w-0"
+        className="spotlight-card rounded-2xl bg-surface text-content dark:bg-surface-3/5 text-content p-4 sm:p-5 backdrop-blur-xl border border-border-subtle dark:border-border-subtle/10 shadow-xs dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] relative overflow-hidden h-fit min-w-0"
         style={{
           backgroundImage:
             'radial-gradient(ellipse 70% 60% at 100% 0%, rgba(244,63,94,0.12), transparent 70%)',
@@ -93,7 +93,7 @@ export const DashboardFocusNow: React.FC = () => {
             />
             <h2
               id="dashboard-focus-title"
-              className="text-[15px] sm:text-base font-semibold text-content dark:text-white truncate"
+              className="text-[15px] sm:text-base font-semibold text-content text-content truncate"
             >
               {t.focusNow}
             </h2>
@@ -166,7 +166,7 @@ export const DashboardFocusNow: React.FC = () => {
                           className={`text-[11px] shrink-0 whitespace-nowrap ${
                             overdue
                               ? 'font-semibold text-rose-600 dark:text-rose-400'
-                              : 'text-muted dark:text-zinc-400'
+                              : 'text-muted text-muted'
                           }`}
                         >
                           <CalendarDays className="me-1 inline h-3 w-3" />
@@ -196,7 +196,7 @@ export const DashboardFocusNow: React.FC = () => {
           <button
             type="button"
             onClick={handleOpenModal}
-            className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border-subtle dark:border-white/10 text-xs font-semibold text-muted hover:text-content hover:border-rose-400/50 hover:bg-rose-500/[0.03] transition-all cursor-pointer"
+            className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border-subtle dark:border-border-subtle/10 text-xs font-semibold text-muted hover:text-content hover:border-rose-400/50 hover:bg-rose-500/[0.03] transition-all cursor-pointer"
           >
             <Plus className="h-3.5 w-3.5" />
             <span>{t.addFocusTask}</span>
@@ -222,7 +222,7 @@ export const DashboardFocusNow: React.FC = () => {
               onChange={(e) => setText(e.target.value)}
               maxLength={120}
               placeholder={t.focusTaskTitle}
-              className="min-h-11 w-full rounded-xl border border-border-subtle bg-surface text-content dark:border-white/10 dark:bg-zinc-900 dark:text-white px-3.5 py-2 text-xs sm:text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              className="min-h-11 w-full rounded-xl border border-border-subtle bg-surface text-content dark:border-border-subtle/10 dark:bg-zinc-900 text-content px-3.5 py-2 text-xs sm:text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent"
             />
           </div>
 
@@ -242,7 +242,7 @@ export const DashboardFocusNow: React.FC = () => {
               className={`min-h-[44px] rounded-full border px-4 py-2 text-xs font-semibold transition-all cursor-pointer ${
                 urgent
                   ? 'border-rose-400/40 bg-rose-500/20 text-rose-500 dark:text-rose-300 shadow-sm'
-                  : 'border-border-subtle bg-surface text-muted hover:text-content dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-zinc-400 dark:hover:text-white'
+                  : 'border-border-subtle bg-surface text-muted hover:text-content dark:border-white/[0.08] dark:bg-white/[0.04] text-muted dark:hover:text-white'
               }`}
             >
               {t.urgentPriority}

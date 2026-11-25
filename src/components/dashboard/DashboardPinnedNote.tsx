@@ -57,14 +57,14 @@ export const DashboardPinnedNote: React.FC = () => {
     <>
       <div
         data-spotlight="true"
-        className="spotlight-card flex flex-col justify-between gap-3 rounded-2xl bg-surface dark:bg-white/5 p-4 sm:p-5 backdrop-blur-xl border border-border-subtle dark:border-white/10 shadow-xs dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] relative overflow-hidden h-fit min-w-0"
+        className="spotlight-card flex flex-col justify-between gap-3 rounded-2xl bg-surface dark:bg-surface-3/5 p-4 sm:p-5 backdrop-blur-xl border border-border-subtle dark:border-border-subtle/10 shadow-xs shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] relative overflow-hidden h-fit min-w-0"
         style={{
           backgroundImage:
             'radial-gradient(ellipse 70% 60% at 0% 0%, rgba(245,158,11,0.12), transparent 70%)',
         }}
       >
         <div className="flex items-center justify-between gap-2 min-w-0">
-          <h2 className="flex items-center gap-1.5 text-[15px] sm:text-base font-semibold text-content dark:text-white truncate">
+          <h2 className="flex items-center gap-1.5 text-[15px] sm:text-base font-semibold text-content dark:text-content truncate">
             <Pin aria-hidden="true" className="h-4 w-4 text-amber-500 dark:text-amber-400 shrink-0" />
             <span>{t.pinnedNoteTitle}</span>
           </h2>
@@ -73,7 +73,7 @@ export const DashboardPinnedNote: React.FC = () => {
             onClick={() => openEditor()}
             aria-label={t.pinNote}
             title={t.pinNote}
-            className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-raised dark:bg-white/[0.04] hover:bg-surface dark:hover:bg-white/[0.08] text-muted hover:text-content dark:text-zinc-400 dark:hover:text-white transition-all cursor-pointer shrink-0"
+            className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-raised dark:bg-surface-3/5 hover:bg-surface dark:hover:bg-surface-2 text-muted hover:text-content dark:text-muted dark:hover:text-content transition-all cursor-pointer shrink-0"
           >
             <Plus className="h-3.5 w-3.5" />
           </button>
@@ -147,7 +147,7 @@ export const DashboardPinnedNote: React.FC = () => {
                     .replace('{total}', String(pinned.length))}
                   aria-current={dotIndex === index ? 'true' : undefined}
                   className={`h-1.5 rounded-full transition-all cursor-pointer ${
-                    dotIndex === index ? 'w-4 bg-amber-500 dark:bg-amber-400' : 'w-1.5 bg-muted/30 dark:bg-white/20'
+                    dotIndex === index ? 'w-4 bg-amber-500 dark:bg-amber-400' : 'w-1.5 bg-muted/30 dark:bg-muted/20'
                   }`}
                 />
               ))}
@@ -173,7 +173,7 @@ export const DashboardPinnedNote: React.FC = () => {
               value={title}
               onChange={(event) => setTitle(event.target.value)}
               maxLength={100}
-              className="min-h-11 w-full rounded-xl border border-border-subtle bg-surface px-3 text-xs sm:text-sm text-content dark:border-white/10 dark:bg-zinc-900 dark:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              className="min-h-11 w-full rounded-xl border border-border-subtle bg-surface px-3 text-xs sm:text-sm text-content dark:border-border-subtle/10 dark:bg-surface-3/5 dark:text-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             />
           </label>
           <label className="block space-y-1 text-xs font-semibold text-content dark:text-zinc-300">
@@ -183,7 +183,7 @@ export const DashboardPinnedNote: React.FC = () => {
               onChange={(event) => setContent(event.target.value)}
               rows={4}
               maxLength={2000}
-              className="w-full resize-y rounded-xl border border-border-subtle bg-surface px-3 py-2 text-xs sm:text-sm text-content dark:border-white/10 dark:bg-zinc-900 dark:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              className="w-full resize-y rounded-xl border border-border-subtle bg-surface px-3 py-2 text-xs sm:text-sm text-content dark:border-border-subtle/10 dark:bg-surface-3/5 dark:text-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             />
           </label>
           <div className="flex justify-end gap-2 pt-2">

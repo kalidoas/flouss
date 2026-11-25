@@ -95,7 +95,7 @@ export const DashboardAiWidget: React.FC<DashboardAiWidgetProps> = (props) => {
               triggerHaptic(40);
               window.dispatchEvent(new CustomEvent('flouss:quick-add', { detail: { type: 'expense' } }));
             }}
-            className="inline-flex min-h-7 items-center gap-1.5 text-xs font-semibold text-primary transition-colors hover:underline cursor-pointer"
+            className="inline-flex min-h-7 items-center gap-1.5 text-xs font-semibold text-content transition-colors hover:underline cursor-pointer"
           >
             <span>{tip.action}</span>
             <ArrowRight className="h-3 w-3 rtl:rotate-180" />

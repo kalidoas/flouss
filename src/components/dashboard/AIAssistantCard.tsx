@@ -40,7 +40,7 @@ export const AIAssistantCard: React.FC<AIAssistantCardProps> = ({ onQuickAction 
       <div className="flex items-center justify-between gap-3 relative z-10">
         <div className="flex items-center gap-2.5">
           <div className="relative">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 text-white flex items-center justify-center shadow-[0_0_18px_rgba(99,102,241,0.5)] border border-white/25">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 text-white flex items-center justify-center shadow-[0_0_18px_rgba(99,102,241,0.5)] border border-accent-contrast/40 flex items-center justify-center">
               <Sparkles className="w-4 h-4" />
             </div>
             {/* Pulsing online badge */}
@@ -51,7 +51,7 @@ export const AIAssistantCard: React.FC<AIAssistantCardProps> = ({ onQuickAction 
           </div>
 
           <div>
-            <h3 className="font-bold text-sm sm:text-base text-zinc-900 dark:text-white tracking-tight flex items-center gap-1.5">
+            <h3 className="font-bold text-sm sm:text-base text-accent-contrast dark:text-accent-contrast tracking-tight flex items-center gap-1.5">
               <span>{isAr ? 'المساعد المالي الذكي' : isEn ? 'AI Financial Assistant' : 'Assistant Financier IA'}</span>
               <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.2 rounded-md bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/25">
                 Pro

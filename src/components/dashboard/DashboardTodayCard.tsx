@@ -46,7 +46,7 @@ export const DashboardTodayCard: React.FC = () => {
   return (
     <div
       data-spotlight="true"
-      className="spotlight-card flex flex-col justify-between gap-3.5 rounded-2xl bg-surface dark:bg-white/5 p-4 sm:p-5 backdrop-blur-xl border border-border-subtle dark:border-white/10 shadow-xs dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] relative overflow-hidden h-fit min-w-0"
+      className="spotlight-card flex flex-col justify-between gap-3.5 rounded-2xl bg-surface dark:bg-surface-3/5 p-4 sm:p-5 backdrop-blur-xl border border-border-subtle dark:border-border-subtle/10 shadow-xs dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] relative overflow-hidden h-fit min-w-0"
       style={{
         backgroundImage:
           'radial-gradient(ellipse 60% 50% at 100% 100%, rgba(99,102,241,0.1), transparent 70%)',
@@ -54,10 +54,10 @@ export const DashboardTodayCard: React.FC = () => {
     >
       <div className="flex items-center justify-between gap-3 min-w-0">
         <div className="min-w-0 flex-1">
-          <h2 className="text-[15px] sm:text-base font-semibold text-content dark:text-white truncate">
+          <h2 className="text-[15px] sm:text-base font-semibold text-content text-content truncate">
             {t.todayProgram}
           </h2>
-          <p className="mt-0.5 text-xs text-muted dark:text-zinc-400 font-medium">
+          <p className="mt-0.5 text-xs text-muted text-muted font-medium">
             {t.tasksDoneOf
               .replace('{done}', String(doneCount))
               .replace('{total}', String(todayTasks.length))}
@@ -71,7 +71,7 @@ export const DashboardTodayCard: React.FC = () => {
             background: `conic-gradient(var(--indigo) ${progress}%, rgba(120,120,128,0.15) 0)`,
           }}
         >
-          <span className="grid h-8 w-8 place-items-center rounded-full bg-surface dark:bg-zinc-900 text-xs font-bold tabular-nums text-content dark:text-white shadow-xs">
+          <span className="grid h-8 w-8 place-items-center rounded-full bg-surface dark:bg-zinc-900 text-xs font-bold tabular-nums text-content text-content shadow-xs">
             {progress}%
           </span>
         </div>
@@ -95,7 +95,7 @@ export const DashboardTodayCard: React.FC = () => {
           ))}
         </div>
       ) : (
-        <p className="text-xs text-muted dark:text-zinc-400 min-h-6 flex items-center">
+        <p className="text-xs text-muted text-muted min-h-6 flex items-center">
           {t.noProgramTasksToday}
         </p>
       )}
