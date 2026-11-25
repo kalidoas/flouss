@@ -152,6 +152,25 @@ export function App() {
           tl.to(phoneSteps[i - 1], { opacity: 0, y: -20, duration: 0.3 }, i).to(step, { opacity: 1, y: 0, duration: 0.3 }, i);
         });
       }
+
+      // SCENE 4: Features — stacked cards reveal with mini-demos
+      const featuresSection = document.querySelector<HTMLElement>('.features-section');
+      if (featuresSection) {
+        const featureCards = [...featuresSection.querySelectorAll<HTMLElement>('.feature')];
+        featureCards.forEach((feature, i) => {
+          const fromX = dir === 'rtl' ? 24 : -24;
+          gsap.fromTo(feature,
+            { opacity: 0, y: 28, x: fromX },
+            {
+              opacity: 1, y: 0, x: 0,
+              duration: 0.6,
+              ease: 'cubic-bezier(.22,1,.36,1)',
+              delay: (i % 3) * 0.08,
+              scrollTrigger: { trigger: feature, start: 'top 88%', end: 'top 60%', scrub: 0.5 },
+            }
+          );
+        });
+      }
     });
     return () => ctx.revert();
   }, [locale]);
