@@ -72,6 +72,8 @@ export function App() {
   const appUrl = import.meta.env.VITE_APP_URL || 'https://staging.flouss.live';
   const phoneRef = useRef<HTMLDivElement>(null);
   const progressBarRef = useRef<HTMLDivElement>(null);
+  const darkPhoneRef = useRef<HTMLDivElement>(null);
+  const balanceNumberRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     const localeFromPath = () => setLocale(getInitialLocale());
@@ -170,6 +172,34 @@ export function App() {
             }
           );
         });
+      }
+
+      // SCENE 5: Dark scene — color flip, balance count-up, phone tilt
+      const darkSection = document.querySelector<HTMLElement>('.dark-scene');
+      if (darkSection) {
+        const balanceEl = balanceNumberRef.current;
+        const darkPhone = darkPhoneRef.current;
+        const tl = gsap.timeline({ scrollTrigger: { trigger: darkSection, start: 'top top', end: 'bottom bottom', scrub: 1 } });
+
+        const panel = darkSection.querySelector<HTMLElement>('.privacy-panel');
+        if (panel) {
+          tl.fromTo(panel, { backgroundColor: 'transparent' }, { backgroundColor: '#121214', duration: 1, ease: 'cubic-bezier(.22,1,.36,1)' }, 0);
+        }
+        if (balanceEl) {
+          const counter = { value: 0 };
+          const target = 8450;
+          tl.to(counter, {
+            value: target,
+            duration: 2,
+            ease: 'cubic-bezier(.22,1,.36,1)',
+            onUpdate: () => {
+              balanceEl.textContent = Math.round(counter.value).toLocaleString(locale === 'ar' ? 'fr' : 'en-US');
+            },
+          }, 0);
+        }
+        if (darkPhone) {
+          tl.fromTo(darkPhone, { transform: 'perspective(900px) rotateX(24deg) rotateY(-16deg)' }, { transform: 'perspective(900px) rotateX(0deg) rotateY(0deg)', duration: 2, ease: 'cubic-bezier(.22,1,.36,1)' }, 0);
+        }
       }
     });
     return () => ctx.revert();
@@ -323,7 +353,7 @@ export function App() {
           </div>
         </section>
 
-        <section className="privacy-section section-wrap" id="privacy">
+        <section className="privacy-section section-wrap dark-scene" id="privacy">
           <div className="privacy-panel">
             <div className="privacy-panel__seal"><Icon name="shield" size={30} /><span>FL / 01</span></div>
             <div className="privacy-panel__content">
@@ -334,6 +364,12 @@ export function App() {
                 {t.privacy.points.map((point) => <div className="privacy-point" key={point.title}><span><Icon name="check" size={16} /></span><div><h3>{point.title}</h3><p>{point.body}</p></div></div>)}
               </div>
               <p className="privacy-panel__note">{t.privacy.note}</p>
+            </div>
+          </div>
+          <div className="dark-scene__phone" ref={darkPhoneRef}>
+            <div className="dark-scene__balance">
+              <span className="dark-scene__balance-number" ref={balanceNumberRef}>0</span>
+              <span className="dark-scene__balance-label">{t.hero.balanceLabel}</span>
             </div>
           </div>
         </section>

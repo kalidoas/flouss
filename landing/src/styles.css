@@ -873,6 +873,80 @@ button:focus-visible, a:focus-visible, select:focus-visible {
   font-size: clamp(14px, 3.5vw, 17px);
 }
 
+/* SCENE 5: Dark scene — color flip, balance count-up, phone tilt */
+.dark-scene {
+  position: relative;
+  padding-block: clamp(80px, 18vw, 200px);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(32px, 8vw, 96px);
+  align-items: center;
+}
+
+.dark-scene .privacy-panel {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+.dark-scene .privacy-panel__seal {
+  display: none;
+}
+
+.dark-scene .privacy-panel h2 {
+  font-size: clamp(28px, 6vw, 56px);
+  margin-bottom: 12px;
+}
+
+.dark-scene .privacy-panel__intro {
+  font-size: clamp(16px, 4vw, 20px);
+  margin-bottom: 28px;
+  color: var(--text-muted);
+}
+
+.dark-scene__phone {
+  width: min(340px, 90vw);
+  height: min(620px, 88svh);
+  border-radius: 40px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: 0 30px 80px -24px rgba(0,0,0,0.16);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transform: rotateX(0) rotateY(0) rotateZ(0);
+  transform-style: preserve-3d;
+}
+
+.dark-scene__balance {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.dark-scene__balance-number {
+  font-family: 'Readex Pro', sans-serif;
+  font-size: clamp(40px, 10vw, 72px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.dark-scene__balance-label {
+  font-size: clamp(14px, 3.5vw, 18px);
+  color: var(--text-muted);
+}
+
+.dark-scene[lang='ar'] .dark-scene__balance-number {
+  font-family: 'Amiri', serif;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto !important; }
 
