@@ -57,11 +57,7 @@ export const DashboardPinnedNote: React.FC = () => {
     <>
       <div
         data-spotlight="true"
-        className="spotlight-card flex flex-col justify-between gap-3 rounded-2xl bg-surface dark:bg-surface-3/5 p-4 sm:p-5 backdrop-blur-xl border border-border-subtle dark:border-border-subtle/10 shadow-xs shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] relative overflow-hidden h-fit min-w-0"
-        style={{
-          backgroundImage:
-            'radial-gradient(ellipse 70% 60% at 0% 0%, rgba(245,158,11,0.12), transparent 70%)',
-        }}
+        className="spotlight-card flex flex-col justify-between gap-3 rounded-2xl bg-surface dark:bg-surface-3/5 p-4 sm:p-5 backdrop-blur-xl border border-border-subtle dark:border-border-subtle/10 shadow-xs dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] relative overflow-hidden h-fit min-w-0"
       >
         <div className="flex items-center justify-between gap-2 min-w-0">
           <h2 className="flex items-center gap-1.5 text-[15px] sm:text-base font-semibold text-content dark:text-content truncate">
