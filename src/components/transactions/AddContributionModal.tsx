@@ -14,14 +14,15 @@ import {
 import {
   calculateAvailableBalance,
   calculateGoalProgress,
-  calculateCategorySavedAmount,
+  doesContributionCompleteGoal,
 } from '../../utils/calculations';
 import { getCategoryIcon } from '../../utils/icons';
 import { getCategoryVisualColor } from '../../utils/categoryColor';
 import { translations } from '../../i18n/translations';
 import { getCategoryName, getSubCategoryName } from '../../utils/i18nHelpers';
 import { Target, Sparkles, AlertTriangle, Check } from 'lucide-react';
-import confetti from 'canvas-confetti';
+import { Category } from '../../types';
+import { GoalReachedMoment } from '../goals/GoalReachedMoment';
 
 interface AddContributionModalProps {
   isOpen: boolean;
@@ -51,6 +52,7 @@ export const AddContributionModal: React.FC<AddContributionModalProps> = ({
   const [time, setTime] = useState(getCurrentTimeStr());
   const [note, setNote] = useState('');
   const [error, setError] = useState('');
+  const [completedGoal, setCompletedGoal] = useState<Category | null>(null);
 
   useEffect(() => {
     if (defaultCategoryId) {
@@ -114,34 +116,41 @@ export const AddContributionModal: React.FC<AddContributionModalProps> = ({
       createdAt: new Date().toISOString(),
     });
 
-    // If this contribution completes the goal, fire celebration!
-    if (selectedCategory && selectedCategory.targetAmount) {
-      const currentSaved = calculateCategorySavedAmount(categoryId, transactions);
-      if (currentSaved + numericAmount >= selectedCategory.targetAmount) {
-        try {
-          confetti({
-            particleCount: 100,
-            spread: 70,
-            origin: { y: 0.6 },
-          });
-        } catch (_) {}
-      }
+    const completesGoal = Boolean(
+      selectedCategory && doesContributionCompleteGoal(selectedCategory, transactions, numericAmount)
+    );
+    if (completesGoal && selectedCategory) {
+      setCompletedGoal(selectedCategory);
+    } else {
+      onClose();
     }
 
     setAmountStr('');
     setNote('');
     setError('');
-    onClose();
   };
 
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
-      title={t.contributionTitle}
-      subtitle={t.contributionSubtitle}
+      onClose={() => {
+        setCompletedGoal(null);
+        onClose();
+      }}
+      title={completedGoal ? tCat.goalReachedTitle : t.contributionTitle}
+      subtitle={completedGoal ? tCat.goalReachedTarget : t.contributionSubtitle}
       maxWidth="md"
     >
+      {completedGoal ? (
+        <GoalReachedMoment
+          category={completedGoal}
+          isOpen={isOpen}
+          onContinue={() => {
+            setCompletedGoal(null);
+            onClose();
+          }}
+        />
+      ) : (
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Category Picker */}
         <div>
@@ -309,6 +318,7 @@ export const AddContributionModal: React.FC<AddContributionModalProps> = ({
           </Button>
         </div>
       </form>
+      )}
     </Modal>
   );
 };

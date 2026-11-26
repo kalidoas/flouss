@@ -10,6 +10,7 @@ import {
   calculateTotalSavingsInGoals,
   calculateNetWorth,
   calculateGoalProgress,
+  doesContributionCompleteGoal,
   getCategorySpendingBreakdown,
 } from './calculations';
 import { isTransactionInMonth, getTransactionMonth, toIsoDateTime } from './formatters';
@@ -280,6 +281,23 @@ describe('calculateGoalProgress', () => {
     expect(progress.remainingAmount).toBe(5000);
     expect(progress.progressPercent).toBe(0);
     expect(progress.status).toBe('not_started');
+  });
+
+  it('recognizes only the contribution that crosses an unfinished goal target', () => {
+    const goal: Category = {
+      id: 'goal_trip', name: 'Trip', icon: 'Plane', color: 'bg-info',
+      isGoal: true, targetAmount: 5000, isArchived: false, createdAt: '2025-01-01',
+    };
+    const contributions: Transaction[] = [
+      { id: '1', type: 'contribution', categoryId: goal.id, amount: 4500, date: '2025-05-02', createdAt: '2025-05-02' },
+    ];
+
+    expect(doesContributionCompleteGoal(goal, contributions, 500)).toBe(true);
+    expect(doesContributionCompleteGoal(goal, contributions, 499)).toBe(false);
+    expect(doesContributionCompleteGoal(goal, [
+      ...contributions,
+      { id: '2', type: 'contribution', categoryId: goal.id, amount: 500, date: '2025-05-03', createdAt: '2025-05-03' },
+    ], 100)).toBe(false);
   });
 });
 

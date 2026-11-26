@@ -396,6 +396,18 @@ export function calculateGoalProgress(category: Category, transactions: Transact
   return { savedAmount: saved, remainingAmount, progressPercent, remainingMonths, monthlyNeeded, status: saved >= target && target > 0 ? 'completed' : saved === 0 ? 'not_started' : saved >= expectedSoFar * 0.85 ? 'on_track' : 'behind' };
 }
 
+/** True only when this contribution crosses an unfinished goal's target. */
+export function doesContributionCompleteGoal(
+  category: Category,
+  transactions: Transaction[],
+  contributionAmount: number
+): boolean {
+  const target = category.targetAmount || 0;
+  if (!category.isGoal || target <= 0 || contributionAmount <= 0) return false;
+  const savedBefore = calculateCategorySavedAmount(category.id, transactions);
+  return savedBefore < target && savedBefore + contributionAmount >= target;
+}
+
 export function getMonthlyStats(transactions: Transaction[], monthsCount: number = 6, language: Language = 'fr') {
   const result: { monthKey: string; label: string; income: number; expense: number; savings: number; }[] = [];
   const now = new Date();
