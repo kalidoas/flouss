@@ -215,6 +215,9 @@ export const SettingsPage: React.FC = () => {
   // Biometrics state
   const [biometricsAvailable, setBiometricsAvailable] = useState(false);
   const [biometricsActive, setBiometricsActive] = useState(false);
+  const [autoLockEnabled, setAutoLockEnabled] = useState(() => {
+    try { return localStorage.getItem('flouss_auto_lock') !== 'false'; } catch { return true; }
+  });
 
   useEffect(() => {
     let mounted = true;
@@ -830,6 +833,24 @@ export const SettingsPage: React.FC = () => {
             </Button>
           )}
         </div>
+
+        <label className={`mt-4 flex min-h-14 items-center justify-between gap-4 rounded-control border border-border-subtle px-4 py-3 ${pinEnabled ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}>
+          <span className="min-w-0">
+            <span className="block text-sm font-semibold text-content">{t.autoLock}</span>
+            <span className="mt-0.5 block text-xs text-muted">{t.autoLockDesc}</span>
+          </span>
+          <input
+            type="checkbox"
+            checked={autoLockEnabled}
+            disabled={!pinEnabled}
+            onChange={(event) => {
+              const enabled = event.target.checked;
+              setAutoLockEnabled(enabled);
+              try { localStorage.setItem('flouss_auto_lock', String(enabled)); } catch {}
+            }}
+            className="h-5 w-5 shrink-0 accent-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          />
+        </label>
 
         {/* Biometrics Toggle (Only available when PIN is set and device supports platform authenticators) */}
         {pinEnabled && biometricsAvailable && (

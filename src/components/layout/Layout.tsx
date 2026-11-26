@@ -19,11 +19,29 @@ interface LayoutProps {
 }
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
-  const { toggleHideBalance, language, activeScreen } = useAppStore();
+  const { toggleHideBalance, language, activeScreen, pinEnabled, lockApp } = useAppStore();
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
   const [quickAddType, setQuickAddType] = useState<QuickAddType>('expense');
   const [isContributionOpen, setIsContributionOpen] = useState(false);
   const mainRef = React.useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    let autoLockDisabled = false;
+    try { autoLockDisabled = localStorage.getItem('flouss_auto_lock') === 'false'; } catch {}
+    if (!pinEnabled || autoLockDisabled) return;
+    let timer: number | undefined;
+    const scheduleLock = () => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => lockApp(), 15 * 60 * 1000);
+    };
+    const activityEvents: Array<keyof WindowEventMap> = ['pointerdown', 'keydown', 'touchstart'];
+    activityEvents.forEach((eventName) => window.addEventListener(eventName, scheduleLock, { passive: true }));
+    scheduleLock();
+    return () => {
+      window.clearTimeout(timer);
+      activityEvents.forEach((eventName) => window.removeEventListener(eventName, scheduleLock));
+    };
+  }, [pinEnabled, lockApp]);
 
   // Activate global follow-cursor spotlight tracker for all Bento cards
   useGlobalSpotlightTracker();

@@ -14,6 +14,7 @@ import { getCurrentMonthStr } from '../utils/formatters';
 import { useDashboardHeader } from '../components/layout/DashboardHeaderContext';
 import { RunwayGauge } from '../components/dashboard/RunwayGauge';
 import { translations } from '../i18n/translations';
+import { WeeklyReviewCard } from '../components/dashboard/WeeklyReviewCard';
 
 export const DashboardPage: React.FC = () => {
   const {
@@ -93,6 +94,7 @@ export const DashboardPage: React.FC = () => {
           <div className="min-[1100px]:col-span-5 flex flex-col gap-5 min-w-0">
             <DashboardTodayCard />
             <DashboardPinnedNote />
+            <WeeklyReviewCard onOpen={() => setActiveScreen('history')} />
             <DashboardBillsCard
               subscriptions={subscriptions}
               language={language}
