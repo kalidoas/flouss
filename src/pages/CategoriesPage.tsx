@@ -1,8 +1,7 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { motion, AnimatePresence, Variants } from 'framer-motion';
+import React, { useState } from 'react';
+import { motion, Variants } from 'framer-motion';
 import { useAppStore } from '../store/useAppStore';
-import { Category, CategoryGroupId, Transaction } from '../types';
-import { CategoryCard } from '../components/categories/CategoryCard';
+import { Category, CategoryGroupId } from '../types';
 import { CategoryModal } from '../components/categories/CategoryModal';
 import { CategoryDetailModal } from '../components/categories/CategoryDetailModal';
 import { AddExpenseModal } from '../components/transactions/AddExpenseModal';
@@ -12,7 +11,7 @@ import { translations } from '../i18n/translations';
 import { getCategoryName, getSubCategoryName, getCategoryGroupName } from '../utils/i18nHelpers';
 import { CATEGORY_GROUPS_META, resolveCategoryGroup } from '../utils/categoryTheme';
 import { getCategoryIcon } from '../utils/icons';
-import { formatMAD, getCurrentMonthStr, isTransactionInMonth } from '../utils/formatters';
+import { getCurrentMonthStr } from '../utils/formatters';
 import { getCategoryVisualColor } from '../utils/categoryColor';
 import { Money } from '../components/common/Money';
 import {
@@ -26,30 +25,8 @@ import {
   Target,
   ShoppingBag,
   Archive,
-  Sparkles,
-  LayoutGrid,
-  List,
-  TrendingDown,
-  PiggyBank,
-  ChevronRight,
-  ChevronDown,
-  Check,
-  Folder,
-  Minus,
 } from 'lucide-react';
 import { EmptyState } from '../components/common/EmptyState';
-import { DropdownPortal } from '../components/common/DropdownPortal';
-
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.04,
-      delayChildren: 0.05,
-    },
-  },
-};
 
 const itemVariants: Variants = {
   hidden: { opacity: 0, y: 12 },
@@ -59,7 +36,6 @@ const itemVariants: Variants = {
 export const CategoriesPage: React.FC = () => {
   const { categories = [], transactions = [], language, updateCategory } = useAppStore();
   const catList = categories || [];
-  const txList = transactions || [];
   const tCat = translations[language].categories;
   const tCatPage = translations[language].categoriesPage;
   const currentMonth = getCurrentMonthStr();
@@ -67,7 +43,6 @@ export const CategoriesPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'all' | 'goals' | 'expenses' | 'archived'>('all');
   const [selectedGroup, setSelectedGroup] = useState<CategoryGroupId | 'all'>('all');
   const [search, setSearch] = useState('');
-  const [viewMode] = useState<'grid' | 'list'>('list');
   const [showUnused, setShowUnused] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [categoryToEdit, setCategoryToEdit] = useState<Category | null>(null);
@@ -77,43 +52,6 @@ export const CategoriesPage: React.FC = () => {
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [isContributionModalOpen, setIsContributionModalOpen] = useState(false);
   const [modalCategoryId, setModalCategoryId] = useState<string | undefined>();
-
-  // Custom Glass Group Dropdown Popover
-  const [isGroupDropdownOpen, setIsGroupDropdownOpen] = useState(false);
-  const groupDropdownTriggerRef = useRef<HTMLButtonElement>(null);
-
-  // Intelligence KPI calculations for Apple stats header
-  const categoryStats = useMemo(() => {
-    let totalSpent = 0;
-    const catSpentMap: Record<string, number> = {};
-
-    txList.forEach((tx) => {
-      if (tx?.type === 'expense' && tx?.categoryId && isTransactionInMonth(tx?.date, currentMonth)) {
-        totalSpent += tx.amount || 0;
-        catSpentMap[tx.categoryId] = (catSpentMap[tx.categoryId] || 0) + (tx.amount || 0);
-      }
-    });
-
-    let topCatId: string | null = null;
-    let topCatAmount = 0;
-    Object.entries(catSpentMap).forEach(([catId, amt]) => {
-      if (amt > topCatAmount) {
-        topCatAmount = amt;
-        topCatId = catId;
-      }
-    });
-
-    const topCategory = catList.find((c) => c.id === topCatId) || null;
-    const activeGoals = catList.filter((c) => c.isGoal && !c.isArchived);
-
-    return {
-      totalSpent,
-      topCategory,
-      topCatAmount,
-      activeGoalsCount: activeGoals.length,
-      activeCategoriesCount: catList.filter((c) => !c.isArchived).length,
-    };
-  }, [catList, txList, currentMonth]);
 
   // Filter categories
   const filteredCategories = catList.filter((cat: Category) => {
@@ -173,7 +111,7 @@ export const CategoriesPage: React.FC = () => {
   const groupKeys = Object.keys(CATEGORY_GROUPS_META) as CategoryGroupId[];
 
   return (
-    <div className="max-w-[1280px] mx-auto space-y-5 animate-page select-text pb-8">
+    <div className="mx-auto w-full min-w-0 max-w-[1280px] space-y-5 animate-page select-text pb-8">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -195,77 +133,6 @@ export const CategoriesPage: React.FC = () => {
           <Plus className="w-4 h-4 stroke-[2.5]" />
           <span>{tCat.newCategory}</span>
         </button>
-      </div>
-
-      {/* Unified 4-column Bento KPI Strip */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {/* Total Categories */}
-        <div
-          className="rounded-2xl bg-surface p-4 sm:p-5 backdrop-blur-xl border border-border-subtle shadow-xs dark:border-white/10 relative overflow-hidden"
-          style={{ backgroundImage: 'radial-gradient(circle at 100% 0%, rgba(99,102,241,0.12), transparent 70%)' }}
-        >
-          <div className="flex items-center justify-between text-[11px] font-medium uppercase tracking-[0.14em] text-muted mb-1.5">
-            <span className="truncate">{tCatPage.totalCategories}</span>
-            <Layers className="w-3.5 h-3.5 text-accent-400 shrink-0" />
-          </div>
-          <div className="text-2xl font-bold tracking-tight text-content tabular-nums">
-            {categoryStats.activeCategoriesCount}
-          </div>
-          <span className="text-[11px] text-muted block mt-1 truncate">
-            {categoryStats.activeGoalsCount} {tCatPage.activeGoals}
-          </span>
-        </div>
-
-        {/* Spent this month */}
-        <div
-          className="rounded-2xl bg-surface/5 p-4 sm:p-5 backdrop-blur-xl border border-border/10 relative overflow-hidden shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_28px_-10px_rgba(0,0,0,0.5)]"
-          style={{ backgroundImage: 'radial-gradient(circle at 100% 0%, rgba(244,63,94,0.14), transparent 70%)' }}
-        >
-          <div className="flex items-center justify-between text-[11px] font-medium uppercase tracking-[0.14em] text-muted mb-1.5">
-            <span className="truncate">{tCat.spentThisMonth}</span>
-            <TrendingDown className="w-3.5 h-3.5 text-negative shrink-0" />
-          </div>
-          <div className="text-2xl font-bold tracking-tight text-negative tabular-nums">
-            <Money amount={categoryStats.totalSpent} />
-          </div>
-          <span className="text-[11px] text-muted block mt-1 truncate">
-            {tCatPage.totalMonthlyExpenses}
-          </span>
-        </div>
-
-        {/* Plus forte dépense */}
-        <div
-          className="rounded-2xl bg-surface/5 p-4 sm:p-5 backdrop-blur-xl border border-border/10 relative overflow-hidden shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_28px_-10px_rgba(0,0,0,0.5)]"
-          style={{ backgroundImage: 'radial-gradient(circle at 100% 0%, rgba(245,158,11,0.12), transparent 70%)' }}
-        >
-          <div className="flex items-center justify-between text-[11px] font-medium uppercase tracking-[0.14em] text-muted mb-1.5">
-            <span className="truncate">{tCatPage.highestSpending}</span>
-            <Sparkles className="w-3.5 h-3.5 text-warning shrink-0" />
-          </div>
-          <div className="text-base font-bold text-accent-contrast truncate">
-            {categoryStats.topCategory ? getCategoryName(categoryStats.topCategory, language) : '—'}
-          </div>
-          <span className="text-xs text-warning font-semibold block mt-1 tabular-nums">
-            <Money amount={categoryStats.topCatAmount} />
-          </span>
-        </div>
-
-        {/* Objectifs Actifs */}
-        <div
-          className="rounded-2xl bg-surface/5 p-4 sm:p-5 backdrop-blur-xl border border-border/10 relative overflow-hidden shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_28px_-10px_rgba(0,0,0,0.5)]"
-          style={{ backgroundImage: 'radial-gradient(circle at 100% 0%, rgba(52,211,153,0.14), transparent 70%)' }}
-        >
-          <div className="flex items-center justify-between text-[11px] font-medium uppercase tracking-[0.14em] text-muted mb-1.5">
-            <span className="truncate">{tCatPage.activeGoalsTitle}</span>
-            <PiggyBank className="w-3.5 h-3.5 text-positive shrink-0" />
-          </div>
-          <div className="text-2xl font-bold tracking-tight text-positive tabular-nums">
-            {categoryStats.activeGoalsCount}
-          </div>
-          <span className="text-[11px] text-muted block mt-1 truncate">
-            {tCatPage.inProgress}
-          </span>
-        </div>
       </div>
 
       {/* Non-sticky Glass Toolbar: Filter Tabs + Search + Group Popover (No bleed-through or overlap) */}
@@ -346,121 +213,54 @@ export const CategoriesPage: React.FC = () => {
             </button>
           </div>
 
-          {/* Group Popover Dropdown & Search Input */}
-          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-            {/* Glass Group Popover Dropdown */}
-            <div className="relative inline-block shrink-0">
-              <button
-                ref={groupDropdownTriggerRef}
-                type="button"
-                aria-expanded={isGroupDropdownOpen}
-                onClick={() => setIsGroupDropdownOpen((prev) => !prev)}
-                className="flex items-center gap-2 rounded-full border border-border-subtle bg-surface px-3.5 py-1.5 text-xs font-semibold text-content outline-none shadow-xs hover:border-border/15 dark:border-border/[0.08] dark:bg-canvas/40 dark:text-text dark:hover:border-border/[0.18] transition-all cursor-pointer"
-              >
-                {selectedGroup !== 'all' ? (
-                  <span
-                    className="w-2.5 h-2.5 rounded-full shrink-0 shadow-xs"
-                    style={{ backgroundColor: getCategoryVisualColor(selectedGroup) }}
-                  />
-                ) : (
-                  <Folder className="w-3.5 h-3.5 text-muted shrink-0" />
-                )}
-                <span className="truncate max-w-[130px]">
-                  {selectedGroup === 'all'
-                    ? tCat.groupFilterAll
-                    : getCategoryGroupName(selectedGroup, language)}
-                </span>
-                <ChevronDown
-                  className={`w-3.5 h-3.5 text-muted shrink-0 transition-transform duration-200 ${
-                    isGroupDropdownOpen ? 'rotate-180 text-accent-contrast' : ''
-                  }`}
-                />
-              </button>
-
-              <DropdownPortal
-                isOpen={isGroupDropdownOpen}
-                onClose={() => setIsGroupDropdownOpen(false)}
-                triggerRef={groupDropdownTriggerRef}
-                align="end"
-                minWidth={210}
-                className="min-w-[210px] overflow-y-auto no-scrollbar rounded-2xl bg-bg/95 backdrop-blur-2xl border border-border/[0.12] p-1.5 shadow-[0_16px_36px_-8px_rgba(0,0,0,0.8)]"
-              >
-                <div className="space-y-0.5">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedGroup('all');
-                      setIsGroupDropdownOpen(false);
-                    }}
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-start cursor-pointer ${
-                      selectedGroup === 'all'
-                        ? 'bg-surface text-text font-bold shadow-xs'
-                        : 'text-muted hover:text-accent-contrast hover:bg-surface/[0.06]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Folder className="w-3.5 h-3.5 opacity-60" />
-                      <span>{tCat.groupFilterAll}</span>
-                    </div>
-                    {selectedGroup === 'all' && (
-                      <Check className="w-3.5 h-3.5 text-text stroke-[2.5]" />
-                    )}
-                  </button>
-
-                  <div className="h-px bg-surface/[0.06] my-1" />
-
-                  {groupKeys.map((groupId) => {
-                    const isSelected = selectedGroup === groupId;
-                    const groupLabel = getCategoryGroupName(groupId, language);
-                    const color = getCategoryVisualColor(groupId);
-
-                    return (
-                      <button
-                        key={groupId}
-                        type="button"
-                        onClick={() => {
-                          setSelectedGroup(groupId);
-                          setIsGroupDropdownOpen(false);
-                        }}
-                        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-start cursor-pointer ${
-                          isSelected
-                            ? 'bg-surface text-text font-bold shadow-xs'
-                            : 'text-muted hover:text-accent-contrast hover:bg-surface/[0.06]'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span
-                            className="w-2.5 h-2.5 rounded-full shrink-0 shadow-xs"
-                            style={{ backgroundColor: color }}
-                          />
-                          <span className="truncate">{groupLabel}</span>
-                        </div>
-                        {isSelected && (
-                          <Check className="w-3.5 h-3.5 text-text stroke-[2.5] shrink-0" />
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </DropdownPortal>
+          {/* Scrollable category group tabs with soft edge fades */}
+          <div className="flex min-w-0 flex-1 flex-col gap-2">
+            <div className="relative min-w-0">
+              <div role="group" aria-label={tCat.groupFilterAll} className="flex min-w-0 items-center gap-1.5 overflow-x-auto px-1 py-1 scrollbar-none">
+                <button
+                  type="button"
+                  aria-pressed={selectedGroup === 'all'}
+                  onClick={() => setSelectedGroup('all')}
+                  className={`min-h-9 shrink-0 rounded-full border px-3 text-xs font-semibold transition-colors ${selectedGroup === 'all' ? 'border-border-strong bg-surface-raised text-content' : 'border-border-subtle bg-surface text-muted hover:text-content'}`}
+                >
+                  {tCat.groupFilterAll}
+                </button>
+                {groupKeys.map((groupId) => {
+                  const isSelected = selectedGroup === groupId;
+                  return (
+                    <button
+                      key={groupId}
+                      type="button"
+                      aria-pressed={isSelected}
+                      onClick={() => setSelectedGroup(groupId)}
+                      className={`inline-flex min-h-9 shrink-0 items-center gap-2 rounded-full border px-3 text-xs font-semibold transition-colors ${isSelected ? 'border-border-strong bg-surface-raised text-content' : 'border-border-subtle bg-surface text-muted hover:text-content'}`}
+                    >
+                      <span aria-hidden="true" className="h-2 w-2 rounded-full" style={{ backgroundColor: getCategoryVisualColor(groupId) }} />
+                      {getCategoryGroupName(groupId, language)}
+                    </button>
+                  );
+                })}
+              </div>
+              <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 start-0 w-5 bg-gradient-to-r from-surface to-transparent dark:from-bg rtl:bg-gradient-to-l" />
+              <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 end-0 w-5 bg-gradient-to-l from-surface to-transparent dark:from-bg rtl:bg-gradient-to-r" />
             </div>
 
             {/* Search Input */}
-            <div className="relative min-w-[180px] sm:min-w-[220px] flex-1">
-              <Search className="w-3.5 h-3.5 text-muted absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <div className="relative w-full">
+              <Search className="w-3.5 h-3.5 text-muted absolute start-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder={tCat.filterPlaceholder}
-                className="w-full text-xs pl-8 pr-3 py-1.5 rounded-full border border-border/[0.08] bg-canvas/40 text-accent-contrast placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-ring/30 transition-all"
+                className="min-h-10 w-full rounded-full border border-border-subtle bg-surface px-3 ps-8 text-xs text-content placeholder:text-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
               />
             </div>
           </div>
         </div>
       </div>
 
-      {/* 2-Column Bento Grid of Categories */}
+      {/* Compact category list */}
       {filteredCategories.length === 0 ? (
         <EmptyState
           icon={<Layers className="w-5 h-5" />}
@@ -481,17 +281,12 @@ export const CategoriesPage: React.FC = () => {
           }
         />
       ) : (
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="show"
-          className="grid grid-cols-1 lg:grid-cols-2 gap-3.5"
+        <div
+          className="overflow-hidden rounded-2xl border border-border-subtle bg-surface divide-y divide-border-subtle"
         >
-          {visibleCategories.map((category: Category) => {
+          {visibleCategories.map((category: Category, index) => {
             const IconComp = getCategoryIcon(category.icon);
             const categoryName = getCategoryName(category, language);
-            const resolvedGroup = resolveCategoryGroup(category);
-            const groupName = getCategoryGroupName(resolvedGroup, language);
             const spentThisMonth = calculateCategorySpentAmount(category.id, transactions, currentMonth);
             const goalCalc = category.isGoal ? calculateGoalProgress(category, transactions) : null;
             const monthlyBudget = Number(category.monthlyBudget) || 0;
@@ -503,14 +298,16 @@ export const CategoriesPage: React.FC = () => {
               <motion.div
                 key={category.id}
                 variants={itemVariants}
+                initial={index < 8 ? 'hidden' : false}
+                animate={index < 8 ? 'show' : false}
+                transition={index < 8 ? { delay: Math.min(index, 7) * 0.03 } : undefined}
                 onClick={() => setSelectedCategory(category)}
-                className="group relative flex flex-col justify-between gap-3 p-4 sm:p-5 rounded-2xl bg-surface/5 backdrop-blur-xl border border-border/10 hover:border-border/20 transition-all cursor-pointer shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_28px_-10px_rgba(0,0,0,0.5)]"
+                className="group grid grid-cols-1 items-center gap-2 p-3 sm:grid-cols-[minmax(12rem,1fr)_minmax(8rem,0.8fr)_minmax(9rem,1fr)_auto] sm:gap-4 sm:px-4 hover:bg-surface-raised/50 transition-colors cursor-pointer"
               >
                 {/* Top Row: Icon + Names + Spent Total */}
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
+                <div className="flex min-w-0 items-center gap-3">
                     <div
-                      className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform"
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
                       style={{
                         backgroundColor: `${catColor}20`,
                         color: catColor,
@@ -521,159 +318,61 @@ export const CategoriesPage: React.FC = () => {
                     </div>
 
                     <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <h4 className="font-semibold text-sm text-text truncate group-hover:text-accent-contrast transition-colors" title={categoryName}>
+                      <div className="flex min-w-0 items-center gap-2">
+                        <h4 className="truncate font-semibold text-sm text-content" title={categoryName}>
                           {categoryName}
                         </h4>
-                        {groupName && (
-                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-surface/[0.05] text-muted border border-border/[0.06] shrink-0">
-                            {groupName}
-                          </span>
-                        )}
-                        <span
-                          className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
-                            category.isGoal
-                              ? 'bg-accent/15 text-accent border border-accent/20'
-                              : 'bg-surface/[0.04] text-muted border border-border/[0.06]'
-                          }`}
-                        >
-                          {category.isGoal ? tCat.goalBadge : tCat.expenseBadge}
-                        </span>
+                        {category.isGoal && <span className="shrink-0 rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent">{tCat.goalBadge}</span>}
                       </div>
-
-                      {/* Subcategory glyphs */}
-                      {category.subcategories && category.subcategories.length > 0 && (
-                        <div className="flex items-center gap-1 mt-1">
-                          {category.subcategories.slice(0, 5).map((sub) => {
-                            const SubIcon = getCategoryIcon(sub.icon || 'Folder');
-                            return (
-                              <div
-                                key={sub.id}
-                                title={getSubCategoryName(sub, language)}
-                                className="w-5 h-5 rounded-lg bg-surface/[0.04] border border-border/[0.06] flex items-center justify-center text-muted"
-                              >
-                                <SubIcon className="w-3 h-3 stroke-[2]" />
-                              </div>
-                            );
-                          })}
-                          {category.subcategories.length > 5 && (
-                            <span className="text-[10px] text-muted font-mono">
-                              +{category.subcategories.length - 5}
-                            </span>
-                          )}
-                        </div>
-                      )}
                     </div>
+                </div>
+
+                <div className="min-w-0 sm:col-start-2 sm:row-start-1">
+                  <div className="flex items-baseline justify-between gap-2 text-xs">
+                    <span className="truncate text-muted">{category.isGoal ? tCatPage.saved : tCatPage.spentThisMonth}</span>
+                    <span className="shrink-0 font-semibold text-content"><Money amount={category.isGoal && goalCalc ? goalCalc.savedAmount : spentThisMonth} /></span>
                   </div>
-
-                  <div className="flex flex-col items-end shrink-0">
-                    <div className="text-sm sm:text-base font-bold text-accent-contrast tabular-nums">
-                      <Money amount={category.isGoal && goalCalc ? goalCalc.savedAmount : spentThisMonth} />
-                    </div>
-                    <span className="text-[10px] text-muted">
-                      {category.isGoal ? tCatPage.saved : tCatPage.spentThisMonth}
-                    </span>
+                  <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-raised" role="progressbar" aria-label={category.isGoal ? `${categoryName}: ${tCatPage.goalLabel}` : `${categoryName}: ${tCatPage.budgetConsumed}`} aria-valuemin={0} aria-valuemax={category.isGoal ? 100 : monthlyBudget || 100} aria-valuenow={category.isGoal ? goalCalc?.progressPercent || 0 : monthlyBudget ? Math.min(spentThisMonth, monthlyBudget) : 0}>
+                    <div className={`h-full rounded-full ${category.isGoal ? 'bg-accent' : progressColor}`} style={{ width: `${category.isGoal ? Math.min(100, goalCalc?.progressPercent || 0) : budgetProgress}%` }} />
                   </div>
                 </div>
 
-                {/* Middle: Progress Bar */}
-                {!category.isGoal ? (
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between text-[11px] text-muted">
-                      <span>{tCatPage.budgetConsumed}</span>
-                      <span className="font-semibold tabular-nums text-muted">
-                        {monthlyBudget > 0 ? `${budgetProgress}%` : '—'}
-                      </span>
-                    </div>
-                    <div className="h-1.5 overflow-hidden rounded-full bg-surface/[0.06]" role="progressbar" aria-valuemin={0} aria-valuemax={monthlyBudget || 100} aria-valuenow={monthlyBudget ? Math.min(spentThisMonth, monthlyBudget) : 0}>
-                      <div className={`h-full rounded-full transition-all duration-300 ${progressColor}`} style={{ width: `${monthlyBudget > 0 ? budgetProgress : 0}%` }} />
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between text-[11px] text-muted">
-                      <span>{tCatPage.goalLabel}: <Money amount={category.targetAmount || 0} /></span>
-                      <span className="font-semibold tabular-nums text-accent">{goalCalc ? `${goalCalc.progressPercent}%` : '0%'}</span>
-                    </div>
-                    <div className="h-1.5 overflow-hidden rounded-full bg-surface/[0.06]">
-                      <div className="h-full rounded-full bg-accent transition-all duration-300" style={{ width: `${goalCalc ? Math.min(100, goalCalc.progressPercent) : 0}%` }} />
-                    </div>
-                  </div>
-                )}
-
-                {/* Bottom Row: Inline Budget Stepper / Goal Details + Quick Action */}
-                <div className="flex items-center justify-between pt-2 border-t border-border/[0.05] gap-2" onClick={(e) => e.stopPropagation()}>
+                <div className="col-start-1 row-start-3 flex min-w-0 items-center justify-between gap-3 sm:contents" onClick={(event) => event.stopPropagation()}>
                   {!category.isGoal ? (
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[11px] text-muted">{tCatPage.budgetLabel}</span>
-                      <div className="flex items-center rounded-lg bg-canvas/40 border border-border/[0.08] p-0.5">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const cur = Number(category.monthlyBudget) || 0;
-                            const next = Math.max(0, cur - 50);
-                            updateCategory(category.id, { monthlyBudget: next > 0 ? next : null });
-                          }}
-                          className="h-6 w-6 rounded flex items-center justify-center text-muted hover:text-accent-contrast hover:bg-surface/[0.08] transition-colors"
-                          title="-50 MAD"
-                        >
-                          <Minus className="w-3 h-3" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleOpenEdit(category)}
-                          aria-label={`${categoryName} monthly budget`}
-                          className="px-2 h-6 rounded flex items-center justify-center text-xs font-semibold text-text dark:text-text hover:bg-canvas/[0.04] dark:hover:bg-surface/[0.08] transition-colors tabular-nums"
-                        >
-                          {category.monthlyBudget ? `${category.monthlyBudget} MAD` : '0 MAD'}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const cur = Number(category.monthlyBudget) || 0;
-                            const next = cur + 50;
-                            updateCategory(category.id, { monthlyBudget: next });
-                          }}
-                          className="h-6 w-6 rounded flex items-center justify-center text-muted hover:text-accent-contrast hover:bg-surface/[0.08] transition-colors"
-                          title="+50 MAD"
-                        >
-                          <Plus className="w-3 h-3" />
-                        </button>
-                      </div>
-                    </div>
+                    <label className="flex items-center gap-1.5 text-xs text-muted sm:col-start-3 sm:row-start-1">
+                      <span className="sr-only">{categoryName}: {tCatPage.budgetLabel}</span>
+                      <span aria-hidden="true" className="whitespace-nowrap text-[10px] sm:text-xs">{tCatPage.budgetLabel}</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="50"
+                        inputMode="decimal"
+                        aria-label={`${categoryName}: ${tCatPage.budgetLabel}`}
+                        defaultValue={monthlyBudget || ''}
+                        placeholder="—"
+                        onBlur={(event) => {
+                          const next = Number(event.currentTarget.value);
+                          if (Number.isFinite(next) && next >= 0 && next !== monthlyBudget) {
+                            updateCategory(category.id, { monthlyBudget: next || null });
+                          }
+                        }}
+                        onKeyDown={(event) => { if (event.key === 'Enter') event.currentTarget.blur(); }}
+                        className="min-h-10 w-16 rounded-lg border border-border-subtle bg-canvas px-2 text-end text-content tabular-nums focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 sm:w-24"
+                      />
+                      <span>MAD</span>
+                    </label>
                   ) : (
-                    <div className="text-[11px] text-muted">
-                      {category.targetDate ? `${tCatPage.targetDateLabel} ${category.targetDate}` : ''}
-                    </div>
+                    <span className="text-xs text-muted sm:col-start-3 sm:row-start-1">{category.targetAmount ? <><Money amount={category.targetAmount} /> {category.targetDate ? `· ${category.targetDate}` : ''}</> : ''}</span>
                   )}
 
-                  <div className="flex items-center gap-1.5 ms-auto">
-                    {category.isGoal ? (
-                      <button
-                        type="button"
-                        onClick={() => handleQuickContribute(category)}
-                        className="inline-flex items-center gap-1 rounded-full bg-accent/15 hover:bg-accent/25 border border-accent/30 text-accent text-xs font-medium px-3 py-1 transition-all"
-                      >
-                        <Plus className="w-3 h-3" />
-                        <span>{tCatPage.saveButton}</span>
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => handleQuickExpense(category)}
-                        className="inline-flex items-center gap-1 rounded-full bg-surface/[0.04] hover:bg-negative/15 border border-border/[0.08] hover:border-negative/30 text-muted hover:text-negative text-xs font-medium px-3 py-1 transition-all"
-                        title={tCat.quickExpense}
-                      >
-                        <Plus className="w-3 h-3" />
-                        <span>{tCatPage.spendButton}</span>
-                      </button>
-                    )}
-                  </div>
+                  <button type="button" title={category.isGoal ? tCatPage.saveButton : tCatPage.spendButton} aria-label={category.isGoal ? tCatPage.saveButton : tCatPage.spendButton} onClick={() => category.isGoal ? handleQuickContribute(category) : handleQuickExpense(category)} className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-full border border-border-subtle text-xs text-muted hover:bg-surface-raised hover:text-content">
+                    <Plus className="h-4 w-4 stroke-[2]" />
+                  </button>
                 </div>
               </motion.div>
             );
           })}
-        </motion.div>
+        </div>
       )}
       {unusedCount > 0 && activeTab !== 'archived' && (
         <button type="button" onClick={() => setShowUnused((value) => !value)} className="min-h-10 rounded-full px-4 text-xs font-medium text-accent hover:bg-surface/[0.04] border border-border/[0.06] transition-all">

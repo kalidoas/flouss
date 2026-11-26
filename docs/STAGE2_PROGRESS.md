@@ -9,12 +9,13 @@
 - The original `qa:shots` run is invalid as a Flouss_codex baseline: Playwright reused a Vite server from another local project on port 5174. The config now starts its own strict preview on port 4173. The old 2 WebKit AR timeouts are not attributed to this app; rerun the full suite after item 3.
 - First visual review found mobile clipping in the seeded French Dashboard and a low-contrast Categories tile in Arabic. Track these for items 2 and 3 respectively.
 - Item 2 implemented: QuickAdd now limits options to the five most recently used sources/categories and converts entered local date/time to UTC correctly; daily safe-to-spend is shown in the hero; duplicate Dashboard KPI panel was removed; mobile hero balance/coin and chart tooltip are constrained to the viewport; Playwright preview is isolated from other projects. `qa:lang` 12/12, server build, 206/206 tests, root build, and targeted WebKit FR/light seeded screenshot all pass. Screenshot: `qa/integration/webkit-iphone-dashboard-fr-light.png`.
+- Item 3 implemented: Categories is now a compact spend-sorted list with per-category inline monthly budget editing, spend progress (amber from 80%, red when over), zero-spend categories collapsed behind a translated count button, and horizontally scrollable group filters with logical edge fades. Reused the existing optional `monthlyBudget` field; no schema field or migration was added. Verification: typecheck, check:i18n (1,213 keys), qa:lang (12/12), root tests (206/206), server tests (22/22), server build, root build, and qa:shots (26/26). Reviewed Arabic light iPhone and Arabic dark desktop captures; seeded Category screenshots are generated for EN/FR/AR and both themes on Chromium desktop and WebKit iPhone. Proof: `qa/integration/webkit-iphone-categories-ar-light.png` and `qa/integration/chromium-desktop-categories-ar-dark.png`.
 
 ## Next
 
 1. Categories/Tasks i18n verified in existing commits; progress doc records the baseline and QA findings.
 2. Add-expense sheet, quick add, and safe-to-spend hero — implemented in current uncommitted item commit.
-3. Monthly category budgets and Categories restyle.
+3. Monthly category budgets and Categories restyle — complete.
 4. Recurring transactions with Subscriptions.
 5. Accounts and transfers.
 6. Goals and goal-reached moment.
