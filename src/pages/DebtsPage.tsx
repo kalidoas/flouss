@@ -7,7 +7,7 @@ import { Button } from '../components/common/Button';
 import { AmountKeypad } from '../components/common/AmountKeypad';
 import { CustomDatePicker } from '../components/common/CustomDatePicker';
 import { EmptyState } from '../components/common/EmptyState';
-import { formatMAD } from '../utils/formatters';
+import { formatMAD, getIntlLocale } from '../utils/formatters';
 import { translations } from '../i18n/translations';
 import { Money } from '../components/common/Money';
 import { playHapticFeedback } from '../utils/haptics';
@@ -26,7 +26,17 @@ import {
   Search,
   Sparkles,
   Zap,
+  MessageCircle,
 } from 'lucide-react';
+
+function getDaysUntilDue(dueDate: string): number {
+  const [year, month, day] = dueDate.split('-').map(Number);
+  const due = new Date(year, month - 1, day);
+  const today = new Date();
+  due.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0);
+  return Math.round((due.getTime() - today.getTime()) / 86_400_000);
+}
 
 export const DebtsPage: React.FC = () => {
   const {
@@ -449,6 +459,25 @@ export const DebtsPage: React.FC = () => {
             );
             const quarter = Math.round(debt.totalAmount * 0.25);
             const half = Math.round(debt.totalAmount * 0.5);
+            const daysUntilDue = debt.dueDate ? getDaysUntilDue(debt.dueDate) : null;
+            const dueDateFormatted = debt.dueDate
+              ? new Intl.DateTimeFormat(getIntlLocale(language), { dateStyle: 'medium' }).format(
+                  new Date(`${debt.dueDate}T12:00:00`)
+                )
+              : '';
+            const dueState = daysUntilDue === null
+              ? ''
+              : daysUntilDue < 0
+                ? tDebt.overdueBy.replace('{days}', String(Math.abs(daysUntilDue)))
+                : daysUntilDue === 0
+                  ? tDebt.dueToday
+                  : tDebt.daysUntilDue.replace('{days}', String(daysUntilDue));
+            const reminderText = debt.dueDate
+              ? tDebt.whatsappReminderMessage
+                  .replace('{name}', debt.personName)
+                  .replace('{amount}', formatMAD(remaining, false, language))
+                  .replace('{date}', dueDateFormatted)
+              : '';
 
             return (
               <motion.div
@@ -457,10 +486,10 @@ export const DebtsPage: React.FC = () => {
                 initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.98 }}
-                className={`relative overflow-hidden rounded-2xl p-5 border transition-all duration-300 ${
+                className={`relative overflow-hidden rounded-card p-4 border transition-colors duration-200 ${
                   debt.isSettled
-                    ? 'bg-surface/80 border-border-subtle opacity-75 dark:bg-surface/5 dark:border-border/[0.04]'
-                    : 'bg-surface border-border-subtle hover:border-border/15 shadow-xs dark:bg-surface/5 dark:backdrop-blur-xl dark:border-border/10 dark:hover:border-border/20 dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]'
+                    ? 'bg-surface-raised border-border-subtle opacity-75'
+                    : 'bg-surface border-border-subtle hover:border-border shadow-xs'
                 }`}
               >
                 {/* Header Row */}
@@ -496,11 +525,26 @@ export const DebtsPage: React.FC = () => {
                       </div>
 
                       {debt.dueDate && (
-                        <div className="flex items-center gap-1.5 text-xs text-muted dark:text-muted mt-0.5 tabular-nums">
+                        <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted mt-1 tabular-nums">
                           <Calendar className="w-3 h-3 text-muted dark:text-muted" />
-                          <span>
-                            {tDebt.dueDateLabel} {debt.dueDate}
-                          </span>
+                          <span>{tDebt.dueDateLabel} {dueDateFormatted}</span>
+                          {!debt.isSettled && daysUntilDue !== null && (
+                            <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${daysUntilDue < 0 ? 'bg-negative/10 text-negative' : daysUntilDue === 0 ? 'bg-warning/10 text-warning' : 'bg-surface-raised text-muted'}`}>
+                              {dueState}
+                            </span>
+                          )}
+                          {!debt.isSettled && debt.dueDate && (
+                            <a
+                              href={`https://wa.me/?text=${encodeURIComponent(reminderText)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(event) => event.stopPropagation()}
+                              className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-positive/20 bg-positive/10 px-3 text-xs font-semibold text-positive hover:bg-positive/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            >
+                              <MessageCircle aria-hidden="true" className="h-3.5 w-3.5" />
+                              {tDebt.whatsappReminderAction}
+                            </a>
+                          )}
                         </div>
                       )}
                     </div>
@@ -511,7 +555,7 @@ export const DebtsPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handleSettleToggle(debt)}
-                      className={`p-2 rounded-xl transition-all ${
+                      className={`flex h-11 w-11 items-center justify-center rounded-control transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                         debt.isSettled
                           ? 'text-positive dark:text-positive bg-positive/20 border border-positive/30'
                           : 'text-muted hover:text-positive dark:hover:text-positive hover:bg-positive/10 border border-border'
@@ -523,7 +567,7 @@ export const DebtsPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handleOpenEdit(debt)}
-                      className="p-2 rounded-xl text-muted hover:text-text dark:hover:text-accent-contrast hover:bg-canvas/[0.04] dark:hover:bg-surface/[0.06] transition-colors"
+                      className="flex h-11 w-11 items-center justify-center rounded-control text-muted hover:text-content hover:bg-surface-raised transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       title={tDebt.editDebt}
                     >
                       <Edit2 className="w-3.5 h-3.5" />
@@ -531,7 +575,7 @@ export const DebtsPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => deleteDebt(debt.id)}
-                      className="p-2 rounded-xl text-muted hover:text-negative dark:hover:text-negative hover:bg-negative/10 transition-colors"
+                      className="flex h-11 w-11 items-center justify-center rounded-control text-muted hover:text-negative hover:bg-negative/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       title={tCommon.delete}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -540,13 +584,13 @@ export const DebtsPage: React.FC = () => {
                 </div>
 
                 {debt.notes && (
-                  <p className="text-xs text-muted dark:text-muted mt-2.5 bg-canvas/[0.02] dark:bg-surface/[0.02] border border-border/[0.04] dark:border-border/[0.04] p-2.5 rounded-xl">
+                  <p className="text-xs text-muted mt-2.5 bg-surface-raised border border-border-subtle p-2.5 rounded-control">
                     {debt.notes}
                   </p>
                 )}
 
                 {/* Amount Row */}
-                <div className="flex items-end justify-between mt-4 pt-3 border-t border-border/[0.06] dark:border-border/[0.06]">
+                <div className="flex items-end justify-between mt-4 pt-3 border-t border-border-subtle">
                   <div>
                     <span className="text-[11px] text-muted uppercase font-semibold tracking-wider block">
                       {tDebt.remainingLabel}
@@ -585,9 +629,9 @@ export const DebtsPage: React.FC = () => {
                     <span>{tDebt.recoveryRate}</span>
                     <span className="tabular-nums font-bold text-text dark:text-text">{progress}%</span>
                   </div>
-                  <div className="w-full h-1.5 rounded-full bg-canvas/[0.06] dark:bg-surface/[0.06] overflow-hidden">
+                  <div className="w-full h-1.5 rounded-full bg-surface-raised overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-positive to-info rounded-full transition-all duration-300"
+                      className="h-full bg-positive rounded-full transition-all duration-300"
                       style={{ width: `${progress}%` }}
                     />
                   </div>
