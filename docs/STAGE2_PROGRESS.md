@@ -3,7 +3,7 @@
 ## Done
 
 - Stage 1 foundation is present at `302a393d` (motion primitives, `<Money />`, animation preferences, onboarding, dashboard hero, and QA harness).
-- Worktree is on `codex/stage2`; upstream redesign and `feat/ui-mobile-first` branches were fetched and are already ancestors/current baseline. No incoming commits were available to merge.
+- Worktree is on `codex/stage2`. Fetched `origin/feat/ui-mobile-first` tip `85889fc8` contained only a two-line WebKit timeout adjustment in `e2e/playwright.config.ts`; the three reported Stage 1 UI fixes were not present in that branch.
 - Categories and Tasks translations were already present in EN/FR/AR (`bd9bc602`, `c4fafa30`); `check:i18n` and `qa:lang` pass. No duplicate translation changes needed.
 - Baseline gates: `typecheck` PASS; `check:i18n` PASS (1,212 keys, locale parity); `qa:lang` PASS (12/12); server build PASS; root tests PASS (206/206); root build PASS.
 - The original `qa:shots` run is invalid as a Flouss_codex baseline: Playwright reused a Vite server from another local project on port 5174. The config now starts its own strict preview on port 4173. The old 2 WebKit AR timeouts are not attributed to this app; rerun the full suite after item 3.
@@ -24,8 +24,13 @@
 9. Monthly reports — Analytics exports the selected month as a localized CSV and opens a clean, RTL-aware print view for Save as PDF. Formula-like user-entered CSV values are neutralized and report HTML is escaped. Added export tests. Verification: typecheck PASS, check:i18n PASS (1,274 keys), root tests 216/216, qa:lang 12/12, root build PASS.
 10. Weekly review, Cmd+K palette, and auto-lock — added a rule-based Dashboard comparison of the latest seven days against the prior week; added translated Cmd/Ctrl+K navigation and quick expense with RTL-aware dialog labels; enabled a 15-minute inactivity lock when PIN is active, with a local Settings toggle. No new cloud fields. Verification: typecheck PASS, check:i18n PASS (1,279 keys), root tests 217/217, qa:lang 12/12, root build PASS.
 
-## Blockers
+## Final integration
 
-- Run the full `qa:shots` suite by itself after the requested upstream merge and before asking for release approval.
-- Staging rollout requires separate owner approval after each group; never deploy Firestore rules.
-- Record each commit, gate result, and PNG proof here as work proceeds.
+- Merged `origin/feat/ui-mobile-first` into `codex/stage2` with no conflicts; the incoming Playwright timeout adjustment is preserved. Merge commit: `14d3737c`.
+- Post-merge verification: typecheck PASS, check:i18n PASS (1,279 keys), root tests 217/217, server tests 22/22, server build PASS, root build PASS, qa:lang PASS (12/12), qa:shots PASS (26/26).
+- Screenshot artifacts are generated under `qa/integration/` (gitignored). Reviewed Arabic light Dashboard on WebKit and Chromium; seeded and empty combinations passed across EN/FR/AR, desktop and iPhone.
+- `origin/feat/ui-mobile-first` still does not contain the three reported UI fixes from Claude Code; the stage2 rollout includes the verified Stage 2 work plus only the timeout adjustment from that branch.
+
+## Release
+
+- Final image QA and quality gates have passed. Push the verified merge to `feat/ui-mobile-first` for staging review; do not deploy production or Firestore rules.
