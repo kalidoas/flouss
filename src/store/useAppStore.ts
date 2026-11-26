@@ -46,6 +46,7 @@ import {
 } from '../utils/calculations';
 import { playHapticFeedback, triggerHaptic } from '../utils/haptics';
 import { migrateSubscription, migrateSubscriptions } from '../utils/subscriptions';
+import { canConfirmRecurringIncome } from '../utils/subscriptions';
 import { hashPin, verifyPin, hashPinPBKDF2, verifyPinPBKDF2, encryptBackup, decryptBackup } from '../utils/crypto';
 import {
   loadUserProfile,
@@ -198,6 +199,8 @@ export interface AppState {
   deleteIncomeSource: (id: string) => void;
 
   addRecurringRule: (rule: RecurringIncomeRule) => void;
+  updateRecurringRule: (id: string, patch: Partial<RecurringIncomeRule>) => void;
+  deleteRecurringRule: (id: string) => void;
   confirmRecurringIncome: (ruleId: string, month: string, tx: Transaction) => void;
   dismissRecurringPrompt: (month: string) => void;
   contributeToAllGoals: () => void;
@@ -1950,10 +1953,26 @@ export const useAppStore = create<AppState>()(
         addRecurringRule: (rule: RecurringIncomeRule) => {
           updateActive((a) => ({
             ...a,
-            recurringRules: [...a.recurringRules, rule],
+            recurringRules: [...(a.recurringRules ?? []).filter((existing: RecurringIncomeRule) => existing.id !== rule.id), rule],
+          }));
+        },
+        updateRecurringRule: (id: string, patch: Partial<RecurringIncomeRule>) => {
+          updateActive((a) => ({
+            ...a,
+            recurringRules: (a.recurringRules ?? []).map((rule: RecurringIncomeRule) =>
+              rule.id === id ? { ...rule, ...patch, id: rule.id } : rule
+            ),
+          }));
+        },
+        deleteRecurringRule: (id: string) => {
+          updateActive((a) => ({
+            ...a,
+            recurringRules: (a.recurringRules ?? []).filter((rule: RecurringIncomeRule) => rule.id !== id),
           }));
         },
         confirmRecurringIncome: (ruleId: string, month: string, tx: Transaction) => {
+          const rule = get().recurringRules?.find((item: RecurringIncomeRule) => item.id === ruleId);
+          if (!rule || !canConfirmRecurringIncome(rule, month)) return;
           const amt =
             typeof tx.amount === 'number' && !isNaN(tx.amount)
               ? tx.amount

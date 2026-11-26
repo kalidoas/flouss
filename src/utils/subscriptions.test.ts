@@ -6,10 +6,31 @@ import {
   getSubscriptionStatus,
   migrateSubscription,
   migrateSubscriptions,
+  getRecurringMonthKey,
+  getRecurringIncomeDate,
+  isRecurringIncomeDue,
+  canConfirmRecurringIncome,
 } from './subscriptions';
 import { SubscriptionItem } from '../types';
 
 describe('Subscriptions Data Model & Utilities (Phase 1)', () => {
+  describe('recurring income schedule', () => {
+    const rule = { id: 'salary', sourceId: 'work', amount: 12000, dayOfMonth: 31 };
+
+    it('formats the month key and clamps the scheduled day for short months', () => {
+      expect(getRecurringMonthKey(new Date(2026, 1, 10))).toBe('2026-02');
+      expect(getRecurringIncomeDate(rule, 2026, 2)).toBe('2026-02-28');
+    });
+
+    it('is due on the scheduled day and only once each month', () => {
+      expect(isRecurringIncomeDue(rule, new Date(2026, 0, 31))).toBe(true);
+      expect(isRecurringIncomeDue({ ...rule, lastConfirmedMonth: '2026-01' }, new Date(2026, 0, 31))).toBe(false);
+      expect(isRecurringIncomeDue(rule, new Date(2026, 0, 30))).toBe(false);
+      expect(canConfirmRecurringIncome(rule, '2026-01')).toBe(true);
+      expect(canConfirmRecurringIncome({ ...rule, lastConfirmedMonth: '2026-01' }, '2026-01')).toBe(false);
+    });
+  });
+
   describe('formatCycleDate', () => {
     it('formats valid cycle dates with padding', () => {
       expect(formatCycleDate(2026, 5, 5)).toBe('2026-05-05');

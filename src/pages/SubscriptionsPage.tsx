@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '../store/useAppStore';
-import { SubscriptionItem } from '../types';
+import { RecurringIncomeRule, SubscriptionItem } from '../types';
 import { Modal } from '../components/common/Modal';
 import { Button } from '../components/common/Button';
 import { AmountKeypad } from '../components/common/AmountKeypad';
@@ -25,6 +25,7 @@ import {
   Check,
   Zap,
   CheckCheck,
+  TrendingUp,
 } from 'lucide-react';
 import {
   buildMonthlyBillRRule,
@@ -35,6 +36,7 @@ import {
   getStoredGoogleAccessToken,
 } from '../services/googleCalendar';
 import { SwipeRow } from '../components/common/SwipeRow';
+import { getRecurringIncomeDate } from '../utils/subscriptions';
 
 export const SubscriptionsPage: React.FC = () => {
   const {
@@ -43,6 +45,12 @@ export const SubscriptionsPage: React.FC = () => {
     updateSubscription,
     deleteSubscription,
     toggleSubscriptionPaid,
+    recurringRules,
+    incomeSources,
+    addRecurringRule,
+    updateRecurringRule,
+    deleteRecurringRule,
+    confirmRecurringIncome,
     language,
     showToast,
   } = useAppStore();
@@ -68,6 +76,56 @@ export const SubscriptionsPage: React.FC = () => {
   const [subCategory, setSubCategory] = useState('Télécom');
   const [subNotes, setSubNotes] = useState('');
   const [subReminderEnabled, setSubReminderEnabled] = useState(false);
+  const [isIncomeRuleModalOpen, setIsIncomeRuleModalOpen] = useState(false);
+  const [editingIncomeRule, setEditingIncomeRule] = useState<RecurringIncomeRule | null>(null);
+  const [incomeRuleSourceId, setIncomeRuleSourceId] = useState('');
+  const [incomeRuleAmount, setIncomeRuleAmount] = useState('');
+  const [incomeRuleDay, setIncomeRuleDay] = useState(String(new Date().getDate()));
+  const [incomeRuleNote, setIncomeRuleNote] = useState('');
+
+  const openIncomeRule = (rule?: RecurringIncomeRule) => {
+    setEditingIncomeRule(rule ?? null);
+    setIncomeRuleSourceId(rule?.sourceId ?? incomeSources[0]?.id ?? '');
+    setIncomeRuleAmount(rule ? String(rule.amount) : '');
+    setIncomeRuleDay(String(rule?.dayOfMonth ?? new Date().getDate()));
+    setIncomeRuleNote(rule?.note ?? '');
+    setIsIncomeRuleModalOpen(true);
+  };
+
+  const saveIncomeRule = (event: React.FormEvent) => {
+    event.preventDefault();
+    const amount = Number(incomeRuleAmount.replace(',', '.'));
+    const day = Math.min(31, Math.max(1, Number(incomeRuleDay) || 1));
+    if (!incomeRuleSourceId || !Number.isFinite(amount) || amount <= 0) return;
+    const values = {
+      sourceId: incomeRuleSourceId,
+      amount,
+      dayOfMonth: day,
+      note: incomeRuleNote.trim() || undefined,
+    };
+    if (editingIncomeRule) updateRecurringRule(editingIncomeRule.id, values);
+    else addRecurringRule({ id: `income_rule_${Date.now()}`, ...values });
+    setIsIncomeRuleModalOpen(false);
+  };
+
+  const handleConfirmIncome = (rule: RecurringIncomeRule) => {
+    const now = new Date();
+    const month = getCurrentMonthStr();
+    const source = incomeSources.find((item) => item.id === rule.sourceId);
+    if (!source || rule.lastConfirmedMonth === month) return;
+    const isoDate = now.toISOString();
+    confirmRecurringIncome(rule.id, month, {
+      id: `recurring_${rule.id}_${month}`,
+      type: 'income',
+      amount: rule.amount,
+      sourceId: rule.sourceId,
+      date: isoDate,
+      note: rule.note || source.name,
+      isRecurring: true,
+      recurringDay: rule.dayOfMonth,
+      createdAt: isoDate,
+    });
+  };
 
   // Comprehensive Analytics Calculations
   const stats = useMemo(() => {
@@ -325,6 +383,53 @@ export const SubscriptionsPage: React.FC = () => {
           <span>{tSub.newSubscription}</span>
         </Button>
       </div>
+
+      {/* Recurring income shares this schedule with monthly bills. */}
+      <section className="rounded-2xl border border-positive/20 bg-positive/[0.04] p-4 sm:p-5 space-y-3" aria-labelledby="recurring-income-title">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-positive" aria-hidden="true" />
+            <h2 id="recurring-income-title" className="text-sm font-bold text-text">{tSub.incomeRulesTitle}</h2>
+            <span className="text-xs text-muted">({recurringRules?.length ?? 0})</span>
+          </div>
+          <Button onClick={() => openIncomeRule()} variant="secondary" size="sm" icon={<Plus className="w-4 h-4" />}>
+            {tSub.addIncomeRule}
+          </Button>
+        </div>
+        {(recurringRules ?? []).length === 0 ? (
+          <p className="text-xs text-muted">{tSub.incomeRulesEmpty}</p>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5">
+            {[...(recurringRules ?? [])].sort((a, b) => a.dayOfMonth - b.dayOfMonth).map((rule) => {
+              const source = incomeSources.find((item) => item.id === rule.sourceId);
+              const scheduledDate = getRecurringIncomeDate(rule, today.getFullYear(), today.getMonth() + 1);
+              const localToday = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+              const isDue = scheduledDate <= localToday;
+              const isConfirmed = rule.lastConfirmedMonth === currentMonth;
+              return (
+                <article key={rule.id} className="rounded-xl border border-border-subtle bg-surface p-3.5 flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="text-xs font-semibold text-positive">{source?.name ?? tSub.incomeSource}</span>
+                      <span className="text-[10px] rounded-full border border-positive/20 bg-positive/10 px-2 py-0.5 text-positive">{tSub.scheduledIncome}</span>
+                    </div>
+                    <Money amount={rule.amount} className="mt-1 block text-base font-bold tabular-nums text-text" />
+                    <p className="mt-0.5 text-[11px] text-muted">{tSub.incomeRuleDay.replace('{day}', String(rule.dayOfMonth))}</p>
+                    {rule.note && <p className="text-[11px] text-muted truncate">{rule.note}</p>}
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button type="button" onClick={() => openIncomeRule(rule)} className="min-h-10 min-w-10 rounded-lg text-muted hover:bg-surface-2" aria-label={tSub.editIncomeRule} title={tSub.editIncomeRule}><Edit2 className="w-4 h-4 mx-auto" /></button>
+                    <button type="button" onClick={() => deleteRecurringRule(rule.id)} className="min-h-10 min-w-10 rounded-lg text-muted hover:text-negative hover:bg-surface-2" aria-label={tSub.deleteIncomeRule} title={tSub.deleteIncomeRule}><Trash2 className="w-4 h-4 mx-auto" /></button>
+                    <Button size="sm" variant={isConfirmed ? 'secondary' : 'primary'} disabled={!isDue || isConfirmed} onClick={() => handleConfirmIncome(rule)}>
+                      {isConfirmed ? tSub.receivedIncome : isDue ? tSub.confirmIncome : scheduledDate.slice(5)}
+                    </Button>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </section>
 
       {/* ── 3 Bento KPI Cards (Living Cosmic Glow & Spotlight) ── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
@@ -715,6 +820,38 @@ export const SubscriptionsPage: React.FC = () => {
       )}
 
       {/* ── CREATE / EDIT SUBSCRIPTION MODAL ── */}
+      <Modal
+        isOpen={isIncomeRuleModalOpen}
+        onClose={() => setIsIncomeRuleModalOpen(false)}
+        title={editingIncomeRule ? tSub.editIncomeRule : tSub.addIncomeRule}
+        subtitle={tSub.incomeRuleDay.replace('{day}', incomeRuleDay)}
+      >
+        <form onSubmit={saveIncomeRule} className="space-y-4 pt-2">
+          <label className="block space-y-1">
+            <span className="text-xs font-bold text-text">{tSub.incomeSource}</span>
+            <select required value={incomeRuleSourceId} onChange={(event) => setIncomeRuleSourceId(event.target.value)} className="w-full min-h-11 px-3 rounded-xl bg-surface-3 border border-border text-text text-sm">
+              {incomeSources.map((source) => <option key={source.id} value={source.id}>{source.name}</option>)}
+            </select>
+          </label>
+          <label className="block space-y-1">
+            <span className="text-xs font-bold text-text">{tSub.amountLabel}</span>
+            <AmountKeypad amount={incomeRuleAmount} onChange={setIncomeRuleAmount} currency={translations[language].currency} />
+          </label>
+          <label className="block space-y-1">
+            <span className="text-xs font-bold text-text">{tSub.dayLabel}</span>
+            <input type="number" min="1" max="31" required value={incomeRuleDay} onChange={(event) => setIncomeRuleDay(event.target.value)} className="w-full min-h-11 px-3 rounded-xl bg-surface-3 border border-border text-text text-sm tabular-nums" />
+          </label>
+          <label className="block space-y-1">
+            <span className="text-xs font-bold text-text">{tSub.notesLabel}</span>
+            <input value={incomeRuleNote} onChange={(event) => setIncomeRuleNote(event.target.value)} placeholder={tSub.incomeRuleNotePlaceholder} className="w-full min-h-11 px-3 rounded-xl bg-surface-3 border border-border text-text text-sm" />
+          </label>
+          <div className="flex justify-end gap-2 border-t border-border/10 pt-3">
+            <Button type="button" variant="ghost" onClick={() => setIsIncomeRuleModalOpen(false)}>{tSub.cancel}</Button>
+            <Button type="submit" variant="primary">{tSub.save}</Button>
+          </div>
+        </form>
+      </Modal>
+
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

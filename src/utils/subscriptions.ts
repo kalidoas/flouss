@@ -1,4 +1,26 @@
-import { Subscription, SubscriptionItem, SubscriptionPayment, SubscriptionStatus } from '../types';
+import { RecurringIncomeRule, Subscription, SubscriptionItem, SubscriptionPayment, SubscriptionStatus } from '../types';
+
+/** Returns the month key used to prevent duplicate recurring income confirmations. */
+export function getRecurringMonthKey(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+}
+
+/** Resolve a recurring income rule's clamped date in a month. */
+export function getRecurringIncomeDate(rule: Pick<RecurringIncomeRule, 'dayOfMonth'>, year: number, month: number): string {
+  return formatCycleDate(year, month, rule.dayOfMonth);
+}
+
+/** A rule is ready to confirm on or after its scheduled date, once per month. */
+export function isRecurringIncomeDue(rule: RecurringIncomeRule, today: Date = new Date()): boolean {
+  const month = getRecurringMonthKey(today);
+  const scheduled = getRecurringIncomeDate(rule, today.getFullYear(), today.getMonth() + 1);
+  const todayDate = `${month}-${String(today.getDate()).padStart(2, '0')}`;
+  return rule.lastConfirmedMonth !== month && todayDate >= scheduled;
+}
+
+export function canConfirmRecurringIncome(rule: RecurringIncomeRule, month: string): boolean {
+  return rule.lastConfirmedMonth !== month;
+}
 
 /**
  * Format a cycle date (YYYY-MM-DD) given a year, a 1-based month, and a target billing day.

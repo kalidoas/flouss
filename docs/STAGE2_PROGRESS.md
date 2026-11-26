@@ -16,7 +16,7 @@
 1. Categories/Tasks i18n verified in existing commits; progress doc records the baseline and QA findings.
 2. Add-expense sheet, quick add, and safe-to-spend hero — implemented in current uncommitted item commit.
 3. Monthly category budgets and Categories restyle — complete.
-4. Recurring transactions with Subscriptions.
+4. Recurring transactions with Subscriptions — implemented on `codex/stage2`. Subscriptions now includes a recurring-income schedule alongside bills, with translated create/edit/delete controls and an explicit once-per-month receipt confirmation that records an income transaction. Added shared date/due/idempotency helpers and unit coverage. No required Firestore field or migration added; `recurringRules` is an existing optional account field. Verification: typecheck PASS, check:i18n PASS (1,225 keys), focused utility tests 29/29, full root tests 208/208, qa:lang 12/12, root build PASS. Full visual screenshot suite remains intentionally deferred until the post-merge `qa:shots` run requested by the rollout sequence.
 5. Accounts and transfers.
 6. Goals and goal-reached moment.
 7. Today hub and Tasks restyle.
@@ -26,6 +26,6 @@
 
 ## Blockers
 
-- Full `qa:shots` must be rerun after items 1–3 using the isolated preview configuration.
+- Run the full `qa:shots` suite by itself after the requested upstream merge and before asking for release approval.
 - Staging rollout requires separate owner approval after each group; never deploy Firestore rules.
 - Record each commit, gate result, and PNG proof here as work proceeds.
