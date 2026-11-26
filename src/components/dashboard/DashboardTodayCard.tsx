@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { ArrowRight, Check } from 'lucide-react';
+import { ArrowRight, ListChecks } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { TaskItem } from '../../types';
 import { translations } from '../../i18n/translations';
@@ -16,9 +16,8 @@ function appliesToday(task: TaskItem, day: Date, todayKey: string) {
 }
 
 export const DashboardTodayCard: React.FC = () => {
-  const { tasks = [], toggleTaskDone, showToast, language, setActiveScreen } = useAppStore();
+  const { tasks = [], language, setActiveScreen } = useAppStore();
   const t = translations[language].dashboard;
-  const common = translations[language].common;
   const today = new Date();
   const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(
     today.getDate()
@@ -28,79 +27,19 @@ export const DashboardTodayCard: React.FC = () => {
     [tasks, todayKey]
   );
   const doneCount = todayTasks.filter((task) => task.completedDates?.includes(todayKey)).length;
-  const pending = todayTasks
-    .filter((task) => !task.completedDates?.includes(todayKey))
-    .sort((a, b) => Number(b.frequency === 'daily') - Number(a.frequency === 'daily'))
-    .slice(0, 3);
-  const progress = todayTasks.length ? Math.round((doneCount / todayTasks.length) * 100) : 0;
-
-  const toggleWithUndo = (task: TaskItem) => {
-    toggleTaskDone(task.id, todayKey);
-    showToast({
-      message: t.taskCompleted,
-      actionText: common.undo,
-      onAction: () => toggleTaskDone(task.id, todayKey),
-    });
-  };
+  const nextDirection = language === 'ar' ? 'rotate-180' : '';
 
   return (
-    <div
-      data-spotlight="true"
-      className="spotlight-card flex flex-col justify-between gap-3.5 rounded-2xl bg-surface dark:bg-surface-3/5 p-4 sm:p-5 backdrop-blur-xl border border-border-subtle dark:border-border-subtle/10 relative overflow-hidden h-fit min-w-0"
+    <button
+      type="button"
+      onClick={() => setActiveScreen('tasks')}
+      className="flex min-h-12 w-full items-center gap-3 rounded-control border border-border-subtle bg-surface px-3.5 text-start text-sm text-content transition-colors hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
-      <div className="flex items-center justify-between gap-3 min-w-0">
-        <div className="min-w-0 flex-1">
-          <h2 className="text-[15px] sm:text-base font-semibold text-content truncate">
-            {t.todayProgram}
-          </h2>
-          <p className="mt-0.5 text-xs text-muted font-medium">
-            {t.tasksDoneOf
-              .replace('{done}', String(doneCount))
-              .replace('{total}', String(todayTasks.length))}
-          </p>
-        </div>
-        <div
-          className="relative grid h-11 w-11 shrink-0 place-items-center rounded-full"
-          role="img"
-          aria-label={`${t.todayProgress} · ${progress}%`}
-        >
-          <span className="grid h-8 w-8 place-items-center rounded-full bg-surface dark:bg-zinc-900 text-xs font-bold tabular-nums text-content shadow-xs">
-            {progress}%
-          </span>
-        </div>
-      </div>
-
-      {pending.length ? (
-        <div className="space-y-1.5 min-w-0">
-          {pending.map((task) => (
-            <button
-              key={task.id}
-              type="button"
-              onClick={() => toggleWithUndo(task)}
-              title={task.title}
-              className="flex w-full min-w-0 items-center justify-between gap-2 py-2 px-3 rounded-xl bg-surface-raised/60 dark:bg-white/[0.03] border border-border-subtle dark:border-white/[0.05] hover:bg-surface-raised dark:hover:bg-white/[0.05] text-xs font-medium text-content dark:text-zinc-200 transition-all group cursor-pointer"
-            >
-              <span className="truncate">{task.title}</span>
-              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-border-subtle dark:border-white/20 group-hover:border-emerald-400 group-hover:bg-emerald-500/20 text-muted group-hover:text-emerald-500 dark:group-hover:text-emerald-300 transition-all">
-                <Check aria-hidden="true" className="h-3 w-3" />
-              </span>
-            </button>
-          ))}
-        </div>
-      ) : (
-        <p className="text-xs text-muted min-h-6 flex items-center">
-          {t.noProgramTasksToday}
-        </p>
-      )}
-
-      <button
-        type="button"
-        onClick={() => setActiveScreen('tasks')}
-        className="inline-flex items-center gap-1 self-start text-xs font-semibold text-muted hover:text-content dark:hover:text-white transition-colors cursor-pointer"
-      >
-        <span>{t.openProgram}</span>
-        <ArrowRight aria-hidden="true" className={`h-3 w-3 ${language === 'ar' ? 'rotate-180' : ''}`} />
-      </button>
-    </div>
+      <ListChecks aria-hidden="true" className="h-4 w-4 shrink-0 text-accent" />
+      <span className="min-w-0 flex-1 truncate font-semibold">
+        {t.todayProgram}: {t.tasksDoneOf.replace('{done}', String(doneCount)).replace('{total}', String(todayTasks.length))}
+      </span>
+      <ArrowRight aria-hidden="true" className={`h-4 w-4 shrink-0 text-muted ${nextDirection}`} />
+    </button>
   );
 };

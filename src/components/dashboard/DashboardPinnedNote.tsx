@@ -53,11 +53,13 @@ export const DashboardPinnedNote: React.FC = () => {
   const move = (direction: number) =>
     setIndex((value) => (value + direction + pinned.length) % pinned.length);
 
+  if (!current) return null;
+
   return (
     <>
       <div
         data-spotlight="true"
-        className="spotlight-card flex flex-col justify-between gap-3 rounded-2xl bg-surface dark:bg-surface-3/5 p-4 sm:p-5 backdrop-blur-xl border border-border-subtle dark:border-border-subtle/10 shadow-xs dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_16px_36px_-12px_rgba(0,0,0,0.6)] relative overflow-hidden h-fit min-w-0"
+        className="flex flex-col justify-between gap-2 rounded-control bg-surface p-3 border border-border-subtle h-fit min-w-0"
       >
         <div className="flex items-center justify-between gap-2 min-w-0">
           <h2 className="flex items-center gap-1.5 text-[15px] sm:text-base font-semibold text-content dark:text-content truncate">
@@ -69,7 +71,7 @@ export const DashboardPinnedNote: React.FC = () => {
             onClick={() => openEditor()}
             aria-label={t.pinNote}
             title={t.pinNote}
-            className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-raised dark:bg-surface-3/5 hover:bg-surface dark:hover:bg-surface-2 text-muted hover:text-content dark:text-muted dark:hover:text-content transition-all cursor-pointer shrink-0"
+            className="flex h-10 w-10 items-center justify-center rounded-control bg-surface-raised hover:bg-surface text-muted hover:text-content transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <Plus className="h-3.5 w-3.5" />
           </button>
@@ -77,7 +79,7 @@ export const DashboardPinnedNote: React.FC = () => {
 
         {current ? (
           <div
-            className="flex-1 rounded-xl border border-amber-500/20 bg-amber-500/[0.05] p-3 transition-all min-w-0"
+            className="flex-1 min-w-0"
             onTouchStart={(event) => setTouchStart(event.touches[0].clientX)}
             onTouchEnd={(event) => {
               if (touchStart === null || pinned.length < 2) return;
@@ -89,13 +91,13 @@ export const DashboardPinnedNote: React.FC = () => {
             <div className="flex items-start justify-between gap-2 min-w-0">
               <div className="min-w-0 flex-1">
                 <p
-                  className="truncate text-xs sm:text-sm font-semibold text-content dark:text-zinc-100"
+                  className="truncate text-xs sm:text-sm font-semibold text-content"
                   title={current.title}
                 >
                   {current.title}
                 </p>
                 {current.content && (
-                  <p className="mt-1 line-clamp-2 whitespace-pre-wrap text-xs leading-relaxed text-muted dark:text-zinc-300">
+                  <p className="mt-0.5 line-clamp-1 whitespace-pre-wrap text-xs text-muted">
                     {current.content}
                   </p>
                 )}
@@ -105,22 +107,13 @@ export const DashboardPinnedNote: React.FC = () => {
                 onClick={() => openEditor(current)}
                 aria-label={t.editNote}
                 title={t.editNote}
-                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-muted hover:text-amber-500 dark:text-zinc-400 dark:hover:text-amber-300 hover:bg-amber-500/10 transition-all cursor-pointer"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control text-muted hover:text-accent hover:bg-surface-raised transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <Edit3 className="h-3.5 w-3.5" />
               </button>
             </div>
           </div>
-        ) : (
-          <button
-            type="button"
-            onClick={() => openEditor()}
-            className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border-subtle dark:border-white/10 text-xs font-semibold text-muted hover:text-content hover:border-amber-400/50 hover:bg-amber-500/[0.03] transition-all cursor-pointer"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            <span>{t.pinNote}</span>
-          </button>
-        )}
+        ) : null}
 
         {pinned.length > 1 && (
           <div className="flex items-center justify-between pt-1 min-w-0">

@@ -13,6 +13,7 @@ import { DropdownPortal } from '../components/common/DropdownPortal';
 import { UpcomingScheduleWidget } from '../components/meetings/UpcomingScheduleWidget';
 import { GlassMonthPicker } from '../components/common/GlassMonthPicker';
 import confetti from 'canvas-confetti';
+import { useMotionMode, useMotionPrefs } from '../motion/useMotionPrefs';
 import {
   createGoogleCalendarEvent,
   syncEntityToGoogleCalendar,
@@ -112,7 +113,7 @@ const CATEGORY_CONFIG: Record<
     icon: '💰',
     color: 'text-info dark:text-info',
     bg: 'bg-info/10',
-    border: 'text-info/20',
+    border: 'border-info/20',
   },
   health: {
     fr: 'Bien-être & Eau',
@@ -172,14 +173,14 @@ const WEEKDAY_OPTIONS = [
 const GYM_CHIPS = ['Chest', 'Back', 'Arms', 'Shoulders', 'Legs', 'Push', 'Pull', 'Core'] as const;
 
 const GYM_CHIP_LABELS: Record<string, { ar: string; fr: string; en: string; icon: string }> = {
-  Chest: { ar: 'الصدر (Chest)', fr: 'Pectoraux (Chest)', en: 'Chest', icon: '🫁' },
-  Back: { ar: 'الظهر (Back)', fr: 'Dos (Back)', en: 'Back', icon: '🥋' },
-  Arms: { ar: 'الذراعين (Arms)', fr: 'Bras (Arms)', en: 'Arms', icon: '💪' },
-  Shoulders: { ar: 'الأكتاف (Shoulders)', fr: 'Épaules (Shoulders)', en: 'Shoulders', icon: '🦾' },
-  Legs: { ar: 'الأرجل (Legs)', fr: 'Jambes (Legs)', en: 'Legs', icon: '🦵' },
-  Push: { ar: 'Push (دفع)', fr: 'Push (Poussée)', en: 'Push', icon: '⚡' },
-  Pull: { ar: 'Pull (سحب)', fr: 'Pull (Tirage)', en: 'Pull', icon: '🔥' },
-  Core: { ar: 'البطن (Core)', fr: 'Abdos (Core)', en: 'Core', icon: '🎯' },
+  Chest: { ar: 'الصدر', fr: 'Pectoraux', en: 'Chest', icon: '🫁' },
+  Back: { ar: 'الظهر', fr: 'Dos', en: 'Back', icon: '🥋' },
+  Arms: { ar: 'الذراعان', fr: 'Bras', en: 'Arms', icon: '💪' },
+  Shoulders: { ar: 'الأكتاف', fr: 'Épaules', en: 'Shoulders', icon: '🦾' },
+  Legs: { ar: 'الساقان', fr: 'Jambes', en: 'Legs', icon: '🦵' },
+  Push: { ar: 'تمارين الدفع', fr: 'Poussée', en: 'Push', icon: '⚡' },
+  Pull: { ar: 'تمارين السحب', fr: 'Tirage', en: 'Pull', icon: '🔥' },
+  Core: { ar: 'عضلات الجذع', fr: 'Abdominaux', en: 'Core', icon: '🎯' },
 };
 
 const ECONOMICS_S3_MODULES = [
@@ -224,6 +225,7 @@ interface TaskActionDropdownProps {
   alarmLabel: string;
   editLabel: string;
   deleteLabel: string;
+  actionsLabel: string;
 }
 
 const TaskActionDropdown: React.FC<TaskActionDropdownProps> = ({
@@ -234,6 +236,7 @@ const TaskActionDropdown: React.FC<TaskActionDropdownProps> = ({
   alarmLabel,
   editLabel,
   deleteLabel,
+  actionsLabel,
 }) => {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -243,13 +246,13 @@ const TaskActionDropdown: React.FC<TaskActionDropdownProps> = ({
       <button
         ref={triggerRef}
         type="button"
-        aria-label="Task actions"
+        aria-label={actionsLabel}
         aria-expanded={open}
         onClick={(e) => {
           e.stopPropagation();
           setOpen((prev) => !prev);
         }}
-        className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-muted hover:text-accent-contrast hover:bg-surface/[0.06] focus-visible:outline-none transition-colors"
+        className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-control text-muted hover:text-content hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors"
       >
         <span className="text-base leading-none">⋯</span>
       </button>
@@ -260,7 +263,7 @@ const TaskActionDropdown: React.FC<TaskActionDropdownProps> = ({
         triggerRef={triggerRef}
         align="end"
         minWidth={176}
-        className="w-48 rounded-2xl border border-border/[0.12] bg-[#0E0F17]/95 backdrop-blur-2xl p-1.5 shadow-[0_16px_36px_-8px_rgba(0,0,0,0.8)]"
+        className="w-48 rounded-card border border-border-subtle bg-surface p-1.5 shadow-xl"
       >
         <div className="space-y-0.5">
           <button
@@ -269,7 +272,7 @@ const TaskActionDropdown: React.FC<TaskActionDropdownProps> = ({
               setOpen(false);
               onAlarm();
             }}
-            className="flex min-h-9 w-full items-center gap-2 rounded-xl px-3 text-start text-xs text-content hover:bg-surface/[0.06] cursor-pointer"
+          className="flex min-h-11 w-full items-center gap-2 rounded-xl px-3 text-start text-xs text-content hover:bg-surface/[0.06] cursor-pointer"
           >
             <Bell className="h-3.5 w-3.5 text-accent shrink-0" />
             <span className="truncate">{alarmLabel}</span>
@@ -280,7 +283,7 @@ const TaskActionDropdown: React.FC<TaskActionDropdownProps> = ({
               setOpen(false);
               onEdit();
             }}
-            className="flex min-h-9 w-full items-center gap-2 rounded-xl px-3 text-start text-xs text-content hover:bg-surface/[0.06] cursor-pointer"
+          className="flex min-h-11 w-full items-center gap-2 rounded-xl px-3 text-start text-xs text-content hover:bg-surface/[0.06] cursor-pointer"
           >
             <Edit2 className="h-3.5 w-3.5 shrink-0" />
             <span className="truncate">{editLabel}</span>
@@ -291,7 +294,7 @@ const TaskActionDropdown: React.FC<TaskActionDropdownProps> = ({
               setOpen(false);
               onDelete();
             }}
-            className="flex min-h-9 w-full items-center gap-2 rounded-xl px-3 text-start text-xs text-negative hover:bg-negative/10 cursor-pointer"
+          className="flex min-h-11 w-full items-center gap-2 rounded-xl px-3 text-start text-xs text-negative hover:bg-negative/10 cursor-pointer"
           >
             <Trash2 className="h-3.5 w-3.5 shrink-0" />
             <span className="truncate">{deleteLabel}</span>
@@ -332,6 +335,12 @@ export const TasksPage: React.FC = () => {
   const tTask = translations[language].tasks;
   const tTaskPage = translations[language].tasksPage;
   const tCommon = translations[language].common;
+  const motionMode = useMotionMode();
+  const reducedMotion = useMotionPrefs();
+  const celebrate = (particleCount: number, spread: number, y: number) => {
+    if (reducedMotion || motionMode !== 'full') return;
+    confetti({ particleCount, spread, origin: { y }, disableForReducedMotion: true });
+  };
 
   const [todayStr, setTodayStr] = useState(() => formatISODate(new Date()));
   const [selectedDate, setSelectedDate] = useState<string>(todayStr);
@@ -488,10 +497,10 @@ export const TasksPage: React.FC = () => {
     const hasCoding = titles.some((title) => title.includes('coding')) && titles.some((title) => title.includes('development'));
     const hasStudy = titles.some((title) => title.includes('study')) && titles.some((title) => title.includes('english'));
     return [
-      ...(hasCoding ? ['CODING / DEVELOPMENT'] : []),
-      ...(hasStudy ? ['Study / ENGLISH'] : []),
+      ...(hasCoding ? [tTaskPage.codingDevelopmentSuggestion] : []),
+      ...(hasStudy ? [tTaskPage.studyEnglishSuggestion] : []),
     ];
-  }, [tasks]);
+  }, [tasks, tTaskPage.codingDevelopmentSuggestion, tTaskPage.studyEnglishSuggestion]);
 
   // Streak calculations per task
   const calculateStreak = (task: TaskItem): number => {
@@ -905,11 +914,7 @@ export const TasksPage: React.FC = () => {
     toggleSalatPrayer(selectedDate, prayer);
     const wasCompleted = selectedDatePrayers.includes(prayer);
     if (!wasCompleted && selectedDatePrayers.length === 4) {
-      confetti({
-        particleCount: 80,
-        spread: 70,
-        origin: { y: 0.6 },
-      });
+      celebrate(80, 70, 0.6);
     }
   };
 
@@ -964,11 +969,7 @@ export const TasksPage: React.FC = () => {
     setGymMuscles('');
     setGymExercises('');
     setGymTomorrowPlan('');
-    confetti({
-      particleCount: 50,
-      spread: 60,
-      origin: { y: 0.7 },
-    });
+    celebrate(50, 60, 0.7);
   };
 
   const handleToggle = (taskId: string) => {
@@ -978,11 +979,7 @@ export const TasksPage: React.FC = () => {
 
     // If completing the task and reaching 100% for today, burst confetti
     if (!wasCompleted && dailyStats.completed + 1 === dailyStats.total && dailyStats.total > 0) {
-      confetti({
-        particleCount: 60,
-        spread: 60,
-        origin: { y: 0.8 },
-      });
+      celebrate(60, 60, 0.8);
     }
   };
 
@@ -1036,11 +1033,7 @@ export const TasksPage: React.FC = () => {
     if (allDone && !isCompletedToday) {
       nextDates = [...completedDates, selectedDate];
       playHapticFeedback('success');
-      confetti({
-        particleCount: 70,
-        spread: 60,
-        origin: { y: 0.6 },
-      });
+      celebrate(70, 60, 0.6);
       showToast({
         message: tTaskPage.completed,
       });
@@ -1146,11 +1139,7 @@ export const TasksPage: React.FC = () => {
     const sub = (track?.subtasks || []).find((s) => s.id === subId);
     const wasCompleted = (sub?.completedDates || []).includes(selectedDate);
     if (!wasCompleted) {
-      confetti({
-        particleCount: 40,
-        spread: 50,
-        origin: { y: 0.7 },
-      });
+      celebrate(40, 50, 0.7);
     }
   };
 
@@ -1242,7 +1231,7 @@ export const TasksPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto space-y-6 animate-page pb-20 select-text">
+      <div className="max-w-[1200px] mx-auto space-y-5 animate-page pb-20 select-text">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -1270,28 +1259,34 @@ export const TasksPage: React.FC = () => {
         </div>
       </div>
 
+      {duplicateSuggestions.length > 0 && (
+        <p className="rounded-control border border-border-subtle bg-surface-raised px-3.5 py-3 text-xs leading-relaxed text-muted">
+          {tTaskPage.relatedTasksHint.replace('{tasks}', duplicateSuggestions.join(' · '))}
+        </p>
+      )}
+
       {/* Unified Gamified Command HUD (2-Column Bento Grid) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] gap-3">
         {/* Left Column: Progress %, XP & Streak Strip */}
-        <div className="zawa-bento zawa-spotlight p-5 flex flex-col justify-between space-y-4">
+        <div className="rounded-card border border-border-subtle bg-surface p-4 flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-xs font-semibold text-muted">
               <Sparkles className="w-4 h-4 text-accent" />
               <span>{tTask.todayProgress}</span>
               <span>•</span>
-              <span className="font-mono text-accent-contrast tabular-nums">
+              <span className="font-medium text-muted tabular-nums">
                 {getScheduleDateLabel(selectedDate)}
               </span>
             </div>
 
-            <span className="text-xs font-bold text-accent bg-accent/10 border border-accent/20 px-2.5 py-1 rounded-full tabular-nums">
+            <span className="text-xs font-semibold text-content bg-surface-raised border border-border-subtle px-2.5 py-1 rounded-full tabular-nums">
               {dailyStats.completed} / {dailyStats.total} {tTask.completedDays}
             </span>
           </div>
 
           <div className="space-y-2">
             <div className="flex items-baseline justify-between">
-              <span className="text-4xl sm:text-5xl font-black tracking-tight text-accent-contrast tabular-nums">
+              <span className="text-4xl sm:text-5xl font-bold tracking-tight text-content tabular-nums">
                 {dailyStats.percentage}%
               </span>
               <span className="text-xs text-muted">
@@ -1301,20 +1296,19 @@ export const TasksPage: React.FC = () => {
               </span>
             </div>
 
-            {/* Glowing progress track */}
-            <div className="w-full h-2.5 bg-surface/[0.06] rounded-full overflow-hidden p-0.5">
+            <div className="w-full h-2.5 bg-surface-raised rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-accent to-accent rounded-full transition-all duration-500 ease-out shadow-[0_0_12px_rgba(99,102,241,0.5)]"
+                className="h-full bg-accent rounded-full transition-all duration-300 ease-out"
                 style={{ width: `${dailyStats.percentage}%` }}
               />
             </div>
           </div>
 
           {/* Gamified metric chips */}
-          <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-border/[0.06] text-xs">
-            <span className="inline-flex items-center gap-1 font-bold text-text bg-surface/[0.04] border border-border/[0.08] px-2.5 py-1 rounded-full">
+          <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-border-subtle text-xs">
+            <span className="inline-flex items-center gap-1 font-semibold text-content bg-surface-raised border border-border-subtle px-2.5 py-1 rounded-full">
               <Trophy className="w-3.5 h-3.5 text-warning" />
-              <span>Lv {gamificationStats.level} · {gamificationStats.totalXP} {tTask.xpPoints}</span>
+              <span>{tTaskPage.levelLabel} {gamificationStats.level} · {gamificationStats.totalXP} {tTask.xpPoints}</span>
             </span>
 
             <span className="inline-flex items-center gap-1 text-muted bg-surface/[0.03] px-2 py-1 rounded-full">
@@ -1336,7 +1330,7 @@ export const TasksPage: React.FC = () => {
         </div>
 
         {/* Right Column: 7-Day Week Selector with Glowing Indigo Active Day Pill */}
-        <div className="zawa-bento zawa-spotlight sticky top-2 z-30 p-4 flex flex-col justify-between bg-surface/95 backdrop-blur-2xl shadow-xl">
+        <div className="rounded-card border border-border-subtle bg-surface p-4 flex flex-col justify-between">
           <div className="flex items-center justify-between pb-2 border-b border-border/[0.06]">
             <span className="text-xs font-semibold uppercase tracking-wider text-muted">
               {tTaskPage.weekSchedule}
@@ -1399,8 +1393,8 @@ export const TasksPage: React.FC = () => {
                   aria-label={`${item.dayName} ${item.dayNum}: ${item.completedCount} / ${item.taskCount}`}
                   className={`flex flex-col items-center justify-center py-2.5 px-1 rounded-2xl transition-all duration-200 ${
                     isSelected
-                      ? 'bg-gradient-to-b from-accent to-accent text-accent-contrast font-bold shadow-[0_0_20px_rgba(99,102,241,0.5)] scale-105'
-                      : 'bg-surface/[0.03] hover:bg-surface/[0.08] text-muted hover:text-accent-contrast border border-border/[0.04]'
+                      ? 'bg-accent/10 text-accent font-bold border border-accent/30'
+                      : 'bg-canvas hover:bg-surface-raised text-muted hover:text-content border border-border-subtle'
                   }`}
                 >
                   <span className="text-[10px] uppercase font-bold tracking-wider opacity-80">
@@ -1636,7 +1630,7 @@ export const TasksPage: React.FC = () => {
                             handleManualTaskToggle(task);
                           }}
                           className="relative w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-transform active:scale-90 mt-0.5"
-                          title={isCompleted ? 'Mark incomplete' : 'Mark complete'}
+                          title={isCompleted ? tTaskPage.markIncomplete : tTaskPage.markComplete}
                         >
                           {hasSubtasks ? (
                             <div className="relative w-10 h-10 flex items-center justify-center">
@@ -1654,7 +1648,7 @@ export const TasksPage: React.FC = () => {
                                   cy="18"
                                   r="14"
                                   fill="none"
-                                  stroke={isCompleted ? 'bg-positive' : 'bg-accent'}
+                                stroke={isCompleted ? 'var(--positive)' : 'var(--accent)'}
                                   strokeWidth="3"
                                   strokeDasharray="88"
                                   strokeDashoffset={88 - (88 * percent) / 100}
@@ -1747,7 +1741,7 @@ export const TasksPage: React.FC = () => {
                         <button
                           type="button"
                           className="p-1.5 rounded-lg text-muted hover:text-accent-contrast transition-colors"
-                          aria-label="Toggle drawer"
+                          aria-label={isExpanded ? tTaskPage.collapseSubtasks : tTaskPage.expandSubtasks}
                         >
                           {isExpanded ? (
                             <ChevronUp className="w-4 h-4 text-accent" />
@@ -1758,6 +1752,7 @@ export const TasksPage: React.FC = () => {
 
                         <TaskActionDropdown
                           task={task}
+                          actionsLabel={tTaskPage.taskActions}
                           alarmLabel={tTask.googleCalendarAlarmBtn}
                           editLabel={tTask.editTask}
                           deleteLabel={tCommon.delete}
@@ -1848,7 +1843,7 @@ export const TasksPage: React.FC = () => {
                                     type="button"
                                     onClick={() => handleDeleteInlineSubTask(task.id, sub.id)}
                                     className="p-1 text-muted hover:text-negative transition-colors ml-2"
-                                    title="Delete sub-task"
+                                    title={tCommon.delete}
                                   >
                                     <Trash2 className="w-3.5 h-3.5" />
                                   </button>
@@ -2348,7 +2343,7 @@ export const TasksPage: React.FC = () => {
               {isCalendarSaving ? (
                 <span className="flex items-center gap-2">
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Google Calendar...</span>
+                  <span>{tTaskPage.calendarSaving}</span>
                 </span>
               ) : editingTask ? (
                 tTask.save
@@ -2567,7 +2562,7 @@ export const TasksPage: React.FC = () => {
                                 })
                               }
                               className="p-1 rounded-control text-muted hover:text-text dark:hover:text-text transition-colors"
-                              title="Modifier"
+                              title={tTask.editTask}
                             >
                               <Edit2 className="w-3.5 h-3.5" />
                             </button>
@@ -2884,7 +2879,7 @@ export const TasksPage: React.FC = () => {
                             type="button"
                             onClick={() => setEditingStudyModule(mod)}
                             className="p-1 rounded-control text-muted hover:text-text dark:hover:text-text transition-colors"
-                            title="Modifier"
+                              title={tTask.editTask}
                           >
                             <Edit2 className="w-3.5 h-3.5" />
                           </button>
@@ -2920,14 +2915,14 @@ export const TasksPage: React.FC = () => {
         <form onSubmit={handleCreateProgramTrack} className="space-y-4 pt-2">
           <div>
             <label className="block text-xs font-bold text-content mb-1.5">
-              {tTask.programName || 'Nom du programme'} *
+              {tTask.programName} *
             </label>
             <input
               type="text"
               required
               value={newTrackTitle}
               onChange={(e) => setNewTrackTitle(e.target.value)}
-              placeholder="ex : Deutsch (Allemand), Marketing, UI/UX..."
+              placeholder={tTaskPage.programPlaceholder}
               className="w-full px-3.5 py-2.5 rounded-control bg-surface-3 dark:bg-surface border border-border dark:border-border text-content font-medium focus:outline-none focus:ring-2 focus:ring-ring text-sm"
             />
           </div>
@@ -3068,7 +3063,7 @@ export const TasksPage: React.FC = () => {
         isOpen={Boolean(editingStudyModule)}
         onClose={() => setEditingStudyModule(null)}
         title={tTaskPage.moduleDetails}
-        subtitle="Économie & Gestion (S3)"
+        subtitle={tTaskPage.modulesEconomicsS3}
       >
         {editingStudyModule && (
           <form

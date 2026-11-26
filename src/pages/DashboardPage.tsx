@@ -2,7 +2,6 @@ import React, { useMemo, useState } from 'react';
 import { useAppStore } from '../store/useAppStore';
 import { Plus, ChevronDown, ListChecks, ShieldCheck, Tags, ReceiptText } from 'lucide-react';
 import { DashboardHero } from '../components/dashboard/DashboardHero';
-import { DashboardFocusNow } from '../components/dashboard/DashboardFocusNow';
 import { DashboardTodayCard } from '../components/dashboard/DashboardTodayCard';
 import { DashboardPinnedNote } from '../components/dashboard/DashboardPinnedNote';
 import { DashboardSpendingCard } from '../components/dashboard/DashboardSpendingCard';
@@ -90,9 +89,8 @@ export const DashboardPage: React.FC = () => {
             />
           </div>
 
-          {/* Side Column (5 cols): Focus now, Today, Pinned note, Bills, Insights */}
+          {/* Side Column (5 cols): Today, pinned note, bills, insights */}
           <div className="min-[1100px]:col-span-5 flex flex-col gap-5 min-w-0">
-            <DashboardFocusNow />
             <DashboardTodayCard />
             <DashboardPinnedNote />
             <DashboardBillsCard

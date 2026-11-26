@@ -20,7 +20,7 @@ One signature moment per screen. The product specification and eligibility rules
 | Goals | Goal reached moment | `src/components/goals/GoalReachedMoment.tsx` | 320ms |
 | Debts | Balance roll | `src/motion/BalanceRoll.tsx` | 320ms |
 | Subscriptions / Recurring | Staggered row entrance | `src/motion/Stagger.tsx` | 200ms |
-| Today | Staggered task entrance | `src/motion/Stagger.tsx` | 200ms |
+| Today | Task list entrance and completion feedback | `src/pages/TasksPage.tsx` | 200ms |
 | Notes | Shared-card detail transition | `src/motion/SharedCard.tsx` | 320ms |
 | Analytics / Reports | Chart draw-in | `src/motion/ChartDraw.tsx` | 600ms |
 | Settings | Animation preference selection | `src/pages/SettingsPage.tsx` | 200ms |
