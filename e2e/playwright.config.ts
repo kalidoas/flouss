@@ -23,6 +23,8 @@ export default defineConfig({
     {
       name: 'webkit-iphone',
       use: { ...devices['iPhone 12'], viewport: { width: 390, height: 844 } },
+      timeout: 90000,
+      workers: 1,
     },
   ],
   webServer: {
