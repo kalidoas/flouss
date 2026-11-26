@@ -1,5 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const previewPort = process.env.PLAYWRIGHT_PREVIEW_PORT || '4173';
+
 export default defineConfig({
   testDir: '.',
   fullyParallel: true,
@@ -8,7 +10,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: [['html', { outputFolder: 'qa-report' }]],
   use: {
-    baseURL: 'http://localhost:5174',
+    baseURL: `http://127.0.0.1:${previewPort}`,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     viewport: { width: 1280, height: 800 },
@@ -24,9 +26,9 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm run preview -- --host 127.0.0.1 --port 5174 --strictPort',
-    url: 'http://localhost:5174',
-    reuseExistingServer: true,
+    command: `npm run preview -- --host 127.0.0.1 --port ${previewPort} --strictPort`,
+    url: `http://127.0.0.1:${previewPort}`,
+    reuseExistingServer: false,
     timeout: 180000,
   },
   outputDir: 'qa',

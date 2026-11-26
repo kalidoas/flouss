@@ -39,20 +39,21 @@ export const QuickAddSheet: React.FC<QuickAddSheetProps> = ({ isOpen, onClose, i
   }, [isOpen, initialType]);
 
   const options = useMemo(() => {
-    const counts = new Map<string, number>();
-    transactions.forEach((tx) => {
-      if (type === 'expense' && tx.type === 'expense' && tx.categoryId) {
-        counts.set(tx.categoryId, (counts.get(tx.categoryId) || 0) + 1);
-      }
-      if (type === 'income' && tx.type === 'income' && tx.sourceId) {
-        counts.set(tx.sourceId, (counts.get(tx.sourceId) || 0) + 1);
-      }
-    });
-
     const sourceOptions = type === 'income'
       ? incomeSources
       : categories.filter((category) => !category.isArchived && !category.isGoal);
-    return [...sourceOptions].sort((a, b) => (counts.get(b.id) || 0) - (counts.get(a.id) || 0));
+    const recentIds = [...transactions]
+      .filter((tx) => tx.type === type)
+      .sort((a, b) => Date.parse(b.date) - Date.parse(a.date))
+      .map((tx) => type === 'expense' ? tx.categoryId : tx.sourceId)
+      .filter((id): id is string => Boolean(id));
+    const recentRank = new Map<string, number>();
+    recentIds.forEach((id, index) => {
+      if (!recentRank.has(id)) recentRank.set(id, index);
+    });
+    return [...sourceOptions]
+      .sort((a, b) => (recentRank.get(a.id) ?? Number.MAX_SAFE_INTEGER) - (recentRank.get(b.id) ?? Number.MAX_SAFE_INTEGER))
+      .slice(0, 5);
   }, [categories, incomeSources, transactions, type]);
 
   useEffect(() => {
@@ -74,7 +75,7 @@ export const QuickAddSheet: React.FC<QuickAddSheetProps> = ({ isOpen, onClose, i
     }
 
     const now = new Date().toISOString();
-    const txDateTime = `${date}T${time || '12:00'}:00.000Z`;
+    const txDateTime = new Date(`${date}T${time || '12:00'}:00`).toISOString();
 
     addTransaction({
       id: `tx_${Date.now()}`,

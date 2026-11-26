@@ -691,15 +691,6 @@ body,
   .flouss-balance-hero.is-visible .flouss-balance-orbit-front { animation: floussOrbitTurn 18s linear infinite; }
 }
 
-@media (max-width: 767px) {
-  .flouss-balance-hero { transform: none !important; transition: none; }
-  .flouss-balance-scene { width: 45%; opacity: .74; }
-  .flouss-balance-orbit { width: 142px; inset-inline-end: 35%; }
-  .flouss-balance-coin { width: 104px; inset-inline-end: 35%; }
-  .flouss-balance-coin-mark { font-size: 25px; }
-  .flouss-balance-scene-shadow { inset-inline-end: 35%; width: 108px; }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .flouss-auth-card, .flouss-auth-coin, .flouss-balance-coin, .flouss-balance-orbit-front { animation: none !important; }
   .flouss-balance-hero { transform: none !important; transition: none; }
@@ -857,6 +848,16 @@ html[data-animations='off'] *::after {
 @keyframes flouss-coin-drift {
   0%, 100% { transform: translateY(0) rotateY(-12deg) rotateX(5deg); }
   50% { transform: translateY(-8px) rotateY(12deg) rotateX(-3deg); }
+}
+/* Keep the decorative coin inside the label area on narrow screens. These
+   overrides follow the base coin styles so the mobile sizes win the cascade. */
+@media (max-width: 767px) {
+  .flouss-balance-hero { transform: none !important; transition: none; }
+  .flouss-balance-scene { top: 2%; width: clamp(68px, 22vw, 88px); opacity: .42; }
+  .flouss-balance-orbit { width: clamp(76px, 22vw, 88px); inset-inline-end: 0; }
+  .flouss-balance-coin { inset: 8%; }
+  .flouss-balance-coin-mark { font-size: clamp(17px, 5vw, 21px); }
+  .flouss-balance-scene-shadow { inset-inline-end: 5%; width: 90%; }
 }
 @media (prefers-reduced-motion: reduce), (pointer: coarse) {
   .flouss-balance-coin { animation: none; }

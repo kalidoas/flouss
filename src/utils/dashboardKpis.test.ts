@@ -119,6 +119,7 @@ describe('Dashboard KPIs - selectDailyBudgetKpi', () => {
     expect(result.daysLeft).toBe(16);
     expect(result.upcomingBillsUntilMonthEnd).toBe(500);
     expect(result.dailyBudget).toBe(100);
+    expect(result.remainingAfterBills).toBe(1600);
   });
 
   it('returns dailyBudget: null when upcoming bills exceed available balance', () => {
@@ -137,6 +138,7 @@ describe('Dashboard KPIs - selectDailyBudgetKpi', () => {
     const result = selectDailyBudgetKpi(1000, subs, new Date(2026, 10, 15));
     expect(result.dailyBudget).toBeNull();
     expect(result.upcomingBillsUntilMonthEnd).toBe(3000);
+    expect(result.remainingAfterBills).toBe(0);
   });
 });
 

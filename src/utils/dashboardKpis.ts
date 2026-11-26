@@ -54,6 +54,8 @@ export function selectMonthlyFinancialKpis(
 export interface DailyBudgetKpi {
   /** Daily safe-to-spend budget: null if balance <= 0 or remaining funds <= 0 */
   dailyBudget: number | null;
+  /** Balance left after bills due before month end. Never negative. */
+  remainingAfterBills: number;
   daysLeft: number;
   upcomingBillsUntilMonthEnd: number;
 }
@@ -77,7 +79,7 @@ export function selectDailyBudgetKpi(
   const daysLeft = Math.max(1, daysInMonth - now.getDate() + 1);
 
   if (balance <= 0) {
-    return { dailyBudget: null, daysLeft, upcomingBillsUntilMonthEnd: 0 };
+    return { dailyBudget: null, remainingAfterBills: 0, daysLeft, upcomingBillsUntilMonthEnd: 0 };
   }
 
   // Calculate upcoming subscriptions due between today and month end
@@ -99,6 +101,7 @@ export function selectDailyBudgetKpi(
   if (remainingFunds <= 0) {
     return {
       dailyBudget: null,
+      remainingAfterBills: 0,
       daysLeft,
       upcomingBillsUntilMonthEnd: Math.round(upcomingBillsUntilMonthEnd * 100) / 100,
     };
@@ -107,6 +110,7 @@ export function selectDailyBudgetKpi(
   const dailyBudget = Math.round((remainingFunds / daysLeft) * 100) / 100;
   return {
     dailyBudget,
+    remainingAfterBills: Math.round(remainingFunds * 100) / 100,
     daysLeft,
     upcomingBillsUntilMonthEnd: Math.round(upcomingBillsUntilMonthEnd * 100) / 100,
   };

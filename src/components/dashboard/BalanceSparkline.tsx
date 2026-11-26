@@ -78,8 +78,6 @@ export const BalanceSparkline: React.FC<Props> = ({
   const summary = points.length
     ? `${chartLabel}: ${formatDate(points[0].date, language)} – ${formatDate(points[points.length - 1].date, language)}`
     : chartLabel;
-  const xRatio = dimensions.width > 0 ? (coordinate?.x || 0) / dimensions.width : 0.5;
-  const clampedPercent = Math.max(12, Math.min(88, xRatio * 100));
 
   const emptyState = points.length === 0 || points.every((p) => p.balance === 0);
 
@@ -97,7 +95,7 @@ export const BalanceSparkline: React.FC<Props> = ({
           <div
             className="pointer-events-none absolute top-0 z-10 rounded-xl border border-border-subtle bg-surface dark:bg-zinc-900/95 dark:border-white/10 px-3 py-1.5 text-xs shadow-sm backdrop-blur-md text-content dark:text-white transition-[left] duration-75"
             style={{
-              left: `${clampedPercent}%`,
+              left: '50%',
               transform: 'translateX(-50%)',
             }}
           >

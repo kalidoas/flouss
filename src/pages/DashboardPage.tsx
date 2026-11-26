@@ -13,7 +13,6 @@ import { AdjustBalanceModal } from '../components/dashboard/AdjustBalanceModal';
 import { selectDashboardFinancials } from '../utils/calculations';
 import { getCurrentMonthStr } from '../utils/formatters';
 import { useDashboardHeader } from '../components/layout/DashboardHeaderContext';
-import { DashboardKpis } from '../components/dashboard/DashboardKpis';
 import { RunwayGauge } from '../components/dashboard/RunwayGauge';
 import { translations } from '../i18n/translations';
 
@@ -84,14 +83,6 @@ export const DashboardPage: React.FC = () => {
           {/* Main Column (7 cols): Balance hero, KPIs, Recent */}
           <div className="min-[1100px]:col-span-7 flex flex-col gap-5 min-w-0">
             <DashboardHero selectedMonth={safeMonth} />
-            <DashboardKpis
-              initialBalance={initialBalance}
-              transactions={txList}
-              categories={categories}
-              subscriptions={subscriptions}
-              language={language}
-              selectedMonth={safeMonth}
-            />
             <RunwayGauge
               initialBalance={initialBalance}
               transactions={txList}

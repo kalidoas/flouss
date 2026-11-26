@@ -5,6 +5,7 @@ import { AdjustBalanceModal } from './AdjustBalanceModal';
 import { AddContributionModal } from '../transactions/AddContributionModal';
 import { BalanceSparkline, buildBalanceSeries } from './BalanceSparkline';
 import { selectDashboardFinancials } from '../../utils/calculations';
+import { selectDailyBudgetKpi } from '../../utils/dashboardKpis';
 import { getCurrentMonthStr, isTransactionInMonth } from '../../utils/formatters';
 import { getNetPresentation } from '../../utils/dashboard';
 import { translations } from '../../i18n/translations';
@@ -18,7 +19,7 @@ interface Props {
 }
 
 export const DashboardHero: React.FC<Props> = ({ selectedMonth, emptyState = false }) => {
-  const { initialBalance = null, transactions = [], language } = useAppStore();
+  const { initialBalance = null, transactions = [], subscriptions = [], language } = useAppStore();
   const txList = transactions || [];
   const [adjustOpen, setAdjustOpen] = useState(false);
   const [contributionOpen, setContributionOpen] = useState(false);
@@ -34,6 +35,10 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth, emptyState = fal
   const summary = useMemo(
     () => selectDashboardFinancials(initialBalance, txList, safeMonth),
     [initialBalance, txList, safeMonth]
+  );
+  const dailyBudget = useMemo(
+    () => selectDailyBudgetKpi(summary.balance, subscriptions),
+    [summary.balance, subscriptions]
   );
   const series = useMemo(
     () => buildBalanceSeries(initialBalance, txList, safeMonth, currentMonth, today),
@@ -123,7 +128,7 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth, emptyState = fal
           <div className="flex items-baseline flex-wrap gap-x-2 gap-y-1 min-w-0 mt-4 sm:mt-5">
             <Money
               amount={summary.balance}
-              className="text-[44px] sm:text-[52px] lg:text-[58px] font-bold leading-none tracking-[-0.055em] tabular-nums text-content dark:text-content min-w-0"
+              className="max-w-full text-[clamp(1.6rem,9vw,3.625rem)] sm:text-[52px] lg:text-[58px] font-bold leading-none tracking-[-0.055em] tabular-nums text-content dark:text-content min-w-0"
             />
           </div>
 
@@ -140,6 +145,16 @@ export const DashboardHero: React.FC<Props> = ({ selectedMonth, emptyState = fal
               <span>{delta > 0 ? '+' : ''}{deltaPercent}% {t.deltaThisMonth}</span>
             </span>
           </div>
+
+          {!emptyState && dailyBudget.dailyBudget !== null && (
+            <p className="flex min-w-0 flex-wrap items-baseline gap-x-1 text-xs font-medium text-muted">
+              <Money amount={dailyBudget.remainingAfterBills} className="font-semibold text-content" />
+              <span>{t.remainingAfterBills}</span>
+              <span aria-hidden="true">· ~</span>
+              <Money amount={dailyBudget.dailyBudget} className="font-semibold text-content" />
+              <span>{t.perDay}</span>
+            </p>
+          )}
         </div>
       </div>
 
