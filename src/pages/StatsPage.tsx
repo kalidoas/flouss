@@ -55,7 +55,10 @@ import {
   Sparkles,
   Target,
   Zap,
+  FileSpreadsheet,
+  Printer,
 } from 'lucide-react';
+import { buildMonthlyCsv, buildMonthlyReportHtml } from '../utils/monthlyReport';
 
 const TASK_CATEGORY_META: Record<
   string,
@@ -281,6 +284,32 @@ export const StatsPage: React.FC = () => {
     return '12:00';
   };
 
+  const reportData = {
+    month: selectedMonth,
+    monthLabel: monthOptions.find((option) => option.value === selectedMonth)?.label || selectedMonth,
+    income: currentSummary.income,
+    expenses: currentSummary.expenses,
+    net: currentSummary.net,
+    transactions: currentMonthTx,
+    language,
+  };
+  const exportCsv = () => {
+    const blob = new Blob([buildMonthlyCsv(reportData)], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `flouss-${selectedMonth}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+  const savePdf = () => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+    printWindow.document.open();
+    printWindow.document.write(buildMonthlyReportHtml(reportData));
+    printWindow.document.close();
+  };
+
   return (
     <div className="max-w-[1280px] mx-auto space-y-6 animate-page select-text pb-12">
       {/* ── Page Header & Period Selector ── */}
@@ -294,12 +323,20 @@ export const StatsPage: React.FC = () => {
           </p>
         </div>
 
-        <GlassMonthPicker
-          value={selectedMonth}
-          onChange={setSelectedMonth}
-          options={monthOptions}
-          ariaLabel={tCommon.chooseMonth}
-        />
+        <div className="flex flex-wrap items-center gap-2">
+          <button type="button" onClick={exportCsv} className="inline-flex min-h-11 items-center gap-2 rounded-control border border-border-subtle bg-surface px-3 text-sm font-medium text-content hover:bg-surface-raised focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring">
+            <FileSpreadsheet className="h-4 w-4" />{t.exportCsv}
+          </button>
+          <button type="button" onClick={savePdf} className="inline-flex min-h-11 items-center gap-2 rounded-control border border-border-subtle bg-surface px-3 text-sm font-medium text-content hover:bg-surface-raised focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring">
+            <Printer className="h-4 w-4" />{t.savePdf}
+          </button>
+          <GlassMonthPicker
+            value={selectedMonth}
+            onChange={setSelectedMonth}
+            options={monthOptions}
+            ariaLabel={tCommon.chooseMonth}
+          />
+        </div>
       </div>
 
       {/* ── SECTION A: TOP 6 EXECUTIVE KPI SUMMARY CARDS (3x2 RESPONSIVE GRID) ── */}
