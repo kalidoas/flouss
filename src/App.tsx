@@ -23,6 +23,7 @@ import { DebtsPage } from './pages/DebtsPage';
 import { SubscriptionsPage } from './pages/SubscriptionsPage';
 import { NotesPage } from './pages/NotesPage';
 import { ExpensesPage } from './pages/ExpensesPage';
+import { AccountsPage } from './pages/AccountsPage';
 import { NotificationService } from './services/notificationService';
 import { calculateAvailableBalance } from './utils/calculations';
 
@@ -199,6 +200,7 @@ export const App: React.FC = () => {
       case 'history':       return <HistoryPage />;
       case 'stats':         return <Analytics />;
       case 'settings':      return <SettingsPage />;
+      case 'accounts':      return <AccountsPage />;
       default:              return <DashboardPage />;
     }
   };

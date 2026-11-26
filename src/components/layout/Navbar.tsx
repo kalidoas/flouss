@@ -9,7 +9,7 @@ import { BottomSheet } from '../common/BottomSheet';
 import { LogoutConfirmModal } from '../common/LogoutConfirmModal';
 import {
   LayoutDashboard, TrendingDown, Plus, CheckSquare, BarChart3, Layers,
-  TrendingUp, History, Settings, FileText, HandCoins, CreditCard, LogOut, User, Moon, Sun,
+  TrendingUp, History, Settings, FileText, HandCoins, CreditCard, LogOut, User, Moon, Sun, Wallet,
 } from 'lucide-react';
 import { DynamicIsland } from './DynamicIsland';
 import { Language } from '../../types';
@@ -43,6 +43,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onQuickAdd }) => {
   ];
 
   const moreScreens: { id: ScreenId; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+    { id: 'accounts', label: t.accounts, icon: Wallet },
     { id: 'stats', label: t.stats, icon: BarChart3 },
     { id: 'categories', label: t.categories, icon: Layers },
     { id: 'income', label: t.income, icon: TrendingUp },

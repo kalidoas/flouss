@@ -40,7 +40,7 @@ vi.mock('@firebase/firestore', () => ({
   onSnapshot: vi.fn(() => vi.fn()),
 }));
 
-import { applyRemoteAccount, makeInitialAccount, useAppStore } from './useAppStore';
+import { applyRemoteAccount, extractAccountState, makeInitialAccount, useAppStore } from './useAppStore';
 import { getDoc, setDoc } from '@firebase/firestore';
 import { Transaction } from '../types';
 
@@ -210,6 +210,57 @@ describe('useAppStore - Cross-Device Remote Account Hydration', () => {
     expect(sub.payments).toEqual([
       { cycleDate: '2026-10-05', paidOn: '2026-10-05', amount: 240 },
     ]);
+  });
+});
+
+describe('useAppStore - Financial accounts and transfers', () => {
+  it('allocates an added account from primary funds without inflating the total', () => {
+    const id = 'financial_allocation_user';
+    const account = {
+      ...makeInitialAccount(id, 'Test'),
+      initialBalance: 500,
+      balance: 500,
+      isOnboarded: true,
+      transactions: [],
+    };
+    useAppStore.setState({ accounts: [account], activeAccountId: id, ...extractAccountState(account) });
+
+    expect(useAppStore.getState().addFinancialAccount({
+      id: 'bank', name: 'Bank', type: 'bank', openingBalance: 200, createdAt: '2026-11-01',
+    })).toBe(true);
+    expect(useAppStore.getState().balance).toBe(500);
+    expect(useAppStore.getState().transactions[0]).toMatchObject({
+      type: 'transfer', amount: 200, fromAccountId: `financial_${id}_primary`, toAccountId: 'bank',
+    });
+  });
+
+  it('records an internal transfer without changing total balance and protects linked accounts', () => {
+    const id = 'financial_test_user';
+    const primary = { id: 'cash', name: '', type: 'cash' as const, openingBalance: 500, isPrimary: true, createdAt: '' };
+    const bank = { id: 'bank', name: 'Bank', type: 'bank' as const, openingBalance: 0, createdAt: '' };
+    const account = {
+      ...makeInitialAccount(id, 'Test'),
+      initialBalance: 500,
+      balance: 500,
+      isOnboarded: true,
+      financialAccounts: [primary, bank],
+      transactions: [],
+    };
+    useAppStore.setState({
+      accounts: [account],
+      activeAccountId: id,
+      ...extractAccountState(account),
+    });
+
+    expect(useAppStore.getState().transferBetweenFinancialAccounts({
+      fromAccountId: 'cash', toAccountId: 'bank', amount: 125,
+    })).toBe(true);
+    expect(useAppStore.getState().balance).toBe(500);
+    expect(useAppStore.getState().transactions[0].type).toBe('transfer');
+    expect(useAppStore.getState().deleteFinancialAccount('bank')).toBe(false);
+    expect(useAppStore.getState().transferBetweenFinancialAccounts({
+      fromAccountId: 'cash', toAccountId: 'bank', amount: 999,
+    })).toBe(false);
   });
 });
 

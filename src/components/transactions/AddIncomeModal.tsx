@@ -27,11 +27,13 @@ export const AddIncomeModal: React.FC<AddIncomeModalProps> = ({
   defaultSourceId,
   transactionToEdit,
 }) => {
-  const { incomeSources, addTransaction, updateTransaction, language } = useAppStore();
+  const { incomeSources, financialAccounts, addTransaction, updateTransaction, language } = useAppStore();
   const t = translations[language].common;
+  const tAccounts = translations[language].accounts;
 
   const [amountStr, setAmountStr] = useState('');
   const [sourceId, setSourceId] = useState(defaultSourceId || '');
+  const [financialAccountId, setFinancialAccountId] = useState('');
   const [subSourceId, setSubSourceId] = useState<string | null>(null);
   const [date, setDate] = useState(getTodayDateStr());
   const [time, setTime] = useState(getCurrentTimeStr());
@@ -45,6 +47,7 @@ export const AddIncomeModal: React.FC<AddIncomeModalProps> = ({
       if (transactionToEdit) {
         setAmountStr(transactionToEdit.amount.toString());
         setSourceId(transactionToEdit.sourceId || defaultSourceId || '');
+        setFinancialAccountId(transactionToEdit.accountId || financialAccounts.find((account) => account.isPrimary)?.id || '');
         setSubSourceId(transactionToEdit.incomeSubSourceId || null);
         setDate(transactionToEdit.date.slice(0, 10));
         setTime(transactionToEdit.date.slice(11, 16) || getCurrentTimeStr());
@@ -53,6 +56,7 @@ export const AddIncomeModal: React.FC<AddIncomeModalProps> = ({
         setError('');
       } else {
         setSourceId(defaultSourceId || '');
+        setFinancialAccountId(financialAccounts.find((account) => account.isPrimary)?.id || '');
         setSubSourceId(null);
         setIsRecurring(false);
         setError('');
@@ -62,7 +66,7 @@ export const AddIncomeModal: React.FC<AddIncomeModalProps> = ({
         setTime(getCurrentTimeStr());
       }
     }
-  }, [isOpen, defaultSourceId, transactionToEdit]);
+  }, [isOpen, defaultSourceId, transactionToEdit, financialAccounts]);
 
   useEffect(() => {
     if (incomeSources.length && !sourceId) {
@@ -105,6 +109,7 @@ export const AddIncomeModal: React.FC<AddIncomeModalProps> = ({
         incomeSubSourceId: subSourceId || undefined,
         date: isoDate,
         note: note.trim() || undefined,
+        accountId: financialAccountId || undefined,
         isRecurring,
         recurringDay: isRecurring ? recurringDay : undefined,
       });
@@ -117,6 +122,7 @@ export const AddIncomeModal: React.FC<AddIncomeModalProps> = ({
         incomeSubSourceId: subSourceId || undefined,
         date: isoDate,
         note: note.trim() || undefined,
+        accountId: financialAccountId || undefined,
         isRecurring,
         recurringDay: isRecurring ? recurringDay : undefined,
         createdAt: new Date().toISOString(),
@@ -165,6 +171,15 @@ export const AddIncomeModal: React.FC<AddIncomeModalProps> = ({
             type="income"
           />
         </div>
+
+        {financialAccounts.length > 1 && (
+          <label className="block space-y-1">
+            <span className="text-[11px] font-medium uppercase tracking-wider text-muted">{tAccounts.accountType}</span>
+            <select value={financialAccountId} onChange={(event) => setFinancialAccountId(event.target.value)} className="min-h-11 w-full rounded-xl border border-border bg-surface-3 px-3 text-sm text-content">
+              {financialAccounts.map((account) => <option key={account.id} value={account.id}>{account.isPrimary ? tAccounts.cash : account.name}</option>)}
+            </select>
+          </label>
+        )}
 
         {/* Optional Subsource Chips */}
         {availableSubSources.length > 0 && (

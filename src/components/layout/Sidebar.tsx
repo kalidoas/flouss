@@ -18,6 +18,7 @@ import {
   HandCoins,
   CreditCard,
   FileText,
+  Wallet,
   ChevronDown,
   LogOut,
   PanelLeftClose,
@@ -58,6 +59,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
     { id: 'expenses', label: t.expenses, icon: TrendingDown },
     { id: 'history', label: t.history, icon: History },
     { id: 'stats', label: t.stats, icon: PieChart },
+    { id: 'accounts', label: t.accounts, icon: Wallet },
   ];
 
   const personalItems: { id: ScreenId; label: string; icon: React.ComponentType<{ className?: string }> }[] = [

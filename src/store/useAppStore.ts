@@ -6,6 +6,7 @@ import { money } from '../lib/currency';
 import { saveRollingBackup, savePreSyncSafetyBackup, purgeUserStorage, migrateLegacyBackups } from '../utils/backup';
 import {
   Category,
+  FinancialAccount,
   IncomeSource,
   Language,
   RecurringIncomeRule,
@@ -45,8 +46,8 @@ import {
   calculateGoalProgress,
 } from '../utils/calculations';
 import { playHapticFeedback, triggerHaptic } from '../utils/haptics';
-import { migrateSubscription, migrateSubscriptions } from '../utils/subscriptions';
-import { canConfirmRecurringIncome } from '../utils/subscriptions';
+import { canConfirmRecurringIncome, migrateSubscription, migrateSubscriptions } from '../utils/subscriptions';
+import { calculateFinancialAccountBalances, resolveFinancialAccounts } from '../utils/financialAccounts';
 import { hashPin, verifyPin, hashPinPBKDF2, verifyPinPBKDF2, encryptBackup, decryptBackup } from '../utils/crypto';
 import {
   loadUserProfile,
@@ -117,6 +118,7 @@ export interface AppState {
   tasks: TaskItem[];
   debts: DebtItem[];
   subscriptions: SubscriptionItem[];
+  financialAccounts: FinancialAccount[];
   notes: NoteItem[];
   salatLogs: Record<string, PrayerKey[]>;
   studyModules: StudyModuleItem[];
@@ -246,6 +248,11 @@ export interface AppState {
   deleteSubscription: (id: string) => void;
   toggleSubscriptionPaid: (id: string, month: string) => void;
 
+  addFinancialAccount: (account: FinancialAccount) => boolean;
+  updateFinancialAccount: (id: string, patch: Partial<FinancialAccount>) => void;
+  deleteFinancialAccount: (id: string) => boolean;
+  transferBetweenFinancialAccounts: (input: { fromAccountId: string; toAccountId: string; amount: number; note?: string }) => boolean;
+
   addNote: (note: NoteItem) => void;
   addNoteItem: (note: NoteItem) => void;
   updateNote: (id: string, patch: Partial<NoteItem>) => void;
@@ -312,6 +319,7 @@ export function makeInitialAccount(uid: string, name: string, email?: string): U
     focusLists: DEFAULT_FOCUS_LISTS,
     debts: [],
     subscriptions: [],
+    financialAccounts: [],
     notes: [],
     deletedCategoryIds: [],
     salatLogs: {},
@@ -398,6 +406,7 @@ export function extractAccountState(account: UserAccount | null) {
       focusLists: [],
       debts: [],
       subscriptions: [],
+      financialAccounts: [],
       notes: [],
       salatLogs: {},
       studyModules: [],
@@ -441,6 +450,7 @@ export function extractAccountState(account: UserAccount | null) {
       initialBalance: initialBal,
       balance: resolvedBalance,
       subscriptions: migratedSubs,
+      financialAccounts: resolveFinancialAccounts(account.id, account.initialBalance, account.financialAccounts),
     },
     isOnboarded: Boolean(account.isOnboarded),
     initialBalance: initialBal,
@@ -455,6 +465,7 @@ export function extractAccountState(account: UserAccount | null) {
     focusLists: account.focusLists ?? DEFAULT_FOCUS_LISTS,
     debts: account.debts ?? DEFAULT_DEBTS,
     subscriptions: migratedSubs,
+    financialAccounts: resolveFinancialAccounts(account.id, account.initialBalance, account.financialAccounts),
     notes: account.notes ?? DEFAULT_NOTES,
     salatLogs: account.salatLogs ?? {},
     studyModules: account.studyModules ?? DEFAULT_STUDY_MODULES,
@@ -2419,6 +2430,78 @@ export const useAppStore = create<AppState>()(
               };
             }),
           }));
+        },
+
+        // ── Financial accounts & internal transfers ────────────────
+        addFinancialAccount: (account: FinancialAccount): boolean => {
+          const s = get();
+          const existing = resolveFinancialAccounts(s.activeAccountId ?? 'default', s.initialBalance, s.financialAccounts);
+          const opening = Math.max(0, Number(account.openingBalance) || 0);
+          const primary = existing.find((item: FinancialAccount) => item.isPrimary);
+          if (existing.some((item: FinancialAccount) => item.id === account.id) || (opening > 0 && (!primary || opening > (calculateFinancialAccountBalances(existing, s.transactions)[primary.id] ?? 0)))) {
+            return false;
+          }
+          const newAccount = { ...account, openingBalance: 0, isPrimary: false };
+          const now = new Date().toISOString();
+          const transfer: Transaction | null = opening > 0 && primary ? {
+            id: `transfer_opening_${account.id}`,
+            type: 'transfer',
+            amount: opening,
+            fromAccountId: primary.id,
+            toAccountId: account.id,
+            date: now,
+            createdAt: now,
+          } : null;
+          updateActive((a) => {
+            const updatedTransactions = transfer ? [transfer, ...(a.transactions ?? [])] : (a.transactions ?? []);
+            return {
+              ...a,
+              financialAccounts: [...resolveFinancialAccounts(a.id, a.initialBalance, a.financialAccounts), newAccount],
+              transactions: updatedTransactions,
+              balance: calculateAvailableBalance(a.initialBalance ?? null, updatedTransactions),
+            };
+          }, true);
+          return true;
+        },
+        updateFinancialAccount: (id: string, patch: Partial<FinancialAccount>) => {
+          updateActive((a) => ({
+            ...a,
+            financialAccounts: resolveFinancialAccounts(a.id, a.initialBalance, a.financialAccounts).map((account) =>
+              account.id === id ? { ...account, ...patch, id: account.id, openingBalance: account.openingBalance } : account
+            ),
+          }), true);
+        },
+        deleteFinancialAccount: (id: string): boolean => {
+          const s = get();
+          const account = s.financialAccounts.find((item: FinancialAccount) => item.id === id);
+          if (!account || account.isPrimary || s.financialAccounts.length < 2) return false;
+          if (s.transactions.some((tx: Transaction) => tx.accountId === id || tx.fromAccountId === id || tx.toAccountId === id)) return false;
+          updateActive((a) => ({
+            ...a,
+            financialAccounts: (a.financialAccounts ?? []).filter((item) => item.id !== id),
+          }), true);
+          return true;
+        },
+        transferBetweenFinancialAccounts: ({ fromAccountId, toAccountId, amount, note }: { fromAccountId: string; toAccountId: string; amount: number; note?: string }): boolean => {
+          const s = get();
+          const normalizedAmount = Number(amount);
+          if (!Number.isFinite(normalizedAmount) || normalizedAmount <= 0 || fromAccountId === toAccountId) return false;
+          const accounts = resolveFinancialAccounts(s.activeAccountId ?? 'default', s.initialBalance, s.financialAccounts);
+          if (!accounts.some((account) => account.id === fromAccountId) || !accounts.some((account) => account.id === toAccountId)) return false;
+          const balances = calculateFinancialAccountBalances(accounts, s.transactions);
+          if ((balances[fromAccountId] ?? 0) < normalizedAmount) return false;
+          const now = new Date().toISOString();
+          s.addTransaction({
+            id: `transfer_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+            type: 'transfer',
+            amount: normalizedAmount,
+            fromAccountId,
+            toAccountId,
+            note: note?.trim() || undefined,
+            date: now,
+            createdAt: now,
+          });
+          return true;
         },
 
         // ── Notes ───────────────────────────────────────────────────

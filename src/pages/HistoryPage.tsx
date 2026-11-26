@@ -41,7 +41,7 @@ export const HistoryPage: React.FC = () => {
   };
 
   const [search, setSearch] = useState('');
-  const [typeFilter, setTypeFilter] = useState<'all' | 'expense' | 'income' | 'contribution' | 'adjustment'>('all');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'expense' | 'income' | 'contribution' | 'adjustment' | 'transfer'>('all');
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
@@ -276,6 +276,16 @@ export const HistoryPage: React.FC = () => {
             }`}
           >
             {t.filterAdjustments}
+          </button>
+          <button
+            onClick={() => setTypeFilter('transfer')}
+            className={`px-3 py-1 rounded-full text-xs font-medium transition-all shrink-0 ${
+              typeFilter === 'transfer'
+                ? 'bg-surface-2 text-content border border-border font-semibold'
+                : 'text-muted hover:text-content'
+            }`}
+          >
+            {t.filterTransfers}
           </button>
         </div>
       </div>

@@ -44,6 +44,19 @@ describe('calculateAvailableBalance', () => {
     expect(calculateAvailableBalance(1200, undefined as unknown as Transaction[])).toBe(1200);
   });
 
+  it('keeps internal account transfers neutral in the global balance', () => {
+    const transfer: Transaction = {
+      id: 'transfer_1',
+      type: 'transfer',
+      amount: 100,
+      fromAccountId: 'cash',
+      toAccountId: 'bank',
+      date: '2026-11-01',
+      createdAt: '2026-11-01',
+    };
+    expect(calculateAvailableBalance(500, [transfer])).toBe(500);
+  });
+
   it('handles string amounts and NaN amounts inside transactions without crashing', () => {
     const dirtyTransactions = [
       { id: '1', type: 'income', amount: '450.5' as unknown as number, date: '2025-05-01', createdAt: '2025-05-01' },

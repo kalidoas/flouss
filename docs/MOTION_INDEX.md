@@ -16,7 +16,7 @@ One signature moment per screen. The product specification and eligibility rules
 | History | Swipe row action | `src/motion/SwipeRow.tsx` | 200ms |
 | Categories | Shared-card detail transition | `src/motion/SharedCard.tsx` | 320ms |
 | Budgets | Pace indicator fill | `src/motion/Indicator.tsx` | 320ms |
-| Accounts | Shared-card detail transition | `src/motion/SharedCard.tsx` | 320ms |
+| Accounts | Staggered account-balance card entrance | `src/pages/AccountsPage.tsx` | 200ms |
 | Goals | Goal progress arc | `src/motion/GaugeArc.tsx` | 600ms |
 | Debts | Balance roll | `src/motion/BalanceRoll.tsx` | 320ms |
 | Subscriptions / Recurring | Staggered row entrance | `src/motion/Stagger.tsx` | 200ms |

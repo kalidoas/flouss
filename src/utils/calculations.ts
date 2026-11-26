@@ -24,8 +24,8 @@ export interface FinancialSummaryOptions {
 /**
  * The shared source for financial totals.
  * Income excludes goal withdrawals; expenses exclude savings contributions;
- * total in/out include those transfers, and net includes signed adjustments
- * unless explicitly excluded.
+ * total in/out include goal transfers but exclude internal account transfers;
+ * net includes signed adjustments unless explicitly excluded.
  */
 export function selectFinancialSummary(
   transactions: Transaction[] = [],
@@ -51,6 +51,9 @@ export function selectFinancialSummary(
           break;
         case 'adjustment':
           sum.adjustments += amountCents;
+          break;
+        case 'transfer':
+          // A transfer changes which account holds money, not the user's total.
           break;
       }
       return sum;

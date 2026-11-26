@@ -17,11 +17,13 @@ interface QuickAddSheetProps {
 }
 
 export const QuickAddSheet: React.FC<QuickAddSheetProps> = ({ isOpen, onClose, initialType = 'expense' }) => {
-  const { categories, incomeSources, transactions, addTransaction, language } = useAppStore();
+  const { categories, incomeSources, financialAccounts, transactions, addTransaction, language } = useAppStore();
   const t = translations[language].common;
+  const tAccounts = translations[language].accounts;
   const [type, setType] = useState<QuickAddType>(initialType);
   const [amount, setAmount] = useState('');
   const [selectionId, setSelectionId] = useState('');
+  const [financialAccountId, setFinancialAccountId] = useState('');
   const [note, setNote] = useState('');
   const [date, setDate] = useState(getTodayDateStr());
   const [time, setTime] = useState(getCurrentTimeStr());
@@ -32,11 +34,12 @@ export const QuickAddSheet: React.FC<QuickAddSheetProps> = ({ isOpen, onClose, i
     setType(initialType);
     setAmount('');
     setSelectionId('');
+    setFinancialAccountId(financialAccounts.find((account) => account.isPrimary)?.id || '');
     setNote('');
     setError('');
     setDate(getTodayDateStr());
     setTime(getCurrentTimeStr());
-  }, [isOpen, initialType]);
+  }, [isOpen, initialType, financialAccounts]);
 
   const options = useMemo(() => {
     const sourceOptions = type === 'income'
@@ -82,6 +85,7 @@ export const QuickAddSheet: React.FC<QuickAddSheetProps> = ({ isOpen, onClose, i
       type,
       amount: Math.round(value * 100) / 100,
       ...(type === 'expense' ? { categoryId: selectionId } : { sourceId: selectionId }),
+      accountId: financialAccountId || undefined,
       note: note.trim() || undefined,
       date: txDateTime,
       createdAt: now,
@@ -148,6 +152,15 @@ export const QuickAddSheet: React.FC<QuickAddSheetProps> = ({ isOpen, onClose, i
             type={type}
           />
         </div>
+
+        {financialAccounts.length > 1 && (
+          <label className="block space-y-1">
+            <span className="text-[11px] font-medium uppercase tracking-wider text-muted">{tAccounts.accountType}</span>
+            <select value={financialAccountId} onChange={(event) => setFinancialAccountId(event.target.value)} className="min-h-11 w-full rounded-xl border border-border bg-surface-3 px-3 text-sm text-content">
+              {financialAccounts.map((account) => <option key={account.id} value={account.id}>{account.isPrimary ? tAccounts.cash : account.name}</option>)}
+            </select>
+          </label>
+        )}
 
         {/* 3. Reused Date Control (Today / Yesterday / Calendar / Time) */}
         <div className="space-y-1">

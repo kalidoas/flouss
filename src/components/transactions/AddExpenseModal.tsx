@@ -12,6 +12,7 @@ import {
   formatMAD,
 } from '../../utils/formatters';
 import { calculateAvailableBalance } from '../../utils/calculations';
+import { calculateFinancialAccountBalances } from '../../utils/financialAccounts';
 import { translations } from '../../i18n/translations';
 import { getSubCategoryName } from '../../utils/i18nHelpers';
 import { Transaction } from '../../types';
@@ -32,6 +33,7 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
 }) => {
   const {
     categories,
+    financialAccounts,
     addTransaction,
     updateTransaction,
     balance: storeBalance,
@@ -41,6 +43,8 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
   } = useAppStore();
 
   const t = translations[language].common;
+  const tAccounts = translations[language].accounts;
+  const [financialAccountId, setFinancialAccountId] = useState('');
 
   const [amountStr, setAmountStr] = useState('');
   const [categoryId, setCategoryId] = useState(defaultCategoryId || '');
@@ -59,9 +63,11 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
         setDate(transactionToEdit.date.slice(0, 10));
         setTime(transactionToEdit.date.slice(11, 16) || getCurrentTimeStr());
         setNote(transactionToEdit.note || '');
+        setFinancialAccountId(transactionToEdit.accountId || financialAccounts.find((account) => account.isPrimary)?.id || '');
         setError('');
       } else {
         setCategoryId(defaultCategoryId || '');
+        setFinancialAccountId(financialAccounts.find((account) => account.isPrimary)?.id || '');
         setSubCategoryId(null);
         setError('');
         setAmountStr('');
@@ -70,14 +76,16 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
         setTime(getCurrentTimeStr());
       }
     }
-  }, [isOpen, defaultCategoryId, transactionToEdit]);
+  }, [isOpen, defaultCategoryId, transactionToEdit, financialAccounts]);
 
   const availableBalance =
     typeof storeBalance === 'number' && !isNaN(storeBalance)
       ? storeBalance
       : calculateAvailableBalance(initialBalance, transactions);
   const numericAmount = parseFloat(amountStr.replace(/\s/g, '').replace(',', '.')) || 0;
-  const isOverBalance = numericAmount > availableBalance;
+  const accountBalances = calculateFinancialAccountBalances(financialAccounts, transactions);
+  const selectedAccountBalance = financialAccountId ? accountBalances[financialAccountId] ?? availableBalance : availableBalance;
+  const isOverBalance = numericAmount > selectedAccountBalance;
 
   // Active non-archived categories
   const activeCategories = useMemo(
@@ -124,6 +132,7 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
         subCategoryId: subCategoryId || undefined,
         date: isoDate,
         note: note.trim() || undefined,
+        accountId: financialAccountId || undefined,
       });
     } else {
       addTransaction({
@@ -134,6 +143,7 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
         subCategoryId: subCategoryId || undefined,
         date: isoDate,
         note: note.trim() || undefined,
+        accountId: financialAccountId || undefined,
         createdAt: new Date().toISOString(),
       });
     }
@@ -192,6 +202,15 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
             type="expense"
           />
         </div>
+
+        {financialAccounts.length > 1 && (
+          <label className="block space-y-1">
+            <span className="text-[11px] font-medium uppercase tracking-wider text-muted">{tAccounts.accountType}</span>
+            <select value={financialAccountId} onChange={(event) => setFinancialAccountId(event.target.value)} className="min-h-11 w-full rounded-xl border border-border bg-surface-3 px-3 text-sm text-content">
+              {financialAccounts.map((account) => <option key={account.id} value={account.id}>{account.isPrimary ? tAccounts.cash : account.name}</option>)}
+            </select>
+          </label>
+        )}
 
         {/* Optional Subcategories Chips */}
         {availableSubcategories.length > 0 && (

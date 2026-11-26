@@ -1,4 +1,15 @@
-export type TransactionType = 'income' | 'expense' | 'contribution' | 'goal_withdraw' | 'adjustment';
+export type TransactionType = 'income' | 'expense' | 'contribution' | 'goal_withdraw' | 'adjustment' | 'transfer';
+
+export type FinancialAccountType = 'cash' | 'bank' | 'wallet';
+
+export interface FinancialAccount {
+  id: string;
+  name: string;
+  type: FinancialAccountType;
+  openingBalance: number;
+  isPrimary?: boolean;
+  createdAt: string;
+}
 
 export type CategoryGroupId =
   | 'essentials_housing'
@@ -59,6 +70,9 @@ export interface Transaction {
   note?: string;
   isRecurring?: boolean; // recurring income
   recurringDay?: number; // 1-31
+  accountId?: string; // defaults to the primary financial account for legacy transactions
+  fromAccountId?: string; // internal transfer source
+  toAccountId?: string; // internal transfer destination
   createdAt: string; // ISO
 }
 
@@ -137,6 +151,7 @@ export interface UserAccount {
   transactions: Transaction[];
   deletedTransactionIds?: string[];
   recurringRules: RecurringIncomeRule[];
+  financialAccounts?: FinancialAccount[];
   recentNotes: string[];
   tasks?: TaskItem[];
   focusTasks?: FocusTask[];

@@ -12,7 +12,7 @@ import {
   getIncomeSubSourceName,
   translateCategoryText,
 } from '../../utils/i18nHelpers';
-import { Trash2, AlertTriangle } from 'lucide-react';
+import { Trash2, AlertTriangle, ArrowLeftRight } from 'lucide-react';
 import { Modal } from '../common/Modal';
 import { Button } from '../common/Button';
 import { Money } from '../common/Money';
@@ -27,7 +27,7 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
   transaction,
   hideBalance = false,
 }) => {
-  const { categories, incomeSources, deleteTransaction, addTransaction, showToast, language } = useAppStore();
+  const { categories, incomeSources, financialAccounts, deleteTransaction, addTransaction, showToast, language } = useAppStore();
   const t = translations[language].history;
   const tCommon = translations[language].common;
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -161,11 +161,24 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
           badgeBg: 'bg-accent dark:bg-accent/50 text-accent dark:text-accent',
         };
       }
+      case 'transfer': {
+        const from = financialAccounts.find((account) => account.id === transaction.fromAccountId);
+        const to = financialAccounts.find((account) => account.id === transaction.toAccountId);
+        return {
+          title: `${from?.isPrimary ? translations[language].accounts.cash : from?.name || ''} → ${to?.isPrimary ? translations[language].accounts.cash : to?.name || ''}`,
+          icon: 'ArrowLeftRight',
+          color: '#73829b',
+          amountPrefix: '',
+          amountClass: 'text-muted font-semibold',
+          badgeText: translations[language].accounts.transfer,
+          badgeBg: 'bg-surface-2 text-muted border-border',
+        };
+      }
     }
   };
 
   const details = getDetails();
-  const IconComp = getCategoryIcon(details.icon);
+  const IconComp = transaction.type === 'transfer' ? ArrowLeftRight : getCategoryIcon(details.icon);
 
   const handleDelete = () => {
     const deletedTx = transaction;
